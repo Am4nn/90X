@@ -25,7 +25,7 @@ The MVP is the tracker and the feed, both complete, plus the library and the coa
 | 2 | Foundation + Library | Google login with allowlist, setup and diagnostic, Library (Pattern Map, problems, notes), check-ins, LeetCode sync, friend visibility |
 | 3 | Tracker | Daily template, missions, 90 Grid, review queue, readiness, Me dashboard |
 | 4 | Feed | Card feed, topic toggles, typed answers, grading, FSRS reviews, flags, `/admin` batch review |
-| 5 | Coach | Mission reasons, explain, chat with sources, mock interviews (text), STAR story bank, weekly review, memory service evaluation |
+| 5 | Coach | Tool-using chat that reads your progress, plan, problems, cards and sources (see 6.8), mission reasons, explain, mock interviews (text), STAR story bank, weekly review, memory service evaluation |
 
 Build order: 1 and 2 in parallel, then 3, 4, 5. Grading (needed by 4) is built inside part 4. Each part gets its own implementation plan.
 
@@ -58,6 +58,7 @@ Out of scope for the MVP: voice mocks, in-app code editor (LeetCode is used), de
 | Mock format | Text chat with timer and stage prompts; voice later |
 | Coach memory | Own tables (progress, `coach_notes`) for the MVP. Zep and Letta evaluated when part 5 is designed |
 | Coach search | Upstash Vector (semantic, built-in embeddings) |
+| Coach tools | Tool-using chat (AI SDK tool calls). Read tools run freely; every action tool needs a tap to confirm (see 6.8) |
 | Readiness | Formula score on the dial; the coach's weekly read shown beside it, never changing the number |
 | AI provider | DeepSeek via Vercel AI SDK (web) and `openai` SDK (pipeline); switchable by env. Flash for grading, Pro for coach and mocks |
 | AI budget | $10/month for the group. Warn at 80%; at 100% coach and mocks fall back to Flash, grading continues |
@@ -92,7 +93,7 @@ flowchart TB
 
   subgraph Vercel["Vercel: Next.js PWA"]
     UI["Today · Feed · Library · Coach · Me · /admin"]
-    API["Routes: grade · coach · mocks · check-in · LeetCode sync"]
+    API["Routes: grade · coach (tool calls) · mocks · check-in · LeetCode sync"]
     JOBS["Job handlers: nightly plan · reminders · weekly review · sync"]
   end
 
@@ -215,6 +216,39 @@ Friends read `checkins` through a view without the `note` column. `coach_*` tabl
 
 - Every AI call logs to `ai_usage` and adds to the Redis cost meter.
 - At 80% of $10/month: warning. At 100%: coach and mocks switch to Flash; grading continues.
+
+### 6.8 Coach tools
+
+The coach chat is a tool-using agent: it decides what to look up, calls functions, reads the results, then answers.
+
+Read tools (run without asking):
+
+| Tool | Returns |
+|---|---|
+| `get_progress` | Readiness per area, 14-day trend, streak, campaign day |
+| `get_weak_spots` | Weakest patterns and topics with evidence (recent misses, mock scores) |
+| `get_recent_activity` | Recent check-ins, card results, mocks |
+| `get_plan` | Today's and upcoming missions, templates, company focus |
+| `search_knowledge` | Top passages from Upstash Vector with source links |
+| `find_problems` | Problems by pattern, difficulty, company, solved or unsolved |
+| `find_cards` | Cards by topic or format, and the user's missed cards |
+| `get_friend_summary` | Friends' visible stats only |
+
+Action tools (each renders a confirm button; nothing happens until tapped):
+
+| Tool | Does |
+|---|---|
+| `queue_cards` | Puts chosen cards at the front of the feed queue |
+| `add_mission` | Adds an extra item to today, outside the template |
+| `suggest_template_change` | Proposes a template edit for Accept or Decline |
+| `save_note` | Stores a fact in `coach_notes` |
+| `start_mock` | Opens a mock interview on a topic |
+
+Rules:
+- Tools run with the user's session, so RLS limits what they can read.
+- At most 5 tool calls per message; tool results are summarized before they reach the model.
+- Answers that use `search_knowledge` cite their sources.
+- Tool calls and costs are logged to `ai_usage`.
 
 ## 7. Visual system
 
