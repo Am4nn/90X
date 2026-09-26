@@ -79,3 +79,23 @@ def test_complete_json_retries_once_then_fails(tmp_path):
     ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"})
     with pytest.raises(llm.LLMError):
         ai.complete_json("s", "u", Answer)
+
+
+def test_budget_cap_stops_calls(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak) values ('m', 'p', 1, 1, 5.0, true)")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'])
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"}, max_usd=5.0)
+    with pytest.raises(llm.BudgetExceeded):
+        ai.complete_json("s", "u", Answer)
+    assert calls.calls == []  # never reached the API
+
+
+def test_review_tier_uses_its_own_client(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    main, main_calls = fake_client(['{"pattern": "a", "confidence": 1}'])
+    review, review_calls = fake_client(['{"pattern": "b", "confidence": 1}'])
+    ai = llm.LLM(client=main, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro", "review": "gemini-3.5-flash"},
+                 clients={"review": review})
+    assert ai.complete_json("s", "u", Answer, tier="review").pattern == "b"
+    assert main_calls.calls == [] and review_calls.calls[0]["model"] == "gemini-3.5-flash"

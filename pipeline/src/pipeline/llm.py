@@ -4,6 +4,7 @@ staging database."""
 
 import json
 import os
+import threading
 import time
 from datetime import datetime, timezone
 from typing import TypeVar
@@ -28,6 +29,14 @@ PEAK_WINDOWS = ((1, 4), (6, 10))
 
 class LLMError(RuntimeError):
     pass
+
+
+class BudgetExceeded(LLMError):
+    pass
+
+
+# Hard stop for the whole pipeline's AI spend (override with PIPELINE_MAX_USD).
+DEFAULT_MAX_USD = 20.0
 
 
 def is_off_peak(now: datetime | None = None) -> bool:
@@ -55,15 +64,38 @@ def _default_client():
     return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=os.environ.get("AI_BASE_URL") or None)
 
 
+def _review_client():
+    """Optional independent reviewer on a different provider (REVIEW_* env)."""
+    if not os.environ.get("REVIEW_API_KEY"):
+        return None
+    from openai import OpenAI
+
+    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=os.environ.get("REVIEW_BASE_URL") or None)
+
+
 class LLM:
-    def __init__(self, con: duckdb.DuckDBPyConnection, client=None, models: dict | None = None):
+    def __init__(self, con: duckdb.DuckDBPyConnection, client=None, models: dict | None = None,
+                 max_usd: float | None = None, clients: dict | None = None):
         self.con = con
+        self.max_usd = max_usd if max_usd is not None else float(os.environ.get("PIPELINE_MAX_USD", DEFAULT_MAX_USD))
         self.client = client or _default_client()
+        # DuckDB connections aren't thread-safe; calls may run in a thread pool.
+        self.lock = threading.Lock()
         self.models = models or {"fast": os.environ["AI_MODEL_FAST"], "smart": os.environ["AI_MODEL_SMART"]}
+        # Per-tier clients; tiers without one use the main client.
+        self.clients = dict(clients or {})
+        if models is None and os.environ.get("REVIEW_MODEL"):
+            self.models["review"] = os.environ["REVIEW_MODEL"]
+            if "review" not in self.clients and (review := _review_client()):
+                self.clients["review"] = review
 
     def complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "") -> T:
         """Ask for JSON matching `schema`. Retries once with the validation
         error; raises LLMError if the second answer is also invalid."""
+        with self.lock:
+            spent = spend_usd(self.con)
+        if spent >= self.max_usd:
+            raise BudgetExceeded(f"AI spend ${spent:.2f} reached the ${self.max_usd:.2f} cap")
         model = self.models[tier]
         system_full = (
             f"{system}\n\nReply with a single JSON object matching this JSON Schema, and nothing else:\n"
@@ -74,7 +106,8 @@ class LLM:
         for attempt in range(2):
             if attempt:
                 messages.append({"role": "user", "content": f"That reply was invalid ({last_error}). Reply again with valid JSON only."})
-            response = self.client.chat.completions.create(
+            client = self.clients.get(tier, self.client)
+            response = client.chat.completions.create(
                 model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2,
             )
             self._log(model, purpose, response.usage)
@@ -90,6 +123,10 @@ class LLM:
         tokens_in = getattr(usage, "prompt_tokens", 0) or 0
         tokens_out = getattr(usage, "completion_tokens", 0) or 0
         off_peak = is_off_peak()
+        with self.lock:
+            self._insert(model, purpose, tokens_in, tokens_out, off_peak)
+
+    def _insert(self, model, purpose, tokens_in, tokens_out, off_peak) -> None:
         self.con.execute(
             "insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak) values (?, ?, ?, ?, ?, ?)",
             [model, purpose, tokens_in, tokens_out, cost_usd(model, tokens_in, tokens_out, off_peak), off_peak],

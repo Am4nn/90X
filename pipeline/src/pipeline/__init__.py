@@ -16,7 +16,9 @@ def main() -> None:
 
     norm = sub.add_parser("normalize", help="normalize raw sources into staging")
     norm.add_argument("targets", nargs="*", help="dsa (default), docs")
-    sub.add_parser("enrich", help="importance scores and DSA topics")
+    en = sub.add_parser("enrich", help="importance + DSA topics (default), or AI pattern tagging")
+    en.add_argument("step", nargs="?", choices=["basic", "patterns"], help="basic (default) or patterns")
+    en.add_argument("--limit", type=int, help="only the N most important untagged problems")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()

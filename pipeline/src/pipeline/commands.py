@@ -41,8 +41,17 @@ def status(args, con) -> None:
 def enrich(args, con) -> None:
     from .enrich import importance, topics
 
-    print(f"importance: {importance.run(con)} problems scored")
-    print(f"topics: {topics.apply_dsa(con)} DSA patterns + roadmap links")
+    step = getattr(args, "step", None)
+    if step in (None, "basic"):
+        print(f"importance: {importance.run(con)} problems scored")
+        print(f"topics: {topics.apply_dsa(con)} DSA patterns + roadmap links")
+    if step == "patterns":
+        from . import llm
+        from .enrich import patterns
+
+        ai = llm.LLM(con)
+        print(f"patterns: {patterns.run(con, ai, limit=args.limit)} problems tagged, spend ${llm.spend_usd(con):.2f}")
+        print(f"sample for review: {patterns.write_sample(con)}")
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "status": status}
