@@ -139,8 +139,11 @@ def trial(con, llm, csv_path, tier: str = "fast") -> str:
 
 
 def write_sample(con, n: int = 50) -> str:
-    """Random AI-tagged problems for a hand check."""
-    path = DATA_DIR / "review" / "pattern_sample.csv"
+    """Random AI-tagged problems for a hand check. Never overwrites an earlier
+    sample (it may hold a reviewer's comments)."""
+    from datetime import datetime
+
+    path = DATA_DIR / "review" / f"pattern_sample_{datetime.now():%Y%m%d_%H%M%S}.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = con.execute(
         """select title, difficulty, pattern_slug, array_to_string(techniques, ', '), url from problems
