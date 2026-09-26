@@ -59,7 +59,7 @@ export default async function FlaggedPage() {
           <div className="flex flex-col gap-2 border-t border-line pt-4">
             <span className="text-tag text-mute uppercase">Reports</span>
             {c.reasons.length === 0 ? (
-              <p className="text-small text-mute">No reports. It was hidden because nobody answered it well for 14 days.</p>
+              <p className="text-small text-mute">No reports. It was hidden because everyone who met it skipped it for 14 days.</p>
             ) : (
               <ul className="flex flex-col gap-2">
                 {c.reasons.map((r, i) => (
