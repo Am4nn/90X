@@ -17,7 +17,7 @@ def test_importance_handles_missing_numbers():
 def test_dsa_topics_cover_all_patterns_and_links_are_valid():
     rows, links = topics.dsa_topics()
     slugs = {r["slug"] for r in rows}
-    assert len(slugs) == 18
+    assert len(slugs) == 24
     assert "sliding-window" in slugs and "heap-priority-queue" in slugs
     assert all(a in slugs and b in slugs for a, b in links)
     # every pattern except the root is reachable from arrays-hashing

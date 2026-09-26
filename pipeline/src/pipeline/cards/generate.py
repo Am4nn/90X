@@ -2,6 +2,7 @@
 section. Every card tests one concept, has 2-4 key points for grading, and
 must be something an interviewer would plausibly ask."""
 
+import re
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -16,6 +17,18 @@ RULES = """Rules for every card:
 - output: a short code snippet in the prompt (fenced), answer = exact output.
 - difficulty: Easy, Medium or Hard for an interview candidate.
 Write in plain, direct English."""
+
+
+# Book/course sections that describe the book itself, not interview material.
+NOT_CARD_WORTHY = re.compile(
+    r"(?i)\b(lab projects?|homework|exercises?|preface|foreword|acknowledg\w*|table of contents|"
+    r"contributing|license|references|bibliography|further reading|about the author|how to use this)\b"
+)
+MIN_SECTION_CHARS = 600
+
+
+def is_card_worthy(doc: dict) -> bool:
+    return len(doc.get("body") or "") >= MIN_SECTION_CHARS and not NOT_CARD_WORTHY.search(doc.get("title") or "")
 
 
 class Card(BaseModel):

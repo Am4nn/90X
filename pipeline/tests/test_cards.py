@@ -54,3 +54,15 @@ def test_dedupe_drops_near_identical_prompts():
              card(prompt="What's the time complexity of binary search?"),
              card(prompt="Why does quicksort degrade to O(n^2)?")]
     assert len(check.dedupe(cards)) == 2
+
+
+def test_skips_non_interview_sections():
+    assert generate.is_card_worthy({"title": "Lab Projects", "body": "x" * 2000}) is False
+    assert generate.is_card_worthy({"title": "Homework (Simulation)", "body": "x" * 2000}) is False
+    assert generate.is_card_worthy({"title": "Preface", "body": "x" * 2000}) is False
+    assert generate.is_card_worthy({"title": "Caching › Cache eviction", "body": "x" * 2000}) is True
+    assert generate.is_card_worthy({"title": "Caching", "body": "too short"}) is False
+
+
+def test_reviewer_prompt_allows_standard_knowledge():
+    assert "well-established" in check.SYSTEM

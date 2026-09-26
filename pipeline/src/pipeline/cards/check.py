@@ -8,7 +8,9 @@ from rapidfuzz import fuzz
 
 SYSTEM = """You review interview-prep flashcards against their source material.
 Score 1-5:
-- correct: the answer and every key point are right and supported by the source.
+- correct: the answer and every key point are right. Anything specific to the source (its numbers, names,
+  design choices) must match the source; well-established general knowledge (e.g. objects live on the heap)
+  is allowed even if the passage doesn't state it. Anything wrong or invented scores 1-2.
 - clear: the prompt is unambiguous and answerable in 1-3 sentences.
 - relevant: an interviewer would plausibly ask this.
 List concrete issues in one sentence, or leave empty."""
@@ -23,7 +25,7 @@ class Verdict(BaseModel):
     issues: str = ""
 
 
-def review(llm, card: dict, source: str, tier: str = "smart") -> dict:
+def review(llm, card: dict, source: str, tier: str = "review") -> dict:
     user = (
         f"Source:\n{source[:5000]}\n\nCard ({card['format']}, {card['difficulty']}):\n"
         f"Prompt: {card['prompt']}\nOptions: {card.get('options')}\nAnswer: {card['answer']}\n"

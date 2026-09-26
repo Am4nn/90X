@@ -76,6 +76,8 @@ def build_problems(kaysss: dict, newfacade: dict, multilang: dict, neetcode: dic
         rows.append({
             "slug": slug,
             "kind": "leetcode",
+            # LeetCode serves no content for premium problems; other datasets may still have the text.
+            "premium": not (k.get("content") or "").strip(),
             "lc_number": _num(k.get("questionFrontendId"), int),
             "title": k["questionTitle"],
             "difficulty": k["difficulty"],
@@ -141,15 +143,25 @@ def load_companies(folder: Path = DSA / "company-wise-liquidslr") -> dict:
 
 def run(con) -> int:
     rows = build_problems(load_kaysss(), load_newfacade(), load_multilang(), load_neetcode(), load_companies())
+    # Keep AI tags from earlier runs (they cost money); NeetCode tags are rebuilt from source.
+    kept = {slug: (pattern, techniques) for slug, pattern, techniques in con.execute(
+        "select slug, pattern_slug, techniques from problems where pattern_source = 'ai' or techniques is not null"
+    ).fetchall()}
     con.execute("delete from problems where kind = 'leetcode'")
     con.executemany(
-        """insert into problems (slug, kind, lc_number, title, difficulty, pattern_slug, pattern_source,
+        """insert into problems (premium, slug, kind, lc_number, title, difficulty, pattern_slug, pattern_source,
                topic_slugs, tags, nc150, blind75, companies, statement_md, solutions, video_id, url,
                source_id, ac_rate, total_accepted, similar_slugs)
-           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        [[r["slug"], r["kind"], r["lc_number"], r["title"], r["difficulty"], r["pattern_slug"], r["pattern_source"],
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        [[r["premium"], r["slug"], r["kind"], r["lc_number"], r["title"], r["difficulty"], r["pattern_slug"], r["pattern_source"],
           r["topic_slugs"], r["tags"], r["nc150"], r["blind75"], json.dumps(r["companies"]), r["statement_md"],
           json.dumps(r["solutions"]), r["video_id"], r["url"], r["source_id"], r["ac_rate"], r["total_accepted"],
           r["similar_slugs"]] for r in rows],
     )
+    for slug, (pattern, techniques) in kept.items():
+        con.execute(
+            """update problems set techniques = ?,
+                   pattern_slug = coalesce(pattern_slug, ?),
+                   pattern_source = coalesce(pattern_source, case when ? is not null then 'ai' end)
+               where slug = ?""", [techniques, pattern, pattern, slug])
     return len(rows)

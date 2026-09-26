@@ -30,6 +30,8 @@ create table if not exists problems (
     -- pipeline-only enrichment inputs
     ac_rate double, total_accepted bigint, similar_slugs text[], pattern_source text
 );
+alter table problems add column if not exists premium boolean default false;
+alter table problems add column if not exists techniques text[];
 create table if not exists documents (
     id text primary key, topic_slug text, domain text not null, title text not null,
     body_md text not null, url text, source_id text, sort int default 0, path text

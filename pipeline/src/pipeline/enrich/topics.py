@@ -1,4 +1,4 @@
-"""Topic trees. DSA is fixed: NeetCode's 18 patterns and its roadmap edges,
+"""Topic trees. DSA is fixed: NeetCode's 18 patterns plus 6 common ones, and its roadmap edges,
 which draw the Pattern Map. Other areas are drafted by AI into
 pipeline/topics/<domain>.yaml and approved by hand (see draft/apply)."""
 
@@ -11,6 +11,10 @@ DSA_PATTERNS = [
     ("Heap / Priority Queue", 0.8), ("Backtracking", 0.7), ("Graphs", 0.9), ("Advanced Graphs", 0.6),
     ("1-D Dynamic Programming", 0.9), ("2-D Dynamic Programming", 0.8), ("Greedy", 0.7),
     ("Intervals", 0.7), ("Math & Geometry", 0.5), ("Bit Manipulation", 0.5),
+    # Not in NeetCode's roadmap but common in interviews; without them the
+    # tagger dumped problems into Arrays & Hashing or Math & Geometry.
+    ("Prefix Sum", 0.8), ("String", 0.7), ("Matrix / Grid", 0.7), ("Simulation", 0.5),
+    ("Segment Tree & Fenwick", 0.4), ("Design", 0.7),
 ]
 
 # NeetCode roadmap: prerequisite → next.
@@ -24,6 +28,9 @@ DSA_EDGES = [
     ("Graphs", "Advanced Graphs"), ("Graphs", "2-D Dynamic Programming"), ("Graphs", "Math & Geometry"),
     ("1-D Dynamic Programming", "2-D Dynamic Programming"), ("1-D Dynamic Programming", "Bit Manipulation"),
     ("Bit Manipulation", "Math & Geometry"),
+    ("Arrays & Hashing", "Prefix Sum"), ("Arrays & Hashing", "String"), ("Arrays & Hashing", "Matrix / Grid"),
+    ("Arrays & Hashing", "Simulation"), ("Prefix Sum", "Segment Tree & Fenwick"), ("Trees", "Segment Tree & Fenwick"),
+    ("Linked List", "Design"), ("Heap / Priority Queue", "Design"),
 ]
 
 

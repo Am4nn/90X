@@ -58,3 +58,18 @@ def test_build_problems_joins_sources():
 
     sql = rows["combine-tables"]
     assert sql["topic_slugs"] == ["sql"] and "SQL" in sql["statement_md"]  # HTML converted
+
+
+def test_rerun_keeps_ai_tags(tmp_path, monkeypatch):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    monkeypatch.setattr(dsa, "load_kaysss", lambda: base_rows()[0])
+    monkeypatch.setattr(dsa, "load_newfacade", lambda: base_rows()[1])
+    monkeypatch.setattr(dsa, "load_multilang", lambda: base_rows()[2])
+    monkeypatch.setattr(dsa, "load_neetcode", lambda: base_rows()[3])
+    monkeypatch.setattr(dsa, "load_companies", lambda: base_rows()[4])
+    dsa.run(con)
+    con.execute("update problems set pattern_slug = 'graphs', pattern_source = 'ai', techniques = ['bfs'] where slug = 'premium-one'")
+    dsa.run(con)
+    assert con.execute("select pattern_slug, pattern_source, techniques from problems where slug = 'premium-one'").fetchone() == ("graphs", "ai", ["bfs"])

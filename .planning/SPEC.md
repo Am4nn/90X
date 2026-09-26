@@ -127,13 +127,15 @@ flowchart TB
 | `sources` | name, url, license, domain |
 | `topics` | parent_id, domain (dsa, system_design, cs, java, sql, lld, ai, behavioral), name, slug, importance |
 | `topic_links` | from_topic, to_topic (Pattern Map edges) |
-| `problems` | kind (leetcode, competitive), lc_number, slug, title, difficulty, pattern_topic_id, topic_ids, importance, nc150, blind75, companies (company → frequency), statement_md, solutions (language → code), video_id, source_id |
+| `problems` | kind (leetcode, competitive), lc_number, slug, title, difficulty, pattern_slug (one primary pattern, places it on the map), techniques (1-4 from a fixed list of ~50), topic_slugs, importance, premium, nc150, blind75, companies (company → frequency), statement_md, solutions (language → code), video_id, source_id |
 | `documents` | topic_id, title, body_md, url, source_id |
 | `pattern_tricks` | pattern_slug, name, idea_md, snippet (per language), problem_slugs (2-3 real problems that use it), sort. Built by the pipeline (6.11) |
 | `card_batches` | domain, topic_ids, created_at, ai_pass_rate, sample_pass_rate, status (draft, published, rejected) |
 | `cards` | batch_id, topic_id, problem_id, document_id, format (typed, flash, mcq, output, bug), difficulty, prompt_md, options, answer_md, key_points, source_refs, quality, status (draft, live, retired), flag_count |
 
 ### 5.2 User data (Supabase, RLS)
+
+`profiles` includes `has_leetcode_premium`; without it, missions and ladders skip premium problems (the Library still lists them with a Premium badge).
 
 | Table | Key columns |
 |---|---|
@@ -437,7 +439,11 @@ Key sources:
 
 ### 11.1 DSA enrichment
 
-- **Pattern:** NeetCode's pattern label where the problem is in its 450; for the rest, the AI tags the pattern from the solution code. Hand-check ~50 before trusting.
+- **Pattern (one per problem):** 24 patterns = NeetCode's 18 plus Prefix Sum, String, Matrix / Grid, Simulation, Segment Tree & Fenwick, Design. NeetCode problems keep NeetCode's label; the rest are tagged by Flash with explicit rules (no catch-all use of Arrays & Hashing or Math & Geometry).
+- **Techniques (1-4 per problem):** from a fixed list (hash-map, prefix-sum, monotonic-stack, binary-search-on-answer, union-find, segment-tree, dp-bitmask, bit-manipulation, …). They power search, the trick catalog and weak-spot tracking.
+- **Scope:** only algorithm problems are tagged; SQL and concurrency problems belong to their own areas.
+- **Premium:** problems LeetCode serves without content are flagged premium.
+- Checked on a 50-problem sample reviewed by hand (2026-09-27).
 - **Importance:** NeetCode 150 / Blind 75 first, then company frequency, then acceptance and submission counts.
 - **Videos:** NeetCode's YouTube id where available.
 - **Pattern explainers:** one per pattern (~18), starting from the coding-patterns repo.

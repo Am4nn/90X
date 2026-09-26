@@ -19,6 +19,7 @@ def main() -> None:
     en = sub.add_parser("enrich", help="importance + DSA topics (default), or AI pattern tagging")
     en.add_argument("step", nargs="?", choices=["basic", "patterns"], help="basic (default) or patterns")
     en.add_argument("--limit", type=int, help="only the N most important untagged problems")
+    en.add_argument("--retag", action="store_true", help="re-tag problems that already have tags")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()

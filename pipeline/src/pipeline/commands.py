@@ -50,7 +50,7 @@ def enrich(args, con) -> None:
         from .enrich import patterns
 
         ai = llm.LLM(con)
-        print(f"patterns: {patterns.run(con, ai, limit=args.limit)} problems tagged, spend ${llm.spend_usd(con):.2f}")
+        print(f"patterns: {patterns.run(con, ai, limit=args.limit, retag=args.retag)} problems tagged, spend ${llm.spend_usd(con):.2f}")
         print(f"sample for review: {patterns.write_sample(con)}")
 
 
