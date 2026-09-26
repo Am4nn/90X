@@ -1,0 +1,196 @@
+# Topic list for Java (drafted by AI from 329 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply java
+# Reviewed 2026-09-27: generic deadlocks / race conditions live in CS
+domain: java
+topics:
+- name: Collections Framework
+  slug: java-collections-framework
+  parent: null
+  importance: 1.0
+  description: Interfaces, implementations, and algorithms in java.util
+- name: Concurrency
+  slug: java-concurrency
+  parent: null
+  importance: 1.0
+  description: Multithreading and java.util.concurrent
+- name: Java 8 Features
+  slug: java-java-8-features
+  parent: null
+  importance: 0.9
+  description: Major enhancements introduced in Java 8
+- name: JVM and Memory
+  slug: java-jvm-and-memory
+  parent: null
+  importance: 0.95
+  description: JVM internals, memory areas, and garbage collection
+- name: OOP Concepts
+  slug: java-oop-concepts
+  parent: null
+  importance: 1.0
+  description: Core object-oriented principles
+- name: Exceptions
+  slug: java-exceptions
+  parent: null
+  importance: 0.9
+  description: Exception hierarchy and handling
+- name: Strings
+  slug: java-strings
+  parent: null
+  importance: 0.9
+  description: String manipulation and immutability
+- name: HashMap internals
+  slug: java-hashmap-internals
+  parent: java-collections-framework
+  importance: 1.0
+  description: How HashMap stores data, handles collisions, and resizes
+- name: ConcurrentHashMap
+  slug: java-concurrenthashmap
+  parent: java-collections-framework
+  importance: 0.9
+  description: Thread-safe map with lock striping and fail-safe iterators
+- name: ArrayList vs LinkedList
+  slug: java-arraylist-vs-linkedlist
+  parent: java-collections-framework
+  importance: 0.9
+  description: Differences in underlying arrays vs linked nodes and performance
+- name: HashSet vs TreeSet
+  slug: java-hashset-vs-treeset
+  parent: java-collections-framework
+  importance: 0.8
+  description: Unordered vs sorted sets and their implementation
+- name: Comparable vs Comparator
+  slug: java-comparable-vs-comparator
+  parent: java-collections-framework
+  importance: 0.8
+  description: Natural ordering vs custom comparison
+- name: fail-fast vs fail-safe iterators
+  slug: java-fail-fast-vs-fail-safe-iterators
+  parent: java-collections-framework
+  importance: 0.7
+  description: Iterator behavior on concurrent modification
+- name: Thread lifecycle
+  slug: java-thread-lifecycle
+  parent: java-concurrency
+  importance: 0.9
+  description: 'States: NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED'
+- name: wait/notify/notifyAll
+  slug: java-wait-notify-notifyall
+  parent: java-concurrency
+  importance: 0.8
+  description: Inter-thread communication using monitor methods
+- name: Executor Framework
+  slug: java-executor-framework
+  parent: java-concurrency
+  importance: 0.85
+  description: Thread pools and task execution
+- name: Lock interface and ReentrantLock
+  slug: java-lock-interface-and-reentrantlock
+  parent: java-concurrency
+  importance: 0.8
+  description: Explicit locking with advanced features
+- name: volatile keyword
+  slug: java-volatile-keyword
+  parent: java-concurrency
+  importance: 0.8
+  description: Guarantees visibility and ordering, not atomicity
+- name: Java Memory Model
+  slug: java-java-memory-model
+  parent: java-concurrency
+  importance: 0.75
+  description: Specifies how threads interact through memory
+- name: Lambda expressions
+  slug: java-lambda-expressions
+  parent: java-java-8-features
+  importance: 0.9
+  description: Concise functional syntax for anonymous classes
+- name: Streams API
+  slug: java-streams-api
+  parent: java-java-8-features
+  importance: 0.9
+  description: Functional-style operations on collections
+- name: Optional
+  slug: java-optional
+  parent: java-java-8-features
+  importance: 0.8
+  description: Container to avoid null checks
+- name: Default and static interface methods
+  slug: java-default-and-static-interface-methods
+  parent: java-java-8-features
+  importance: 0.7
+  description: Adding method bodies to interfaces
+- name: JVM architecture
+  slug: java-jvm-architecture
+  parent: java-jvm-and-memory
+  importance: 0.9
+  description: Classloader, runtime data areas, execution engine
+- name: Garbage Collection
+  slug: java-garbage-collection
+  parent: java-jvm-and-memory
+  importance: 0.95
+  description: Automatic memory management and GC algorithms
+- name: Heap vs Stack
+  slug: java-heap-vs-stack
+  parent: java-jvm-and-memory
+  importance: 0.85
+  description: Object storage vs method-local variables
+- name: Memory leaks
+  slug: java-memory-leaks
+  parent: java-jvm-and-memory
+  importance: 0.7
+  description: Unintentional object retention causing OutOfMemoryError
+- name: Inheritance vs Composition
+  slug: java-inheritance-vs-composition
+  parent: java-oop-concepts
+  importance: 0.9
+  description: Is-a vs has-a relationships
+- name: Polymorphism
+  slug: java-polymorphism
+  parent: java-oop-concepts
+  importance: 0.9
+  description: Compile-time and runtime polymorphism
+- name: Abstract class vs interface
+  slug: java-abstract-class-vs-interface
+  parent: java-oop-concepts
+  importance: 0.9
+  description: Differences and when to use each
+- name: Checked vs unchecked exceptions
+  slug: java-checked-vs-unchecked-exceptions
+  parent: java-exceptions
+  importance: 0.9
+  description: Compile-time vs runtime exceptions
+- name: String vs StringBuilder vs StringBuffer
+  slug: java-string-vs-stringbuilder-vs-stringbuffer
+  parent: java-strings
+  importance: 0.9
+  description: Mutability and thread-safety differences
+- name: String pool
+  slug: java-string-pool
+  parent: java-strings
+  importance: 0.8
+  description: Interning and memory optimization
+- name: equals and hashCode contract
+  slug: java-equals-and-hashcode-contract
+  parent: null
+  importance: 1.0
+  description: Must override together for hash-based collections
+- name: Generics
+  slug: java-generics
+  parent: null
+  importance: 0.8
+  description: Type parameters and wildcards
+- name: Immutability
+  slug: java-immutability
+  parent: null
+  importance: 0.8
+  description: Creating classes that cannot be modified
+- name: JDBC
+  slug: java-jdbc
+  parent: null
+  importance: 0.7
+  description: Java Database Connectivity API
+- name: Serialization
+  slug: java-serialization
+  parent: null
+  importance: 0.6
+  description: Object serialization mechanism

@@ -1,0 +1,139 @@
+# Topic list for CS fundamentals (OS, DBMS, networks, OOP, concurrency) (drafted by AI from 1225 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply cs
+# Reviewed 2026-09-27: Java topics moved to the Java area; system-design and SQL-query topics moved to their areas; OS memory + file systems added
+domain: cs
+topics:
+- name: Processes vs Threads
+  slug: cs-processes-vs-threads
+  parent: null
+  importance: 0.9
+  description: Differences in memory, creation, context switching, and communication.
+- name: CPU Scheduling
+  slug: cs-cpu-scheduling
+  parent: null
+  importance: 0.8
+  description: Algorithms like FCFS, SJF, Round Robin and their impact on latency
+    and throughput.
+- name: Deadlocks
+  slug: cs-deadlocks
+  parent: null
+  importance: 0.9
+  description: Necessary conditions, prevention, avoidance (Banker's algorithm), detection
+    and recovery.
+- name: Race Conditions
+  slug: cs-race-conditions
+  parent: null
+  importance: 0.85
+  description: Uncontrolled access to shared data causing nondeterministic results.
+- name: Synchronization Primitives
+  slug: cs-synchronization-primitives
+  parent: null
+  importance: 0.9
+  description: Mutexes, semaphores, monitors, condition variables and their trade-offs.
+- name: Critical Section Problem
+  slug: cs-critical-section-problem
+  parent: null
+  importance: 0.8
+  description: Ensuring mutual exclusion, progress, and bounded wait for shared resources.
+- name: Inter-Process Communication
+  slug: cs-inter-process-communication
+  parent: null
+  importance: 0.7
+  description: Shared memory, message passing, pipes, sockets, and signals.
+- name: Paging and Virtual Memory
+  slug: cs-paging-and-virtual-memory
+  parent: null
+  importance: 0.85
+  description: Address translation, page tables, TLB, and demand paging.
+- name: Page Replacement Algorithms
+  slug: cs-page-replacement-algorithms
+  parent: null
+  importance: 0.75
+  description: FIFO, LRU, Optimal, Clock and their performance trade-offs.
+- name: TLB and Caching
+  slug: cs-tlb-and-caching
+  parent: null
+  importance: 0.7
+  description: Cache levels, mapping, replacement policies, and performance impact.
+- name: OSI Model
+  slug: cs-osi-model
+  parent: null
+  importance: 0.8
+  description: Seven layers, their functions, and comparison with TCP/IP model.
+- name: TCP vs UDP
+  slug: cs-tcp-vs-udp
+  parent: null
+  importance: 0.95
+  description: Connection-oriented vs connectionless, reliability, ordering, and use
+    cases.
+- name: TCP 3-Way Handshake
+  slug: cs-tcp-3-way-handshake
+  parent: null
+  importance: 0.9
+  description: SYN, SYN-ACK, ACK sequence and connection establishment.
+- name: TCP Flow and Congestion Control
+  slug: cs-tcp-flow-and-congestion-control
+  parent: null
+  importance: 0.85
+  description: Sliding window, slow start, congestion avoidance, and retransmission.
+- name: HTTP/HTTPS
+  slug: cs-http-https
+  parent: null
+  importance: 0.9
+  description: Request/response, statelessness, HTTPS encryption, and differences.
+- name: DNS
+  slug: cs-dns
+  parent: null
+  importance: 0.85
+  description: Domain resolution, hierarchy, record types, and caching.
+- name: TLS/SSL Handshake
+  slug: cs-tls-ssl-handshake
+  parent: null
+  importance: 0.9
+  description: Certificate validation, key exchange, and session establishment.
+- name: Socket Programming
+  slug: cs-socket-programming
+  parent: null
+  importance: 0.75
+  description: TCP and UDP sockets, lifecycle, and blocking vs non-blocking I/O.
+- name: Subnetting and CIDR
+  slug: cs-subnetting-and-cidr
+  parent: null
+  importance: 0.7
+  description: IP addressing, subnet masks, and CIDR notation calculations.
+- name: ACID Properties
+  slug: cs-acid-properties
+  parent: null
+  importance: 0.9
+  description: Atomicity, Consistency, Isolation, Durability guarantees.
+- name: Normalization
+  slug: cs-normalization
+  parent: null
+  importance: 0.8
+  description: 1NF to BCNF, functional dependencies, and denormalization trade-offs.
+- name: Transaction Isolation Levels
+  slug: cs-transaction-isolation-levels
+  parent: null
+  importance: 0.9
+  description: Read uncommitted, read committed, repeatable read, serializable.
+- name: Locking Mechanisms
+  slug: cs-locking-mechanisms
+  parent: null
+  importance: 0.85
+  description: Optimistic vs pessimistic locking, row-level vs table-level locks.
+- name: Object-Oriented Programming Principles
+  slug: cs-object-oriented-programming-principles
+  parent: null
+  importance: 0.8
+  description: Encapsulation, inheritance, polymorphism, and abstraction.
+- name: Memory Allocation
+  slug: cs-memory-allocation
+  parent: null
+  importance: 0.7
+  description: Heap allocation, fragmentation, free lists
+- name: File Systems
+  slug: cs-file-systems
+  parent: null
+  importance: 0.7
+  description: Inodes, directories, journaling, consistency

@@ -1,0 +1,208 @@
+# Topic list for AI / ML engineering (drafted by AI from 388 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply ai
+domain: ai
+topics:
+- name: Machine Learning Fundamentals
+  slug: ai-machine-learning-fundamentals
+  parent: null
+  importance: 0.95
+  description: Core concepts and techniques for classical machine learning.
+- name: Supervised Learning
+  slug: ai-supervised-learning
+  parent: ai-machine-learning-fundamentals
+  importance: 0.95
+  description: Algorithms that learn from labeled data, including regression and classification.
+- name: Unsupervised Learning
+  slug: ai-unsupervised-learning
+  parent: ai-machine-learning-fundamentals
+  importance: 0.7
+  description: Clustering, dimensionality reduction, and density estimation.
+- name: Bias-Variance Tradeoff
+  slug: ai-bias-variance-tradeoff
+  parent: ai-machine-learning-fundamentals
+  importance: 0.85
+  description: Balancing underfitting and overfitting in model selection.
+- name: Regularization
+  slug: ai-regularization
+  parent: ai-machine-learning-fundamentals
+  importance: 0.8
+  description: L1/L2 penalties, dropout, and early stopping to control complexity.
+- name: Evaluation Metrics
+  slug: ai-evaluation-metrics
+  parent: ai-machine-learning-fundamentals
+  importance: 0.9
+  description: Classification, regression, and ranking metrics like precision, recall,
+    F1, ROC-AUC.
+- name: Feature Engineering
+  slug: ai-feature-engineering
+  parent: ai-machine-learning-fundamentals
+  importance: 0.85
+  description: Creating, transforming, and selecting features to improve model performance.
+- name: Model Selection and Validation
+  slug: ai-model-selection-and-validation
+  parent: ai-machine-learning-fundamentals
+  importance: 0.8
+  description: Cross-validation, hyperparameter tuning, and train/validation/test
+    splits.
+- name: Ensemble Methods
+  slug: ai-ensemble-methods
+  parent: ai-machine-learning-fundamentals
+  importance: 0.7
+  description: Bagging, boosting, random forests, and gradient boosting machines.
+- name: Deep Learning
+  slug: ai-deep-learning
+  parent: null
+  importance: 0.9
+  description: Neural network architectures, training, and applications.
+- name: Neural Network Design
+  slug: ai-neural-network-design
+  parent: ai-deep-learning
+  importance: 0.8
+  description: Choosing layers, activation functions, and architecture patterns.
+- name: Training and Optimization
+  slug: ai-training-and-optimization
+  parent: ai-deep-learning
+  importance: 0.85
+  description: Gradient descent variants, learning rate schedules, and loss functions.
+- name: Convolutional Neural Networks
+  slug: ai-convolutional-neural-networks
+  parent: ai-deep-learning
+  importance: 0.6
+  description: CNNs for image and signal processing tasks.
+- name: Recurrent Neural Networks and LSTMs
+  slug: ai-recurrent-neural-networks-and-lstms
+  parent: ai-deep-learning
+  importance: 0.6
+  description: Sequence modeling with RNNs, LSTMs, and GRUs.
+- name: Transformers
+  slug: ai-transformers
+  parent: ai-deep-learning
+  importance: 0.9
+  description: Self-attention architecture used across NLP and beyond.
+- name: Generative AI / LLMs
+  slug: ai-generative-ai-llms
+  parent: null
+  importance: 0.95
+  description: Large language models, generation, and production systems.
+- name: Transformer & LLM Internals
+  slug: ai-transformer-llm-internals
+  parent: ai-generative-ai-llms
+  importance: 0.9
+  description: Attention mechanisms, tokenization, and decoder-only architectures.
+- name: Prompt Engineering
+  slug: ai-prompt-engineering
+  parent: ai-generative-ai-llms
+  importance: 0.8
+  description: Designing prompts to elicit desired outputs from language models.
+- name: Embedding Models
+  slug: ai-embedding-models
+  parent: ai-generative-ai-llms
+  importance: 0.8
+  description: Learning dense vector representations for text, images, and other data.
+- name: Vector Databases
+  slug: ai-vector-databases
+  parent: ai-generative-ai-llms
+  importance: 0.7
+  description: Efficient storage and similarity search for embeddings.
+- name: RAG and Production Systems
+  slug: ai-rag-and-production-systems
+  parent: ai-generative-ai-llms
+  importance: 0.9
+  description: Retrieval-augmented generation and deployment patterns for LLMs.
+- name: Agents and Agentic Systems
+  slug: ai-agents-and-agentic-systems
+  parent: ai-generative-ai-llms
+  importance: 0.75
+  description: LLM agents with tool use, planning, and memory.
+- name: Supervised Fine-Tuning of LLM
+  slug: ai-supervised-fine-tuning-of-llm
+  parent: ai-generative-ai-llms
+  importance: 0.85
+  description: Adapting pre-trained language models to specific tasks with labeled
+    data.
+- name: Generative Model Evaluation
+  slug: ai-generative-model-evaluation
+  parent: ai-generative-ai-llms
+  importance: 0.7
+  description: Metrics and methods for evaluating generated text and other outputs.
+- name: ML System Design
+  slug: ai-ml-system-design
+  parent: null
+  importance: 0.85
+  description: Designing end-to-end machine learning systems for production.
+- name: Problem Formulation
+  slug: ai-problem-formulation
+  parent: ai-ml-system-design
+  importance: 0.8
+  description: Converting business problems into ML objectives and constraints.
+- name: Metrics (Offline and Online)
+  slug: ai-metrics-offline-and-online
+  parent: ai-ml-system-design
+  importance: 0.9
+  description: Choosing offline evaluation metrics and online business KPIs.
+- name: Data Collection and Preparation
+  slug: ai-data-collection-and-preparation
+  parent: ai-ml-system-design
+  importance: 0.8
+  description: Data sourcing, cleaning, labeling, and pipeline design.
+- name: Candidate Generation
+  slug: ai-candidate-generation
+  parent: ai-ml-system-design
+  importance: 0.7
+  description: Retrieval and candidate selection in recommender or search systems.
+- name: Ranking
+  slug: ai-ranking
+  parent: ai-ml-system-design
+  importance: 0.8
+  description: Scoring and ordering candidates using learning-to-rank techniques.
+- name: Prediction Service
+  slug: ai-prediction-service
+  parent: ai-ml-system-design
+  importance: 0.7
+  description: Serving models, latency, and inference optimization.
+- name: Scaling, Monitoring, and Updates
+  slug: ai-scaling-monitoring-and-updates
+  parent: ai-ml-system-design
+  importance: 0.8
+  description: Handling scale, detecting drift, and maintaining model performance.
+- name: Recommendation Systems
+  slug: ai-recommendation-systems
+  parent: ai-ml-system-design
+  importance: 0.7
+  description: Collaborative filtering, content-based, and hybrid recommenders.
+- name: Probability and Statistics
+  slug: ai-probability-and-statistics
+  parent: null
+  importance: 0.8
+  description: Foundational probability and statistical inference for ML.
+- name: Hypothesis Testing
+  slug: ai-hypothesis-testing
+  parent: ai-probability-and-statistics
+  importance: 0.8
+  description: p-values, significance levels, and statistical tests.
+- name: A/B Testing
+  slug: ai-a-b-testing
+  parent: ai-probability-and-statistics
+  importance: 0.85
+  description: Designing and analyzing controlled online experiments.
+- name: Software Engineering
+  slug: ai-software-engineering
+  parent: null
+  importance: 0.85
+  description: Coding and system-building skills expected of ML engineers.
+- name: Python
+  slug: ai-python
+  parent: ai-software-engineering
+  importance: 0.9
+  description: Python proficiency, data structures, and common libraries.
+- name: SQL
+  slug: ai-sql
+  parent: ai-software-engineering
+  importance: 0.7
+  description: Querying and manipulating data with SQL.
+- name: Data Structures and Algorithms
+  slug: ai-data-structures-and-algorithms
+  parent: ai-software-engineering
+  importance: 0.85
+  description: Core algorithms, complexity analysis, and coding interview patterns.

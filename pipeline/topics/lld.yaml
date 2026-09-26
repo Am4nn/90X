@@ -1,0 +1,189 @@
+# Topic list for low-level / object-oriented design (drafted by AI from 922 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply lld
+# Reviewed 2026-09-27: concurrency topics live in CS / Java
+domain: lld
+topics:
+- name: Encapsulation
+  slug: lld-encapsulation
+  parent: null
+  importance: 0.9
+  description: Hiding internal state and requiring interaction through methods.
+- name: Abstraction
+  slug: lld-abstraction
+  parent: null
+  importance: 0.9
+  description: Modeling essential features while hiding implementation details.
+- name: Inheritance
+  slug: lld-inheritance
+  parent: null
+  importance: 0.8
+  description: Creating new classes based on existing ones to reuse and extend behavior.
+- name: Polymorphism
+  slug: lld-polymorphism
+  parent: null
+  importance: 0.9
+  description: Ability of different classes to respond to the same interface or method
+    call.
+- name: Interfaces
+  slug: lld-interfaces
+  parent: null
+  importance: 0.9
+  description: Defining contracts that classes can implement, enabling abstraction
+    and multiple inheritance.
+- name: Abstract Classes
+  slug: lld-abstract-classes
+  parent: null
+  importance: 0.8
+  description: Base classes that cannot be instantiated and may contain abstract methods.
+- name: Association
+  slug: lld-association
+  parent: null
+  importance: 0.6
+  description: General relationship between objects where one uses or interacts with
+    another.
+- name: Aggregation
+  slug: lld-aggregation
+  parent: null
+  importance: 0.7
+  description: A 'has-a' relationship where the contained object can exist independently.
+- name: Composition
+  slug: lld-composition
+  parent: null
+  importance: 0.8
+  description: A strong 'has-a' relationship where the contained object's lifecycle
+    is managed by the owner.
+- name: Coupling and Cohesion
+  slug: lld-coupling-and-cohesion
+  parent: null
+  importance: 0.7
+  description: Measuring interdependence between modules and focus within a module.
+- name: SOLID Principles
+  slug: lld-solid-principles
+  parent: null
+  importance: 0.9
+  description: Five design principles for maintainable object-oriented code.
+- name: UML Class Diagram
+  slug: lld-uml-class-diagram
+  parent: null
+  importance: 0.8
+  description: Visual representation of classes, attributes, methods, and relationships.
+- name: UML Sequence Diagram
+  slug: lld-uml-sequence-diagram
+  parent: null
+  importance: 0.7
+  description: Shows object interactions in a time sequence.
+- name: UML Use Case Diagram
+  slug: lld-uml-use-case-diagram
+  parent: null
+  importance: 0.5
+  description: Depicts system functionality from user perspective.
+- name: Design Patterns
+  slug: lld-design-patterns
+  parent: null
+  importance: 0.9
+  description: Reusable solutions to common object-oriented design problems.
+- name: Singleton Pattern
+  slug: lld-singleton-pattern
+  parent: lld-design-patterns
+  importance: 0.8
+  description: Ensures a class has only one instance and provides global access.
+- name: Factory Method Pattern
+  slug: lld-factory-method-pattern
+  parent: lld-design-patterns
+  importance: 0.8
+  description: Defines an interface for creating objects, letting subclasses decide
+    which class to instantiate.
+- name: Abstract Factory Pattern
+  slug: lld-abstract-factory-pattern
+  parent: lld-design-patterns
+  importance: 0.7
+  description: Provides an interface for creating families of related objects without
+    specifying concrete classes.
+- name: Builder Pattern
+  slug: lld-builder-pattern
+  parent: lld-design-patterns
+  importance: 0.7
+  description: Separates construction of complex objects from their representation.
+- name: Adapter Pattern
+  slug: lld-adapter-pattern
+  parent: lld-design-patterns
+  importance: 0.7
+  description: Converts interface of a class into another interface clients expect.
+- name: Decorator Pattern
+  slug: lld-decorator-pattern
+  parent: lld-design-patterns
+  importance: 0.7
+  description: Attaches additional responsibilities to objects dynamically.
+- name: Observer Pattern
+  slug: lld-observer-pattern
+  parent: lld-design-patterns
+  importance: 0.8
+  description: Defines one-to-many dependency so when one object changes, dependents
+    are notified.
+- name: Strategy Pattern
+  slug: lld-strategy-pattern
+  parent: lld-design-patterns
+  importance: 0.8
+  description: Defines a family of algorithms, encapsulates each, and makes them interchangeable.
+- name: Parking Lot Design
+  slug: lld-parking-lot-design
+  parent: null
+  importance: 0.8
+  description: Design classes and flows for a multi-floor parking lot system.
+- name: Elevator System Design
+  slug: lld-elevator-system-design
+  parent: null
+  importance: 0.7
+  description: Model elevators, requests, and scheduling algorithms.
+- name: LRU Cache Design
+  slug: lld-lru-cache-design
+  parent: null
+  importance: 0.9
+  description: Design a least recently used cache with O(1) get/put.
+- name: Pub/Sub System Design
+  slug: lld-pub-sub-system-design
+  parent: null
+  importance: 0.7
+  description: Design a publish-subscribe messaging system with topics and subscribers.
+- name: Movie Ticket Booking System Design
+  slug: lld-movie-ticket-booking-system-design
+  parent: null
+  importance: 0.8
+  description: Design seat selection, show times, and payment for a booking system.
+- name: Restaurant Management System Design
+  slug: lld-restaurant-management-system-design
+  parent: null
+  importance: 0.7
+  description: Model orders, tables, menu, and kitchen workflows.
+- name: ATM System Design
+  slug: lld-atm-system-design
+  parent: null
+  importance: 0.8
+  description: Design ATM states, transactions, and authentication flows.
+- name: Library Management System Design
+  slug: lld-library-management-system-design
+  parent: null
+  importance: 0.7
+  description: Design book inventory, member accounts, and lending rules.
+- name: Hotel Management System Design
+  slug: lld-hotel-management-system-design
+  parent: null
+  importance: 0.7
+  description: Design rooms, reservations, and guest services.
+- name: Online Shopping System Design
+  slug: lld-online-shopping-system-design
+  parent: null
+  importance: 0.8
+  description: Design product catalog, cart, orders, and payments (like Amazon).
+- name: Ride Sharing Service Design
+  slug: lld-ride-sharing-service-design
+  parent: null
+  importance: 0.8
+  description: Design matching riders with drivers, pricing, and trip management (like
+    Uber).
+- name: Splitwise System Design
+  slug: lld-splitwise-system-design
+  parent: null
+  importance: 0.7
+  description: Design expense sharing and balance settlement among users.

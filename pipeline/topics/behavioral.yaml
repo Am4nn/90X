@@ -1,0 +1,116 @@
+# Topic list for behavioral interviews (drafted by AI from 679 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply behavioral
+# Reviewed 2026-09-27: regrouped into Story craft, Competencies, Company and motivation
+domain: behavioral
+topics:
+- name: Story craft
+  slug: beh-story-craft
+  parent: null
+  importance: 0.9
+  description: ''
+- name: STAR method
+  slug: beh-star-method
+  parent: beh-story-craft
+  importance: 0.95
+  description: ''
+- name: Story bank
+  slug: beh-story-bank
+  parent: beh-story-craft
+  importance: 0.85
+  description: ''
+- name: Tell me about yourself
+  slug: beh-tell-me-about-yourself
+  parent: beh-story-craft
+  importance: 0.9
+  description: ''
+- name: Choosing and organizing stories
+  slug: beh-choosing-and-organizing-stories
+  parent: beh-story-craft
+  importance: 0.8
+  description: ''
+- name: Competencies
+  slug: beh-competencies
+  parent: null
+  importance: 0.9
+  description: ''
+- name: Conflict resolution
+  slug: beh-conflict-resolution
+  parent: beh-competencies
+  importance: 0.85
+  description: ''
+- name: Ownership
+  slug: beh-ownership
+  parent: beh-competencies
+  importance: 0.85
+  description: ''
+- name: Leadership
+  slug: beh-leadership
+  parent: beh-competencies
+  importance: 0.8
+  description: ''
+- name: Teamwork
+  slug: beh-teamwork
+  parent: beh-competencies
+  importance: 0.8
+  description: ''
+- name: Delivering results
+  slug: beh-delivering-results
+  parent: beh-competencies
+  importance: 0.8
+  description: ''
+- name: Dealing with ambiguity
+  slug: beh-dealing-with-ambiguity
+  parent: beh-competencies
+  importance: 0.75
+  description: ''
+- name: Failure and learning
+  slug: beh-failure-and-learning
+  parent: beh-competencies
+  importance: 0.8
+  description: ''
+- name: Handling feedback
+  slug: beh-handling-feedback
+  parent: beh-competencies
+  importance: 0.75
+  description: ''
+- name: Prioritization
+  slug: beh-prioritization
+  parent: beh-competencies
+  importance: 0.7
+  description: ''
+- name: Communication
+  slug: beh-communication
+  parent: beh-competencies
+  importance: 0.85
+  description: ''
+- name: Growth mindset
+  slug: beh-growth-mindset
+  parent: beh-competencies
+  importance: 0.7
+  description: ''
+- name: Company and motivation
+  slug: beh-company-and-motivation
+  parent: null
+  importance: 0.9
+  description: ''
+- name: Why this company
+  slug: beh-why-this-company
+  parent: beh-company-and-motivation
+  importance: 0.75
+  description: ''
+- name: Why this role
+  slug: beh-why-this-role
+  parent: beh-company-and-motivation
+  importance: 0.7
+  description: ''
+- name: Company-specific questions
+  slug: beh-company-specific-questions
+  parent: beh-company-and-motivation
+  importance: 0.7
+  description: ''
+- name: Questions to ask the interviewer
+  slug: beh-questions-to-ask-the-interviewer
+  parent: beh-company-and-motivation
+  importance: 0.7
+  description: ''

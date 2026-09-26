@@ -1,0 +1,281 @@
+# Topic list for system design (drafted by AI from 1519 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply system_design
+# Reviewed 2026-09-27: added design case studies + ID generation, Bloom filters, consistency, object storage, monitoring; TCP/HTTP/DNS live in CS
+domain: system_design
+topics:
+- name: Caching
+  slug: sd-caching
+  parent: null
+  importance: 0.95
+  description: Temporary storage to reduce latency and DB load
+- name: Cache eviction policies
+  slug: sd-cache-eviction-policies
+  parent: sd-caching
+  importance: 0.7
+  description: LRU, LFU, FIFO replacement strategies
+- name: Cache strategies
+  slug: sd-cache-strategies
+  parent: sd-caching
+  importance: 0.75
+  description: Write-through, write-back, write-around, cache-aside
+- name: Distributed cache
+  slug: sd-distributed-cache
+  parent: sd-caching
+  importance: 0.8
+  description: Shared cache across multiple servers
+- name: CDN
+  slug: sd-cdn
+  parent: null
+  importance: 0.9
+  description: Content delivery network for static and dynamic content
+- name: Load balancing
+  slug: sd-load-balancing
+  parent: null
+  importance: 0.95
+  description: Distributing traffic across backend servers
+- name: Layer 4 vs Layer 7 load balancing
+  slug: sd-layer-4-vs-layer-7-load-balancing
+  parent: sd-load-balancing
+  importance: 0.7
+  description: Transport vs application layer load balancing
+- name: REST API
+  slug: sd-rest-api
+  parent: null
+  importance: 0.9
+  description: Stateless resource-oriented API design
+- name: gRPC
+  slug: sd-grpc
+  parent: null
+  importance: 0.7
+  description: High-performance RPC framework using Protocol Buffers
+- name: WebSockets
+  slug: sd-websockets
+  parent: null
+  importance: 0.8
+  description: Full-duplex persistent connections
+- name: API Gateway
+  slug: sd-api-gateway
+  parent: null
+  importance: 0.9
+  description: Single entry point for API routing, auth, rate limiting
+- name: Service Discovery
+  slug: sd-service-discovery
+  parent: null
+  importance: 0.8
+  description: Dynamically locating service instances
+- name: Microservices
+  slug: sd-microservices
+  parent: null
+  importance: 0.85
+  description: Decomposed services with independent deployment
+- name: Database sharding
+  slug: sd-database-sharding
+  parent: null
+  importance: 0.95
+  description: Horizontal partitioning across multiple nodes
+- name: Sharding strategies
+  slug: sd-sharding-strategies
+  parent: sd-database-sharding
+  importance: 0.85
+  description: Range, hash, directory-based partitioning
+- name: Consistent hashing
+  slug: sd-consistent-hashing
+  parent: sd-database-sharding
+  importance: 0.9
+  description: Minimize rehashing when nodes change
+- name: Replication
+  slug: sd-replication
+  parent: null
+  importance: 0.9
+  description: Copying data for redundancy and read scaling
+- name: SQL vs NoSQL
+  slug: sd-sql-vs-nosql
+  parent: null
+  importance: 0.95
+  description: Choosing between relational and non-relational databases
+- name: NoSQL types
+  slug: sd-nosql-types
+  parent: sd-sql-vs-nosql
+  importance: 0.8
+  description: Document, key-value, graph, wide column
+- name: ACID vs BASE
+  slug: sd-acid-vs-base
+  parent: null
+  importance: 0.8
+  description: Consistency models for databases
+- name: CAP theorem
+  slug: sd-cap-theorem
+  parent: null
+  importance: 0.9
+  description: Consistency, availability, partition tolerance trade-offs
+- name: Distributed transactions
+  slug: sd-distributed-transactions
+  parent: null
+  importance: 0.85
+  description: Coordinating transactions across services
+- name: Sagas
+  slug: sd-sagas
+  parent: sd-distributed-transactions
+  importance: 0.8
+  description: Long-lived transactions with compensating actions
+- name: Message queues
+  slug: sd-message-queues
+  parent: null
+  importance: 0.9
+  description: Asynchronous communication via queues
+- name: Publish-subscribe
+  slug: sd-publish-subscribe
+  parent: null
+  importance: 0.8
+  description: Fan-out messaging pattern
+- name: Event sourcing
+  slug: sd-event-sourcing
+  parent: null
+  importance: 0.75
+  description: Storing state as a sequence of events
+- name: CQRS
+  slug: sd-cqrs
+  parent: null
+  importance: 0.75
+  description: Separating read and write models
+- name: Circuit breaker
+  slug: sd-circuit-breaker
+  parent: null
+  importance: 0.8
+  description: Prevent cascading failures in distributed systems
+- name: Rate limiting
+  slug: sd-rate-limiting
+  parent: null
+  importance: 0.85
+  description: Control request rate to protect services
+- name: Horizontal scaling
+  slug: sd-horizontal-scaling
+  parent: null
+  importance: 0.9
+  description: Scaling by adding more machines
+- name: Database federation
+  slug: sd-database-federation
+  parent: null
+  importance: 0.7
+  description: Splitting databases by function or domain
+- name: Indexes
+  slug: sd-indexes
+  parent: null
+  importance: 0.85
+  description: Speed up queries with appropriate data structures
+- name: N+1 query problem
+  slug: sd-n-1-query-problem
+  parent: null
+  importance: 0.7
+  description: Inefficient ORM query pattern causing multiple DB calls
+- name: OAuth 2.0
+  slug: sd-oauth-2-0
+  parent: null
+  importance: 0.8
+  description: Authorization framework for delegated access
+- name: JWT
+  slug: sd-jwt
+  parent: null
+  importance: 0.8
+  description: JSON Web Token for stateless authentication
+- name: High availability
+  slug: sd-high-availability
+  parent: null
+  importance: 0.9
+  description: Design for minimal downtime and redundancy
+- name: Idempotency
+  slug: sd-idempotency
+  parent: null
+  importance: 0.75
+  description: Safe retries without unintended side effects
+- name: Unique ID generation
+  slug: sd-unique-id-generation
+  parent: null
+  importance: 0.8
+  description: Snowflake, UUIDs, ticket servers
+- name: Bloom filters
+  slug: sd-bloom-filters
+  parent: null
+  importance: 0.7
+  description: Probabilistic membership checks
+- name: Consistency models
+  slug: sd-consistency-models
+  parent: null
+  importance: 0.85
+  description: Strong, eventual, read-your-writes, quorum
+- name: Object storage
+  slug: sd-object-storage
+  parent: null
+  importance: 0.7
+  description: Blob stores for media and files
+- name: Monitoring and observability
+  slug: sd-monitoring-and-observability
+  parent: null
+  importance: 0.75
+  description: Metrics, logs, tracing, alerting
+- name: Design case studies
+  slug: sd-design-case-studies
+  parent: null
+  importance: 0.95
+  description: End-to-end designs asked in interviews
+- name: Design a URL shortener
+  slug: sd-design-a-url-shortener
+  parent: sd-design-case-studies
+  importance: 0.95
+  description: ''
+- name: Design a news feed
+  slug: sd-design-a-news-feed
+  parent: sd-design-case-studies
+  importance: 0.9
+  description: ''
+- name: Design a chat system
+  slug: sd-design-a-chat-system
+  parent: sd-design-case-studies
+  importance: 0.9
+  description: ''
+- name: Design a rate limiter
+  slug: sd-design-a-rate-limiter
+  parent: sd-design-case-studies
+  importance: 0.9
+  description: ''
+- name: Design a web crawler
+  slug: sd-design-a-web-crawler
+  parent: sd-design-case-studies
+  importance: 0.8
+  description: ''
+- name: Design a notification system
+  slug: sd-design-a-notification-system
+  parent: sd-design-case-studies
+  importance: 0.85
+  description: ''
+- name: Design search autocomplete
+  slug: sd-design-search-autocomplete
+  parent: sd-design-case-studies
+  importance: 0.8
+  description: ''
+- name: Design a video streaming service
+  slug: sd-design-a-video-streaming-service
+  parent: sd-design-case-studies
+  importance: 0.8
+  description: ''
+- name: Design a ride-sharing service
+  slug: sd-design-a-ride-sharing-service
+  parent: sd-design-case-studies
+  importance: 0.8
+  description: ''
+- name: Design a distributed key-value store
+  slug: sd-design-a-distributed-key-value-store
+  parent: sd-design-case-studies
+  importance: 0.85
+  description: ''
+- name: Design a file storage service
+  slug: sd-design-a-file-storage-service
+  parent: sd-design-case-studies
+  importance: 0.75
+  description: ''
+- name: Design a pastebin
+  slug: sd-design-a-pastebin
+  parent: sd-design-case-studies
+  importance: 0.75
+  description: ''

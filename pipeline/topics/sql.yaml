@@ -1,0 +1,178 @@
+# Topic list for SQL and databases (drafted by AI from 228 note sections).
+# Edit freely: rename, delete, add topics, change importance (0-1) or parent (a slug from this file).
+# Keep slugs unique. Then run: uv run pipeline topics apply sql
+# Reviewed 2026-09-27: normalization and transactions (ACID, isolation, locking) live in CS
+domain: sql
+topics:
+- name: Relational database fundamentals
+  slug: sql-relational-database-fundamentals
+  parent: null
+  importance: 0.9
+  description: Tables, relationships, keys, integrity, and relational model principles.
+- name: Constraints
+  slug: sql-constraints
+  parent: sql-relational-database-fundamentals
+  importance: 0.8
+  description: Primary, foreign, unique, check, and default constraints.
+- name: DDL/DML/DCL/TCL
+  slug: sql-ddl-dml-dcl-tcl
+  parent: null
+  importance: 0.7
+  description: 'SQL command categories: Data Definition, Manipulation, Control, and
+    Transaction Control.'
+- name: Data types
+  slug: sql-data-types
+  parent: null
+  importance: 0.6
+  description: Choosing appropriate storage types for columns and parameters.
+- name: CHAR vs VARCHAR
+  slug: sql-char-vs-varchar
+  parent: sql-data-types
+  importance: 0.7
+  description: Fixed-length vs variable-length strings and storage implications.
+- name: NULL handling
+  slug: sql-null-handling
+  parent: null
+  importance: 0.7
+  description: Working with unknown values using IS NULL, ISNULL, COALESCE, NULLIF.
+- name: Set operations
+  slug: sql-set-operations
+  parent: null
+  importance: 0.7
+  description: Combining result sets from multiple queries.
+- name: UNION vs UNION ALL
+  slug: sql-union-vs-union-all
+  parent: sql-set-operations
+  importance: 0.8
+  description: Difference between deduplicating and preserving duplicates, performance
+    implications.
+- name: Joins
+  slug: sql-joins
+  parent: null
+  importance: 0.95
+  description: Combining rows from multiple tables based on related columns.
+- name: INNER vs OUTER JOIN
+  slug: sql-inner-vs-outer-join
+  parent: sql-joins
+  importance: 0.9
+  description: Matching rows only vs retaining unmatched rows from left/right/full.
+- name: JOIN vs Subquery
+  slug: sql-join-vs-subquery
+  parent: sql-joins
+  importance: 0.7
+  description: When to use joins vs subqueries for readability and performance.
+- name: Subqueries
+  slug: sql-subqueries
+  parent: null
+  importance: 0.8
+  description: Nested queries in SELECT, FROM, WHERE, and HAVING.
+- name: Correlated vs nested subqueries
+  slug: sql-correlated-vs-nested-subqueries
+  parent: sql-subqueries
+  importance: 0.8
+  description: Inner query references outer query vs independent inner query.
+- name: CTEs
+  slug: sql-ctes
+  parent: null
+  importance: 0.8
+  description: Common Table Expressions for reusable temporary result sets.
+- name: Recursive CTEs
+  slug: sql-recursive-ctes
+  parent: sql-ctes
+  importance: 0.7
+  description: Self-referencing CTEs for hierarchical or tree data.
+- name: Window functions
+  slug: sql-window-functions
+  parent: null
+  importance: 0.9
+  description: Perform calculations across rows without collapsing them.
+- name: ROW_NUMBER/RANK/DENSE_RANK
+  slug: sql-row-number-rank-dense-rank
+  parent: sql-window-functions
+  importance: 0.9
+  description: Ranking functions and their differences in handling ties.
+- name: LAG and LEAD
+  slug: sql-lag-and-lead
+  parent: sql-window-functions
+  importance: 0.7
+  description: Access previous/next rows within a partition.
+- name: Running totals and moving averages
+  slug: sql-running-totals-and-moving-averages
+  parent: sql-window-functions
+  importance: 0.8
+  description: Cumulative sums and rolling aggregates using window frames.
+- name: GROUP BY and HAVING
+  slug: sql-group-by-and-having
+  parent: null
+  importance: 0.9
+  description: Group rows and filter groups based on aggregate conditions.
+- name: WHERE vs HAVING
+  slug: sql-where-vs-having
+  parent: sql-group-by-and-having
+  importance: 0.8
+  description: Filter rows before aggregation vs filtering groups after aggregation.
+- name: CASE expression
+  slug: sql-case-expression
+  parent: null
+  importance: 0.7
+  description: Conditional logic in SQL for derived columns and aggregation.
+- name: Aggregate functions
+  slug: sql-aggregate-functions
+  parent: null
+  importance: 0.85
+  description: COUNT, SUM, AVG, MIN, MAX across rows.
+- name: Indexes
+  slug: sql-indexes
+  parent: null
+  importance: 0.95
+  description: Data structures to speed up data retrieval.
+- name: Clustered vs non-clustered indexes
+  slug: sql-clustered-vs-non-clustered-indexes
+  parent: sql-indexes
+  importance: 0.9
+  description: Physical order vs separate structure with pointers.
+- name: Covering indexes
+  slug: sql-covering-indexes
+  parent: sql-indexes
+  importance: 0.7
+  description: Include all queried columns to avoid key lookups.
+- name: Index seek vs scan
+  slug: sql-index-seek-vs-scan
+  parent: sql-indexes
+  importance: 0.8
+  description: Efficient navigation vs full scan, and when each occurs.
+- name: Query performance tuning
+  slug: sql-query-performance-tuning
+  parent: null
+  importance: 0.9
+  description: Identifying and fixing slow queries.
+- name: Execution plans
+  slug: sql-execution-plans
+  parent: sql-query-performance-tuning
+  importance: 0.8
+  description: Reading and using query plans to spot bottlenecks.
+- name: Stored procedures
+  slug: sql-stored-procedures
+  parent: null
+  importance: 0.8
+  description: Precompiled reusable T-SQL code for business logic.
+- name: Functions
+  slug: sql-functions
+  parent: null
+  importance: 0.7
+  description: Scalar and table-valued functions for reuse and computation.
+- name: Views
+  slug: sql-views
+  parent: null
+  importance: 0.8
+  description: Virtual tables based on select queries for abstraction and security.
+- name: Triggers
+  slug: sql-triggers
+  parent: null
+  importance: 0.7
+  description: Automatic actions in response to DML or DDL events.
+- name: SQL injection prevention
+  slug: sql-sql-injection-prevention
+  parent: null
+  importance: 0.8
+  description: Parameterized queries and input validation to avoid injection attacks.
