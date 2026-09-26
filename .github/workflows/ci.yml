@@ -102,6 +102,10 @@ jobs:
         working-directory: web
         run: bun --conditions=react-server scripts/check-tracker.ts
 
+      - name: Feed flags and stale cards
+        working-directory: web
+        run: bun --conditions=react-server scripts/check-feed.ts
+
   pipeline:
     runs-on: ubuntu-latest
     defaults:

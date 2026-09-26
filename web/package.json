@@ -25,7 +25,9 @@
     "check:tokens": "bun run scripts/check-tokens.ts",
     "check:dead": "knip",
     "check:deps": "bun run scripts/check-deps.ts",
-    "check:actions": "bun run scripts/check-actions.ts"
+    "check:actions": "bun run scripts/check-actions.ts",
+    "check:grading": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-grading.ts",
+    "check:feed": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-feed.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",
