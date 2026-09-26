@@ -38,7 +38,14 @@ def status(args, con) -> None:
     print(f"LLM spend          ${spend_usd(con):.4f}")
 
 
-COMMANDS = {"normalize": normalize, "status": status}
+def enrich(args, con) -> None:
+    from .enrich import importance, topics
+
+    print(f"importance: {importance.run(con)} problems scored")
+    print(f"topics: {topics.apply_dsa(con)} DSA patterns + roadmap links")
+
+
+COMMANDS = {"normalize": normalize, "enrich": enrich, "status": status}
 
 
 def run(name: str, args) -> None:

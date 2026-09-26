@@ -16,6 +16,7 @@ def main() -> None:
 
     norm = sub.add_parser("normalize", help="normalize raw sources into staging")
     norm.add_argument("targets", nargs="*", help="dsa (default), docs")
+    sub.add_parser("enrich", help="importance scores and DSA topics")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()
