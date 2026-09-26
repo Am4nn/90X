@@ -141,7 +141,8 @@ flowchart TB
 | `campaigns` | user_id, start_date, length_days, status, templates (weekday → slots), company_focus (company, from, to) |
 | `days` | campaign_id, date, status (pending, done, partial, missed) |
 | `missions` | user_id, date, slot_type, ref (problem, card set, topic, mock, story), est_minutes, status, reason |
-| `checkins` | user_id, problem_id, result (solved, hints, failed), attempts, minutes, minutes_suggested, note, source (manual, leetcode_sync), external_id, created_at |
+| `checkins` | user_id, problem_slug, result (solved, hints, failed), attempts, minutes, minutes_suggested, source (manual, leetcode_sync), external_id, created_at |
+| `checkin_notes` | checkin_id, user_id, note (owner-only) |
 | `integration_status` | user_id, provider (leetcode), enabled, last_success_at, consecutive_failures, totals (cached) |
 | `card_reviews` | user_id, card_id, answer, score, points_hit, outcome, graded_by (match, ai, self), created_at |
 | `card_state` | user_id, card_id, FSRS fields (stability, difficulty, due_at, reps, lapses) |
@@ -156,7 +157,7 @@ flowchart TB
 | `push_subscriptions` | user_id, endpoint, keys |
 | `ai_usage` | user_id, route, model, tokens_in, tokens_out, cost_usd, created_at |
 
-Friends read `checkins` through a view without the `note` column. `coach_threads`, `coach_messages`, `coach_memory`, `solution_reviews` and `stories` are owner-only: RLS allows only `auth.uid() = user_id`, and server code for the coach always passes the signed-in user's id.
+Friends read `checkins` directly (the row holds nothing private); notes live in `checkin_notes`, which only the owner can read. No views run with elevated rights. `coach_threads`, `coach_messages`, `coach_memory`, `solution_reviews` and `stories` are owner-only: RLS allows only `auth.uid() = user_id`, and server code for the coach always passes the signed-in user's id.
 
 ### 5.3 Upstash
 
