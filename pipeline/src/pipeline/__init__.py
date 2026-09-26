@@ -15,7 +15,7 @@ def main() -> None:
     dl.add_argument("--skip-large", action="store_true", help="skip sources over 1 GB")
 
     norm = sub.add_parser("normalize", help="normalize raw sources into staging")
-    norm.add_argument("targets", nargs="*", help="dsa (default)")
+    norm.add_argument("targets", nargs="*", help="dsa (default), docs")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()

@@ -10,6 +10,10 @@ def normalize(args, con) -> None:
             from .normalize import dsa
 
             print(f"dsa: {dsa.run(con)} problems")
+        elif target == "docs":
+            from .normalize import docs
+
+            print(f"docs: {docs.run(con)} documents")
         else:
             raise SystemExit(f"Unknown normalize target: {target}")
 
