@@ -22,7 +22,7 @@ The MVP is the tracker and the feed, both complete, plus the library and the coa
 | # | Part | Delivers |
 |---|---|---|
 | 1 | Data pipeline | Normalized catalog, topic tree, documents, chunks in Upstash Vector, generated and checked cards uploaded as drafts |
-| 2 | Foundation + Library | Google login with allowlist, setup and diagnostic, Library (Pattern Map, problems, notes), check-ins, LeetCode sync, friend visibility |
+| 2 | Foundation + Library | Google login with admin approval, setup and diagnostic, Library (Pattern Map, problems, notes), check-ins, LeetCode sync, friend visibility |
 | 3 | Tracker | Daily template, missions, 90 Grid, review queue, readiness, Me dashboard |
 | 4 | Feed | Card feed, topic toggles, typed answers, grading, FSRS reviews, flags, `/admin` batch review |
 | 5 | Coach | Personal coach with per-user memory (6.10): tool-using chat (6.8), solution review (6.9), mission reasons, explain, mock interviews (text), STAR story bank, weekly review, "What Coach knows" page, memory service evaluation |
@@ -35,7 +35,7 @@ Out of scope for the MVP: voice mocks, in-app code editor (LeetCode is used), de
 
 | Area | Decision |
 |---|---|
-| Users | Invite-only: Google login + email allowlist. Everyone in the group sees everyone's progress |
+| Users | Invite-only, as in Curfew: anyone can sign in with Google, which creates a pending account; an admin approves or rejects it in `/admin`. Pending users see only a waiting screen. No email lists in env. Everyone approved sees everyone's public progress |
 | Privacy | Friends see scores, streaks, check-ins (without notes), mock scores. Private to the owner: check-in notes, coach chats, coach memory, solution reviews, stories |
 | Coach isolation | Each user's coach is theirs alone. It can see what its user can see (including friends' public stats); no other user's coach can read that user's memory, chats or reviews |
 | Campaign length | 30/60/90 or custom; can change anytime. Grid redraws, remaining days replan |
@@ -136,7 +136,7 @@ flowchart TB
 
 | Table | Key columns |
 |---|---|
-| `allowlist` | email, is_admin |
+| `user_approvals` | user_id, status (pending, approved, rejected), is_admin, requested_at, decided_at, decided_by. A check keeps `decided_at` null only while pending. The first admin is set once with `bun run admin:grant <email>` after that person signs in |
 | `profiles` | user_id, name, role, language, timezone, leetcode_username, notification settings |
 | `campaigns` | user_id, start_date, length_days, status, templates (weekday → slots), company_focus (company, from, to) |
 | `days` | campaign_id, date, status (pending, done, partial, missed) |
