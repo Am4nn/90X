@@ -43,7 +43,7 @@ Out of scope for the MVP: voice mocks, in-app code editor (LeetCode is used), de
 | Day boundary | Midnight in each user's timezone |
 | Daily plan | Daily template per weekday: fixed counts per slot type (see 6.2). Coach may suggest template changes; the user accepts or declines |
 | Company focus | Optional, time-boxed mode (company + date range). Boosts that company's problems while active |
-| LeetCode | Manual check-in + Sync button + QStash sync every 6 h. Sync creates check-ins, ticks missions, then asks for time with one-tap chips |
+| LeetCode | Optional, pluggable integration (6.6): the app works fully with manual check-ins alone. When enabled: Sync button, sync on app open, QStash sync every 6 h; detects first-try vs failed attempts and suggests time; LeetCode totals on Me |
 | Extra work | Any check-in counts toward readiness and ticks a matching mission |
 | Behavioral | STAR story bank (6–8 stories) + short behavioral mocks that use them |
 | DSA language | Chosen in setup (Java, Python, C++, JS). Solutions and code cards use it where the source has it |
@@ -141,7 +141,8 @@ flowchart TB
 | `campaigns` | user_id, start_date, length_days, status, templates (weekday → slots), company_focus (company, from, to) |
 | `days` | campaign_id, date, status (pending, done, partial, missed) |
 | `missions` | user_id, date, slot_type, ref (problem, card set, topic, mock, story), est_minutes, status, reason |
-| `checkins` | user_id, problem_id, result (solved, hints, failed), minutes, note, source (manual, leetcode_sync), created_at |
+| `checkins` | user_id, problem_id, result (solved, hints, failed), attempts, minutes, minutes_suggested, note, source (manual, leetcode_sync), external_id, created_at |
+| `integration_status` | user_id, provider (leetcode), enabled, last_success_at, consecutive_failures, totals (cached) |
 | `card_reviews` | user_id, card_id, answer, score, points_hit, outcome, graded_by (match, ai, self), created_at |
 | `card_state` | user_id, card_id, FSRS fields (stability, difficulty, due_at, reps, lapses) |
 | `mocks` | user_id, type (design, behavioral), prompt, transcript, rubric_scores, score, feedback |
@@ -212,8 +213,20 @@ Friends read `checkins` through a view without the `note` column. `coach_threads
 
 ### 6.6 Check-ins and LeetCode sync
 
-- Manual check-in: result, time chip, optional note. Ticks the matching mission and updates readiness.
-- Sync (button or every 6 h): pulls recent accepted solves (~20, unofficial endpoint), creates missing check-ins as solved, ticks missions, then offers time chips. Hints and failures stay manual.
+Manual check-in is the core path and never depends on LeetCode:
+- Result (solved, with hints, failed), time chip, optional note. Ticks the matching mission and updates readiness.
+
+LeetCode sync is an optional, pluggable integration:
+- **Interface:** a `ProblemActivitySource` with `recentSubmissions(username)` and `totals(username)`. The LeetCode adapter implements it with LeetCode's public GraphQL queries (`recentSubmissionList`, `userProfileUserQuestionProgressV2`), called directly from our server. No third-party proxy.
+- **Switches:** a global feature flag plus a per-user LeetCode username. With either off, the Sync button and the LeetCode totals card are hidden and nothing else changes.
+- **Health:** each sync records success or failure. After 3 consecutive failures the adapter marks itself unavailable, the UI shows "LeetCode sync unavailable" in Me, and background syncs back off to once a day until one succeeds.
+- **When it runs:** Sync button, on app open (at most every 15 minutes), and a QStash job every 6 h.
+- **What it does with the last ~20 submissions (accepted and failed):**
+  - Groups submissions by problem. Accepted with no earlier failures → "solved"; accepted after failures → "solved" with the attempt count; only failures → "failed".
+  - Suggested time = accepted timestamp − first submission timestamp for that problem (capped at 2 h), pre-selected on the time chips.
+  - Creates missing check-ins (source `leetcode_sync`), ticks missions, updates readiness, then shows one confirm list where the user can adjust result and time.
+- **Totals:** accepted, failed and untouched counts by difficulty, shown as a small card on Me.
+- Limits: only recent submissions are visible, and problems attempted without submitting still need a manual check-in.
 
 ### 6.7 Cost guard
 
@@ -324,7 +337,7 @@ Sora for titles and numbers, Manrope for everything else. Six sizes only:
 ## 8. Error handling
 
 - AI output validated with Zod; one retry, then a graceful fallback (self-mark, or "coach unavailable, try again").
-- LeetCode sync failures are logged and shown as "Sync unavailable"; manual check-in always works.
+- LeetCode sync is optional: failures are logged, the adapter backs off after 3 in a row, and the UI hides or labels the integration. Manual check-in always works.
 - Offline answers queue locally and grade on reconnect.
 - QStash retries failed jobs; repeated failures reach Sentry.
 - Budget exhaustion degrades models and never blocks grading or check-ins.
