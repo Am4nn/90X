@@ -1,54 +1,82 @@
 import { describe, expect, it } from "vitest";
-import { batchVerdict, pickReviewSample } from "./review-sample";
+import { batchVerdict, PASS_AT, pickReviewSample, SAMPLE_SIZE } from "./review-sample";
 
-const make = (n: number, risk: (i: number) => number | null = (i) => i / n) =>
-  Array.from({ length: n }, (_, i) => ({ id: `c${String(i).padStart(3, "0")}`, risk: risk(i) }));
+// Card c-i has risk i/100, so c-0 is the riskiest.
+const cards = (count: number) => Array.from({ length: count }, (_, i) => ({ id: `c-${i}`, risk: i / 100 }));
+
+const verdicts = (good: number, bad: number) => [
+  ...Array.from({ length: good }, () => "good" as const),
+  ...Array.from({ length: bad }, () => "bad" as const),
+];
 
 describe("pickReviewSample", () => {
-  it("returns every card when the batch is smaller than the sample", () => {
-    expect(pickReviewSample(make(5), 1)).toHaveLength(5);
+  it("takes the riskiest half first, then random others", () => {
+    const pool = cards(50).toReversed();
+    const sample = pickReviewSample(pool, 1);
+    expect(sample).toHaveLength(SAMPLE_SIZE);
+    expect(sample.slice(0, 10)).toEqual(Array.from({ length: 10 }, (_, i) => `c-${i}`));
+    const rest = sample.slice(10);
+    expect(new Set(sample).size).toBe(SAMPLE_SIZE);
+    expect(rest.every((id) => Number(id.slice(2)) >= 10)).toBe(true);
   });
 
-  it("takes the riskiest half first (lowest risk), then fills the rest", () => {
-    const sample = pickReviewSample(make(100), 7);
-    expect(sample).toHaveLength(20);
-    expect(sample.slice(0, 10)).toEqual(make(10).map((c) => c.id));
-    expect(new Set(sample).size).toBe(20);
+  it("rounds the risky half up", () => {
+    expect(pickReviewSample(cards(50), 1, 5).slice(0, 3)).toEqual(["c-0", "c-1", "c-2"]);
   });
 
   it("treats a missing risk as safest", () => {
-    const cards = make(30, (i) => (i < 25 ? null : 0.5));
-    const sample = pickReviewSample(cards, 3);
-    expect(sample.slice(0, 5)).toEqual(["c025", "c026", "c027", "c028", "c029"]);
+    const pool = [
+      { id: "none", risk: null },
+      { id: "safe", risk: 0.99 },
+      { id: "risky", risk: 0.2 },
+      { id: "mid", risk: 0.6 },
+    ];
+    expect(pickReviewSample(pool, 1, 4).slice(0, 2)).toEqual(["risky", "mid"]);
+    expect(pickReviewSample(pool, 1, 6).slice(0, 3)).toEqual(["risky", "mid", "safe"]);
   });
 
-  it("is stable for a seed and independent of input order", () => {
-    const cards = make(100);
-    const a = pickReviewSample(cards, 42);
-    expect(pickReviewSample(cards.toReversed(), 42)).toEqual(a);
-    expect(pickReviewSample(cards, 43)).not.toEqual(a);
+  it("returns every card when there are fewer than the sample size", () => {
+    expect(pickReviewSample(cards(7), 3).toSorted()).toEqual(
+      cards(7)
+        .map((card) => card.id)
+        .toSorted(),
+    );
   });
 
-  it("never repeats a card that appears twice in the input", () => {
-    const cards = make(15);
-    expect(pickReviewSample([...cards, ...cards], 1)).toHaveLength(15);
+  it("never returns a card twice", () => {
+    const pool = [...cards(15), ...cards(15)];
+    const sample = pickReviewSample(pool, 2);
+    expect(sample).toHaveLength(15);
+    expect(new Set(sample).size).toBe(15);
+  });
+
+  it("is deterministic for a seed and varies across seeds", () => {
+    expect(pickReviewSample(cards(80), 4)).toEqual(pickReviewSample(cards(80), 4));
+    expect(pickReviewSample(cards(80), 4).slice(10)).not.toEqual(pickReviewSample(cards(80), 5).slice(10));
   });
 });
 
-const verdicts = (good: number, bad: number) => [...Array<"good">(good).fill("good"), ...Array<"bad">(bad).fill("bad")];
-
 describe("batchVerdict", () => {
-  it("stays pending until the whole sample is reviewed", () => {
-    expect(batchVerdict(verdicts(18, 0))).toBe("pending");
+  it("is pending until every sampled card has a verdict", () => {
+    expect(batchVerdict([])).toBe("pending");
+    expect(batchVerdict(verdicts(19, 0))).toBe("pending");
   });
 
-  it("publishes at 18 of 20 good and rejects below", () => {
+  it("publishes at 18 of 20 good", () => {
+    expect(PASS_AT).toBe(18);
     expect(batchVerdict(verdicts(18, 2))).toBe("published");
     expect(batchVerdict(verdicts(17, 3))).toBe("rejected");
   });
 
-  it("scales the pass mark for a batch smaller than the sample", () => {
+  it("scales the pass mark for a smaller batch", () => {
     expect(batchVerdict(verdicts(9, 1), 10)).toBe("published");
     expect(batchVerdict(verdicts(8, 2), 10)).toBe("rejected");
+    // ceil(18 × 7 / 20) = 7
+    expect(batchVerdict(verdicts(7, 0), 7)).toBe("published");
+    expect(batchVerdict(verdicts(6, 1), 7)).toBe("rejected");
+  });
+
+  it("an empty batch never publishes", () => {
+    expect(batchVerdict([], 0)).toBe("pending");
   });
 });

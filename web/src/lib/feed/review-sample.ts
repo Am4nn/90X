@@ -1,46 +1,31 @@
-// Which cards the admin reviews from a draft batch, and what the verdicts mean.
-// Stand-in until the feed-logic branch lands; same exports.
+import { shuffled } from "./random";
+
+// Batch review in /admin (decision 2026-09-27): each batch shows 20 cards,
+// riskiest first plus random fill, and publishes at 18 of 20 good.
 
 export const SAMPLE_SIZE = 20;
 export const PASS_AT = 18;
 
-// Tiny seeded PRNG so the same batch always shows the same cards.
-function mulberry32(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+type SampleCard = { id: string; risk: number | null };
+
+// A card the AI reviewer never scored counts as safest.
+const riskOf = (card: SampleCard) => card.risk ?? 1;
+
+export function pickReviewSample(cards: SampleCard[], seed: number, size = SAMPLE_SIZE): string[] {
+  const unique = cards.filter((card, index) => cards.findIndex((other) => other.id === card.id) === index);
+  // Sorting is stable, so equal risks keep their input order.
+  const byRisk = unique.toSorted((a, b) => riskOf(a) - riskOf(b));
+  const riskiest = byRisk.slice(0, Math.ceil(size / 2));
+  const fill = shuffled(byRisk.slice(riskiest.length), seed).slice(0, Math.max(0, size - riskiest.length));
+  return [...riskiest, ...fill].map((card) => card.id);
 }
 
-/** Half the sample (rounded up) is the riskiest cards (lowest `risk`, null
- *  counts as safest), the rest is seeded-random from what's left. */
-export function pickReviewSample(cards: { id: string; risk: number | null }[], seed: number, size = SAMPLE_SIZE): string[] {
-  const unique = [...new Map(cards.map((c) => [c.id, c])).values()];
-  // Sorting by id too makes the result independent of input order.
-  const ordered = unique.toSorted((a, b) => (a.risk ?? 1) - (b.risk ?? 1) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  if (ordered.length <= size) return ordered.map((c) => c.id);
-
-  const riskiest = Math.ceil(size / 2);
-  const rest = ordered.slice(riskiest);
-  const random = mulberry32(seed);
-  for (let i = 0; i < size - riskiest; i++) {
-    const j = i + Math.floor(random() * (rest.length - i));
-    const picked = rest[j];
-    const here = rest[i];
-    if (picked && here) [rest[i], rest[j]] = [picked, here];
-  }
-  return [...ordered.slice(0, riskiest), ...rest.slice(0, size - riskiest)].map((c) => c.id);
-}
-
-/** Pending until `size` verdicts are in; pass `size` = the batch's sample
- *  length when the batch is smaller than SAMPLE_SIZE. The pass mark scales
- *  with it: 18 of 20, 9 of 10. */
+/**
+ * `size` is how many cards the batch sample has (SAMPLE_SIZE, or the whole
+ * batch when it is smaller); `passAt` is out of SAMPLE_SIZE and is scaled to it.
+ */
 export function batchVerdict(verdicts: ("good" | "bad")[], size = SAMPLE_SIZE, passAt = PASS_AT): "pending" | "published" | "rejected" {
-  if (verdicts.length < size) return "pending";
-  const good = verdicts.filter((v) => v === "good").length;
-  return good >= Math.ceil((passAt * size) / SAMPLE_SIZE) ? "published" : "rejected";
+  if (size <= 0 || verdicts.length < size) return "pending";
+  const goods = verdicts.slice(0, size).filter((verdict) => verdict === "good").length;
+  return goods >= Math.ceil((passAt * size) / SAMPLE_SIZE) ? "published" : "rejected";
 }

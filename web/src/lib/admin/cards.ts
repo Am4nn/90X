@@ -21,10 +21,12 @@ export async function listBatches() {
       aiPassRate: cardBatches.aiPassRate,
       status: cardBatches.status,
       reviewedAt: cardBatches.reviewedAt,
-      cardCount: sql<number>`(select count(*)::int from ${cards} where ${cards.batchId} = ${cardBatches.id})`,
-      draftCount: sql<number>`(select count(*)::int from ${cards} where ${cards.batchId} = ${cardBatches.id} and ${cards.status} = 'draft')`,
-      good: sql<number>`(select count(*)::int from ${batchReviewItems} where ${batchReviewItems.batchId} = ${cardBatches.id} and ${batchReviewItems.verdict} = 'good')`,
-      bad: sql<number>`(select count(*)::int from ${batchReviewItems} where ${batchReviewItems.batchId} = ${cardBatches.id} and ${batchReviewItems.verdict} = 'bad')`,
+      // Correlated subqueries spell out table names: Drizzle renders a column as
+      // a bare "id", which inside the subquery would mean the subquery's own table.
+      cardCount: sql<number>`(select count(*)::int from public.cards c where c.batch_id = "card_batches"."id")`,
+      draftCount: sql<number>`(select count(*)::int from public.cards c where c.batch_id = "card_batches"."id" and c.status = 'draft')`,
+      good: sql<number>`(select count(*)::int from public.batch_review_items r where r.batch_id = "card_batches"."id" and r.verdict = 'good')`,
+      bad: sql<number>`(select count(*)::int from public.batch_review_items r where r.batch_id = "card_batches"."id" and r.verdict = 'bad')`,
     })
     .from(cardBatches)
     .orderBy(asc(cardBatches.label), asc(cardBatches.createdAt));
