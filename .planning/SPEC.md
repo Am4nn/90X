@@ -2,8 +2,8 @@
 
 The single source of truth for what 90X is and how it's built.
 
-Status: draft for review · 2026-09-26
-Older versions live in `archive/` for history only. The ChatGPT research in `chatgpt-research/` is reference only and partly outdated; this file wins wherever they disagree.
+Status: approved · 2026-09-26
+Older versions live in `archive/` for history only. The ChatGPT research in `archive/chatgpt-research/` is reference only and partly outdated; this file wins wherever they disagree.
 
 ## 1. Goal
 
