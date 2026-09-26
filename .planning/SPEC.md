@@ -25,7 +25,7 @@ The MVP is the tracker and the feed, both complete, plus the library and the coa
 | 2 | Foundation + Library | Google login with admin approval, setup and diagnostic, Library (Pattern Map, problems, notes), check-ins, LeetCode sync, friend visibility |
 | 3 | Tracker | Daily template, missions, 90 Grid, review queue, readiness, Me dashboard |
 | 4 | Feed | Card feed, topic toggles, typed answers, grading, FSRS reviews, flags, `/admin` batch review |
-| 5 | Coach | Personal coach with per-user memory (6.10): tool-using chat (6.8), solution review (6.9), mission reasons, explain, mock interviews (text), STAR story bank, weekly review, "What Coach knows" page, memory service evaluation |
+| 5 | Coach | Personal coach with per-user memory (6.10): tool-using chat (6.8), solution review (6.9), pattern lessons (6.11), mission reasons, explain, mock interviews (text), STAR story bank, weekly review, "What Coach knows" page, memory service evaluation |
 
 Build order: 1 and 2 in parallel, then 3, 4, 5. Grading (needed by 4) is built inside part 4. Each part gets its own implementation plan.
 
@@ -129,6 +129,7 @@ flowchart TB
 | `topic_links` | from_topic, to_topic (Pattern Map edges) |
 | `problems` | kind (leetcode, competitive), lc_number, slug, title, difficulty, pattern_topic_id, topic_ids, importance, nc150, blind75, companies (company → frequency), statement_md, solutions (language → code), video_id, source_id |
 | `documents` | topic_id, title, body_md, url, source_id |
+| `pattern_tricks` | pattern_slug, name, idea_md, snippet (per language), problem_slugs (2-3 real problems that use it), sort. Built by the pipeline (6.11) |
 | `card_batches` | domain, topic_ids, created_at, ai_pass_rate, sample_pass_rate, status (draft, published, rejected) |
 | `cards` | batch_id, topic_id, problem_id, document_id, format (typed, flash, mcq, output, bug), difficulty, prompt_md, options, answer_md, key_points, source_refs, quality, status (draft, live, retired), flag_count |
 
@@ -290,6 +291,19 @@ Entry points: "Review my solution" on the check-in sheet and on every problem pa
 - Every coach call starts with the user's active memory plus live progress from the read tools.
 - "What Coach knows" (in Me) lists the facts grouped by kind; the user can correct or delete any of them.
 - Isolation: memory, chats and reviews are read and written only for the signed-in user. Another user's coach reaches this user only through `get_friend_summary`, which returns public stats.
+
+### 6.11 Pattern lessons
+
+"Teach me the pattern": from any problem, from a node on the Pattern Map, or by asking the coach.
+
+- **Catalog (pipeline, part 1):** for each of the 18 patterns, the pipeline builds `pattern_tricks` from the tagged problems and their reference solutions, grounded in the pattern explainers (coding-patterns repo, NeetCode). Example for bit manipulation: `a ^ a = 0` cancels duplicates, `x & (x-1)` clears the lowest set bit, `x & -x` isolates it (split into two groups, as in Single Number III and Set Mismatch), subset masks. Each trick links 2-3 real problems.
+- **Lesson (coach, part 5):**
+  1. The core idea in 3-4 lines.
+  2. The trick catalog for the pattern, with linked problems and snippets in the user's language.
+  3. A worked example on an easy problem, step by step; at each step the coach asks the user for the next move and corrects the answer.
+  4. A ladder of 3-5 problems, easy to hard by importance, skipping ones already solved; can be queued as missions.
+  5. Lesson cards go to the feed for spaced review; the coach records what was learned and what was weak in `coach_memory`.
+- Everything shown comes from our problem bank and checked solutions; the model explains and quizzes, it doesn't invent examples.
 
 ## 7. Visual system
 
