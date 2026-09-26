@@ -137,10 +137,38 @@ Scrape → normalize → enrich → Claude generates cards in batches → second
 
 ## 4. Stack
 
-- Next.js + Supabase (auth, Postgres, sync between two users)
-- Claude API: Haiku for card generation and judging, a stronger model for the mock interviewer
-- Python for the data pipeline
-- Vercel for hosting
+| Layer | Choice |
+|---|---|
+| Web app | Next.js (App Router) + React 19 + TypeScript, React Compiler |
+| UI | Tailwind CSS + shadcn/ui |
+| Mobile | Installable PWA: `manifest.ts` + `public/sw.js`, web-push for nudges |
+| Database | Supabase Postgres, Row Level Security on all user tables |
+| Migrations | Supabase CLI SQL files in `supabase/migrations/` (source of truth, includes RLS) + `seed.sql` |
+| DB access | Drizzle ORM for typed server-side queries (schema pulled with `drizzle-kit pull`); supabase-js for auth, realtime and client reads under RLS |
+| Auth | Supabase Auth with Google login |
+| Realtime | Supabase Realtime for the friend view and challenges |
+| Client data | TanStack Query |
+| Validation / dates | Zod, Luxon |
+| AI in app | Anthropic TS SDK in Next.js API routes: answer judging (Haiku), mock interviewer (stronger model) |
+| Data pipeline | Python in `pipeline/`: download, normalize, enrich, card generation (Anthropic Python SDK, Haiku) |
+| Testing / lint | Vitest, Playwright, ESLint, knip |
+| Package managers | Bun for the app (package manager + scripts; Next.js runs on Node), uv for Python |
+| Env files | `.env.local`, `.env.preview`, `.env.production` via dotenv-cli |
+| Hosting | Vercel (app), Supabase cloud (DB); pipeline runs locally |
+
+Reference projects:
+- `../Owe`: Supabase setup (CLI migrations, RLS, Google OAuth, TanStack Query)
+- `../curfew`: Next.js app structure, PWA manifest + service worker, web-push, env file setup
+
+### Repo layout
+```
+90X/
+├── .planning/     spec and research
+├── .data/         raw downloads (git-ignored)
+├── pipeline/      Python data pipeline (uv)
+├── supabase/      migrations, seed.sql, config
+└── web/           Next.js app (bun)
+```
 
 ## 5. Out of scope for now
 
@@ -153,7 +181,7 @@ Scrape → normalize → enrich → Claude generates cards in batches → second
 
 1. Verify data sources, record exact fields
 2. Shared DB schema (agree before splitting)
-3. In parallel: data pipeline (friend) + core app (me)
+3. Data pipeline (Claude) + core app
 4. AI mock interviewer
 5. Feed: 3 domains (DSA patterns, CS core, system design), 3 formats (typed, flashcard, multiple choice)
 6. Use for a week, then decide what to add
