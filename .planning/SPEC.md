@@ -25,7 +25,7 @@ The MVP is the tracker and the feed, both complete, plus the library and the coa
 | 2 | Foundation + Library | Google login with allowlist, setup and diagnostic, Library (Pattern Map, problems, notes), check-ins, LeetCode sync, friend visibility |
 | 3 | Tracker | Daily template, missions, 90 Grid, review queue, readiness, Me dashboard |
 | 4 | Feed | Card feed, topic toggles, typed answers, grading, FSRS reviews, flags, `/admin` batch review |
-| 5 | Coach | Tool-using chat that reads your progress, plan, problems, cards and sources (see 6.8), mission reasons, explain, mock interviews (text), STAR story bank, weekly review, memory service evaluation |
+| 5 | Coach | Personal coach with per-user memory (6.10): tool-using chat (6.8), solution review (6.9), mission reasons, explain, mock interviews (text), STAR story bank, weekly review, "What Coach knows" page, memory service evaluation |
 
 Build order: 1 and 2 in parallel, then 3, 4, 5. Grading (needed by 4) is built inside part 4. Each part gets its own implementation plan.
 
@@ -36,7 +36,8 @@ Out of scope for the MVP: voice mocks, in-app code editor (LeetCode is used), de
 | Area | Decision |
 |---|---|
 | Users | Invite-only: Google login + email allowlist. Everyone in the group sees everyone's progress |
-| Privacy | Friends see scores, streaks, check-ins (without notes), mock scores. Private: check-in notes, coach chats, coach notes, stories |
+| Privacy | Friends see scores, streaks, check-ins (without notes), mock scores. Private to the owner: check-in notes, coach chats, coach memory, solution reviews, stories |
+| Coach isolation | Each user's coach is theirs alone. It can see what its user can see (including friends' public stats); no other user's coach can read that user's memory, chats or reviews |
 | Campaign length | 30/60/90 or custom; can change anytime. Grid redraws, remaining days replan |
 | Missed day | Square marked missed, streak resets, end date fixed. Unfinished review slots carry over; new-item slots are re-picked. Slot counts never grow to catch up |
 | Day boundary | Midnight in each user's timezone |
@@ -56,7 +57,8 @@ Out of scope for the MVP: voice mocks, in-app code editor (LeetCode is used), de
 | Library | Everything published is browsable and readable in-app, with source links. ~300 curated competitive problems in their own tab, Library only |
 | Coach name | Coach |
 | Mock format | Text chat with timer and stage prompts; voice later |
-| Coach memory | Own tables (progress, `coach_notes`) for the MVP. Zep and Letta evaluated when part 5 is designed |
+| Coach memory | Per-user memory in the MVP (`coach_memory`, 6.10), visible and editable on a "What Coach knows" page in Me. Zep and Letta evaluated as the backend when part 5 is designed; if adopted, one isolated namespace per user |
+| Solution review | Paste code (LeetCode doesn't expose submission code without login). Sync pre-fills language and links to the submission page for a one-tap copy |
 | Coach search | Upstash Vector (semantic, built-in embeddings) |
 | Coach tools | Tool-using chat (AI SDK tool calls). Read tools run freely; every action tool needs a tap to confirm (see 6.8) |
 | Readiness | Formula score on the dial; the coach's weekly read shown beside it, never changing the number |
@@ -145,14 +147,15 @@ flowchart TB
 | `mocks` | user_id, type (design, behavioral), prompt, transcript, rubric_scores, score, feedback |
 | `stories` | user_id, title, situation, task, action, result, tags |
 | `coach_threads`, `coach_messages` | user_id, thread, role, content, citations |
-| `coach_notes` | user_id, text, source (user, coach) |
+| `coach_memory` | user_id, kind (habit, strength, goal, preference, context), text, evidence (links to check-ins, reviews, mocks), status (active, improving, resolved), source (user, coach), updated_at |
+| `solution_reviews` | user_id, problem_id, checkin_id, language, code, verdict, complexity (yours vs best), review_md, pattern_lesson, next_problem_id, created_at |
 | `readiness_snapshots` | user_id, date, overall, per_area |
 | `weekly_reviews` | user_id, week_start, formula_score, coach_score, summary_md, suggested_changes, accepted |
 | `card_flags` | user_id, card_id, reason |
 | `push_subscriptions` | user_id, endpoint, keys |
 | `ai_usage` | user_id, route, model, tokens_in, tokens_out, cost_usd, created_at |
 
-Friends read `checkins` through a view without the `note` column. `coach_*` tables and `stories` are owner-only.
+Friends read `checkins` through a view without the `note` column. `coach_threads`, `coach_messages`, `coach_memory`, `solution_reviews` and `stories` are owner-only: RLS allows only `auth.uid() = user_id`, and server code for the coach always passes the signed-in user's id.
 
 ### 5.3 Upstash
 
@@ -241,7 +244,7 @@ Action tools (each renders a confirm button; nothing happens until tapped):
 | `queue_cards` | Puts chosen cards at the front of the feed queue |
 | `add_mission` | Adds an extra item to today, outside the template |
 | `suggest_template_change` | Proposes a template edit for Accept or Decline |
-| `save_note` | Stores a fact in `coach_notes` |
+| `save_memory` | Stores or corrects a fact in `coach_memory` |
 | `start_mock` | Opens a mock interview on a topic |
 
 Rules:
@@ -249,6 +252,29 @@ Rules:
 - At most 5 tool calls per message; tool results are summarized before they reach the model.
 - Answers that use `search_knowledge` cite their sources.
 - Tool calls and costs are logged to `ai_usage`.
+
+### 6.9 Solution review
+
+Entry points: "Review my solution" on the check-in sheet and on every problem page; pasting code into the chat.
+
+1. The user pastes code. If the solve came from LeetCode sync, the language is pre-filled and an "Open my submission" link points to `leetcode.com/submissions/detail/<id>/`.
+2. The coach gets: the code, the problem (statement, pattern, difficulty), reference solutions in the user's language, the check-in (result, time, note) and the user's memory.
+3. DeepSeek Pro returns a fixed structure (validated with Zod):
+   - Verdict: correct or not; time and space complexity of the user's code vs the best known.
+   - Better approach: what the optimal solution does differently and why.
+   - Your code: specific line-level improvements (edge cases, off-by-one, redundant work, naming).
+   - Pattern lesson: the one idea to keep, linked to the pattern explainer.
+   - Next problem: one that uses the same idea, with a queue button.
+4. The review is saved in `solution_reviews`, linked to the check-in, and fed to memory extraction.
+
+### 6.10 Coach memory
+
+- After each chat thread, solution review and mock, a Flash call extracts lasting facts about the user and merges them into `coach_memory`:
+  - habits ("shrinks the window before updating the answer"), strengths, goals and context ("Amazon interview Nov 20"), preferences.
+  - Each fact keeps links to its evidence and a status: active, improving, resolved. A habit that stops showing up in new evidence moves to improving, then resolved.
+- Every coach call starts with the user's active memory plus live progress from the read tools.
+- "What Coach knows" (in Me) lists the facts grouped by kind; the user can correct or delete any of them.
+- Isolation: memory, chats and reviews are read and written only for the signed-in user. Another user's coach reaches this user only through `get_friend_summary`, which returns public stats.
 
 ## 7. Visual system
 
