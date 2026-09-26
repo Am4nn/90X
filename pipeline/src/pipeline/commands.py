@@ -10,6 +10,11 @@ def normalize(args, con) -> None:
             from .normalize import dsa
 
             print(f"dsa: {dsa.run(con)} problems")
+        elif target == "competitive":
+            from . import llm
+            from .normalize import competitive
+
+            print(f"competitive: {competitive.run(con, llm.LLM(con), pool_size=args.pool)} problems, spend ${llm.spend_usd(con):.2f}")
         elif target == "docs":
             from .normalize import docs
 
@@ -54,7 +59,61 @@ def enrich(args, con) -> None:
         print(f"sample for review: {patterns.write_sample(con)}")
 
 
-COMMANDS = {"normalize": normalize, "enrich": enrich, "status": status}
+def topics(args, con) -> None:
+    from . import llm
+    from .enrich import topic_lists
+
+    ai = llm.LLM(con)
+    domains = args.domains or list(topic_lists.PREFIX)
+    for domain in domains:
+        if args.action == "draft":
+            print(f"{domain}: drafted {topic_lists.draft(con, ai, domain)}")
+        else:
+            print(f"{domain}: {len(topic_lists.load(domain))} topics, {topic_lists.apply(con, ai, domain)} documents assigned")
+    print(f"spend ${llm.spend_usd(con):.2f}")
+
+
+def tricks(args, con) -> None:
+    from . import llm
+    from .enrich import tricks as t
+
+    print(f"tricks: {t.build(con, llm.LLM(con))} tricks, spend ${llm.spend_usd(con):.2f}")
+
+
+def chunk(args, con) -> None:
+    from . import chunk as c
+
+    print(f"chunks: {c.run(con)}")
+
+
+def embed(args, con) -> None:
+    from . import vector
+
+    up, deleted, left = vector.run(con)
+    print(f"vector: {up} upserted, {deleted} deleted, {left} left for another day (10K/day free limit)")
+
+
+def cards(args, con) -> None:
+    from . import llm
+    from .cards import run as card_run
+
+    ai = llm.LLM(con)
+    stats = card_run.run(con, ai, min_importance=args.min_importance, limit=args.limit)
+    print(f"cards: {stats}, spend ${llm.spend_usd(con):.2f}")
+
+
+def publish(args, con) -> None:
+    import os
+
+    from . import publish as p
+
+    for table, (n, deleted) in p.run(con, os.environ["DATABASE_URL"], dry_run=args.dry_run).items():
+        print(f"  {table:15} {n:6} upserted, {deleted} removed")
+    print("dry run: rolled back" if args.dry_run else "published")
+
+
+COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
+            "embed": embed, "cards": cards, "publish": publish, "status": status}
 
 
 def run(name: str, args) -> None:

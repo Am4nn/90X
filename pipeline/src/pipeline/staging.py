@@ -51,6 +51,10 @@ create table if not exists cards (
     answer_md text not null, key_points json, source_refs json, quality json,
     status text default 'draft', kept boolean
 );
+create table if not exists pattern_tricks (
+    id text primary key, pattern_slug text not null, name text not null, idea_md text not null,
+    snippets json, problem_slugs text[], sort int default 0
+);
 create table if not exists llm_calls (
     called_at timestamp default now(), model text, purpose text, tokens_in int, tokens_out int,
     cost_usd double, off_peak boolean
