@@ -14,7 +14,17 @@ def main() -> None:
     dl.add_argument("--role", help="only sources with this role")
     dl.add_argument("--skip-large", action="store_true", help="skip sources over 1 GB")
 
+    norm = sub.add_parser("normalize", help="normalize raw sources into staging")
+    norm.add_argument("targets", nargs="*", help="dsa (default)")
+    sub.add_parser("status", help="counts and LLM spend in staging")
+
     args = parser.parse_args()
+
+    from .commands import COMMANDS, run
+
+    if args.command in COMMANDS:
+        run(args.command, args)
+        return
 
     # Imported here so `pipeline --help` stays fast.
     from .sources import SOURCES
