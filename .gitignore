@@ -28,3 +28,6 @@ Thumbs.db
 
 # Brainstorm mockups
 .superpowers/
+
+# Claude Code agent worktrees
+.claude/
