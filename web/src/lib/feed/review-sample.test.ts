@@ -25,7 +25,7 @@ describe("pickReviewSample", () => {
   it("is stable for a seed and independent of input order", () => {
     const cards = make(100);
     const a = pickReviewSample(cards, 42);
-    expect(pickReviewSample([...cards].reverse(), 42)).toEqual(a);
+    expect(pickReviewSample(cards.toReversed(), 42)).toEqual(a);
     expect(pickReviewSample(cards, 43)).not.toEqual(a);
   });
 
@@ -35,9 +35,9 @@ describe("pickReviewSample", () => {
   });
 });
 
-describe("batchVerdict", () => {
-  const verdicts = (good: number, bad: number) => [...Array<"good">(good).fill("good"), ...Array<"bad">(bad).fill("bad")];
+const verdicts = (good: number, bad: number) => [...Array<"good">(good).fill("good"), ...Array<"bad">(bad).fill("bad")];
 
+describe("batchVerdict", () => {
   it("stays pending until the whole sample is reviewed", () => {
     expect(batchVerdict(verdicts(18, 0))).toBe("pending");
   });
