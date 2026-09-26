@@ -55,7 +55,8 @@ def wait_for_off_peak(poll_seconds: int = 300) -> None:
 def cost_usd(model: str, tokens_in: int, tokens_out: int, off_peak: bool) -> float:
     price_in, price_out = PRICES.get(model, DEFAULT_PRICE)
     cost = (tokens_in * price_in + tokens_out * price_out) / 1_000_000
-    return cost / 2 if off_peak else cost
+    # Only DeepSeek has the off-peak discount.
+    return cost / 2 if off_peak and model.startswith("deepseek") else cost
 
 
 def _default_client():
@@ -81,6 +82,8 @@ class LLM:
         self.client = client or _default_client()
         # DuckDB connections aren't thread-safe; calls may run in a thread pool.
         self.lock = threading.Lock()
+        # This process's calls per model: {model: [calls, cost_usd]}, for live progress lines.
+        self.run_costs: dict[str, list] = {}
         self.models = models or {"fast": os.environ["AI_MODEL_FAST"], "smart": os.environ["AI_MODEL_SMART"]}
         # Per-tier clients; tiers without one use the main client.
         self.clients = dict(clients or {})
@@ -127,10 +130,14 @@ class LLM:
             self._insert(model, purpose, tokens_in, tokens_out, off_peak)
 
     def _insert(self, model, purpose, tokens_in, tokens_out, off_peak) -> None:
+        cost = cost_usd(model, tokens_in, tokens_out, off_peak)
         self.con.execute(
             "insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak) values (?, ?, ?, ?, ?, ?)",
-            [model, purpose, tokens_in, tokens_out, cost_usd(model, tokens_in, tokens_out, off_peak), off_peak],
+            [model, purpose, tokens_in, tokens_out, cost, off_peak],
         )
+        entry = self.run_costs.setdefault(model, [0, 0.0])
+        entry[0] += 1
+        entry[1] += cost
 
 
 def spend_usd(con: duckdb.DuckDBPyConnection) -> float:

@@ -49,3 +49,27 @@ def test_generates_reviews_and_stores_cards_in_batches(tmp_path):
     assert ("cards-problem", "fast") in llm.calls and ("cards-check", "review") in llm.calls
     # re-run skips sources that already have cards
     assert card_run.run(con, llm, min_importance=0.5)["sources"] == 0
+
+
+class CrashingLLM(FakeLLM):
+    """Fails every document source, like a budget stop halfway through."""
+
+    def complete_json(self, system, user, schema, tier="fast", purpose=""):
+        if purpose == "cards-doc":
+            raise RuntimeError("budget reached")
+        return super().complete_json(system, user, schema, tier, purpose)
+
+
+def test_cards_are_saved_as_each_source_finishes(tmp_path, capsys):
+    con = staging.connect(tmp_path / "s.duckdb")
+    seed(con)
+    llm = CrashingLLM()
+    llm.run_costs = {"deepseek-flash": [3, 0.012], "gemini": [6, 0.02]}
+    stats = card_run.run(con, llm, min_importance=0.5, progress_every=1)
+    assert stats["failed"] == 1
+    # the problem's cards survive the failed document
+    assert con.execute("select count(*) from cards where problem_slug = 'hot'").fetchone()[0] == 2
+    out = capsys.readouterr().out
+    assert "deepseek-flash $0.012" in out and "gemini $0.020" in out and "kept 50%" in out
+    # resume picks up only the failed source
+    assert card_run.run(con, FakeLLM(), min_importance=0.5)["sources"] == 1

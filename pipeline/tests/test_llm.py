@@ -99,3 +99,8 @@ def test_review_tier_uses_its_own_client(tmp_path):
                  clients={"review": review})
     assert ai.complete_json("s", "u", Answer, tier="review").pattern == "b"
     assert main_calls.calls == [] and review_calls.calls[0]["model"] == "gemini-3.5-flash"
+
+
+def test_off_peak_discount_is_deepseek_only():
+    peak = llm.cost_usd("gemini-3.5-flash", 1_000_000, 1_000_000, off_peak=False)
+    assert llm.cost_usd("gemini-3.5-flash", 1_000_000, 1_000_000, off_peak=True) == pytest.approx(peak)
