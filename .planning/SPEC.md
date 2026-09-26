@@ -74,7 +74,7 @@ Format is chosen by what fits the content, not at random.
 
 ### Judging
 - Each card stores a reference answer and 2–4 key points, generated offline.
-- Typed answers: exact/normalized match first (instant, free). If no match, Claude judges against the key points.
+- Typed answers: exact/normalized match first (instant, free). If no match, the AI judges against the key points.
 - Judge returns which key points were hit. Score = points hit ÷ total. Missed points are highlighted.
 - Multiple choice and output cards: compared to the stored answer, no AI.
 
@@ -103,30 +103,42 @@ Format is chosen by what fits the content, not at random.
 - Every record keeps `source`, `source_url`, `ingested_at`.
 
 ### Sources
-Download everything below in one run, including the multi-GB competitive sets. Only sources marked **cards** get cards generated in v1. The rest sit in the DB tagged with a low weight until we decide.
+All 42 sources were verified on 2026-09-26 (they exist, fields checked, sizes known). The full list with roles lives in `pipeline/src/pipeline/sources.py`; run `uv run pipeline sources` to print it. Total is ~19 GB, most of it the three competitive sets. Those are big because they ship full hidden test suites (99% of their bytes), not because they have more problems.
 
-| Domain | Source | v1 |
-|---|---|---|
-| DSA | LeetCode-style dataset with tags + solutions (~2–3K) | cards |
-| DSA | Company frequency lists (e.g. LeetMap-Pro) | importance only |
-| DSA | NeetCode 150 / Blind 75 lists | importance only |
-| DSA | PrimeIntellect, open-r1, livecodebench (competitive) | download only, tag `competitive` |
-| System design | System Design Primer | cards |
-| LLD / OOD | Grokking OOD repo | later |
-| OS | OSTEP | cards |
-| Concurrency | Little Book of Semaphores | later |
-| CN, DB, AI, others | Source TBD | added once a real source is found |
-| Behavioral | Hand-written list (~30) | mock interviewer only |
+Roles:
+- **cards:** cards generated in v1
+- **enrich:** adds importance, pattern, video or solutions to other sources
+- **reference:** downloaded, no cards yet
 
-All sources must be verified (exists, fields, license) before writing ingestion code.
+Competitive programming is its own domain (`competitive`), separate from interview DSA: contest-style problems with stdin/stdout and huge test suites. Downloaded, low weight, no cards yet.
+
+Key sources:
+
+| Domain | Source | Role | Why |
+|---|---|---|---|
+| DSA | `newfacade/LeetCodeDataset` (HF) | cards | ~2.6K problems with tags, difficulty, solution, tests, explanation |
+| DSA | `neetcode-gh/leetcode` → `.problemSiteData.json` | enrich | 450 problems: NeetCode pattern, NC150/Blind75 flags, YouTube video id |
+| DSA | `kaysss/leetcode-problem-detailed` (HF) | enrich | Topic tags, acceptance rate, submission counts |
+| DSA | `greengerong/leetcode` (HF) | enrich | Java/C++/Python/JS solutions |
+| DSA | liquidslr, snehasishroy, LeetMap-Pro | enrich | Company-wise frequency |
+| DSA | Chanda-Abdul coding patterns | enrich | Pattern explainers |
+| Competitive | PrimeIntellect, open-r1, livecodebench | reference | ~18 GB, mostly hidden test cases |
+| System design | System Design Primer, karanpratapsingh/system-design | cards | Structured guides + solved scenarios |
+| System design | ByteByteGo 101, Grokking SD, awesome-scalability, others | reference | |
+| LLD | Grokking OOD, awesome-low-level-design | reference | Case studies with code |
+| OS | OSTEP (68 chapter PDFs) | cards | |
+| CS | LastMinuteNotes, CS-Fundamentals-Interview, devops-exercises, Java/SQL Q&A repos, Little Book of Semaphores | reference | CN, DBMS, OOP, OS, Java, SQL |
+| AI | AIMLInterviews, ml-interviews-book, LLM questions, data science Q&A | reference | |
+| Behavioral | tech-interview-handbook, big-companies questions, others | reference | Behavioral questions for the mock interviewer |
 
 ### DSA enrichment
-- **Pattern:** Claude tags each problem from its solution code (not just topic tags). Hand-check ~50 before trusting.
-- **Importance:** high if the problem is in NeetCode 150, Blind 75, or company frequency lists.
-- **Pattern explainers:** one hand-picked link per pattern (~20 patterns).
+- **Pattern:** start from NeetCode's pattern label where the problem is in its 450. For the rest, the AI tags the pattern from the solution code. Hand-check ~50 before trusting.
+- **Importance:** high if in NeetCode 150 / Blind 75, then company frequency, then acceptance/submission counts.
+- **Videos:** NeetCode's YouTube id where available.
+- **Pattern explainers:** one link per pattern (~20), starting from the coding-patterns repo.
 
 ### Card generation (offline)
-Scrape → normalize → enrich → Claude generates cards in batches → second Claude pass checks each answer against the source → drop failures → store.
+Scrape → normalize → enrich → the AI generates cards in batches → a second AI pass checks each answer against the source → drop failures → store.
 
 - Scrolling never waits on generation.
 - Top up weekly.
@@ -149,16 +161,16 @@ Scrape → normalize → enrich → Claude generates cards in batches → second
 | Realtime | Supabase Realtime for the friend view and challenges |
 | Client data | TanStack Query |
 | Validation / dates | Zod, Luxon |
-| AI in app | Anthropic TS SDK in Next.js API routes: answer judging (Haiku), mock interviewer (stronger model) |
-| Data pipeline | Python in `pipeline/`: download, normalize, enrich, card generation (Anthropic Python SDK, Haiku) |
+| AI in app | Vercel AI SDK (`ai`) in Next.js API routes, provider set in `web/src/lib/ai.ts` from env: DeepSeek, Anthropic or any OpenAI-compatible endpoint. `AI_MODEL_FAST` (deepseek-flash) for grading and quizzes, `AI_MODEL_SMART` (deepseek-v4-pro) for the mock interviewer |
+| Data pipeline | Python in `pipeline/`: download, normalize, enrich, card generation. `openai` SDK against any OpenAI-compatible endpoint (DeepSeek by default), run off-peak for half price |
 | Testing / lint | Vitest, Playwright, ESLint, knip |
 | Package managers | Bun for the app (package manager + scripts; Next.js runs on Node), uv for Python |
-| Env files | `.env.local`, `.env.preview`, `.env.production` via dotenv-cli |
+| Env files | One environment. `web/.env.local` (Next.js loads it; same values go into Vercel) and `pipeline/.env`. Templates in each `.env.example` |
 | Hosting | Vercel (app), Supabase cloud (DB); pipeline runs locally |
 
 Reference projects:
 - `../Owe`: Supabase setup (CLI migrations, RLS, Google OAuth, TanStack Query)
-- `../curfew`: Next.js app structure, PWA manifest + service worker, web-push, env file setup
+- `../curfew`: Next.js app structure, PWA manifest + service worker, web-push
 
 ### Repo layout
 ```
@@ -181,7 +193,7 @@ Reference projects:
 
 1. Verify data sources, record exact fields
 2. Shared DB schema (agree before splitting)
-3. Data pipeline (Claude) + core app
+3. Data pipeline (Claude Code) + core app
 4. AI mock interviewer
 5. Feed: 3 domains (DSA patterns, CS core, system design), 3 formats (typed, flashcard, multiple choice)
 6. Use for a week, then decide what to add
