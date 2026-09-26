@@ -164,6 +164,7 @@ Friends read `checkins` through a view without the `note` column. `coach_threads
 - **Redis:** rate limits per user and route; monthly AI cost meter; per-user queue of the next ~30 feed cards.
 - **QStash schedules:** nightly planning, morning plan push, 8 pm reminder, Sunday weekly review, LeetCode sync every 6 h.
 - **Workflow:** weekly review, template suggestion, mock final scoring.
+- **Shared with Curfew:** the Redis database and QStash account are shared with `../curfew` (Upstash allows one of each on this plan). Every 90X Redis key starts with `90x:` and 90X never runs FLUSH, KEYS or unscoped SCAN. Every 90X QStash schedule is named `90x-…`, and every job route verifies the QStash signature including the destination URL. Both apps share the free-tier quotas. The Vector index belongs to 90X alone.
 
 ## 6. Logic
 
