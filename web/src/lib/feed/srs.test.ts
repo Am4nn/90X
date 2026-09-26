@@ -42,9 +42,7 @@ describe("nextState", () => {
     const first = nextState(null, 3, now);
     const reloaded: SrsState = { ...first, dueAt: new Date(first.dueAt), lastReview: first.lastReview };
     const second = nextState(reloaded, 3, first.dueAt);
-    expect(second.dueAt.getTime() - first.dueAt.getTime()).toBeGreaterThan(
-      first.dueAt.getTime() - now.getTime(),
-    );
+    expect(second.dueAt.getTime() - first.dueAt.getTime()).toBeGreaterThan(first.dueAt.getTime() - now.getTime());
   });
 });
 

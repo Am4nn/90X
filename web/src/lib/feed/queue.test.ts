@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildQueue, type QueueCard, type QueueItem } from "./queue";
+import { buildQueue, type QueueCard, type QueueItem, type QueueReason } from "./queue";
 
 // `count` cards with ids prefix-0, prefix-1, … cycling through `topics`
 // (by default seven topics of their own, so pools never share a topic).
@@ -19,8 +19,7 @@ const topicOf = (all: QueueCard[]) => {
   return (item: QueueItem) => byId.get(item.id);
 };
 
-const idsWith = (queue: QueueItem[], reason: QueueItem["reason"]) =>
-  queue.filter((item) => item.reason === reason).map((item) => item.id);
+const idsWith = (queue: QueueItem[], reason: QueueReason) => queue.filter((item) => item.reason === reason).map((item) => item.id);
 
 describe("buildQueue", () => {
   it("mixes 50% weak, 30% due and 20% new", () => {

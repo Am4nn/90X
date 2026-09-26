@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  type CardFormat,
   type CardForGrading,
   exactMatch,
   gradeOption,
@@ -39,6 +40,11 @@ describe("exactMatch", () => {
   it("matches the answer despite formatting noise", () => {
     expect(exactMatch("a **HASH** map.", card())).toBe(true);
     expect(exactMatch("a tree map", card())).toBe(false);
+  });
+
+  it("treats flash cards like typed cards", () => {
+    const formats: CardFormat[] = ["typed", "flash"];
+    for (const format of formats) expect(exactMatch("A hash map", card({ format }))).toBe(true);
   });
 
   it("matches when every key point appears in the answer", () => {
