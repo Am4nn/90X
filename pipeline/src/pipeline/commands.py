@@ -112,8 +112,19 @@ def publish(args, con) -> None:
     print("dry run: rolled back" if args.dry_run else "published")
 
 
+def rebatch(args, con) -> None:
+    import os
+
+    from .cards import rebatch as rb
+
+    summary = rb.run(con, None if args.dry_run else os.environ["DATABASE_URL"], dry_run=args.dry_run)
+    for label, n in sorted(summary.items()):
+        print(f"  {label:40} {n:5} cards")
+    print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", applied to staging and Supabase"))
+
+
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "publish": publish, "status": status}
+            "embed": embed, "cards": cards, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

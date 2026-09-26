@@ -32,6 +32,8 @@ def main() -> None:
     cd.add_argument("--min-importance", type=float, default=0.5)
     pb = sub.add_parser("publish", help="publish staging to Supabase")
     pb.add_argument("--dry-run", action="store_true", help="run everything, then roll back")
+    rb = sub.add_parser("rebatch", help="regroup draft cards into review batches (area x part)")
+    rb.add_argument("--dry-run", action="store_true", help="show the batches without changing anything")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()
