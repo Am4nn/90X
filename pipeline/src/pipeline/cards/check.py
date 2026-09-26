@@ -35,6 +35,36 @@ def review(llm, card: dict, source: str, tier: str = "review") -> dict:
     return {**v.model_dump(), "keep": min(v.correct, v.clear, v.relevant) >= KEEP_MIN}
 
 
+class IndexedVerdict(Verdict):
+    index: int = Field(ge=0)
+
+
+class SetVerdict(BaseModel):
+    verdicts: list[IndexedVerdict]
+
+
+def review_set(llm, cards: list[dict], source: str, tier: str = "review") -> list[dict]:
+    """Review all cards from one source in a single call (the source is sent
+    once). A card with no verdict is dropped."""
+    listing = "\n\n".join(
+        f"[{i}] ({c['format']}, {c['difficulty']})\nPrompt: {c['prompt']}\nOptions: {c.get('options')}\n"
+        f"Answer: {c['answer']}\nKey points: {c['key_points']}"
+        for i, c in enumerate(cards)
+    )
+    user = f"Source:\n{source[:5000]}\n\nCards:\n{listing}\n\nReturn one verdict per card, with its index."
+    result = llm.complete_json(SYSTEM, user, SetVerdict, tier=tier, purpose="cards-check")
+    by_index = {v.index: v for v in result.verdicts}
+    out = []
+    for i in range(len(cards)):
+        v = by_index.get(i)
+        if v is None:
+            out.append({"correct": 1, "clear": 1, "relevant": 1, "issues": "no verdict", "keep": False})
+        else:
+            d = v.model_dump(exclude={"index"})
+            out.append({**d, "keep": min(v.correct, v.clear, v.relevant) >= KEEP_MIN})
+    return out
+
+
 def _norm(text: str) -> str:
     return re.sub(r"[^a-z0-9 ]+", "", text.lower().replace("what's", "what is"))
 

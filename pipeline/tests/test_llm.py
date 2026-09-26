@@ -48,7 +48,7 @@ class FakeCompletions:
     def create(self, **kwargs):
         self.calls.append(kwargs)
         reply = self.replies.pop(0)
-        return type("R", (), {"choices": [FakeChoice(reply)], "usage": FakeUsage()})()
+        return type("R", (), {"choices": [FakeChoice(reply)], "usage": getattr(self, "usage", FakeUsage)()})()
 
 
 def fake_client(replies):
@@ -104,3 +104,30 @@ def test_review_tier_uses_its_own_client(tmp_path):
 def test_off_peak_discount_is_deepseek_only():
     peak = llm.cost_usd("gemini-3.5-flash", 1_000_000, 1_000_000, off_peak=False)
     assert llm.cost_usd("gemini-3.5-flash", 1_000_000, 1_000_000, off_peak=True) == pytest.approx(peak)
+
+
+class ThinkingUsage:
+    def __init__(self):
+        self.prompt_tokens, self.completion_tokens, self.total_tokens = 100, 20, 400
+
+
+def test_hidden_thinking_tokens_are_billed_as_output(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'])
+    calls.usage = ThinkingUsage
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "x", "review": "gemini-3.8-flash"})
+    ai.complete_json("s", "u", Answer, tier="review")
+    row = con.execute("select tokens_out, tokens_reasoning, cost_usd from llm_calls").fetchone()
+    assert row[0] == 20 and row[1] == 280
+    assert row[2] == pytest.approx((100 * 0.75 + 300 * 3.75) / 1_000_000)
+    assert ai.run_costs["gemini-3.8-flash"][1] == pytest.approx(row[2])
+
+
+def test_gemini_calls_turn_thinking_off(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'] * 2)
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "x", "review": "gemini-3.8-flash"})
+    ai.complete_json("s", "u", Answer, tier="review")
+    ai.complete_json("s", "u", Answer, tier="fast")
+    assert calls.calls[0]["reasoning_effort"] == "none"
+    assert "reasoning_effort" not in calls.calls[1]

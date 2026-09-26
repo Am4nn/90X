@@ -11,8 +11,11 @@ class FakeLLM:
     def complete_json(self, system, user, schema, tier="fast", purpose=""):
         self.calls.append((purpose, tier))
         if purpose.startswith("cards-check"):
-            bad = "drop me" in user
-            return schema(correct=2 if bad else 5, clear=5, relevant=5, issues="wrong" if bad else "")
+            blocks = user.split("Cards:\n", 1)[1].split("\n\n[")
+            return schema(verdicts=[
+                {"index": i, "correct": 2 if "drop me" in b else 5, "clear": 5, "relevant": 5,
+                 "issues": "wrong" if "drop me" in b else ""}
+                for i, b in enumerate(blocks)])
         return schema(cards=[
             {"format": "typed", "prompt": "Which pattern fits and why?", "answer": "Sliding window",
              "key_points": ["contiguous", "shrink"], "difficulty": "Medium"},

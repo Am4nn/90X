@@ -59,6 +59,7 @@ create table if not exists llm_calls (
     called_at timestamp default now(), model text, purpose text, tokens_in int, tokens_out int,
     cost_usd double, off_peak boolean
 );
+alter table llm_calls add column if not exists tokens_reasoning int default 0;
 """
 
 

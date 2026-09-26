@@ -49,8 +49,8 @@ def _one(llm, kind: str, src: dict) -> list[dict]:
     else:
         cards, text, domain = generate.for_document(llm, src, tier="fast"), src["body"], src["domain"]
     tier = "review" if "review" in llm.models else "smart"
-    for c in cards:
-        verdict = check.review(llm, c, text, tier=tier)
+    verdicts = check.review_set(llm, cards, text, tier=tier) if cards else []
+    for c, verdict in zip(cards, verdicts):
         c.update({"domain": domain, "kept": verdict["keep"],
                   "quality": {k: verdict[k] for k in ("correct", "clear", "relevant", "issues")},
                   "source_refs": [{"kind": kind, "id": src.get("slug") or src.get("id"), "title": src["title"]}]})

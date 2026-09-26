@@ -20,6 +20,10 @@ T = TypeVar("T", bound=BaseModel)
 PRICES = {
     "deepseek-flash": (0.30, 1.20),
     "deepseek-v4-pro": (1.32, 3.96),
+    # Google paid tier; thinking tokens bill as output (ai.google.dev/gemini-api/docs/pricing).
+    "gemini-3.5-flash": (1.50, 9.00),
+    "gemini-3.8-flash": (0.75, 3.75),
+    "gemini-3.5-flash-lite": (0.30, 2.50),
 }
 DEFAULT_PRICE = (1.0, 5.0)  # unknown model: count it conservatively
 
@@ -110,8 +114,10 @@ class LLM:
             if attempt:
                 messages.append({"role": "user", "content": f"That reply was invalid ({last_error}). Reply again with valid JSON only."})
             client = self.clients.get(tier, self.client)
+            # Gemini thinks by default and bills it; a JSON verdict doesn't need it.
+            extra = {"reasoning_effort": "none"} if model.startswith("gemini") else {}
             response = client.chat.completions.create(
-                model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2,
+                model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2, **extra,
             )
             self._log(model, purpose, response.usage)
             content = response.choices[0].message.content or ""
@@ -125,15 +131,20 @@ class LLM:
     def _log(self, model: str, purpose: str, usage) -> None:
         tokens_in = getattr(usage, "prompt_tokens", 0) or 0
         tokens_out = getattr(usage, "completion_tokens", 0) or 0
+        # OpenAI-compatible endpoints may leave thinking out of completion_tokens
+        # but still bill it; whatever total_tokens has beyond in + out is thinking.
+        total = getattr(usage, "total_tokens", 0) or 0
+        tokens_reasoning = max(0, total - tokens_in - tokens_out)
         off_peak = is_off_peak()
         with self.lock:
-            self._insert(model, purpose, tokens_in, tokens_out, off_peak)
+            self._insert(model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning)
 
-    def _insert(self, model, purpose, tokens_in, tokens_out, off_peak) -> None:
-        cost = cost_usd(model, tokens_in, tokens_out, off_peak)
+    def _insert(self, model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning=0) -> None:
+        cost = cost_usd(model, tokens_in, tokens_out + tokens_reasoning, off_peak)
         self.con.execute(
-            "insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak) values (?, ?, ?, ?, ?, ?)",
-            [model, purpose, tokens_in, tokens_out, cost, off_peak],
+            """insert into llm_calls (model, purpose, tokens_in, tokens_out, tokens_reasoning, cost_usd, off_peak)
+               values (?, ?, ?, ?, ?, ?, ?)""",
+            [model, purpose, tokens_in, tokens_out, tokens_reasoning, cost, off_peak],
         )
         entry = self.run_costs.setdefault(model, [0, 0.0])
         entry[0] += 1

@@ -66,3 +66,24 @@ def test_skips_non_interview_sections():
 
 def test_reviewer_prompt_allows_standard_knowledge():
     assert "well-established" in check.SYSTEM
+
+
+class SetReviewer:
+    def __init__(self, verdicts):
+        self.verdicts, self.calls = verdicts, []
+
+    def complete_json(self, system, user, schema, tier="fast", purpose=""):
+        self.calls.append(purpose)
+        return schema(verdicts=self.verdicts)
+
+
+def test_review_set_checks_all_cards_in_one_call():
+    cards = [{"format": "typed", "difficulty": "Easy", "prompt": f"Q{i}", "answer": "A", "key_points": ["k"]} for i in range(3)]
+    llm = SetReviewer([
+        {"index": 0, "correct": 5, "clear": 5, "relevant": 5},
+        {"index": 1, "correct": 2, "clear": 5, "relevant": 5, "issues": "wrong"},
+    ])
+    out = check.review_set(llm, cards, "source text")
+    assert llm.calls == ["cards-check"]
+    assert [v["keep"] for v in out] == [True, False, False]  # index 2 missing → dropped
+    assert out[2]["issues"] == "no verdict"
