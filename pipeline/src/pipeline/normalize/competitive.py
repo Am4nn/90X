@@ -64,7 +64,8 @@ def candidates(limit: int = 2000) -> list[dict]:
             and length(prompt) between 500 and 3500
         )
         select source, in_source_id, prompt, solution, diff, url from pool
-        where rn = 1 order by hash(in_source_id) limit {int(limit)}
+        where rn = 1 and coalesce(url, '') not like '%leetcode.com%'  -- already in the main catalog
+        order by hash(in_source_id) limit {int(limit)}
     """).fetchall()
     return [{"source": s, "id": i, "statement": clean_statement(p), "solution": strip_fence(sol), "url": u or None}
             for s, i, p, sol, _, u in rows]
