@@ -1,5 +1,7 @@
 # 90X Spec
 
+> **Superseded for product, architecture and design by [`specs/2026-09-26-90x-mvp-design.md`](specs/2026-09-26-90x-mvp-design.md).** Sections 3 (Data sources) and 4 (Stack) here are still current; the rest is kept for history.
+
 Personal interview-prep app for two users (me + friend). Goal: interview-ready in a set number of days.
 
 Status: planning. Last updated 2026-09-26.
@@ -166,7 +168,9 @@ Scrape → normalize → enrich → the AI generates cards in batches → a seco
 | Testing / lint | Vitest, Playwright, ESLint, knip |
 | Package managers | Bun for the app (package manager + scripts; Next.js runs on Node), uv for Python |
 | Env files | One environment. `web/.env.local` (Next.js loads it; same values go into Vercel) and `pipeline/.env`. Templates in each `.env.example` |
-| Hosting | Vercel (app), Supabase cloud (DB); pipeline runs locally |
+| Jobs, cache, search | Upstash: QStash (schedules, queue), Workflow (multi-step AI jobs), Redis (rate limits, cost meter, feed queue), Vector (coach search, built-in embeddings) |
+| Monitoring | Sentry, Vercel Analytics, `ai_usage` table |
+| Hosting | Vercel (app), Supabase cloud (DB), Upstash; pipeline runs locally |
 
 Reference projects:
 - `../Owe`: Supabase setup (CLI migrations, RLS, Google OAuth, TanStack Query)

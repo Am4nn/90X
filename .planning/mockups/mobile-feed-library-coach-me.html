@@ -1,0 +1,238 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<style>
+  .app { --bg:#0A0C10; --sf:#0F1218; --sf2:#141820; --ln:#1C2029; --ln2:#262B36; --mu:#7D8594; --tx2:#AEB5C2; --tx:#E6E9EF;
+         --acc:#67E8F9; --accbg:#0E1E24; --dsa:#818CF8; --sd:#C084FC; --cs:#2DD4BF; --java:#FB923C; --sql:#F472B6;
+         --ok:#4ADE80; --warn:#FACC15; --bad:#F87171;
+         --t-display:700 32px/1.1 "Sora",sans-serif; --t-title:600 22px/1.25 "Sora",sans-serif; --t-heading:600 16px/1.4 "Sora",sans-serif;
+         --t-body:500 15px/1.55 "Manrope",sans-serif; --t-small:500 13px/1.45 "Manrope",sans-serif; --t-tag:700 12px/1 "Manrope",sans-serif;
+         background:var(--bg); color:var(--tx); font:var(--t-body); }
+  .display { font:var(--t-display); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .title { font:var(--t-title); letter-spacing:-.015em; }
+  .heading { font:var(--t-heading); }
+  .small { font:var(--t-small); color:var(--mu); }
+  .tag { font:var(--t-tag); padding:5px 9px; border-radius:6px; color:var(--c); background:color-mix(in srgb, var(--c) 14%, transparent); align-self:flex-start; }
+  .frames { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:24px; margin-top:16px; }
+  .cap { margin-top:10px; font-size:13px; line-height:1.45; }
+  .phone { border-radius:28px; height:700px; overflow:hidden; display:flex; flex-direction:column; border:1px solid #1C2029; position:relative; }
+  .page { flex:1; overflow:hidden; padding:20px 20px 0; display:flex; flex-direction:column; gap:24px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; min-height:36px; }
+  .iconbtn { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; color:var(--tx2); border:1px solid var(--ln); }
+  .tabbar { display:grid; grid-template-columns:repeat(5,1fr); padding:8px 8px 18px; border-top:1px solid var(--ln); background:var(--bg); }
+  .tab { display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 0; color:var(--mu); font:600 11px/1 "Manrope",sans-serif; }
+  .tab svg { width:22px; height:22px; }
+  .tab .ic { width:44px; height:28px; border-radius:14px; display:grid; place-items:center; }
+  .tab.on { color:var(--tx); }
+  .tab.on .ic { background:var(--accbg); color:var(--acc); }
+  .card { background:var(--sf); border:1px solid var(--ln); border-radius:14px; }
+  .pad { padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .stack { display:flex; flex-direction:column; gap:24px; }
+  .list > * + * { border-top:1px solid var(--ln); }
+  .sectionhead { display:flex; justify-content:space-between; align-items:baseline; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c); margin-right:8px; vertical-align:1px; }
+  .btns { display:flex; gap:10px; }
+  .btn { flex:1; border-radius:12px; padding:13px; text-align:center; font:700 15px/1 "Manrope",sans-serif; }
+  .btn.p { background:var(--acc); color:#06222A; }
+  .btn.s { border:1px solid var(--ln2); color:var(--tx); }
+  .q { font:600 17px/1.5 "Sora",sans-serif; }
+  .code { font-weight:700; color:var(--java); }
+  .avatar { width:28px; height:28px; border-radius:8px; flex:none; display:grid; place-items:center; background:var(--accbg); color:var(--acc); font:700 13px/1 "Sora",sans-serif; }
+  .ok { color:var(--ok); } .warn { color:var(--warn); } .bad { color:var(--bad); }
+
+  /* feed graded */
+  .answer { border:1px solid var(--ln2); border-radius:12px; padding:14px; color:var(--tx2); }
+  .result { display:flex; align-items:center; gap:12px; }
+  .points { display:flex; flex-direction:column; gap:10px; }
+  .point { display:grid; grid-template-columns:20px 1fr; gap:10px; }
+  .src { display:flex; gap:8px; flex-wrap:wrap; }
+  .src span { border:1px solid var(--ln2); border-radius:999px; padding:8px 12px; font:600 13px/1 "Manrope",sans-serif; color:var(--tx2); }
+
+  /* library */
+  .seg { display:flex; gap:4px; background:var(--sf); border:1px solid var(--ln); border-radius:12px; padding:4px; }
+  .seg span { flex:1; text-align:center; padding:9px 0; border-radius:9px; font:600 13px/1 "Manrope",sans-serif; color:var(--mu); }
+  .seg span.on { background:var(--sf2); color:var(--tx); }
+  .map svg { width:100%; height:auto; display:block; }
+  .map text { font:600 10px "Manrope",sans-serif; fill:#8C94A3; }
+  .map .hot { fill:var(--tx); }
+  .pulse { animation:pulse 2s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+  @keyframes pulse { 0%,100% { opacity:.2; transform:scale(1); } 50% { opacity:.55; transform:scale(1.4); } }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation:none; } }
+  .prob { display:grid; grid-template-columns:1fr auto; gap:4px 12px; padding:14px 18px; align-items:center; }
+  .prob .name { font:600 15px/1.35 "Manrope",sans-serif; }
+  .prob .st { grid-row:1 / 3; grid-column:2; font:600 13px/1 "Manrope",sans-serif; }
+  .scrim { position:absolute; inset:0; background:rgba(5,6,8,.6); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#12151C; border-radius:22px 22px 0 0; padding:12px 20px 24px; display:flex; flex-direction:column; gap:18px; box-shadow:0 -16px 40px rgba(0,0,0,.55); }
+  .grab { width:40px; height:4px; border-radius:2px; background:var(--ln2); align-self:center; }
+  .opts { display:flex; gap:8px; }
+  .opts span { flex:1; text-align:center; padding:11px 0; border-radius:10px; border:1px solid var(--ln2); font:600 13px/1 "Manrope",sans-serif; color:var(--tx2); }
+  .opts span.on { border-color:var(--acc); color:var(--acc); background:var(--accbg); }
+  .field { border:1px solid var(--ln2); border-radius:12px; padding:14px; color:var(--tx2); }
+  .lbl { font:600 13px/1 "Manrope",sans-serif; color:var(--tx2); margin-bottom:10px; }
+
+  /* coach */
+  .shortcuts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .sc { padding:16px; display:flex; flex-direction:column; gap:6px; }
+  .msg { max-width:85%; padding:12px 14px; border-radius:14px; }
+  .msg.me { align-self:flex-end; background:var(--accbg); border:1px solid #17363F; }
+  .msg.ai { align-self:flex-start; background:var(--sf); border:1px solid var(--ln); color:var(--tx2); }
+  .cite { display:block; margin-top:10px; font:600 13px/1 "Manrope",sans-serif; color:var(--acc); }
+  .composer { display:flex; gap:10px; align-items:center; border:1px solid var(--ln2); border-radius:14px; padding:8px 8px 8px 14px; color:var(--mu); }
+  .send { width:36px; height:36px; border-radius:10px; background:var(--acc); display:grid; place-items:center; color:#06222A; margin-left:auto; }
+
+  /* me */
+  .dial { position:relative; width:170px; height:170px; margin:0 auto; }
+  .dial svg { width:100%; height:100%; }
+  .dial .c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .glow { color:var(--warn); text-shadow:0 0 22px rgba(250,204,21,.3); font-size:44px; }
+  .area { display:grid; grid-template-columns:72px 1fr 32px; gap:12px; align-items:center; }
+  .area i { height:6px; border-radius:3px; background:#161A22; position:relative; overflow:hidden; }
+  .area i::after { content:""; position:absolute; inset:0; width:var(--w); background:var(--c); border-radius:3px; }
+  .area .n { font:600 15px/1 "Sora",sans-serif; text-align:right; }
+  .vs { display:grid; grid-template-columns:1fr 56px 56px; padding:14px 18px; gap:12px; align-items:center; }
+  .vs .v { font:600 15px/1 "Sora",sans-serif; text-align:right; }
+</style>
+
+<h2>Remaining screens, same system</h2>
+<p class="subtitle">Feed after grading, Library with the check-in sheet open, Coach, and Me.</p>
+
+<div class="app" style="background:transparent">
+<div class="frames">
+
+  <!-- FEED GRADED -->
+  <div>
+    <div class="app phone">
+      <div class="page">
+        <div class="topbar"><span class="title">Feed</span><span class="small">4 of 12</span></div>
+        <div class="card pad" style="gap:18px">
+          <span class="tag" style="--c:var(--java)">Java · Medium</span>
+          <div class="q">Two threads call <span class="code">put()</span> on the same <span class="code">HashMap</span>. What can go wrong?</div>
+          <div class="answer">Updates can get lost. Use ConcurrentHashMap.</div>
+          <div class="result"><span class="display warn">67%</span><span class="small">2 of 3 key points</span></div>
+          <div class="points">
+            <div class="point"><span class="ok">✓</span><span>Lost updates from unsynchronized writes</span></div>
+            <div class="point"><span class="ok">✓</span><span>Use ConcurrentHashMap</span></div>
+            <div class="point"><span class="bad">✕</span><span class="small" style="font-size:15px">A resize can corrupt buckets or loop forever</span></div>
+          </div>
+          <div class="src"><span>Java docs</span><span>Explain more</span></div>
+          <div class="btn p">Next card</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>Today</div>
+        <div class="tab on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg></span>Feed</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg></span>Library</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>Coach</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Me</div>
+      </div>
+    </div>
+    <p class="cap">Feed, graded: score, which key points you hit, sources, next.</p>
+  </div>
+
+  <!-- LIBRARY -->
+  <div>
+    <div class="app phone">
+      <div class="page">
+        <div class="topbar"><span class="title">Library</span>
+          <span class="iconbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span></div>
+        <div class="seg"><span class="on">DSA</span><span>Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
+        <div class="card map">
+          <svg viewBox="0 0 300 170">
+            <g stroke="#20252F" stroke-width="1.2"><line x1="40" y1="34" x2="115" y2="42"/><line x1="115" y1="42" x2="195" y2="34"/><line x1="195" y1="34" x2="262" y2="66"/><line x1="115" y1="42" x2="92" y2="102"/><line x1="92" y1="102" x2="176" y2="112"/><line x1="195" y1="34" x2="176" y2="112"/><line x1="176" y1="112" x2="250" y2="128"/><line x1="92" y1="102" x2="52" y2="148"/></g>
+            <line x1="40" y1="34" x2="115" y2="42" stroke="#818CF8" stroke-width="1.6"/><line x1="115" y1="42" x2="92" y2="102" stroke="#818CF8" stroke-width="1.6"/>
+            <circle cx="40" cy="34" r="8" fill="#818CF8"/><text x="40" y="58" text-anchor="middle" class="hot">Arrays</text>
+            <circle cx="115" cy="42" r="8" fill="#818CF8"/><text x="115" y="66" text-anchor="middle" class="hot">Two pointers</text>
+            <circle cx="195" cy="34" r="8" fill="#818CF8" opacity=".45"/><text x="195" y="18" text-anchor="middle">Stack</text>
+            <circle cx="262" cy="66" r="6" fill="#20252F"/><text x="262" y="86" text-anchor="middle">Heap</text>
+            <circle cx="92" cy="102" r="15" fill="#F87171" class="pulse"/><circle cx="92" cy="102" r="8" fill="#F87171"/><text x="92" y="126" text-anchor="middle" class="hot">Sliding window</text>
+            <circle cx="176" cy="112" r="8" fill="#818CF8" opacity=".45"/><text x="176" y="136" text-anchor="middle">Binary search</text>
+            <circle cx="250" cy="128" r="6" fill="#20252F"/><text x="250" y="148" text-anchor="middle">Trees</text>
+            <circle cx="52" cy="148" r="6" fill="#20252F"/><text x="52" y="166" text-anchor="middle">Linked list</text>
+          </svg>
+        </div>
+        <div class="stack" style="gap:12px">
+          <div class="sectionhead"><span class="heading">Sliding window</span><span class="small">3 of 14</span></div>
+          <div class="card list">
+            <div class="prob"><span class="name">Best Time to Buy and Sell Stock</span><span class="small">Easy · NeetCode 150</span><span class="st ok">Solved</span></div>
+            <div class="prob"><span class="name">Minimum Window Substring</span><span class="small">Hard · NeetCode 150</span><span class="st" style="color:var(--acc)">Check in</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sectionhead"><span class="heading">Minimum Window Substring</span><span class="small">LC 76</span></div>
+        <div><div class="lbl">How did it go?</div><div class="opts"><span class="on">Solved</span><span>With hints</span><span>Failed</span></div></div>
+        <div><div class="lbl">Time</div><div class="opts"><span>15m</span><span class="on">30m</span><span>45m</span><span>60m+</span></div></div>
+        <div class="field">Needed the have/need counter trick.</div>
+        <div class="btns"><div class="btn s">LeetCode</div><div class="btn p">Check in</div></div>
+      </div>
+    </div>
+    <p class="cap">Library: pattern map, problems for the chosen pattern, and the check-in sheet (the one place with a shadow).</p>
+  </div>
+
+  <!-- COACH -->
+  <div>
+    <div class="app phone">
+      <div class="page">
+        <div class="topbar"><span class="title">Coach</span>
+          <span class="iconbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></span></div>
+        <div class="shortcuts">
+          <div class="card sc"><span class="heading">Design mock</span><span class="small">30 min</span></div>
+          <div class="card sc"><span class="heading">Behavioral mock</span><span class="small">20 min</span></div>
+          <div class="card sc"><span class="heading">Weekly review</span><span class="small">Week 3 ready</span></div>
+          <div class="card sc"><span class="heading">Plan next week</span><span class="small">Adjust focus</span></div>
+        </div>
+        <div class="stack" style="gap:12px">
+          <div class="msg me">Why is consistent hashing better than mod-N?</div>
+          <div class="msg ai">With mod-N, adding a server remaps almost every key. Consistent hashing moves only about 1/N of them.<span class="cite">System Design Primer ↗</span></div>
+        </div>
+        <div class="composer" style="margin-top:auto;margin-bottom:16px">Ask the coach<span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>Today</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg></span>Feed</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg></span>Library</div>
+        <div class="tab on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>Coach</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Me</div>
+      </div>
+    </div>
+    <p class="cap">Coach: four shortcuts, then the chat. Answers cite their source. History behind the clock icon.</p>
+  </div>
+
+  <!-- ME -->
+  <div>
+    <div class="app phone">
+      <div class="page">
+        <div class="topbar"><span class="title">Me</span>
+          <span class="iconbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span></div>
+        <div class="dial">
+          <svg viewBox="0 0 170 170"><circle cx="85" cy="85" r="70" fill="none" stroke="#161A22" stroke-width="11" stroke-dasharray="330 440" transform="rotate(135 85 85)" stroke-linecap="round"/><circle cx="85" cy="85" r="70" fill="none" stroke="#FACC15" stroke-width="11" stroke-dasharray="155 440" transform="rotate(135 85 85)" stroke-linecap="round" style="filter:drop-shadow(0 0 5px rgba(250,204,21,.5))"/></svg>
+          <div class="c"><span class="display glow">47</span><span class="small">Readiness</span></div>
+        </div>
+        <div class="stack" style="gap:14px">
+          <div class="area"><span><span class="dot" style="--c:var(--dsa)"></span>DSA</span><i style="--w:61%;--c:var(--dsa)"></i><span class="n warn">61</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--sd)"></span>Design</span><i style="--w:28%;--c:var(--sd)"></i><span class="n bad">28</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--cs)"></span>CS</span><i style="--w:74%;--c:var(--cs)"></i><span class="n ok">74</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--java)"></span>Java</span><i style="--w:40%;--c:var(--java)"></i><span class="n warn">40</span></div>
+        </div>
+        <div class="stack" style="gap:12px">
+          <div class="sectionhead"><span class="heading">This week</span><span class="small">You · Rohan</span></div>
+          <div class="card list">
+            <div class="vs"><span>Readiness</span><span class="v">47</span><span class="v muted" style="color:var(--mu)">52</span></div>
+            <div class="vs"><span>Streak</span><span class="v">12</span><span class="v" style="color:var(--mu)">9</span></div>
+            <div class="vs"><span>Solved</span><span class="v">14</span><span class="v" style="color:var(--mu)">11</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>Today</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg></span>Feed</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg></span>Library</div>
+        <div class="tab"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>Coach</div>
+        <div class="tab on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Me</div>
+      </div>
+    </div>
+    <p class="cap">Me: readiness dial, four areas, you vs your friend. Friend's check-ins live one scroll below.</p>
+  </div>
+
+</div>
+</div>

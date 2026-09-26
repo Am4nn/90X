@@ -1,0 +1,160 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  .phone { border-radius:28px; padding:18px 16px 20px; display:flex; flex-direction:column; gap:14px; box-shadow:0 12px 32px rgba(0,0,0,.35);
+           background:#0A0C10; color:#E6E9EF; font-family:"Manrope",system-ui,sans-serif; min-height:640px; }
+  .meta { font-size:13px; line-height:1.45; margin-top:8px; }
+  .row { display:flex; justify-content:space-between; align-items:center; }
+  .brand { font-family:"Sora",sans-serif; font-weight:800; font-size:19px; letter-spacing:-.02em; }
+  .k { font-family:"JetBrains Mono",monospace; font-size:11px; color:#7D8594; text-transform:uppercase; letter-spacing:.06em; }
+  .coach { display:flex; gap:10px; align-items:flex-start; background:#0F1218; border:1px solid #1C2029; border-radius:10px; padding:10px 12px; font-size:13px; line-height:1.45; color:#B8BFCC; }
+  .coach .dot { width:22px; height:22px; border-radius:6px; flex:none; display:grid; place-items:center; font-family:"Sora",sans-serif; font-weight:700; font-size:11px; background:#16202B; color:#7DD3FC; }
+  .coach b { color:#E6E9EF; font-weight:600; }
+  .mini { background:#0F1218; border:1px solid #1C2029; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .path { font-family:"JetBrains Mono",monospace; font-size:12px; color:#7D8594; }
+  .path b { color:#7DB3FF; font-weight:500; }
+  .q { font-family:"Sora",sans-serif; font-weight:500; font-size:15px; line-height:1.45; }
+  .btn { border-radius:8px; padding:10px; text-align:center; font-weight:700; font-size:14px; background:#E6E9EF; color:#0A0C10; }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; } }
+
+  /* ---------- S1: The 90 Grid ---------- */
+  .s1 .days { display:grid; grid-template-columns:repeat(10,1fr); gap:5px; }
+  .s1 .d { aspect-ratio:1; border-radius:4px; background:#12161E; position:relative; }
+  .s1 .d.x::before, .s1 .d.x::after { content:""; position:absolute; left:18%; right:18%; top:50%; height:2px; border-radius:1px; background:#7DD3FC; }
+  .s1 .d.x::before { transform:rotate(45deg); } .s1 .d.x::after { transform:rotate(-45deg); }
+  .s1 .d.x { background:#101B26; animation:stamp .35s ease-out both; }
+  .s1 .d.half::before { content:""; position:absolute; left:18%; right:18%; top:50%; height:2px; background:#7DD3FC; opacity:.5; transform:rotate(45deg); }
+  .s1 .d.miss { background:#1A1214; }
+  .s1 .d.today { outline:1.5px solid #E6E9EF; outline-offset:1px; background:#161B24; }
+  @keyframes stamp { from { transform:scale(1.35); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .s1 .headline { font-family:"Sora",sans-serif; font-weight:700; font-size:26px; line-height:1.1; letter-spacing:-.02em; }
+  .s1 .headline span { color:#7D8594; font-weight:500; }
+  .s1 .legend { display:flex; gap:12px; font-size:11px; color:#7D8594; }
+
+  /* ---------- S2: Scoreboard ---------- */
+  .s2 { background:#050608; }
+  .s2 .dial { position:relative; width:190px; height:190px; margin:4px auto 0; }
+  .s2 .dial svg { width:100%; height:100%; }
+  .s2 .dial .center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .s2 .score { font-family:"Sora",sans-serif; font-weight:700; font-size:54px; letter-spacing:-.03em; color:#FACC15; text-shadow:0 0 24px rgba(250,204,21,.35); font-variant-numeric:tabular-nums; }
+  .s2 .lab { font-family:"JetBrains Mono",monospace; font-size:11px; color:#9AA2B1; letter-spacing:.08em; }
+  .s2 .band { display:flex; justify-content:center; gap:6px; font-size:11px; color:#7D8594; }
+  .s2 .band b { color:#FACC15; }
+  .s2 .areas { display:flex; flex-direction:column; gap:9px; }
+  .s2 .area { display:grid; grid-template-columns:70px 1fr 34px; gap:10px; align-items:center; font-size:12px; color:#B8BFCC; font-weight:600; }
+  .s2 .area i { height:6px; border-radius:3px; background:#151922; position:relative; overflow:hidden; }
+  .s2 .area i::after { content:""; position:absolute; inset:0; width:var(--w); background:var(--c); box-shadow:0 0 10px var(--c); border-radius:3px; }
+  .s2 .area .n { font-family:"Sora",sans-serif; text-align:right; font-variant-numeric:tabular-nums; }
+  .s2 .delta { font-size:12px; color:#9AA2B1; text-align:center; }
+  .s2 .delta b { color:#4ADE80; }
+
+  /* ---------- S3: Pattern Map ---------- */
+  .s3 .map { background:#0C0F14; border:1px solid #1C2029; border-radius:14px; }
+  .s3 .map svg { width:100%; height:auto; display:block; }
+  .s3 .map text { font-family:"Manrope",sans-serif; font-size:9px; font-weight:600; fill:#9AA2B1; }
+  .s3 .map .hot { fill:#E6E9EF; }
+  .s3 .pulse { animation:pulse 2s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+  @keyframes pulse { 0%,100% { opacity:.25; transform:scale(1); } 50% { opacity:.6; transform:scale(1.35); } }
+  .s3 .sum { display:flex; justify-content:space-between; font-size:12px; color:#9AA2B1; }
+  .s3 .sum b { font-family:"Sora",sans-serif; color:#E6E9EF; font-size:15px; }
+</style>
+
+<h2>Round 5: give X1 a signature</h2>
+<p class="subtitle">X1 stays the base (near-black, Sora + Manrope, colour only where it means something). Each option adds one thing only 90X has. Click the one that makes you want to open the app.</p>
+
+<div class="cards">
+  <!-- S1 -->
+  <div class="card" data-choice="s1-grid" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone s1">
+        <div class="row"><span class="brand">90X</span><span class="k">streak 12</span></div>
+        <div class="headline">Day 17 <span>of 90</span></div>
+        <div class="days">
+          <div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d miss"></div><div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d half"></div><div class="d x"></div>
+          <div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d x"></div><div class="d today"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div>
+        </div>
+        <div class="legend"><span>✕ done</span><span>╱ partial</span><span>▢ today</span><span>dark red: missed</span></div>
+        <div class="coach"><span class="dot">C</span><span>3 missions left to cross off today. Start with <b>sliding window</b>.</span></div>
+        <div class="mini"><div class="path"><b>dsa</b> / which-pattern / medium</div><div class="q">Longest stretch of daily prices where max − min ≤ k. Which pattern?</div><div class="btn">Answer</div></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>S1 · The 90 Grid</h3>
+      <p class="meta">The name made visual: 90 squares, and you cross one off with an X each day you finish your missions (the X stamps in with a small animation). The whole campaign in one glance, and the X becomes the logo mark.</p>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="card" data-choice="s2-scoreboard" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone s2">
+        <div class="row"><span class="brand">90X</span><span class="k">day 17 / 90</span></div>
+        <div class="dial">
+          <svg viewBox="0 0 190 190">
+            <circle cx="95" cy="95" r="80" fill="none" stroke="#151922" stroke-width="12" stroke-dasharray="377 503" transform="rotate(135 95 95)" stroke-linecap="round"/>
+            <circle cx="95" cy="95" r="80" fill="none" stroke="#FACC15" stroke-width="12" stroke-dasharray="177 503" transform="rotate(135 95 95)" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(250,204,21,.6))"/>
+          </svg>
+          <div class="center"><div class="score">47</div><div class="lab">READINESS</div></div>
+        </div>
+        <div class="band"><span>0–39 not yet</span><b>40–69 getting there</b><span>70+ ready</span></div>
+        <div class="areas">
+          <div class="area">DSA<i style="--w:61%;--c:#7DB3FF"></i><span class="n">61</span></div>
+          <div class="area">Design<i style="--w:28%;--c:#F87171"></i><span class="n">28</span></div>
+          <div class="area">CS core<i style="--w:54%;--c:#FACC15"></i><span class="n">54</span></div>
+          <div class="area">Java<i style="--w:40%;--c:#FACC15"></i><span class="n">40</span></div>
+        </div>
+        <div class="delta"><b>+6</b> this week · system design is holding you back</div>
+        <div class="coach"><span class="dot">C</span><span>Today: 2 design cards, then <b>Design a rate limiter</b>.</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>S2 · Scoreboard</h3>
+      <p class="meta">WHOOP-style: one readiness number from 0–100 on a glowing dial, coloured by band (red / yellow / green) so you know your state in half a second. Each area uses the same scale. Pitch black, numbers glow.</p>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="card" data-choice="s3-pattern-map" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone s3">
+        <div class="row"><span class="brand">90X</span><span class="k">day 17 / 90 · streak 12</span></div>
+        <div class="sum"><span>Patterns mastered</span><b>6 / 18</b></div>
+        <div class="map">
+          <svg viewBox="0 0 300 300">
+            <g stroke="#1F2530" stroke-width="1.2">
+              <line x1="50" y1="40" x2="120" y2="60"/><line x1="120" y1="60" x2="200" y2="45"/><line x1="200" y1="45" x2="260" y2="90"/>
+              <line x1="120" y1="60" x2="95" y2="130"/><line x1="95" y1="130" x2="165" y2="150"/><line x1="200" y1="45" x2="165" y2="150"/>
+              <line x1="165" y1="150" x2="240" y2="170"/><line x1="95" y1="130" x2="55" y2="200"/><line x1="165" y1="150" x2="140" y2="225"/>
+              <line x1="240" y1="170" x2="250" y2="250"/><line x1="55" y1="200" x2="140" y2="225"/><line x1="140" y1="225" x2="80" y2="270"/><line x1="140" y1="225" x2="200" y2="270"/>
+            </g>
+            <line x1="120" y1="60" x2="95" y2="130" stroke="#7DB3FF" stroke-width="1.6"/><line x1="50" y1="40" x2="120" y2="60" stroke="#7DB3FF" stroke-width="1.6"/>
+            <circle cx="50" cy="40" r="9" fill="#7DB3FF"/><text x="50" y="62" text-anchor="middle" class="hot">Arrays</text>
+            <circle cx="120" cy="60" r="9" fill="#7DB3FF"/><text x="120" y="82" text-anchor="middle" class="hot">Two pointers</text>
+            <circle cx="200" cy="45" r="9" fill="#7DB3FF" opacity=".55"/><text x="200" y="30" text-anchor="middle">Stack</text>
+            <circle cx="260" cy="90" r="7" fill="#1F2530"/><text x="260" y="112" text-anchor="middle">Heap</text>
+            <circle cx="95" cy="130" r="16" fill="#F87171" class="pulse"/><circle cx="95" cy="130" r="9" fill="#F87171"/><text x="95" y="155" text-anchor="middle" class="hot">Sliding window</text>
+            <circle cx="165" cy="150" r="9" fill="#7DB3FF" opacity=".55"/><text x="165" y="173" text-anchor="middle">Binary search</text>
+            <circle cx="240" cy="170" r="7" fill="#1F2530"/><text x="240" y="192" text-anchor="middle">Trees</text>
+            <circle cx="55" cy="200" r="7" fill="#1F2530"/><text x="55" y="222" text-anchor="middle">Linked list</text>
+            <circle cx="140" cy="225" r="7" fill="#1F2530"/><text x="140" y="247" text-anchor="middle">Graphs</text>
+            <circle cx="250" cy="250" r="7" fill="#1F2530"/><text x="250" y="272" text-anchor="middle">Tries</text>
+            <circle cx="80" cy="270" r="7" fill="#1F2530"/><text x="80" y="292" text-anchor="middle">DP</text>
+            <circle cx="200" cy="270" r="7" fill="#1F2530"/><text x="200" y="292" text-anchor="middle">Backtracking</text>
+          </svg>
+        </div>
+        <div class="coach"><span class="dot">C</span><span><b>Sliding window</b> is blocking Binary search and Two-pointer mastery. 3 cards queued.</span></div>
+        <div class="mini"><div class="path"><b>dsa</b> / sliding-window / medium</div><div class="q">Longest stretch of daily prices where max − min ≤ k. Which pattern?</div><div class="btn">Answer</div></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>S3 · Pattern Map</h3>
+      <p class="meta">Your skills as a map: NeetCode's patterns as connected nodes that light up as you master them, and your weak spot pulses red. Tap a node to open its cards and problems. Same idea for system design and CS topics.</p>
+    </div>
+  </div>
+</div>

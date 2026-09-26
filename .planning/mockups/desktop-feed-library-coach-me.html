@@ -1,0 +1,296 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<style>
+  .app { --bg:#0A0C10; --sf:#0F1218; --sf2:#141820; --ln:#1C2029; --ln2:#262B36; --mu:#7D8594; --tx2:#AEB5C2; --tx:#E6E9EF;
+         --acc:#67E8F9; --accbg:#0E1E24; --dsa:#818CF8; --sd:#C084FC; --cs:#2DD4BF; --java:#FB923C; --sql:#F472B6;
+         --ok:#4ADE80; --warn:#FACC15; --bad:#F87171;
+         --t-display:700 32px/1.1 "Sora",sans-serif; --t-title:600 22px/1.25 "Sora",sans-serif; --t-heading:600 16px/1.4 "Sora",sans-serif;
+         --t-body:500 15px/1.55 "Manrope",sans-serif; --t-small:500 13px/1.45 "Manrope",sans-serif; --t-tag:700 12px/1 "Manrope",sans-serif;
+         background:var(--bg); color:var(--tx); font:var(--t-body); }
+  .display { font:var(--t-display); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .title { font:var(--t-title); letter-spacing:-.015em; }
+  .heading { font:var(--t-heading); }
+  .small { font:var(--t-small); color:var(--mu); }
+  .tag { font:var(--t-tag); padding:5px 9px; border-radius:6px; color:var(--c); background:color-mix(in srgb, var(--c) 14%, transparent); align-self:flex-start; }
+  .ok { color:var(--ok); } .warn { color:var(--warn); } .bad { color:var(--bad); }
+  .cap { margin:10px 0 36px; font-size:13px; line-height:1.45; }
+
+  .desk { border-radius:16px; border:1px solid #1C2029; overflow:hidden; display:grid; grid-template-columns:220px 1fr; min-height:600px; }
+  .side { border-right:1px solid var(--ln); padding:22px 14px; display:flex; flex-direction:column; gap:6px; }
+  .logo { font:700 20px/1 "Sora",sans-serif; letter-spacing:-.02em; padding:0 10px 18px; }
+  .logo span { color:var(--acc); }
+  .navi { display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; font:600 14px/1 "Manrope",sans-serif; color:var(--tx2); }
+  .navi svg { width:20px; height:20px; color:var(--mu); }
+  .navi.on { background:var(--sf2); color:var(--tx); }
+  .navi.on svg { color:var(--acc); }
+  .side .foot { margin-top:auto; padding:10px; display:flex; flex-direction:column; gap:4px; }
+  .main { padding:32px 40px; display:flex; flex-direction:column; gap:28px; min-width:0; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .cols { display:grid; gap:24px; align-items:start; }
+  .stack { display:flex; flex-direction:column; gap:24px; min-width:0; }
+  .card { background:var(--sf); border:1px solid var(--ln); border-radius:14px; }
+  .pad { padding:20px; display:flex; flex-direction:column; gap:16px; }
+  .list > * + * { border-top:1px solid var(--ln); }
+  .sectionhead { display:flex; justify-content:space-between; align-items:baseline; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c); margin-right:8px; vertical-align:1px; }
+  .btns { display:flex; gap:10px; }
+  .btn { border-radius:12px; padding:13px 20px; text-align:center; font:700 15px/1 "Manrope",sans-serif; }
+  .btn.p { background:var(--acc); color:#06222A; }
+  .btn.s { border:1px solid var(--ln2); color:var(--tx); }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .chip { display:flex; align-items:center; gap:8px; border-radius:999px; padding:8px 14px; font:600 13px/1 "Manrope",sans-serif; color:var(--tx2); border:1px solid var(--ln); }
+  .chip::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--c); }
+  .chip.on { color:var(--tx); border-color:color-mix(in srgb, var(--c) 60%, transparent); background:color-mix(in srgb, var(--c) 10%, transparent); }
+  .avatar { width:28px; height:28px; border-radius:8px; flex:none; display:grid; place-items:center; background:var(--accbg); color:var(--acc); font:700 13px/1 "Sora",sans-serif; }
+  .avatar.f { background:#1B1630; color:#C4B5FD; }
+  .q { font:600 20px/1.45 "Sora",sans-serif; }
+  .code { font-weight:700; color:var(--java); }
+  .input { border:1.5px solid var(--acc); border-radius:12px; padding:16px; min-height:110px; color:var(--tx); }
+  .kv { display:flex; justify-content:space-between; padding:12px 18px; }
+  .bar { height:6px; border-radius:3px; background:#161A22; position:relative; overflow:hidden; }
+  .bar::after { content:""; position:absolute; inset:0; width:var(--w); background:var(--c); border-radius:3px; }
+
+  .seg { display:inline-flex; gap:4px; background:var(--sf); border:1px solid var(--ln); border-radius:12px; padding:4px; }
+  .seg span { text-align:center; padding:9px 16px; border-radius:9px; font:600 13px/1 "Manrope",sans-serif; color:var(--mu); }
+  .seg span.on { background:var(--sf2); color:var(--tx); }
+  .map svg { width:100%; height:auto; display:block; }
+  .map text { font:600 10px "Manrope",sans-serif; fill:#8C94A3; }
+  .map .hot { fill:var(--tx); }
+  .pulse { animation:pulse 2s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+  @keyframes pulse { 0%,100% { opacity:.2; transform:scale(1); } 50% { opacity:.55; transform:scale(1.4); } }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation:none; } }
+  .table { display:grid; grid-template-columns:1fr 90px 120px 110px; }
+  .table > div { padding:14px 18px; border-top:1px solid var(--ln); display:flex; align-items:center; }
+  .table .th { border-top:none; font:600 13px/1 "Manrope",sans-serif; color:var(--mu); }
+  .table .sel { background:var(--sf2); }
+  .opts { display:flex; gap:8px; }
+  .opts span { flex:1; text-align:center; padding:11px 0; border-radius:10px; border:1px solid var(--ln2); font:600 13px/1 "Manrope",sans-serif; color:var(--tx2); }
+  .opts span.on { border-color:var(--acc); color:var(--acc); background:var(--accbg); }
+  .lbl { font:600 13px/1 "Manrope",sans-serif; color:var(--tx2); margin-bottom:10px; }
+  .field { border:1px solid var(--ln2); border-radius:12px; padding:14px; color:var(--tx2); }
+
+  .msg { max-width:72%; padding:14px 16px; border-radius:14px; }
+  .msg.me { align-self:flex-end; background:var(--accbg); border:1px solid #17363F; }
+  .msg.ai { align-self:flex-start; background:var(--sf); border:1px solid var(--ln); color:var(--tx2); }
+  .cite { display:block; margin-top:10px; font:600 13px/1 "Manrope",sans-serif; color:var(--acc); }
+  .composer { display:flex; gap:10px; align-items:center; border:1px solid var(--ln2); border-radius:14px; padding:10px 10px 10px 16px; color:var(--mu); }
+  .send { width:38px; height:38px; border-radius:10px; background:var(--acc); display:grid; place-items:center; color:#06222A; margin-left:auto; }
+  .hist { padding:12px 18px; display:flex; flex-direction:column; gap:4px; }
+
+  .dial { position:relative; width:190px; height:190px; margin:0 auto; }
+  .dial svg { width:100%; height:100%; }
+  .dial .c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .glow { color:var(--warn); text-shadow:0 0 22px rgba(250,204,21,.3); font-size:48px; }
+  .area { display:grid; grid-template-columns:80px 1fr 36px; gap:14px; align-items:center; }
+  .area .n { font:600 15px/1 "Sora",sans-serif; text-align:right; }
+  .vs { display:grid; grid-template-columns:1fr 70px 70px; padding:14px 18px; gap:12px; align-items:center; }
+  .vs .v { font:600 15px/1 "Sora",sans-serif; text-align:right; }
+  .act { display:flex; gap:12px; padding:14px 18px; align-items:flex-start; }
+  .spark { width:100%; height:70px; display:block; }
+</style>
+
+<h2>Desktop: every tab</h2>
+<p class="subtitle">Same sizes and fonts as mobile. The extra width brings back the details: problem numbers, why-this-card, friend activity, the check-in panel inline.</p>
+
+<div class="app" style="background:transparent">
+
+<!-- ================= FEED ================= -->
+<div class="app desk">
+  <div class="side">
+    <div class="logo">90<span>X</span></div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Today</div>
+    <div class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg>Feed</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg>Library</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Coach</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</div>
+    <div class="foot"><span class="small">Day 17 of 90</span><span class="small">12-day streak</span></div>
+  </div>
+  <div class="main">
+    <div class="topbar"><span class="title">Feed</span>
+      <div class="chips"><span class="chip on" style="--c:var(--dsa)">DSA</span><span class="chip" style="--c:var(--sd)">Design</span><span class="chip on" style="--c:var(--cs)">CS</span><span class="chip on" style="--c:var(--java)">Java</span><span class="chip" style="--c:var(--sql)">SQL</span></div></div>
+    <div class="cols" style="grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)">
+      <div class="card pad" style="gap:20px;padding:28px">
+        <span class="tag" style="--c:var(--java)">Java · Explain · Medium</span>
+        <div class="q">Two threads call <span class="code">put()</span> on the same <span class="code">HashMap</span> at once. What can go wrong, and what would you use instead?</div>
+        <div class="input">Updates can get lost, and a resize can corrupt the buckets. Use ConcurrentHashMap.</div>
+        <div class="btns" style="justify-content:space-between"><span class="small" style="align-self:center">Enter to check · Tab to skip</span><div class="btns"><div class="btn s">Skip</div><div class="btn p">Check answer</div></div></div>
+      </div>
+      <div class="stack">
+        <div class="card pad">
+          <span class="heading">Why this card</span>
+          <span style="color:var(--tx2)">Java is your weakest area this week (40). You last saw HashMap internals 6 days ago.</span>
+        </div>
+        <div class="card">
+          <div class="pad" style="padding-bottom:6px"><div class="sectionhead"><span class="heading">This session</span><span class="small">4 of 12</span></div><div class="bar" style="--w:33%;--c:var(--acc)"></div></div>
+          <div class="list">
+            <div class="kv"><span><span class="dot" style="--c:var(--dsa)"></span>Sliding window</span><span class="ok">100%</span></div>
+            <div class="kv"><span><span class="dot" style="--c:var(--cs)"></span>Deadlock conditions</span><span class="warn">50%</span></div>
+            <div class="kv"><span><span class="dot" style="--c:var(--java)"></span>volatile vs synchronized</span><span class="bad">25%</span></div>
+          </div>
+        </div>
+        <span class="small">Wrong or unclear card? <span style="color:var(--tx2);font-weight:600">Report it</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="cap">Feed: the card gets the wide column; the side shows why you're seeing it and how this session is going. Keyboard shortcuts on desktop.</p>
+
+<!-- ================= LIBRARY ================= -->
+<div class="app desk">
+  <div class="side">
+    <div class="logo">90<span>X</span></div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Today</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg>Feed</div>
+    <div class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg>Library</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Coach</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</div>
+    <div class="foot"><span class="small">Day 17 of 90</span><span class="small">12-day streak</span></div>
+  </div>
+  <div class="main">
+    <div class="topbar"><span class="title">Library</span><div class="seg"><span class="on">DSA</span><span>Design</span><span>CS</span><span>Java</span><span>SQL</span></div></div>
+    <div class="cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr)">
+      <div class="stack" style="gap:12px">
+        <div class="sectionhead"><span class="heading">Patterns</span><span class="small">6 of 18</span></div>
+        <div class="card map">
+          <svg viewBox="0 0 220 300">
+            <g stroke="#20252F" stroke-width="1.2"><line x1="40" y1="30" x2="120" y2="50"/><line x1="120" y1="50" x2="185" y2="95"/><line x1="120" y1="50" x2="75" y2="120"/><line x1="75" y1="120" x2="150" y2="160"/><line x1="185" y1="95" x2="150" y2="160"/><line x1="150" y1="160" x2="180" y2="230"/><line x1="75" y1="120" x2="45" y2="200"/><line x1="45" y1="200" x2="100" y2="265"/><line x1="150" y1="160" x2="100" y2="265"/></g>
+            <line x1="40" y1="30" x2="120" y2="50" stroke="#818CF8" stroke-width="1.6"/><line x1="120" y1="50" x2="75" y2="120" stroke="#818CF8" stroke-width="1.6"/>
+            <circle cx="40" cy="30" r="8" fill="#818CF8"/><text x="40" y="54" text-anchor="middle" class="hot">Arrays</text>
+            <circle cx="120" cy="50" r="8" fill="#818CF8"/><text x="120" y="74" text-anchor="middle" class="hot">Two pointers</text>
+            <circle cx="185" cy="95" r="8" fill="#818CF8" opacity=".45"/><text x="185" y="119" text-anchor="middle">Stack</text>
+            <circle cx="75" cy="120" r="15" fill="#F87171" class="pulse"/><circle cx="75" cy="120" r="8" fill="#F87171"/><text x="75" y="145" text-anchor="middle" class="hot">Sliding window</text>
+            <circle cx="150" cy="160" r="8" fill="#818CF8" opacity=".45"/><text x="150" y="184" text-anchor="middle">Binary search</text>
+            <circle cx="180" cy="230" r="6" fill="#20252F"/><text x="180" y="252" text-anchor="middle">Trees</text>
+            <circle cx="45" cy="200" r="6" fill="#20252F"/><text x="45" y="222" text-anchor="middle">Linked list</text>
+            <circle cx="100" cy="265" r="6" fill="#20252F"/><text x="100" y="288" text-anchor="middle">Graphs</text>
+          </svg>
+        </div>
+      </div>
+      <div class="stack" style="gap:12px">
+        <div class="sectionhead"><span class="heading">Sliding window</span><span class="small">3 of 14 solved</span></div>
+        <div class="card table">
+          <div class="th">Problem</div><div class="th">Level</div><div class="th">Companies</div><div class="th">Status</div>
+          <div>Best Time to Buy and Sell Stock</div><div class="small">Easy</div><div class="small">12</div><div class="ok">Solved</div>
+          <div>Longest Substring w/o Repeating</div><div class="small">Medium</div><div class="small">31</div><div class="ok">Solved</div>
+          <div class="sel">Minimum Window Substring</div><div class="sel small">Hard</div><div class="sel small">18</div><div class="sel" style="color:var(--acc)">Check in</div>
+          <div>Sliding Window Maximum</div><div class="small">Hard</div><div class="small">14</div><div class="small">Not started</div>
+          <div>Permutation in String</div><div class="small">Medium</div><div class="small">9</div><div class="warn">With hints</div>
+        </div>
+      </div>
+      <div class="card pad" style="gap:20px">
+        <div class="stack" style="gap:6px"><span class="heading">Minimum Window Substring</span><span class="small">LeetCode 76 · NeetCode 150 · video</span></div>
+        <div><div class="lbl">How did it go?</div><div class="opts"><span class="on">Solved</span><span>Hints</span><span>Failed</span></div></div>
+        <div><div class="lbl">Time</div><div class="opts"><span>15m</span><span class="on">30m</span><span>45m</span><span>60m+</span></div></div>
+        <div class="field">Needed the have/need counter trick.</div>
+        <div class="btns"><div class="btn s" style="flex:1">LeetCode</div><div class="btn p" style="flex:1">Check in</div></div>
+        <div class="small">Rohan solved this 2 days ago in 25m</div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="cap">Library: map, table of problems (level, company count, status), and the check-in panel inline instead of a sheet. Shows if your friend solved it.</p>
+
+<!-- ================= COACH ================= -->
+<div class="app desk">
+  <div class="side">
+    <div class="logo">90<span>X</span></div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Today</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg>Feed</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg>Library</div>
+    <div class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Coach</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</div>
+    <div class="foot"><span class="small">Day 17 of 90</span><span class="small">12-day streak</span></div>
+  </div>
+  <div class="main">
+    <div class="topbar"><span class="title">Coach</span><span class="small">Knows your last 17 days</span></div>
+    <div class="cols" style="grid-template-columns:minmax(0,1fr) minmax(0,2.2fr)">
+      <div class="stack">
+        <div class="card list">
+          <div class="hist"><span class="heading">Design mock</span><span class="small">30 min · rate limiter suggested</span></div>
+          <div class="hist"><span class="heading">Behavioral mock</span><span class="small">20 min · STAR</span></div>
+          <div class="hist"><span class="heading">Weekly review</span><span class="small">Week 3 ready</span></div>
+          <div class="hist"><span class="heading">Plan next week</span><span class="small">Adjust focus</span></div>
+        </div>
+        <div class="stack" style="gap:12px">
+          <span class="heading">Recent</span>
+          <div class="card list">
+            <div class="hist"><span>Consistent hashing</span><span class="small">Today</span></div>
+            <div class="hist"><span>Design mock: URL shortener · 62</span><span class="small">Tuesday</span></div>
+            <div class="hist"><span>Week 2 review</span><span class="small">Sunday</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card pad" style="min-height:460px;gap:18px;padding:24px">
+        <div class="msg me">Why is consistent hashing better than mod-N for a cache cluster?</div>
+        <div class="msg ai">With mod-N, adding one server changes the mapping for almost every key, so the whole cache misses at once. Consistent hashing only moves the keys between the new node and its neighbour, about 1/N of them.<span class="cite">System Design Primer · Consistent hashing ↗</span></div>
+        <div class="msg ai">It's on your design weak list. Want 3 cards on it in your feed?
+          <div class="btns" style="margin-top:12px"><div class="btn s" style="padding:10px 14px;font-size:13px">Not now</div><div class="btn p" style="padding:10px 14px;font-size:13px">Add 3 cards</div></div></div>
+        <div class="composer" style="margin-top:auto">Ask the coach<span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="cap">Coach: modes and recent sessions on the left, chat on the right. The coach can act on what it suggests (add cards to your feed).</p>
+
+<!-- ================= ME ================= -->
+<div class="app desk">
+  <div class="side">
+    <div class="logo">90<span>X</span></div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Today</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></svg>Feed</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg>Library</div>
+    <div class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Coach</div>
+    <div class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</div>
+    <div class="foot"><span class="small">Day 17 of 90</span><span class="small">12-day streak</span></div>
+  </div>
+  <div class="main">
+    <div class="topbar"><span class="title">Me</span><span class="small">SDE-2 Backend · Java · 90 days</span></div>
+    <div class="cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr)">
+      <div class="card pad" style="gap:22px">
+        <div class="dial">
+          <svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" fill="none" stroke="#161A22" stroke-width="12" stroke-dasharray="368 490" transform="rotate(135 95 95)" stroke-linecap="round"/><circle cx="95" cy="95" r="78" fill="none" stroke="#FACC15" stroke-width="12" stroke-dasharray="173 490" transform="rotate(135 95 95)" stroke-linecap="round" style="filter:drop-shadow(0 0 5px rgba(250,204,21,.5))"/></svg>
+          <div class="c"><span class="display glow">47</span><span class="small">Readiness</span></div>
+        </div>
+        <div class="stack" style="gap:6px"><span class="small">Last 14 days</span>
+          <svg class="spark" viewBox="0 0 300 70" preserveAspectRatio="none"><path d="M0,58 L23,57 L46,55 L69,56 L92,50 L115,49 L138,46 L161,47 L184,40 L207,38 L230,36 L253,33 L276,30 L300,28 L300,70 L0,70Z" fill="rgba(250,204,21,.08)"/><polyline fill="none" stroke="#FACC15" stroke-width="2" points="0,58 23,57 46,55 69,56 92,50 115,49 138,46 161,47 184,40 207,38 230,36 253,33 276,30 300,28"/><circle cx="300" cy="28" r="3.5" fill="#FACC15"/></svg>
+          <span class="small"><span class="ok">+6</span> this week</span></div>
+      </div>
+      <div class="stack">
+        <div class="card pad" style="gap:16px">
+          <span class="heading">Areas</span>
+          <div class="area"><span><span class="dot" style="--c:var(--dsa)"></span>DSA</span><div class="bar" style="--w:61%;--c:var(--dsa)"></div><span class="n warn">61</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--sd)"></span>Design</span><div class="bar" style="--w:28%;--c:var(--sd)"></div><span class="n bad">28</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--cs)"></span>CS</span><div class="bar" style="--w:74%;--c:var(--cs)"></div><span class="n ok">74</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--java)"></span>Java</span><div class="bar" style="--w:40%;--c:var(--java)"></div><span class="n warn">40</span></div>
+          <div class="area"><span><span class="dot" style="--c:var(--sql)"></span>SQL</span><div class="bar" style="--w:52%;--c:var(--sql)"></div><span class="n warn">52</span></div>
+        </div>
+        <div class="card pad" style="gap:10px">
+          <span class="heading">Weakest patterns</span>
+          <span><span class="dot" style="--c:var(--dsa)"></span>Sliding window <span class="small">· 1 of 4 recent</span></span>
+          <span><span class="dot" style="--c:var(--sd)"></span>Explaining trade-offs <span class="small">· mock score 48</span></span>
+          <span><span class="dot" style="--c:var(--java)"></span>Concurrency <span class="small">· 25% on cards</span></span>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="stack" style="gap:12px">
+          <div class="sectionhead"><span class="heading">This week</span><span class="small">You · Rohan</span></div>
+          <div class="card list">
+            <div class="vs"><span>Readiness</span><span class="v">47</span><span class="v" style="color:var(--mu)">52</span></div>
+            <div class="vs"><span>Streak</span><span class="v">12</span><span class="v" style="color:var(--mu)">9</span></div>
+            <div class="vs"><span>Solved</span><span class="v">14</span><span class="v" style="color:var(--mu)">11</span></div>
+            <div class="vs"><span>Card accuracy</span><span class="v">68%</span><span class="v" style="color:var(--mu)">74%</span></div>
+          </div>
+        </div>
+        <div class="stack" style="gap:12px">
+          <span class="heading">Rohan's activity</span>
+          <div class="card list">
+            <div class="act"><span class="avatar f">R</span><div><div>Solved Minimum Window Substring</div><div class="small">25m · "sliding window finally clicked"</div></div></div>
+            <div class="act"><span class="avatar f">R</span><div><div>Design mock: URL shortener · 71</div><div class="small">Yesterday</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="cap">Me: dial with a 14-day trend, all five areas, weakest patterns, you vs Rohan, and Rohan's latest activity.</p>
+
+</div>
