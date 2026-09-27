@@ -124,6 +124,20 @@ def lesson_cards(args, con) -> None:
     print(f"cards: {kept} kept, {rejected} rejected ({share:.0%}), spend ${llm.spend_usd(con):.2f}")
 
 
+def gaps(args, con) -> None:
+    from pathlib import Path
+
+    from . import llm
+    from .config import REPO_DIR
+    from .lessons import gaps as g
+
+    rows = g.run(con, llm.LLM(con), domains=args.domains or None, tier=args.tier)
+    out = Path(REPO_DIR) / ".planning" / "taxonomy-gaps.md"
+    out.write_text(g.report(rows), encoding="utf-8")
+    kept = sum(1 for r in rows if r["verdict"] == "gap")
+    print(f"gaps: {kept} of {len(rows)} candidates are real, written to {out}, spend ${llm.spend_usd(con):.2f}")
+
+
 def roadmaps(args, con) -> None:
     from . import roadmaps as rm
 
@@ -155,7 +169,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:
