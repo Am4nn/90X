@@ -5,7 +5,7 @@ import json
 import re
 import subprocess
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from urllib.parse import urljoin
 
 import httpx
@@ -34,6 +34,12 @@ def _git(src: Source, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     url = f"https://github.com/{src.target}.git"
     subprocess.run(["git", "clone", "--depth", "1", "--quiet", "--no-checkout", url, str(dest)], check=True)
+    if src.paths:
+        # Only some of the tree is wanted. Check out with no pathspec: a
+        # pathspec overrides the skip-worktree bits and materialises everything.
+        subprocess.run(["git", "-C", str(dest), "sparse-checkout", "set", "--no-cone", *src.paths], check=True)
+        subprocess.run(["git", "-C", str(dest), "checkout", "--quiet", "HEAD"], check=True)
+        return
     # git exits 0 even when it skips files with invalid names, so check stderr too.
     co = subprocess.run(["git", "-C", str(dest), "checkout", "--quiet", "HEAD", "--", "."],
                         capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -85,7 +91,18 @@ def _url_index(src: Source, dest: Path) -> None:
             _fetch(client, urljoin(src.target, link), dest / Path(link).name)
 
 
-HANDLERS = {"hf": _hf, "git": _git, "url": _url, "url_index": _url_index}
+def _url_links(src: Source, dest: Path) -> None:
+    """Fetch an index page and save every page it links to matching link_pattern."""
+    pattern = re.compile(f'href="({src.link_pattern})"')
+    with httpx.Client(follow_redirects=True, timeout=60, headers={"user-agent": "90x-pipeline"}) as client:
+        index = client.get(src.target).text
+        (dest / "_index.html").parent.mkdir(parents=True, exist_ok=True)
+        (dest / "_index.html").write_text(index, encoding="utf-8")
+        for link in sorted(set(pattern.findall(index))):
+            _fetch(client, urljoin(src.target, link), dest / f"{PurePosixPath(link).name}.html")
+
+
+HANDLERS = {"hf": _hf, "git": _git, "url": _url, "url_index": _url_index, "url_links": _url_links}
 
 
 def _dir_size(path: Path) -> int:

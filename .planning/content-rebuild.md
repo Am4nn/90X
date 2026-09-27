@@ -105,17 +105,24 @@ generation. It is never rendered to a user again.
 
 ## Sources Aman proposed
 
-Both are useful, neither can be imported.
+Both get imported, as **private corpus only**.
 
 - **roadmap.sh** (`kamranahmedse/developer-roadmap`, GitHub license
   `NOASSERTION`): *"You are allowed to use this material for personal use but
   are not allowed to use it for any other purpose including publishing … the
-  content … in any form."* 90x is multi-user, so importing the content is out.
+  content … in any form."*
 - **systemdesign.io**: states no license, which means all rights reserved.
+  55 questions by category, company and difficulty.
 
-Use both as **taxonomy validators** — check our 274 topics against their
-coverage, find the gaps, author our own material for them. Structure and "what
-real interviews ask" are facts; the prose is theirs.
+Aman's call (2026-09-27): this is his personal prep, import both. Raised once
+that 90x is multi-user on a public domain, he confirmed. Phase 3 makes this
+largely moot anyway — raw sources are never rendered to a user. They feed
+lesson generation and the vector index, and the lessons we serve are ours.
+
+Their most valuable contribution is **structure**, and that is not copyrightable:
+roadmap.sh tells us what a domain should cover and in what order;
+systemdesign.io tells us what real interviews actually ask. Use both to find
+gaps in our 274 topics first, before using a word of their prose.
 
 ## Taxonomy questions for Aman
 

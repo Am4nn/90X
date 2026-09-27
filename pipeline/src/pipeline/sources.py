@@ -13,7 +13,7 @@ hidden test suites (that's why they're ~18 GB).
 from dataclasses import dataclass
 from typing import Literal
 
-Kind = Literal["hf", "git", "url", "url_index"]
+Kind = Literal["hf", "git", "url", "url_index", "url_links"]
 Role = Literal["cards", "enrich", "reference"]
 
 
@@ -26,6 +26,8 @@ class Source:
     role: Role
     note: str
     size_gb: float = 0.0  # approximate download size
+    paths: tuple[str, ...] = ()  # git: sparse-checkout these paths instead of the whole tree
+    link_pattern: str = ""  # url_links: regex for the hrefs to follow from the index page
 
 
 SOURCES: list[Source] = [
@@ -128,4 +130,19 @@ SOURCES: list[Source] = [
            "reference", "Questions asked at big companies. CC0", 0.0),
     Source("kdn251-interviews", "behavioral", "git", "kdn251/interviews", "reference",
            "Interview prep collection. MIT", 0.02),
+
+    # --- Structure sources (private corpus only; see .planning/content-rebuild.md) ---
+    # Neither is rendered to users. They seed lesson generation and the vector
+    # index, and their real value is structure: what a domain must cover, and
+    # what real interviews actually ask.
+    Source("roadmap-sh", "system_design", "git", "kamranahmedse/developer-roadmap", "reference",
+           "One short authoritative definition per roadmap node, plus the node ordering. "
+           "Copyright nilbuild (was kamranahmedse), personal use only - never rendered to users. "
+           "10,899 node files across 94 roadmaps; sparse-checkout keeps the text and drops the "
+           "repo's own tooling.", 0.04,
+           paths=("roadmaps/*/content/",)),
+    Source("systemdesign-io", "system_design", "url_links", "https://systemdesign.io/", "reference",
+           "55 system design questions from real interviews: difficulty, company tags and the "
+           "follow-ups an interviewer probes with. No solutions - the site is still writing them.",
+           0.01, link_pattern=r"/question/[a-z0-9-]+"),
 ]
