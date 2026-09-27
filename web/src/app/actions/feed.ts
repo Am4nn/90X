@@ -36,6 +36,7 @@ const answerInput = z.union([
   z.strictObject({ cardId, clientId, choice: z.int().min(0).max(20) }),
   z.strictObject({ cardId, clientId, selfMark: z.enum(["got", "missed"]), answer: z.string().max(4000).optional() }),
   z.strictObject({ cardId, clientId, answer: z.string().trim().min(1).max(4000) }),
+  z.strictObject({ cardId, clientId, declare: z.enum(["new_to_me", "known"]) }),
 ]);
 
 async function cardOrEmpty(userId: string, card: CardView | null): Promise<NextCardState> {
@@ -60,6 +61,9 @@ export async function submitAnswer(input: unknown): Promise<AnswerState> {
     const result = await answerCard(viewer.id, parsed.data);
     if (!result) return { error: "That card is no longer in the feed. Go to the next one." };
     if ("needsSelfMark" in result || "duplicate" in result) return result;
+    // "I already know this" is earned: the reader has not answered enough of
+    // this topic yet, and the button should not have been offered.
+    if ("notEligible" in result) return { error: "Answer a few more cards on this topic first." };
     return { result, session: await sessionStats(viewer.id) };
   } catch (e) {
     console.error("answer failed", e);

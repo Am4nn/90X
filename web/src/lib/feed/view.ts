@@ -26,6 +26,8 @@ export type CardView = {
   topic: { slug: string; name: string; area: FeedArea };
   reason: CardReason;
   sourceTitle: string | null;
+  /** Whether the reader has earned the right to retire cards on this topic. */
+  canDeclareKnown: boolean;
   /** Position in the diagnostic, 1-based, while one is running. */
   diagnostic: { index: number; total: number } | null;
 };
@@ -35,6 +37,9 @@ export type AnswerInput = (
   | { cardId: string; choice: number }
   | { cardId: string; skipped: true }
   | { cardId: string; selfMark: "got" | "missed"; answer?: string }
+  // The reader telling us something the card cannot know: that this is their
+  // first encounter, or that they knew it before 90x ever showed it to them.
+  | { cardId: string; declare: "new_to_me" | "known" }
 ) & {
   /** Made by the browser for each answer, so an offline answer sent twice is graded once. */
   clientId?: string;
@@ -122,6 +127,7 @@ export function cardView(
   },
   reason: CardReason,
   diagnostic: CardView["diagnostic"],
+  canDeclareKnown = false,
 ): CardView | null {
   if (!isFeedArea(row.area)) return null;
   const format = row.format as CardFormat;
@@ -135,6 +141,7 @@ export function cardView(
     topic: { slug: row.topicSlug, name: row.topicName, area: row.area },
     reason,
     sourceTitle: sourceLinks(row.sourceRefs)[0]?.title ?? null,
+    canDeclareKnown,
     diagnostic,
   };
 }

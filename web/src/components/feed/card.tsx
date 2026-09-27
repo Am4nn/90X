@@ -57,7 +57,7 @@ export function FeedCard({
   const [phase, setPhase] = useState<Phase>({ kind: "ask" });
   const [answer, setAnswer] = useState("");
   const [showOptions, setShowOptions] = useState(false);
-  const [busy, setBusy] = useState<"check" | "skip" | "option" | "self" | null>(null);
+  const [busy, setBusy] = useState<"check" | "skip" | "option" | "self" | "new_to_me" | "known" | null>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
   const saveForLater = async (input: AnswerInput & { clientId: string }, choice: number | null) => {
@@ -174,6 +174,32 @@ export function FeedCard({
               Show options
             </button>
           )}
+          {/* The two things a card cannot work out about its reader. "New to me"
+              is always offered: only they know whether they have met this idea.
+              "I already know this" is earned, so it appears once they have a
+              real record on the topic. */}
+          <div className="flex flex-wrap gap-4">
+            <button
+              type="button"
+              disabled={pending}
+              aria-busy={label === "new_to_me" || undefined}
+              onClick={() => submit("new_to_me", { cardId: card.id, declare: "new_to_me" })}
+              className="text-small font-semibold text-cyan underline-offset-2 hover:underline disabled:opacity-60"
+            >
+              {label === "new_to_me" ? "Opening…" : "New to me — show me the answer"}
+            </button>
+            {card.canDeclareKnown && (
+              <button
+                type="button"
+                disabled={pending}
+                aria-busy={label === "known" || undefined}
+                onClick={() => submit("known", { cardId: card.id, declare: "known" })}
+                className="text-small font-semibold text-mute underline-offset-2 hover:text-text-2 hover:underline disabled:opacity-60"
+              >
+                {label === "known" ? "Retiring…" : "I already know this"}
+              </button>
+            )}
+          </div>
           <div className="flex items-center justify-between gap-3">
             <span className="hidden text-small text-mute md:inline">Ctrl or ⌘ + Enter to check</span>
             <div className="flex flex-1 gap-2.5 md:flex-none">
