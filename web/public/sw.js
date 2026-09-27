@@ -14,6 +14,8 @@ const MAX_PAGES = 40;
 const MAX_ASSETS = 300;
 // Auth flow and APIs are never cached. Server actions are POSTs and never reach the cache.
 const NEVER_CACHED = ["/api/", "/auth/", "/sign-in", "/setup", "/pending"];
+// Bumped by forget-pages (sign-out), so a page fetched before it is never written after it.
+let pageEpoch = 0;
 
 self.addEventListener("install", (event) => {
   // A failed precache must not stop the worker installing: push depends on it too.
@@ -54,6 +56,7 @@ self.addEventListener("message", (event) => {
   } else if (data.type === "warm-pages") {
     event.waitUntil(Promise.all(WARM_PAGES.map((path) => cachePage(path, { onlyIfMissing: true }).catch(() => undefined))));
   } else if (data.type === "forget-pages") {
+    pageEpoch++;
     event.waitUntil(caches.delete(PAGES));
   }
 });
@@ -78,11 +81,12 @@ function storableAsset(url, response) {
 }
 
 async function navigate(event, url) {
+  const epoch = pageEpoch;
   try {
     const response = await fetch(event.request);
     if (cacheablePage(url) && storablePage(response)) {
       const copy = response.clone();
-      event.waitUntil(put(PAGES, pageKey(url), copy, MAX_PAGES));
+      event.waitUntil(put(PAGES, pageKey(url), copy, MAX_PAGES, () => epoch === pageEpoch));
     }
     return response;
   } catch (error) {
@@ -109,9 +113,12 @@ async function asset(event) {
   return cached;
 }
 
-async function put(cacheName, key, response, max) {
+// `stillWanted` is checked once the cache is open: a write to a cache deleted
+// after that lands in the orphaned copy, which nothing reads.
+async function put(cacheName, key, response, max, stillWanted = () => true) {
   try {
     const cache = await caches.open(cacheName);
+    if (!stillWanted()) return;
     await cache.put(key, response);
     // Keys come back oldest-written first, so the oldest go.
     const keys = await cache.keys();
@@ -144,11 +151,12 @@ async function cacheAssets(urls) {
 // names, so it can render offline without ever having been opened here.
 async function cachePage(path, { onlyIfMissing = false, cacheName = PAGES } = {}) {
   const url = new URL(path, self.location.origin);
+  const epoch = pageEpoch;
   if (onlyIfMissing && (await caches.match(pageKey(url), { ignoreVary: true }))) return;
   const response = await fetch(url.href, { credentials: "same-origin" });
   if (!storablePage(response)) return;
   const html = await response.clone().text();
-  await put(cacheName, pageKey(url), response, MAX_PAGES);
+  await put(cacheName, pageKey(url), response, MAX_PAGES, () => cacheName !== PAGES || epoch === pageEpoch);
   await cacheAssets(html.match(/\/_next\/static\/[^"'\s\\)<>]+/g) || []);
 }
 

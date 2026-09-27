@@ -1,6 +1,6 @@
 import type { CardView } from "@/lib/feed/view";
 import { cardsNeedRefresh, flushOutbox, type FlushSummary, pendingFor } from "./outbox";
-import { loadCards, outboxItems, queueAnswer, removeAnswer, saveCards } from "./store";
+import { dropCard, loadCards, outboxItems, queueAnswer, removeAnswer, saveCards } from "./store";
 
 // Browser side of the offline Feed. The app layout and the Feed both call
 // these on open and on reconnect; a call made while one is running joins it,
@@ -18,7 +18,11 @@ export function sendQueuedAnswers(userId: string, submit: Submit): Promise<Flush
       const items = pendingFor(await outboxItems(), userId);
       return await flushOutbox(items, {
         submit,
-        remove: removeAnswer,
+        // Its card goes from the saved copy too, or the next offline spell would serve it again.
+        remove: async (item) => {
+          await dropCard(userId, item.input.cardId);
+          await removeAnswer(item.clientId);
+        },
         save: async (item) => {
           await queueAnswer(item);
         },

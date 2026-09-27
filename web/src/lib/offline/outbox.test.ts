@@ -30,8 +30,8 @@ function outbox(items: OutboxItem[]) {
   const saved = new Map(items.map((i) => [i.clientId, i]));
   return {
     saved,
-    remove: async (clientId: string) => {
-      saved.delete(clientId);
+    remove: async (removed: OutboxItem) => {
+      saved.delete(removed.clientId);
     },
     save: async (next: OutboxItem) => {
       saved.set(next.clientId, next);

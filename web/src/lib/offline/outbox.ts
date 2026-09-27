@@ -56,7 +56,7 @@ export async function flushOutbox(
   items: OutboxItem[],
   deps: {
     submit: (input: OutboxItem["input"]) => Promise<Submitted>;
-    remove: (clientId: string) => Promise<void>;
+    remove: (item: OutboxItem) => Promise<void>;
     save: (item: OutboxItem) => Promise<void>;
   },
 ): Promise<FlushSummary> {
@@ -70,14 +70,14 @@ export async function flushOutbox(
       return summary;
     }
     if ("result" in state || "duplicate" in state) {
-      await deps.remove(item.clientId);
+      await deps.remove(item);
       summary.graded++;
       if ("session" in state) summary.session = state.session;
       continue;
     }
     const attempts = item.attempts + 1;
     if (attempts >= MAX_ATTEMPTS) {
-      await deps.remove(item.clientId);
+      await deps.remove(item);
       summary.dropped++;
       continue;
     }
