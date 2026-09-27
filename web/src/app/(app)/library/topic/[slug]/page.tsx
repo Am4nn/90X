@@ -19,7 +19,7 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
   const { slug } = await params;
   const [detail, studied] = await Promise.all([topicDetail(slug), isStudied(viewer.id, slug)]);
   if (!detail?.lesson) notFound();
-  const { topic, lesson } = detail;
+  const { topic, lesson, tricks } = detail;
   const practice = await practiceFor(lesson);
 
   return (
@@ -31,6 +31,20 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
       </div>
 
       <Markdown>{lesson.bodyMd}</Markdown>
+
+      {tricks.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="font-display text-heading font-semibold text-text">The shapes to reach for</h2>
+          <div className="flex flex-col gap-3">
+            {tricks.map((t) => (
+              <div key={t.id} className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-4">
+                <h3 className="font-semibold text-text">{t.name}</h3>
+                <Markdown>{t.idea}</Markdown>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {practice.problems.length > 0 && (
         <section className="flex flex-col gap-3">
@@ -71,6 +85,12 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
             ))}
           </div>
         </section>
+      )}
+
+      {topic.domain === "behavioral" && (
+        <Link href="/me/stories" className="rounded-xl border border-line bg-surface p-4 text-small text-text-2 hover:border-cyan">
+          The story is yours, not ours. Build it in your story bank &rarr;
+        </Link>
       )}
 
       {topic.domain !== "dsa" && <MarkStudied slug={topic.slug} studied={studied} />}

@@ -178,7 +178,17 @@ export async function topicDetail(slug: string) {
   const [topic] = await db.select().from(topics).where(eq(topics.slug, slug));
   if (!topic) return null;
   const [lesson] = await db.select().from(lessons).where(eq(lessons.topicSlug, slug));
-  return { topic, lesson: lesson ?? null };
+  // A DSA topic is a pattern, and its tricks are the shape you reach for
+  // before touching any single problem.
+  const tricks =
+    topic.domain === "dsa"
+      ? await db
+          .select({ id: patternTricks.id, name: patternTricks.name, idea: patternTricks.ideaMd })
+          .from(patternTricks)
+          .where(eq(patternTricks.patternSlug, slug))
+          .orderBy(asc(patternTricks.sort))
+      : [];
+  return { topic, lesson: lesson ?? null, tricks };
 }
 
 export type Practice = {
