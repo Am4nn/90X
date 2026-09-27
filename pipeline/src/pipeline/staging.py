@@ -63,6 +63,10 @@ alter table lessons add column if not exists findings json;
 alter table cards add column if not exists source text default 'chunk';
 alter table cards add column if not exists reject_reason text;
 alter table cards add column if not exists created_at timestamp;
+create table if not exists roadmap_nodes (
+    id text primary key, roadmap text not null, domain text not null, label text not null,
+    kind text not null, sort int not null, topic_slug text
+);
 create table if not exists pattern_tricks (
     id text primary key, pattern_slug text not null, name text not null, idea_md text not null,
     snippets json, problem_slugs text[], sort int default 0

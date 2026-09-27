@@ -83,9 +83,21 @@ def test_an_example_url_in_prose_is_allowed():
     assert checks.check(fine, ["A?", "B?", "C?"]) == []
 
 
-def test_a_pile_of_urls_reads_as_a_reference_list():
-    bad = body_with("See https://a.test and https://b.test and https://c.test and https://d.test")
+def test_several_inline_example_urls_are_fine():
+    """A URL shortener lesson writes URLs. That is the subject, not a defect."""
+    fine = body_with("It maps https://example.com/a/very/long/path to https://short.ly/x7Bq, "
+                     "and https://short.ly/x7Bq redirects with a 301.")
+    assert checks.check(fine, ["A?", "B?", "C?"]) == [], checks.check(fine, ["A?", "B?", "C?"])
+
+
+def test_urls_on_their_own_lines_are_a_reference_list():
+    bad = body_with("Further reading:\n\n- https://a.test\n- https://b.test")
     assert any("references" in p for p in checks.check(bad, ["A?", "B?", "C?"]))
+
+
+def test_pre_and_post_is_english_not_a_pdf_break():
+    fine = body_with("Check pre- and post-conditions before you trust the invariant.")
+    assert checks.check(fine, ["A?", "B?", "C?"]) == [], checks.check(fine, ["A?", "B?", "C?"])
 
 
 def test_angle_brackets_inside_code_are_not_html():

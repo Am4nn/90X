@@ -19,6 +19,7 @@ TABLES = [
                             "techniques", "importance", "premium", "nc150", "blind75", "companies", "statement_md",
                             "solutions", "video_id", "url", "source_id"]),
     ("pattern_tricks", ["id"], ["id", "pattern_slug", "name", "idea_md", "snippets", "problem_slugs", "sort"]),
+    ("roadmap_nodes", ["id"], ["id", "roadmap", "domain", "label", "kind", "sort", "topic_slug"]),
     ("lessons", ["topic_slug"], ["topic_slug", "title", "summary", "body_md", "practice", "source_refs",
                                  "words", "generated_at"]),
 ]

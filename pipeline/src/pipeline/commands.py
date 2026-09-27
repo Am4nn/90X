@@ -124,6 +124,15 @@ def lesson_cards(args, con) -> None:
     print(f"cards: {kept} kept, {rejected} rejected ({share:.0%}), spend ${llm.spend_usd(con):.2f}")
 
 
+def roadmaps(args, con) -> None:
+    from . import roadmaps as rm
+
+    counts = rm.fetch()
+    staged = rm.normalize(con)
+    linked = con.execute("select count(*) from roadmap_nodes where topic_slug is not null").fetchone()[0]
+    print(f"{len(counts)} roadmaps, {staged} nodes staged, {linked} linked to a topic")
+
+
 def publish(args, con) -> None:
     import os
 
@@ -146,7 +155,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

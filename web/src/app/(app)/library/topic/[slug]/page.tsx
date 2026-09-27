@@ -44,9 +44,7 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
               >
                 <span className="flex flex-col gap-0.5">
                   <span className="font-semibold text-text">{p.title}</span>
-                  {p.companies.length > 0 && (
-                    <span className="text-small text-mute">Asked at {p.companies.join(", ")}</span>
-                  )}
+                  {p.companies.length > 0 && <span className="text-small text-mute">Asked at {p.companies.join(", ")}</span>}
                 </span>
                 <span className="shrink-0 text-small text-mute">{p.difficulty}</span>
               </Link>

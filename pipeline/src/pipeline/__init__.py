@@ -40,6 +40,7 @@ def main() -> None:
     lc.add_argument("--limit", type=int, help="at most N topics")
     lc.add_argument("--redo", action="store_true", help="regenerate topics that already have lesson cards")
     lc.add_argument("--tier", default="smart")
+    sub.add_parser("roadmaps", help="fetch roadmap.sh structures and stage their nodes")
     pb = sub.add_parser("publish", help="publish staging to Supabase")
     pb.add_argument("--dry-run", action="store_true", help="run everything, then roll back")
     rb = sub.add_parser("rebatch", help="regroup draft cards into review batches (area x part)")

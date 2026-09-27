@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, userApprovals, profiles, campaigns, pushSubscriptions, checkins, missions, topics, problems, sources, cardBatches, cards, checkinNotes, cardReviews, patternTricks, aiUsage, coachThreads, coachMessages, solutionReviews, stories, mocks, mockDetails, weeklyReviews, coachMemory, lessons, topicLinks, topicProgress, readinessSnapshots, cardFlags, days, problemReviews, batchReviewItems, integrationStatus, cardState } from "./schema";
+import { usersInAuth, userApprovals, profiles, campaigns, pushSubscriptions, checkins, missions, topics, problems, sources, cardBatches, cards, checkinNotes, cardReviews, patternTricks, aiUsage, coachThreads, coachMessages, solutionReviews, stories, mocks, mockDetails, weeklyReviews, coachMemory, lessons, roadmapNodes, topicLinks, topicProgress, roadmapProgress, readinessSnapshots, cardFlags, days, problemReviews, batchReviewItems, integrationStatus, cardState } from "./schema";
 
 export const userApprovalsRelations = relations(userApprovals, ({one}) => ({
 	usersInAuth_decidedBy: one(usersInAuth, {
@@ -39,6 +39,7 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	weeklyReviews: many(weeklyReviews),
 	coachMemories: many(coachMemory),
 	topicProgresses: many(topicProgress),
+	roadmapProgresses: many(roadmapProgress),
 	readinessSnapshots: many(readinessSnapshots),
 	cardFlags: many(cardFlags),
 	days: many(days),
@@ -108,6 +109,7 @@ export const topicsRelations = relations(topics, ({one, many}) => ({
 	cards: many(cards),
 	patternTricks: many(patternTricks),
 	lessons: many(lessons),
+	roadmapNodes: many(roadmapNodes),
 	topicLinks_fromSlug: many(topicLinks, {
 		relationName: "topicLinks_fromSlug_topics_slug"
 	}),
@@ -302,6 +304,14 @@ export const lessonsRelations = relations(lessons, ({one}) => ({
 	}),
 }));
 
+export const roadmapNodesRelations = relations(roadmapNodes, ({one, many}) => ({
+	topic: one(topics, {
+		fields: [roadmapNodes.topicSlug],
+		references: [topics.slug]
+	}),
+	roadmapProgresses: many(roadmapProgress),
+}));
+
 export const topicLinksRelations = relations(topicLinks, ({one}) => ({
 	topic_fromSlug: one(topics, {
 		fields: [topicLinks.fromSlug],
@@ -322,6 +332,17 @@ export const topicProgressRelations = relations(topicProgress, ({one}) => ({
 	}),
 	usersInAuth: one(usersInAuth, {
 		fields: [topicProgress.userId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const roadmapProgressRelations = relations(roadmapProgress, ({one}) => ({
+	roadmapNode: one(roadmapNodes, {
+		fields: [roadmapProgress.nodeId],
+		references: [roadmapNodes.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [roadmapProgress.userId],
 		references: [usersInAuth.id]
 	}),
 }));

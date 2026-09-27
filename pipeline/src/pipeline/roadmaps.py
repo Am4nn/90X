@@ -85,3 +85,37 @@ def content_path(slug: str, node_id: str) -> Path | None:
     """The markdown file for a node, found by its id suffix."""
     matches = list((ROADMAP_DIR / "roadmaps" / slug / "content").glob(f"*@{node_id}.md"))
     return matches[0] if matches else None
+
+
+def normalize(con) -> int:
+    """Stage every node of every mapped roadmap, linked to a topic where the
+    names match exactly. Fuzzy matching was tried and dropped: a wrong link
+    sends the reader to a lesson about something else, which is worse than
+    an honest blank."""
+    import re
+
+    def norm(text: str) -> str:
+        return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+
+    by_name = {
+        norm(name): (slug, domain)
+        for slug, name, domain in con.execute("select slug, name, domain from topics").fetchall()
+    }
+    rows = []
+    for domain, slugs in DOMAIN_ROADMAPS.items():
+        for roadmap in slugs:
+            if not (STRUCTURE_DIR / f"{roadmap}.json").exists():
+                continue
+            for node in nodes(roadmap):
+                match = by_name.get(norm(node["label"]))
+                rows.append((
+                    f"{roadmap}:{node['id']}", roadmap, domain, node["label"],
+                    node["type"], node["sort"],
+                    match[0] if match and match[1] == domain else None,
+                ))
+    con.execute("delete from roadmap_nodes")
+    con.executemany(
+        "insert into roadmap_nodes (id, roadmap, domain, label, kind, sort, topic_slug) values (?,?,?,?,?,?,?)",
+        rows,
+    )
+    return len(rows)

@@ -626,6 +626,25 @@ export const lessons = pgTable("lessons", {
 	pgPolicy("lessons_read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`is_approved()` }),
 ]);
 
+export const roadmapNodes = pgTable("roadmap_nodes", {
+	id: text().primaryKey().notNull(),
+	roadmap: text().notNull(),
+	domain: text().notNull(),
+	label: text().notNull(),
+	kind: text().notNull(),
+	sort: integer().notNull(),
+	topicSlug: text("topic_slug"),
+}, (table) => [
+	index("roadmap_nodes_domain_idx").using("btree", table.domain.asc().nullsLast().op("text_ops"), table.roadmap.asc().nullsLast().op("int4_ops"), table.sort.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.topicSlug],
+			foreignColumns: [topics.slug],
+			name: "roadmap_nodes_topic_slug_fkey"
+		}).onDelete("set null"),
+	pgPolicy("roadmap_nodes_read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`is_approved()` }),
+	check("roadmap_nodes_kind_check", sql`kind = ANY (ARRAY['topic'::text, 'subtopic'::text])`),
+]);
+
 export const topicLinks = pgTable("topic_links", {
 	fromSlug: text("from_slug").notNull(),
 	toSlug: text("to_slug").notNull(),
@@ -661,6 +680,25 @@ export const topicProgress = pgTable("topic_progress", {
 		}).onDelete("cascade"),
 	primaryKey({ columns: [table.userId, table.topicSlug], name: "topic_progress_pkey"}),
 	pgPolicy("topic_progress_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
+]);
+
+export const roadmapProgress = pgTable("roadmap_progress", {
+	userId: uuid("user_id").notNull(),
+	nodeId: text("node_id").notNull(),
+	doneAt: timestamp("done_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.nodeId],
+			foreignColumns: [roadmapNodes.id],
+			name: "roadmap_progress_node_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "roadmap_progress_user_id_fkey"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.userId, table.nodeId], name: "roadmap_progress_pkey"}),
+	pgPolicy("roadmap_progress_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
 ]);
 
 export const readinessSnapshots = pgTable("readiness_snapshots", {

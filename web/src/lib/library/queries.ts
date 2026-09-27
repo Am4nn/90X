@@ -168,12 +168,7 @@ export async function searchArea(domain: string, q: string, limit = 40) {
     })
     .from(topics)
     .leftJoin(lessons, eq(lessons.topicSlug, topics.slug))
-    .where(
-      and(
-        eq(topics.domain, domain),
-        or(ilike(topics.name, contains(q)), ilike(lessons.summary, contains(q))),
-      ),
-    )
+    .where(and(eq(topics.domain, domain), or(ilike(topics.name, contains(q)), ilike(lessons.summary, contains(q)))))
     .orderBy(asc(topics.sort))
     .limit(limit);
   return { topics: hits };

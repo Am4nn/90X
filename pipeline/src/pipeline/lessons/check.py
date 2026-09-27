@@ -36,10 +36,10 @@ HTML_TAG = re.compile(
 )
 CODE = re.compile(r"```.*?```|`[^`]+`", re.DOTALL)
 MARKDOWN_LINK = re.compile(r"\]\(")
-BARE_URL = re.compile(r"https?://")
-# One or two example URLs are normal prose ("https://short.ly/abc" in a lesson
-# on URL shorteners). A handful is a reference list, which a lesson never has.
-MAX_EXAMPLE_URLS = 2
+# A reference list is URLs standing alone on their own lines. Counting URLs
+# instead failed the URL shortener lesson three times for writing URLs, which
+# is the entire subject. Inline examples are prose; a bare line is a citation.
+REFERENCE_LINE = re.compile(r"^\s*[-*]?\s*<?https?://\S+>?\s*$", re.MULTILINE)
 
 
 def without_code(text: str) -> str:
@@ -49,7 +49,9 @@ LIGATURE = re.compile(r"[ﬀ-ﬆ]")  # ﬀ ﬁ ﬂ ﬃ ﬄ ﬅ from bad PDF extr
 URL = re.compile(r"https?://|\]\(")
 PIPE_TABLE = re.compile(r"^\s*\|.*\|\s*$", re.MULTILINE)
 # "cat  ching" and "infor- mally": PDF text extraction splitting words.
-BROKEN_WORD = re.compile(r"\b[a-z]{2,}-\s+[a-z]{2,}\b")
+BROKEN_WORD = re.compile(r"\b[a-z]{2,}-\s+([a-z]{3,})\b")
+# "pre- and post-conditions" is ordinary English; "infor- mally" is a PDF break.
+CONNECTIVES = {"and", "but", "for", "nor", "the", "then", "with", "not", "yet", "plus", "versus", "post", "pre"}
 
 MIN_WORDS = 250
 MAX_WORDS = 1400
@@ -89,12 +91,13 @@ def check(body_md: str, follow_ups: list[str]) -> list[str]:
         problems.append("PDF ligature characters")
     if m := MARKDOWN_LINK.search(prose):
         problems.append(f"contains a link: {m.group(0)!r}")
-    if len(BARE_URL.findall(prose)) > MAX_EXAMPLE_URLS:
+    if REFERENCE_LINE.search(prose):
         problems.append("reads like a list of references, not a lesson")
     if PIPE_TABLE.search(body_md):
         problems.append("contains a table")
-    if m := BROKEN_WORD.search(body_md):
-        problems.append(f"word broken by PDF extraction: {m.group(0)!r}")
+    broken = next((m for m in BROKEN_WORD.finditer(body_md) if m.group(1) not in CONNECTIVES), None)
+    if broken:
+        problems.append(f"word broken by PDF extraction: {broken.group(0)!r}")
     bad_prompts = [q for q in follow_ups if not is_interviewer_prompt(q)]
     if bad_prompts:
         problems.append(f"follow-up is not something an interviewer would say: {bad_prompts[0]!r}")

@@ -13,6 +13,7 @@ import {
   problems,
   profiles,
   readinessSnapshots,
+  roadmapProgress,
   topicProgress,
   topics,
 } from "@/db/schema";
@@ -704,4 +705,14 @@ export async function onCardAnswered(userId: string, q: Db = db, now = new Date(
       .where(and(eq(missions.userId, userId), inArray(missions.id, ids)));
     await refreshDay(userId, today, q);
   }
+}
+
+/** Roadmap nodes are a personal checklist: no missions, no streak, no
+ *  readiness. They record what you have covered beyond our own topics. */
+export async function tickRoadmapNode(userId: string, nodeId: string, q: Db = db) {
+  await q.insert(roadmapProgress).values({ userId, nodeId }).onConflictDoNothing();
+}
+
+export async function untickRoadmapNode(userId: string, nodeId: string, q: Db = db) {
+  await q.delete(roadmapProgress).where(and(eq(roadmapProgress.userId, userId), eq(roadmapProgress.nodeId, nodeId)));
 }
