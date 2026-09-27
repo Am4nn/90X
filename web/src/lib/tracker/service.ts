@@ -502,6 +502,20 @@ export async function markStudied(userId: string, topicSlug: string, q: Db = db,
 }
 
 export async function unmarkStudied(userId: string, topicSlug: string, q: Db = db) {
+  // Studying ticked this topic's roadmap nodes, so undoing it unticks them.
+  // Leaving them checked would report coverage the reader just retracted.
+  const nodes = await q.select({ id: roadmapNodes.id }).from(roadmapNodes).where(eq(roadmapNodes.topicSlug, topicSlug));
+  if (nodes.length) {
+    await q.delete(roadmapProgress).where(
+      and(
+        eq(roadmapProgress.userId, userId),
+        inArray(
+          roadmapProgress.nodeId,
+          nodes.map((n) => n.id),
+        ),
+      ),
+    );
+  }
   await q.delete(topicProgress).where(and(eq(topicProgress.userId, userId), eq(topicProgress.topicSlug, topicSlug)));
 }
 

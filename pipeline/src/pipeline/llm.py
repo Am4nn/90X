@@ -97,6 +97,9 @@ class LLM:
         self.lock = threading.Lock()
         # This process's calls per model: {model: [calls, cost_usd]}, for live progress lines.
         self.run_costs: dict[str, list] = {}
+        # Calls started but not yet charged, so the cap accounts for them.
+        self.in_flight = 0
+        self.typical_call_usd = 0.02
         self.models = models or {"fast": os.environ["AI_MODEL_FAST"], "smart": os.environ["AI_MODEL_SMART"]}
         # Per-tier clients; tiers without one use the main client.
         self.clients = dict(clients or {})
@@ -110,8 +113,21 @@ class LLM:
         error; raises LLMError if the second answer is also invalid."""
         with self.lock:
             spent = spend_usd(self.con)
-        if spent >= self.max_usd:
-            raise BudgetExceeded(f"AI spend ${spent:.2f} reached the ${self.max_usd:.2f} cap")
+            in_flight = self.in_flight
+            self.in_flight += 1
+        try:
+            # Every worker reads the same total before any of them records a
+            # cost, so with 14 in flight the cap could be passed by a dozen
+            # calls. Charging the calls already running against it closes most
+            # of that gap without pretending to know their exact cost.
+            if spent + in_flight * self.typical_call_usd >= self.max_usd:
+                raise BudgetExceeded(f"AI spend ${spent:.2f} plus {in_flight} in flight reached the ${self.max_usd:.2f} cap")
+            return self._complete_json(system, user, schema, tier, purpose)
+        finally:
+            with self.lock:
+                self.in_flight -= 1
+
+    def _complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "") -> T:
         model = self.models[tier]
         system_full = (
             f"{system}\n\nReply with a single JSON object matching this JSON Schema, and nothing else:\n"

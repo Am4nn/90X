@@ -21,8 +21,11 @@ FORMATS = ("typed", "flash", "mcq", "output")
 
 
 def sample(con, size: int = SAMPLE) -> list[dict]:
-    """Least-confident first, but never two from the same topic until every
-    topic with cards has had one, so one weak topic cannot fill the sample."""
+    """Least-confident first, one card per topic at most.
+
+    Partitioning only by area and format let a single shaky topic take several
+    of the 25 places while other topics got none, which narrows exactly the
+    range the reviewer is there to cover."""
     rows = con.execute(
         """
         select c.id, c.topic_slug, t.domain, t.name, c.format, c.difficulty, c.prompt_md,
@@ -32,9 +35,13 @@ def sample(con, size: int = SAMPLE) -> list[dict]:
         join lessons l on l.topic_slug = c.topic_slug
         where c.source = 'lesson' and c.status = 'draft'
         qualify row_number() over (
+            partition by c.topic_slug
+            order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
+        ) = 1
+        and row_number() over (
             partition by t.domain, c.format
             order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
-        ) <= 2
+        ) <= 4
         order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), t.domain, c.id
         """
     ).fetchall()

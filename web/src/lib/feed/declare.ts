@@ -16,7 +16,11 @@ const MIN_ANSWERS = 3;
 /** ...and this share of the topic's cards, so the bar scales with topic size. */
 const MIN_SHARE = 1 / 3;
 
-export type TopicRecord = { answers: { outcome: Outcome; cardId: string }[]; cardsInTopic: number };
+export type TopicRecord = {
+  /** Oldest first: the caller orders, so "latest" here means the last of them. */
+  answers: { outcome: Outcome; cardId: string }[];
+  cardsInTopic: number;
+};
 
 // A skip counts against you here, unlike in accuracy. Answering three cards
 // and skipping five is not evidence that you know the topic; it is evidence
@@ -36,7 +40,9 @@ export function canDeclareKnown({ answers, cardsInTopic }: TopicRecord): boolean
   if (distinct.size < MIN_ANSWERS) return false;
   if (cardsInTopic > 0 && distinct.size < Math.ceil(cardsInTopic * MIN_SHARE)) return false;
   // Accuracy is the latest answer per card, so repeated attempts on one card
-  // cannot outvote the rest of the topic either.
+  // cannot outvote the rest of the topic. This relies on `answers` arriving
+  // oldest first; unordered rows would let an old wrong answer overwrite a
+  // newer correct one, or the reverse.
   const latest = new Map<string, Outcome>();
   for (const a of tried) latest.set(a.cardId, a.outcome);
   const correct = [...latest.values()].filter((o) => o === "correct").length;

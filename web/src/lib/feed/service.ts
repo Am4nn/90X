@@ -515,7 +515,8 @@ async function eligibleTopics(userId: string, slugs: string[], q: Db = db): Prom
       .select({ topic: cards.topicSlug, outcome: cardReviews.outcome, cardId: cardReviews.cardId })
       .from(cardReviews)
       .innerJoin(cards, eq(cards.id, cardReviews.cardId))
-      .where(and(eq(cardReviews.userId, userId), inArray(cards.topicSlug, wanted))),
+      .where(and(eq(cardReviews.userId, userId), inArray(cards.topicSlug, wanted)))
+      .orderBy(asc(cardReviews.createdAt)),
     q
       .select({ topic: cards.topicSlug, n: sql<number>`count(*)::int` })
       .from(cards)
@@ -538,7 +539,8 @@ async function topicRecord(userId: string, topicSlug: string | null, q: Db = db)
       .select({ outcome: cardReviews.outcome, cardId: cardReviews.cardId })
       .from(cardReviews)
       .innerJoin(cards, eq(cards.id, cardReviews.cardId))
-      .where(and(eq(cardReviews.userId, userId), eq(cards.topicSlug, topicSlug))),
+      .where(and(eq(cardReviews.userId, userId), eq(cards.topicSlug, topicSlug)))
+      .orderBy(asc(cardReviews.createdAt)),
     q
       .select({ n: sql<number>`count(*)::int` })
       .from(cards)

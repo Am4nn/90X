@@ -23,29 +23,46 @@ export function AutoStudied({ slug, words, studied }: { slug: string; words: num
     const end = endRef.current;
     if (!end || typeof IntersectionObserver === "undefined") return;
 
-    const opened = Date.now();
+    // Time only counts while the lesson is actually in front of the reader.
+    // Wall-clock time let a background tab, or a scroll straight past the end,
+    // mark a lesson studied that nobody read.
     const needed = dwellMs(words);
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let visibleMs = 0;
+    let since: number | null = null;
+    let atEnd = false;
 
-    const mark = () => {
-      if (sent.current) return;
-      sent.current = true;
-      // Failure is silent on purpose: the manual button is right there, and an
-      // error toast for something the reader never asked for is noise.
-      void markStudiedAction(slug, true);
+    const reading = () => atEnd && document.visibilityState === "visible";
+    const settle = () => {
+      if (since !== null) {
+        visibleMs += Date.now() - since;
+        since = null;
+      }
+    };
+    const tick = () => {
+      settle();
+      if (!sent.current && visibleMs >= needed) {
+        sent.current = true;
+        // Silent on failure: the manual button is right there, and an error
+        // for something the reader never asked for is noise.
+        void markStudiedAction(slug, true);
+      } else if (reading()) {
+        since = Date.now();
+      }
     };
 
+    const timer = setInterval(tick, 1000);
     const observer = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      const waited = Date.now() - opened;
-      if (waited >= needed) mark();
-      else if (timer === undefined) timer = setTimeout(mark, needed - waited);
+      atEnd = entries.some((e) => e.isIntersecting);
+      if (reading() && since === null) since = Date.now();
+      else settle();
     });
     observer.observe(end);
+    document.addEventListener("visibilitychange", tick);
 
     return () => {
       observer.disconnect();
-      if (timer !== undefined) clearTimeout(timer);
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
     };
   }, [slug, words, studied]);
 
