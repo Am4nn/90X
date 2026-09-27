@@ -64,6 +64,12 @@ alter table lessons add column if not exists summary text;
 alter table cards add column if not exists source text default 'chunk';
 alter table cards add column if not exists reject_reason text;
 alter table cards add column if not exists created_at timestamp;
+-- risk and label are set by rebatch and carried by publish. They used to be
+-- written straight to Supabase, which only worked when the cards were already
+-- there; a batch built before its first publish arrived unlabelled, and every
+-- card arrived with no risk, which the review screen reads as "safest".
+alter table cards add column if not exists risk double;
+alter table card_batches add column if not exists label text;
 create table if not exists roadmap_nodes (
     id text primary key, roadmap text not null, domain text not null, label text not null,
     kind text not null, sort int not null, topic_slug text

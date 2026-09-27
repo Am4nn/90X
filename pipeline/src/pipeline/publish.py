@@ -138,6 +138,7 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = Fa
             counts[table] = (len(rows), deleted)
         card_counts, published_batches = _publish_cards(con, cur)
         counts["cards_retired"] = (0, _retire_superseded_cards(con, cur, force))
+        counts["batches_retired"] = (0, _retire_empty_batches(cur))
         counts.update(card_counts)
         if dry_run:
             raise _DryRun(counts)
@@ -150,22 +151,26 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = Fa
 def _publish_cards(con, cur) -> tuple[dict, list[str]]:
     """New batches only; cards already published keep their status (draft/live)."""
     batches = con.execute(
-        "select id, domain, topic_slugs, created_at, ai_pass_rate from card_batches where not published").fetchall()
+        """select id, domain, topic_slugs, created_at, ai_pass_rate, label
+           from card_batches where not published""").fetchall()
     n_cards = 0
-    for bid, domain, topics, created, pass_rate in batches:
-        cur.execute("""insert into public.card_batches (id, domain, topic_slugs, created_at, ai_pass_rate, status)
-                       values (%s, %s, %s, %s, %s, 'draft') on conflict (id) do nothing""",
-                    (bid, domain, list(topics or []), created, pass_rate))
+    for bid, domain, topics, created, pass_rate, label in batches:
+        cur.execute("""insert into public.card_batches (id, domain, topic_slugs, created_at, ai_pass_rate, label, status)
+                       values (%s, %s, %s, %s, %s, %s, 'draft') on conflict (id) do nothing""",
+                    (bid, domain, list(topics or []), created, pass_rate, label))
+        # `risk` comes with the card. It is the review screen's sort key, and it
+        # sorts ascending, so a card that arrives without one looks safest.
         cards = con.execute(
             """select id, topic_slug, problem_slug, format, difficulty, prompt_md, options, answer_md,
-                      key_points, source_refs, quality from cards where batch_id = ? and kept""", [bid]).fetchall()
+                      key_points, source_refs, quality, risk from cards where batch_id = ? and kept""", [bid]).fetchall()
         cur.executemany(
             """insert into public.cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md,
-                   options, answer_md, key_points, source_refs, quality, status)
-               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, 'draft')
+                   options, answer_md, key_points, source_refs, quality, risk, status)
+               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, 'draft')
                on conflict (id) do nothing""",
             [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
-              json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")), json.dumps(json.loads(c[10] or "{}")))
+              json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")),
+              json.dumps(json.loads(c[10] or "{}")), c[11])
              for c in cards])
         n_cards += len(cards)
     return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}, [b[0] for b in batches]
@@ -221,6 +226,24 @@ def _retire_superseded_cards(con, cur, force: bool) -> int:
             "that history. Re-run with force=True only if you mean it."
         )
     cur.execute("delete from public.cards c where not exists (select 1 from _staged_cards s where s.id = c.id)")
+    return cur.rowcount
+
+
+def _retire_empty_batches(cur) -> int:
+    """Drop draft batches that hold no card.
+
+    Regrouping every card into new batches leaves the old ones behind, and
+    retiring the cards they held empties them without removing them, so
+    /admin/cards would list 13 batches with nothing in them. Only draft
+    batches holding no verdict: a batch someone has started reviewing is the
+    record of that review, empty or not.
+    """
+    cur.execute(
+        """delete from public.card_batches b
+           where b.status = 'draft'
+             and not exists (select 1 from public.cards c where c.batch_id = b.id)
+             and not exists (select 1 from public.batch_review_items i where i.batch_id = b.id)"""
+    )
     return cur.rowcount
 
 

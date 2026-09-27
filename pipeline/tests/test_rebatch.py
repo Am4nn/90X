@@ -57,3 +57,28 @@ def test_a_batch_pass_rate_counts_the_cards_the_gate_rejected(tmp_path):
     assert group["generated"] == 4, group
     assert len(group["card_ids"]) == 3
     assert group["pass_rate"] == 0.75, group["pass_rate"]
+
+
+def test_a_batch_built_before_its_first_publish_is_not_marked_published(tmp_path):
+    """`published` says Supabase already has it, and publish skips what is
+    published. Hard-coding true was right while rebatch only regrouped cards
+    already up there; the first time a batch was grouped before publishing, its
+    cards were marked done and never sent."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("insert into topics (slug, domain, name, sort) values ('sql-joins', 'sql', 'Joins', 0)")
+    con.execute(
+        """insert into cards (id, topic_slug, format, prompt_md, answer_md, key_points, quality, kept, status, source)
+           values ('00000000-0000-4000-8000-000000000001', 'sql-joins', 'typed', 'q', 'a', '[]',
+                   '{"gate_confidence": 0.4}', true, 'draft', 'lesson')"""
+    )
+    rebatch.run(con, database_url=None)
+    published, label, risk = con.execute(
+        """select b.published, b.label, c.risk from card_batches b
+           join cards c on c.batch_id = b.id"""
+    ).fetchone()
+    assert published is False, "a staging-only rebatch must leave the batch for publish to send"
+    assert label == "SQL"
+    # The review screen sorts on risk ascending, so a null card looks safest.
+    assert risk == 0.4

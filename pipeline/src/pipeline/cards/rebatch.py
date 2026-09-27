@@ -128,12 +128,24 @@ def run(con, database_url: str | None, dry_run: bool = False) -> dict[str, int]:
                    and not exists (select 1 from public.cards c where c.batch_id = b.id)""",
             )
     for key, g in groups.items():
+        # `published` says whether Supabase already has this batch. Hard-coding
+        # true was right when rebatch only ever regrouped cards that were
+        # already up there, and wrong the first time a batch was built before
+        # its first publish: publish skips published batches, so 2,692 cards
+        # would have been grouped, marked done, and never sent.
         con.execute(
-            """insert into card_batches (id, domain, topic_slugs, ai_pass_rate, status, published)
-               values (?, ?, ?, ?, 'draft', true)""",
-            [ids[key], g["domain"], sorted(g["topics"]), g["pass_rate"]],
+            """insert into card_batches (id, domain, label, topic_slugs, ai_pass_rate, status, published)
+               values (?, ?, ?, ?, ?, 'draft', ?)""",
+            [ids[key], g["domain"], g["label"], sorted(g["topics"]), g["pass_rate"], bool(database_url)],
         )
         con.executemany("update cards set batch_id = ? where id = ?", [[ids[key], c] for c in g["all_ids"]])
+        # Risk lives in staging now so publish can carry it. Writing it only to
+        # Supabase left a not-yet-published card with no risk at all, and
+        # `pickReviewSample` sorts ascending, so a null reads as the safest card
+        # in the batch - the review screen would have shown the least useful
+        # cards first, for every card.
+        con.executemany("update cards set risk = ? where id = ?",
+                        [[g["risks"][c], c] for c in g["card_ids"]])
     # Dropped cards move with their group too, so no card is left pointing at a
     # batch row that is about to be deleted.
     con.execute(f"delete from card_batches where id in ({', '.join('?' * len(old))})", old) if old else None
