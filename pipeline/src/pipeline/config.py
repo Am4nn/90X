@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -8,3 +9,6 @@ DATA_DIR = REPO_DIR / ".data"
 
 # HF_TOKEN, ANTHROPIC_API_KEY, DATABASE_URL
 load_dotenv(PIPELINE_DIR / ".env")
+
+# Where a lesson lives, so the coach can cite it as a real link.
+SITE_URL = os.environ.get("SITE_URL", "https://90x.amanarya.com")
