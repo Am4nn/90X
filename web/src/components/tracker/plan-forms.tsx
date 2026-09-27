@@ -52,7 +52,7 @@ export function LengthForm({ current, minimum }: { current: number; minimum: num
   const [length, setLength] = useState(current);
   return (
     <form action={action} className="flex flex-col gap-3">
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {LENGTHS.map((d) => (
           <button
             key={d}
