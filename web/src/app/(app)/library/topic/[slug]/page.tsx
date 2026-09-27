@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
+import { AutoStudied } from "@/components/library/auto-studied";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
 import { MarkStudied } from "@/components/tracker/missions";
@@ -137,7 +138,12 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
         </Link>
       )}
 
-      {topic.domain !== "dsa" && <MarkStudied slug={topic.slug} studied={studied} />}
+      {topic.domain !== "dsa" && (
+        <>
+          <MarkStudied slug={topic.slug} studied={studied} />
+          <AutoStudied slug={topic.slug} words={lesson.words ?? 0} studied={studied} />
+        </>
+      )}
     </article>
   );
 }

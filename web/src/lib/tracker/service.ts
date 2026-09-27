@@ -13,6 +13,7 @@ import {
   problems,
   profiles,
   readinessSnapshots,
+  roadmapNodes,
   roadmapProgress,
   topicProgress,
   topics,
@@ -476,6 +477,15 @@ export async function skipReview(userId: string, missionId: string, mode: "not_t
 export async function markStudied(userId: string, topicSlug: string, q: Db = db, now = new Date()) {
   const today = await userToday(userId, q, now);
   await q.insert(topicProgress).values({ userId, topicSlug }).onConflictDoNothing();
+  // Real work flows into the roadmap checklist, never the other way: ticking a
+  // box must not move readiness, but studying a topic should tick its box.
+  const nodes = await q.select({ id: roadmapNodes.id }).from(roadmapNodes).where(eq(roadmapNodes.topicSlug, topicSlug));
+  if (nodes.length) {
+    await q
+      .insert(roadmapProgress)
+      .values(nodes.map((n) => ({ userId, nodeId: n.id })))
+      .onConflictDoNothing();
+  }
   await q
     .update(missions)
     .set({ status: "done", doneAt: sql`now()` })
