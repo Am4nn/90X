@@ -17,18 +17,21 @@ async function expectReply(page: Page, message: string) {
   await expect(page.getByRole("status").filter({ hasText: "Coach is working" })).toHaveCount(0);
 }
 
-/** The chat request the model got for `message`, once it has arrived. */
-async function promptFor(request: APIRequestContext, message: string): Promise<SeenRequest> {
+/** The latest request the model got that matches, once it has arrived. */
+async function modelGot(request: APIRequestContext, matches: (r: SeenRequest) => boolean): Promise<SeenRequest> {
   let found: SeenRequest | undefined;
   await expect
     .poll(async () => {
       const seen = (await (await request.get(`${FAKE_MODEL_URL}/requests`)).json()) as SeenRequest[];
-      found = seen.findLast((r) => !r.json && r.user === message);
+      found = seen.findLast(matches);
       return Boolean(found);
     })
     .toBe(true);
   return found!;
 }
+
+/** The chat request the model got for `message`. */
+const promptFor = (request: APIRequestContext, message: string) => modelGot(request, (r) => !r.json && r.user === message);
 
 test("a chat message streams back a reply that's still there after a reload", { tag: "@mobile" }, async ({ page, request }) => {
   await signIn(page, "coach-chat", { next: "/coach?new=1" });
@@ -92,6 +95,8 @@ test("a solution review opens a Coach thread about that review", async ({ page, 
   await expect(page.getByRole("heading", { name: "Solution review", exact: true })).toBeVisible();
   await expect(page.getByText(FAKE_REVIEW.betterApproach, { exact: true })).toBeVisible();
   await expect(page.getByText(FAKE_REVIEW.patternLesson, { exact: true })).toBeVisible();
+  const reviewCall = await modelGot(request, (r) => r.json && r.system.includes("reviewing one person's solution"));
+  expect(reviewCall.user).toContain("return [0, 1]");
 
   await page.getByRole("link", { name: "Discuss with Coach", exact: true }).click();
   await expect(page).toHaveURL(/\/coach\?kind=review&ref=/);
