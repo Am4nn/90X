@@ -439,6 +439,7 @@ function Result({
 function RetireOffer({ offer }: { offer: NonNullable<AnswerResult["retireOffer"]> }) {
   const [done, setDone] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (done !== null) {
     return (
@@ -457,15 +458,24 @@ function RetireOffer({ offer }: { offer: NonNullable<AnswerResult["retireOffer"]
         disabled={busy}
         onClick={() => {
           setBusy(true);
-          void retireTopicAction(offer.topicSlug).then((r) => {
-            setBusy(false);
-            if ("retired" in r) setDone(r.retired);
-          });
+          setError(null);
+          // Always clears busy: a rejected request used to leave the button
+          // disabled with nothing said, so the reader could neither tell what
+          // happened nor try again.
+          retireTopicAction(offer.topicSlug)
+            .then((r) => ("retired" in r ? setDone(r.retired) : setError(r.error)))
+            .catch(() => setError("That didn't save. Try again."))
+            .finally(() => setBusy(false));
         }}
         className="self-start text-small font-semibold text-cyan underline-offset-2 hover:underline disabled:opacity-60"
       >
-        {busy ? "Retiring…" : `Retire them too`}
+        {busy ? "Retiring…" : "Retire them too"}
       </button>
+      {error && (
+        <span role="alert" className="text-small text-bad">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

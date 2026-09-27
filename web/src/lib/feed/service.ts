@@ -59,6 +59,8 @@ const MAX_ANSWER_CHARS = 4000;
 const DAY_MS = 86_400_000;
 /** Far enough out that a retired card leaves the rotation for this campaign. */
 const RETIRED_DAYS = 365;
+/** Anything due beyond this was retired, not merely scheduled far out. */
+const RETIRED_FLOOR_MS = 180 * DAY_MS;
 const QUEUE_TTL = 7 * 24 * 60 * 60;
 const DIAGNOSTIC_TTL = 30 * 24 * 60 * 60;
 // Guards the serve loop against a queue that is somehow all unservable.
@@ -190,6 +192,14 @@ async function pools(userId: string, areas: FeedArea[], now: Date, q: Db) {
     recent.flatMap((r) => (r.topic ? [{ topic: r.topic, outcome: r.outcome as "correct" | "wrong" | "skipped" }] : [])),
   );
   const ranked = weakTopics(weakness, map?.patterns.filter((p) => p.state === "weak").map((p) => p.slug) ?? []);
+  // Cards the reader retired with "I already know this". Their schedule is a
+  // year out, which keeps them out of the due pool and the fresh pool, but the
+  // weak pool selects on topic alone and would serve them again after the rest
+  // window.
+  const retired = q
+    .select({ id: cardState.cardId })
+    .from(cardState)
+    .where(and(eq(cardState.userId, userId), gte(cardState.dueAt, new Date(now.getTime() + RETIRED_FLOOR_MS).toISOString())));
   const answeredLately = q
     .select({ id: cardReviews.cardId })
     .from(cardReviews)
@@ -217,7 +227,7 @@ async function pools(userId: string, areas: FeedArea[], now: Date, q: Db) {
           .select(poolColumns)
           .from(cards)
           .innerJoin(topics, eq(topics.slug, cards.topicSlug))
-          .where(and(inAreas, inArray(topics.slug, ranked), notInArray(cards.id, answeredLately)))
+          .where(and(inAreas, inArray(topics.slug, ranked), notInArray(cards.id, answeredLately), notInArray(cards.id, retired)))
           .orderBy(
             sql`array_position(array[${sql.join(
               ranked.map((slug) => sql`${slug}`),
@@ -571,14 +581,18 @@ async function retireOffer(userId: string, topicSlug: string | null, q: Db) {
 /** Retire every card in a topic the reader has not met yet. */
 export async function retireTopic(userId: string, topicSlug: string, q: Db = db, now = new Date()): Promise<number> {
   if (!canDeclareKnown(await topicRecord(userId, topicSlug, q))) return 0;
-  const seen = q.select({ id: cardState.cardId }).from(cardState).where(eq(cardState.userId, userId));
-  const rest = await q
-    .select({ id: cards.id })
-    .from(cards)
-    .where(and(eq(cards.topicSlug, topicSlug), eq(cards.status, "live"), eq(cards.hidden, false), notInArray(cards.id, seen)));
-  if (!rest.length) return 0;
   const far = new Date(now.getTime() + RETIRED_DAYS * DAY_MS);
-  await q.transaction(async (tx) => {
+  return q.transaction(async (tx) => {
+    // Selected inside the transaction: two tabs retiring at once would
+    // otherwise both record the same cards, and a card answered in between
+    // would be marked known without its new schedule changing.
+    const seen = tx.select({ id: cardState.cardId }).from(cardState).where(eq(cardState.userId, userId));
+    const rest = await tx
+      .select({ id: cards.id })
+      .from(cards)
+      .where(and(eq(cards.topicSlug, topicSlug), eq(cards.status, "live"), eq(cards.hidden, false), notInArray(cards.id, seen)))
+      .for("update");
+    if (!rest.length) return 0;
     await tx.insert(cardReviews).values(
       rest.map((c) => ({
         userId,
@@ -609,8 +623,8 @@ export async function retireTopic(userId: string, topicSlug: string, q: Db = db,
         })),
       )
       .onConflictDoNothing();
+    return rest.length;
   });
-  return rest.length;
 }
 
 async function gradeAndSave(

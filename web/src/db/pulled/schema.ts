@@ -340,7 +340,8 @@ export const cardReviews = pgTable("card_reviews", {
 	diagnostic: boolean().default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("card_reviews_card_idx").using("btree", table.cardId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")),
+	index("card_reviews_card_idx").using("btree", table.cardId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("card_reviews_declared_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.outcome.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`(outcome = ANY (ARRAY['new_to_me'::text, 'known'::text]))`),
 	index("card_reviews_user_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")),
 	foreignKey({
 			columns: [table.cardId],
@@ -353,8 +354,8 @@ export const cardReviews = pgTable("card_reviews", {
 			name: "card_reviews_user_id_fkey"
 		}).onDelete("cascade"),
 	pgPolicy("card_reviews_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
-	check("card_reviews_graded_by_check", sql`graded_by = ANY (ARRAY['match'::text, 'ai'::text, 'self'::text, 'options'::text, 'skip'::text])`),
-	check("card_reviews_outcome_check", sql`outcome = ANY (ARRAY['correct'::text, 'wrong'::text, 'skipped'::text])`),
+	check("card_reviews_graded_by_check", sql`graded_by = ANY (ARRAY['match'::text, 'ai'::text, 'self'::text, 'options'::text, 'skip'::text, 'declared'::text])`),
+	check("card_reviews_outcome_check", sql`outcome = ANY (ARRAY['correct'::text, 'wrong'::text, 'skipped'::text, 'new_to_me'::text, 'known'::text])`),
 	check("card_reviews_score_check", sql`(score >= (0)::double precision) AND (score <= (1)::double precision)`),
 ]);
 
@@ -682,25 +683,6 @@ export const topicProgress = pgTable("topic_progress", {
 	pgPolicy("topic_progress_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
 ]);
 
-export const roadmapProgress = pgTable("roadmap_progress", {
-	userId: uuid("user_id").notNull(),
-	nodeId: text("node_id").notNull(),
-	doneAt: timestamp("done_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.nodeId],
-			foreignColumns: [roadmapNodes.id],
-			name: "roadmap_progress_node_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "roadmap_progress_user_id_fkey"
-		}).onDelete("cascade"),
-	primaryKey({ columns: [table.userId, table.nodeId], name: "roadmap_progress_pkey"}),
-	pgPolicy("roadmap_progress_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
-]);
-
 export const readinessSnapshots = pgTable("readiness_snapshots", {
 	userId: uuid("user_id").default(sql`auth.uid()`).notNull(),
 	date: date().notNull(),
@@ -737,6 +719,27 @@ export const cardFlags = pgTable("card_flags", {
 	primaryKey({ columns: [table.userId, table.cardId], name: "card_flags_pkey"}),
 	pgPolicy("card_flags_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`((user_id = auth.uid()) OR is_admin())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
 	check("card_flags_reason_check", sql`(length(reason) >= 1) AND (length(reason) <= 500)`),
+]);
+
+export const roadmapProgress = pgTable("roadmap_progress", {
+	userId: uuid("user_id").notNull(),
+	nodeId: text("node_id").notNull(),
+	doneAt: timestamp("done_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	source: text().default('manual').notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.nodeId],
+			foreignColumns: [roadmapNodes.id],
+			name: "roadmap_progress_node_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "roadmap_progress_user_id_fkey"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.userId, table.nodeId], name: "roadmap_progress_pkey"}),
+	pgPolicy("roadmap_progress_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
+	check("roadmap_progress_source_check", sql`source = ANY (ARRAY['manual'::text, 'topic'::text])`),
 ]);
 
 export const days = pgTable("days", {

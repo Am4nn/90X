@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, userApprovals, profiles, campaigns, pushSubscriptions, checkins, missions, topics, problems, sources, cardBatches, cards, checkinNotes, cardReviews, patternTricks, aiUsage, coachThreads, coachMessages, solutionReviews, stories, mocks, mockDetails, weeklyReviews, coachMemory, lessons, roadmapNodes, topicLinks, topicProgress, roadmapProgress, readinessSnapshots, cardFlags, days, problemReviews, batchReviewItems, integrationStatus, cardState } from "./schema";
+import { usersInAuth, userApprovals, profiles, campaigns, pushSubscriptions, checkins, missions, topics, problems, sources, cardBatches, cards, checkinNotes, cardReviews, patternTricks, aiUsage, coachThreads, coachMessages, solutionReviews, stories, mocks, mockDetails, weeklyReviews, coachMemory, lessons, roadmapNodes, topicLinks, topicProgress, readinessSnapshots, cardFlags, roadmapProgress, days, problemReviews, batchReviewItems, integrationStatus, cardState } from "./schema";
 
 export const userApprovalsRelations = relations(userApprovals, ({one}) => ({
 	usersInAuth_decidedBy: one(usersInAuth, {
@@ -39,9 +39,9 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	weeklyReviews: many(weeklyReviews),
 	coachMemories: many(coachMemory),
 	topicProgresses: many(topicProgress),
-	roadmapProgresses: many(roadmapProgress),
 	readinessSnapshots: many(readinessSnapshots),
 	cardFlags: many(cardFlags),
+	roadmapProgresses: many(roadmapProgress),
 	days: many(days),
 	problemReviews: many(problemReviews),
 	batchReviewItems: many(batchReviewItems),
@@ -336,17 +336,6 @@ export const topicProgressRelations = relations(topicProgress, ({one}) => ({
 	}),
 }));
 
-export const roadmapProgressRelations = relations(roadmapProgress, ({one}) => ({
-	roadmapNode: one(roadmapNodes, {
-		fields: [roadmapProgress.nodeId],
-		references: [roadmapNodes.id]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [roadmapProgress.userId],
-		references: [usersInAuth.id]
-	}),
-}));
-
 export const readinessSnapshotsRelations = relations(readinessSnapshots, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
 		fields: [readinessSnapshots.userId],
@@ -361,6 +350,17 @@ export const cardFlagsRelations = relations(cardFlags, ({one}) => ({
 	}),
 	usersInAuth: one(usersInAuth, {
 		fields: [cardFlags.userId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const roadmapProgressRelations = relations(roadmapProgress, ({one}) => ({
+	roadmapNode: one(roadmapNodes, {
+		fields: [roadmapProgress.nodeId],
+		references: [roadmapNodes.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [roadmapProgress.userId],
 		references: [usersInAuth.id]
 	}),
 }));

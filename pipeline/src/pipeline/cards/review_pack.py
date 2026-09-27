@@ -38,16 +38,33 @@ def sample(con, size: int = SAMPLE) -> list[dict]:
             partition by c.topic_slug
             order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
         ) = 1
-        and row_number() over (
-            partition by t.domain, c.format
-            order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
-        ) <= 4
         order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), t.domain, c.id
         """
     ).fetchall()
     cols = ["id", "slug", "domain", "topic", "format", "difficulty", "prompt", "options",
             "answer", "key_points", "quality", "lesson"]
-    return [dict(zip(cols, r)) for r in rows][:size]
+    candidates = [dict(zip(cols, r)) for r in rows]
+
+    # One per topic, then spread across area and format by taking turns. Doing
+    # the spread in SQL capped each group at four and left those places empty
+    # when the topic filter removed them, so the sample shrank instead of
+    # drawing from elsewhere.
+    picked: list[dict] = []
+    seen_groups: dict[tuple, int] = {}
+    for allowed in (1, 2, 3, 4, 99):
+        for card in candidates:
+            if len(picked) >= size:
+                break
+            if card in picked:
+                continue
+            group = (card["domain"], card["format"])
+            if seen_groups.get(group, 0) >= allowed:
+                continue
+            seen_groups[group] = seen_groups.get(group, 0) + 1
+            picked.append(card)
+        if len(picked) >= size:
+            break
+    return picked[:size]
 
 
 def rejected(con) -> list[dict]:

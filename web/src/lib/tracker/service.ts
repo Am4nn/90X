@@ -483,7 +483,7 @@ export async function markStudied(userId: string, topicSlug: string, q: Db = db,
   if (nodes.length) {
     await q
       .insert(roadmapProgress)
-      .values(nodes.map((n) => ({ userId, nodeId: n.id })))
+      .values(nodes.map((n) => ({ userId, nodeId: n.id, source: "topic" })))
       .onConflictDoNothing();
   }
   await q
@@ -748,7 +748,13 @@ export async function onCardAnswered(userId: string, q: Db = db, now = new Date(
 /** Roadmap nodes are a personal checklist: no missions, no streak, no
  *  readiness. They record what you have covered beyond our own topics. */
 export async function tickRoadmapNode(userId: string, nodeId: string, q: Db = db) {
-  await q.insert(roadmapProgress).values({ userId, nodeId }).onConflictDoNothing();
+  await q
+    .insert(roadmapProgress)
+    .values({ userId, nodeId, source: "manual" })
+    .onConflictDoUpdate({
+      target: [roadmapProgress.userId, roadmapProgress.nodeId],
+      set: { source: "manual" },
+    });
 }
 
 export async function untickRoadmapNode(userId: string, nodeId: string, q: Db = db) {
