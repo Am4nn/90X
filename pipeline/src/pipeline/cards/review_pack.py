@@ -1,18 +1,58 @@
-"""The card sample Aman reads before a bulk run.
+"""The card sample Aman reads, and hands to an outside reviewer.
 
-One card of each format per topic, plus everything the gate rejected with its
-reason. The rejections matter as much as the keeps: a gate that rejects the
-wrong things is worse than no gate, and the first pilot did exactly that -
-50% rejected, and 40 of 42 were good cards the gate misread.
+One sample gates every batch, because reviewing 20 cards from each of 16
+batches is 320 cards and he will not do that - and a review nobody finishes
+is worse than a smaller one that gets done.
+
+So: 25 cards, spread across areas and formats, weighted toward the ones the
+gate was least sure about, each shown with the lesson it came from. An
+outside reviewer can only judge "could someone answer this?" if they can see
+what the reader was taught, and a card that quietly needs unseen context is
+the exact failure that started this rebuild.
+
+Every rejected card is listed too, with the gate's reason. The gate is as
+much on trial as the cards: its first run rejected 40 good cards out of 42.
 """
 
 import json
 
+SAMPLE = 25
 FORMATS = ("typed", "flash", "mcq", "output")
 
 
+def sample(con, size: int = SAMPLE) -> list[dict]:
+    """Least-confident first, but never two from the same topic until every
+    topic with cards has had one, so one weak topic cannot fill the sample."""
+    rows = con.execute(
+        """
+        select c.id, c.topic_slug, t.domain, t.name, c.format, c.difficulty, c.prompt_md,
+               c.options, c.answer_md, c.key_points, c.quality, l.body_md
+        from cards c
+        join topics t on t.slug = c.topic_slug
+        join lessons l on l.topic_slug = c.topic_slug
+        where c.source = 'lesson' and c.status = 'draft'
+        qualify row_number() over (
+            partition by t.domain, c.format
+            order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
+        ) <= 2
+        order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), t.domain, c.id
+        """
+    ).fetchall()
+    cols = ["id", "slug", "domain", "topic", "format", "difficulty", "prompt", "options",
+            "answer", "key_points", "quality", "lesson"]
+    return [dict(zip(cols, r)) for r in rows][:size]
+
+
+def rejected(con) -> list[dict]:
+    rows = con.execute(
+        """select topic_slug, format, prompt_md, reject_reason from cards
+           where source = 'lesson' and status = 'rejected' order by topic_slug"""
+    ).fetchall()
+    return [dict(zip(["slug", "format", "prompt", "reason"], r)) for r in rows]
+
+
 def report(con) -> str:
-    kept, rejected = con.execute(
+    kept, dropped = con.execute(
         """select count(*) filter (where status = 'draft'), count(*) filter (where status = 'rejected')
            from cards where source = 'lesson'"""
     ).fetchone()
@@ -20,49 +60,76 @@ def report(con) -> str:
         """select format, count(*) from cards where source = 'lesson' and status = 'draft'
            group by 1 order by 2 desc"""
     ).fetchall()
+    picked, refused = sample(con), rejected(con)
 
     lines = [
-        "# Cards: the sample before a bulk run",
+        "# 90x card review",
         "",
-        f"{kept} kept, {rejected} rejected by the gate ({rejected / max(1, kept + rejected):.0%}). "
-        + "Format mix: " + ", ".join(f"{n} {f}" for f, n in mix) + ".",
+        f"{kept} cards were generated and {dropped} rejected by an automated gate "
+        f"({dropped / max(1, kept + dropped):.0%}). Mix: " + ", ".join(f"{n} {f}" for f, n in mix) + ".",
         "",
-        "**What to check:** could you answer each one having read the lesson and nothing else? "
-        "Is the format right - typed for explanation, flash for a fact, mcq where the options matter? "
-        "Then skim the rejections and tell me whether the gate threw away anything good.",
+        "## What these are",
+        "",
+        "90x is an interview-prep app. Each topic has one authored lesson, and cards are generated "
+        "from that lesson to test recall. A reader answers a card **without** the lesson in front of "
+        "them: typed answers are graded by a model against the listed key points, multiple choice by "
+        "the marked option, and output cards by exact match.",
+        "",
+        "## What to judge",
+        "",
+        "1. **Could a competent engineer who studied this lesson answer this, with nothing else in front of them?** "
+        "A card that needs the lesson open is broken, however good it looks beside it.",
+        "2. **Is the format right?** Typed for explanation and trade-offs, flash for one crisp fact, "
+        "multiple choice where the options matter, output where a snippet has one unambiguous result.",
+        "3. **Are the key points gradable?** They are what a model checks a typed answer against.",
+        "4. **Are the wrong options real mistakes?** A distractor nobody would pick makes the card a reading test.",
+        "5. **Was the gate right?** The rejected cards are at the end with its reasons. It has been wrong before: "
+        "an earlier version rejected 40 good cards out of 42 because it misread conceptual questions as malformed.",
+        "",
+        f"Below: {len(picked)} cards, spread across areas and formats, weighted toward the ones the gate was "
+        "least sure about. Each is shown with the lesson it came from.",
         "",
         "---",
         "",
     ]
 
-    topics = [r[0] for r in con.execute(
-        "select distinct topic_slug from cards where source = 'lesson' and status = 'draft' order by 1"
-    ).fetchall()]
-    for slug in topics:
-        lines += [f"## {slug}", ""]
-        for fmt in FORMATS:
-            row = con.execute(
-                """select prompt_md, answer_md, options, key_points, difficulty from cards
-                   where source = 'lesson' and status = 'draft' and topic_slug = ? and format = ? limit 1""",
-                [slug, fmt],
-            ).fetchone()
-            if not row:
-                continue
-            prompt, answer, options, key_points, difficulty = row
-            lines += [f"**{fmt}** ({difficulty}) - {prompt}", ""]
-            if options:
-                lines += [f"- {o}" for o in json.loads(options)] + [""]
-            lines += [f"> {answer}", "", f"*Graded on: {', '.join(json.loads(key_points or '[]'))}*", ""]
-        lines.append("---")
-        lines.append("")
+    for i, card in enumerate(picked, 1):
+        confidence = (json.loads(card["quality"] or "{}") or {}).get("gate_confidence")
+        lines += [
+            f"## {i}. {card['topic']} · {card['format']} · {card['difficulty']}",
+            "",
+            f"*{card['domain']} · gate confidence {confidence if confidence is not None else 'n/a'}*",
+            "",
+            "**Question**",
+            "",
+            card["prompt"],
+            "",
+        ]
+        if card["options"]:
+            lines += ["**Options**", ""] + [f"- {o}" for o in json.loads(card["options"])] + [""]
+        lines += [
+            "**Reference answer**",
+            "",
+            card["answer"],
+            "",
+            "**Graded on**",
+            "",
+        ]
+        lines += [f"- {p}" for p in json.loads(card["key_points"] or "[]")]
+        lines += [
+            "",
+            "<details><summary>The lesson this came from</summary>",
+            "",
+            card["lesson"],
+            "",
+            "</details>",
+            "",
+            "---",
+            "",
+        ]
 
-    dropped = con.execute(
-        """select topic_slug, format, prompt_md, reject_reason from cards
-           where source = 'lesson' and status = 'rejected' order by topic_slug"""
-    ).fetchall()
-    lines += ["## What the gate rejected", ""]
-    if not dropped:
-        lines.append("Nothing.")
-    for slug, fmt, prompt, reason in dropped:
-        lines += [f"- **{slug}** ({fmt}): {prompt}", f"  - {reason}"]
+    lines += ["## Cards the gate rejected", "",
+              "Judge whether it was right. Each was thrown away." if refused else "None.", ""]
+    for card in refused:
+        lines += [f"- **{card['slug']}** ({card['format']}): {card['prompt']}", f"  - Gate said: {card['reason']}", ""]
     return "\n".join(lines)
