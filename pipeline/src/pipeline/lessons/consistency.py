@@ -13,10 +13,12 @@ rather than whole lessons.
 """
 
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from pydantic import BaseModel, Field
 
 BATCH = 8
+WORKERS = 4  # each window waits on the API, not on us
 
 SYSTEM = """You are checking a set of interview-prep lessons from one subject area for claims that contradict each other.
 
@@ -68,20 +70,33 @@ def check(llm, domain: str, group: list[dict], tier: str = "smart") -> list[Cont
 
 def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list[dict]:
     areas = domains or [r[0] for r in con.execute("select distinct domain from topics order by 1").fetchall()]
-    found: list[dict] = []
+    # Overlapping windows: a contradiction between neighbours in the sort order
+    # is the likely case, and every lesson is seen alongside others.
+    windows = []
     for domain in areas:
         group = lessons_in(con, domain)
         if len(group) < 2:
             continue
-        # Overlapping windows: a contradiction between neighbours in the sort
-        # order is the likely case, and every lesson is seen with others.
         for i in range(0, len(group), BATCH // 2):
             window = group[i : i + BATCH]
             if len(window) < 2:
                 break
-            for c in check(llm, domain, window, tier=tier):
-                found.append({"domain": domain, **c.model_dump()})
-        print(f"  {domain}: {len(group)} lessons checked", flush=True)
+            windows.append((domain, window))
+
+    found: list[dict] = []
+    done = 0
+    print(f"{len(windows)} windows across {len(areas)} areas, {WORKERS} at a time", flush=True)
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        futures = {pool.submit(check, llm, domain, window, tier): domain for domain, window in windows}
+        for future in as_completed(futures):
+            domain = futures[future]
+            done += 1
+            try:
+                for c in future.result():
+                    found.append({"domain": domain, **c.model_dump()})
+            except Exception as e:  # one window failing must not lose the rest
+                print(f"  {domain}: window failed, {type(e).__name__}: {e}", flush=True)
+            print(f"  [{done}/{len(windows)}] {domain}", flush=True)
     # The same pair can surface in two overlapping windows.
     seen, unique = set(), []
     for c in found:

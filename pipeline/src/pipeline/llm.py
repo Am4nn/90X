@@ -63,10 +63,18 @@ def cost_usd(model: str, tokens_in: int, tokens_out: int, off_peak: bool) -> flo
     return cost / 2 if off_peak and model.startswith("deepseek") else cost
 
 
+# Without these the SDK waits 600s per attempt and retries twice, so one
+# stalled request blocks a whole run for half an hour. A consistency run lost
+# 28 minutes to a single hung call that never returned.
+REQUEST_TIMEOUT = 120.0
+MAX_RETRIES = 2
+
+
 def _default_client():
     from openai import OpenAI
 
-    return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=os.environ.get("AI_BASE_URL") or None)
+    return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=os.environ.get("AI_BASE_URL") or None,
+                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
 
 
 def _review_client():
@@ -75,7 +83,8 @@ def _review_client():
         return None
     from openai import OpenAI
 
-    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=os.environ.get("REVIEW_BASE_URL") or None)
+    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=os.environ.get("REVIEW_BASE_URL") or None,
+                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
 
 
 class LLM:
