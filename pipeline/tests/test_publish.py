@@ -17,8 +17,11 @@ def tiny(tmp_path):
                    importance, premium, companies, statement_md, solutions, url, source_id)
                    values ('zz-test-problem', 'leetcode', 'Test', 'Easy', 'zz-test-topic', [], ['Array'], ['hash-map'],
                    0.5, false, '{"Amazon": 50}', 'statement', '{"python": "pass"}', 'https://x', 'leetcode-detailed')""")
-    con.execute("""insert into documents (id, domain, title, body_md, source_id, sort)
-                   values ('zz-doc', 'system_design', 'Doc', 'body', 'system-design-primer', 0)""")
+    con.execute("""insert into lessons (topic_slug, title, body_md, practice, source_refs, words, status)
+                   values ('zz-test-topic', 'Test topic', 'A lesson body. It stands alone.',
+                   '{"problems": [], "questions": []}', '[]', 42, 'ok')""")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort, topic_slug)
+                   values ('zz-rm:node1', 'zz-rm', 'dsa', 'Test node', 'topic', 0, 'zz-test-topic')""")
     con.execute("""insert into card_batches (id, domain, topic_slugs, ai_pass_rate) values ('00000000-0000-4000-8000-0000000000aa', 'dsa', ['zz-test-topic'], 0.9)""")
     con.execute("""insert into cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md, answer_md, key_points, kept)
                    values ('00000000-0000-4000-8000-0000000000bb', '00000000-0000-4000-8000-0000000000aa', 'zz-test-topic',
@@ -31,7 +34,9 @@ def test_dry_run_publishes_everything_then_rolls_back(tmp_path):
 
     con = tiny(tmp_path)
     counts = publish.run(con, os.environ["DATABASE_URL"], dry_run=True)
-    assert counts["problems"][0] == 1 and counts["documents"][0] == 1 and counts["cards"] == (1, 0)
+    assert counts["problems"][0] == 1 and counts["cards"] == (1, 0)
+    # The lesson layer and the roadmap checklist publish alongside everything else.
+    assert counts["lessons"][0] == 1 and counts["roadmap_nodes"][0] == 1
     assert counts["sources"][0] >= 40
     # dry run: staging not marked published, Supabase unchanged
     assert con.execute("select published from card_batches").fetchone()[0] is False

@@ -79,7 +79,8 @@ def _staging_rows(con, table: str, columns: list[str]) -> list[tuple]:
             "select topic_slug, title, body_md, practice, source_refs, words, generated_at "
             "from lessons where status = 'ok'"
         ).fetchall()
-        return [(slug, title, _first_sentence(body), _with_titles(practice), refs, words, at)
+        # Column order must match TABLES: topic_slug, title, summary, body_md, ...
+        return [(slug, title, _first_sentence(body), body, _with_titles(practice), refs, words, at)
                 for slug, title, body, practice, refs, words, at in rows]
     if table == "topics":  # parents before children
         rows = con.execute(f"select {', '.join(columns)} from topics order by parent_slug is not null, sort").fetchall()
@@ -135,15 +136,15 @@ def _publish_cards(con, cur) -> tuple[dict, list[str]]:
                        values (%s, %s, %s, %s, %s, 'draft') on conflict (id) do nothing""",
                     (bid, domain, list(topics or []), created, pass_rate))
         cards = con.execute(
-            """select id, topic_slug, problem_slug, document_id, format, difficulty, prompt_md, options, answer_md,
+            """select id, topic_slug, problem_slug, format, difficulty, prompt_md, options, answer_md,
                       key_points, source_refs, quality from cards where batch_id = ? and kept""", [bid]).fetchall()
         cur.executemany(
-            """insert into public.cards (id, batch_id, topic_slug, problem_slug, document_id, format, difficulty, prompt_md,
+            """insert into public.cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md,
                    options, answer_md, key_points, source_refs, quality, status)
-               values (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, 'draft')
+               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, 'draft')
                on conflict (id) do nothing""",
-            [(c[0], bid, *c[1:7], c[7] if c[7] is None else json.dumps(json.loads(c[7])), c[8],
-              json.dumps(json.loads(c[9] or "[]")), json.dumps(json.loads(c[10] or "[]")), json.dumps(json.loads(c[11] or "{}")))
+            [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
+              json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")), json.dumps(json.loads(c[10] or "{}")))
              for c in cards])
         n_cards += len(cards)
     return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}, [b[0] for b in batches]
