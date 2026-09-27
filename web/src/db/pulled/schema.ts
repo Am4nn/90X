@@ -167,32 +167,6 @@ export const topics = pgTable("topics", {
 	check("topics_importance_check", sql`(importance >= (0)::double precision) AND (importance <= (1)::double precision)`),
 ]);
 
-export const documents = pgTable("documents", {
-	id: text().primaryKey().notNull(),
-	topicSlug: text("topic_slug"),
-	domain: text().notNull(),
-	title: text().notNull(),
-	bodyMd: text("body_md").notNull(),
-	url: text(),
-	sourceId: text("source_id"),
-	sort: integer().default(0).notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("documents_domain_idx").using("btree", table.domain.asc().nullsLast().op("text_ops")),
-	index("documents_topic_idx").using("btree", table.topicSlug.asc().nullsLast().op("int4_ops"), table.sort.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.sourceId],
-			foreignColumns: [sources.id],
-			name: "documents_source_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.topicSlug],
-			foreignColumns: [topics.slug],
-			name: "documents_topic_slug_fkey"
-		}).onDelete("set null"),
-	pgPolicy("documents_read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`is_approved()` }),
-]);
-
 export const problems = pgTable("problems", {
 	slug: text().primaryKey().notNull(),
 	kind: text().notNull(),
@@ -274,7 +248,6 @@ export const cards = pgTable("cards", {
 	batchId: uuid("batch_id"),
 	topicSlug: text("topic_slug"),
 	problemSlug: text("problem_slug"),
-	documentId: text("document_id"),
 	format: text().notNull(),
 	difficulty: text(),
 	promptMd: text("prompt_md").notNull(),
@@ -296,11 +269,6 @@ export const cards = pgTable("cards", {
 			foreignColumns: [cardBatches.id],
 			name: "cards_batch_id_fkey"
 		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.documentId],
-			foreignColumns: [documents.id],
-			name: "cards_document_id_fkey"
-		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.problemSlug],
 			foreignColumns: [problems.slug],
@@ -473,32 +441,6 @@ export const coachMessages = pgTable("coach_messages", {
 	check("coach_messages_role_check", sql`role = ANY (ARRAY['user'::text, 'assistant'::text])`),
 ]);
 
-export const coachMemory = pgTable("coach_memory", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").default(sql`auth.uid()`).notNull(),
-	kind: text().notNull(),
-	text: text().notNull(),
-	evidence: jsonb().default([]).notNull(),
-	status: text().default('active').notNull(),
-	source: text().default('coach').notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	lastSeenAt: timestamp("last_seen_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	expiresOn: date("expires_on"),
-}, (table) => [
-	index("coach_memory_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "coach_memory_user_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("coach_memory_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
-	check("coach_memory_kind_check", sql`kind = ANY (ARRAY['habit'::text, 'strength'::text, 'goal'::text, 'preference'::text, 'context'::text])`),
-	check("coach_memory_source_check", sql`source = ANY (ARRAY['user'::text, 'coach'::text])`),
-	check("coach_memory_status_check", sql`status = ANY (ARRAY['active'::text, 'improving'::text, 'resolved'::text, 'dismissed'::text])`),
-	check("coach_memory_text_check", sql`(length(text) >= 1) AND (length(text) <= 500)`),
-]);
-
 export const solutionReviews = pgTable("solution_reviews", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	userId: uuid("user_id").default(sql`auth.uid()`).notNull(),
@@ -636,6 +578,52 @@ export const weeklyReviews = pgTable("weekly_reviews", {
 	pgPolicy("weekly_reviews_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
 	check("weekly_reviews_coach_score_check", sql`(coach_score >= 0) AND (coach_score <= 100)`),
 	check("weekly_reviews_formula_score_check", sql`(formula_score >= 0) AND (formula_score <= 100)`),
+]);
+
+export const coachMemory = pgTable("coach_memory", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").default(sql`auth.uid()`).notNull(),
+	kind: text().notNull(),
+	text: text().notNull(),
+	evidence: jsonb().default([]).notNull(),
+	status: text().default('active').notNull(),
+	source: text().default('coach').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	lastSeenAt: timestamp("last_seen_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	expiresOn: date("expires_on"),
+}, (table) => [
+	index("coach_memory_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "coach_memory_user_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("coach_memory_owner", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`((user_id = auth.uid()) AND is_approved())`  }),
+	check("coach_memory_kind_check", sql`kind = ANY (ARRAY['habit'::text, 'strength'::text, 'goal'::text, 'preference'::text, 'context'::text])`),
+	check("coach_memory_source_check", sql`source = ANY (ARRAY['user'::text, 'coach'::text])`),
+	check("coach_memory_status_check", sql`status = ANY (ARRAY['active'::text, 'improving'::text, 'resolved'::text, 'dismissed'::text])`),
+	check("coach_memory_text_check", sql`(length(text) >= 1) AND (length(text) <= 500)`),
+]);
+
+export const lessons = pgTable("lessons", {
+	topicSlug: text("topic_slug").primaryKey().notNull(),
+	title: text().notNull(),
+	summary: text(),
+	bodyMd: text("body_md").notNull(),
+	practice: jsonb().default({}).notNull(),
+	sourceRefs: jsonb("source_refs").default([]).notNull(),
+	words: integer(),
+	generatedAt: timestamp("generated_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("lessons_title_idx").using("btree", table.title.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.topicSlug],
+			foreignColumns: [topics.slug],
+			name: "lessons_topic_slug_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("lessons_read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`is_approved()` }),
 ]);
 
 export const topicLinks = pgTable("topic_links", {

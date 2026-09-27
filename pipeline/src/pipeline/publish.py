@@ -18,7 +18,6 @@ TABLES = [
     ("problems", ["slug"], ["slug", "kind", "lc_number", "title", "difficulty", "pattern_slug", "topic_slugs", "tags",
                             "techniques", "importance", "premium", "nc150", "blind75", "companies", "statement_md",
                             "solutions", "video_id", "url", "source_id"]),
-    ("documents", ["id"], ["id", "topic_slug", "domain", "title", "body_md", "url", "source_id", "sort"]),
     ("pattern_tricks", ["id"], ["id", "pattern_slug", "name", "idea_md", "snippets", "problem_slugs", "sort"]),
     ("lessons", ["topic_slug"], ["topic_slug", "title", "summary", "body_md", "practice", "source_refs",
                                  "words", "generated_at"]),
@@ -31,7 +30,7 @@ def _source_rows(con) -> list[tuple]:
     """sources.py entries plus any source id used by staging rows."""
     rows = {s.name: (s.name, s.name, s.domain, f"https://github.com/{s.target}" if "/" in s.target and not s.target.startswith("http") else s.target,
                      None, s.role) for s in SOURCES}
-    used = {r[0] for r in con.execute("select distinct source_id from problems union select distinct source_id from documents").fetchall() if r[0]}
+    used = {r[0] for r in con.execute("select distinct source_id from problems").fetchall() if r[0]}
     for sid in used - rows.keys():
         rows[sid] = (sid, sid, "dsa", None, None, "reference")
     return list(rows.values())

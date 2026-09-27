@@ -1,7 +1,7 @@
 import "server-only";
-import { and, asc, desc, eq, ilike, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { checkinNotes, checkins, documents, patternTricks, problems, profiles, topicLinks, topics } from "@/db/schema";
+import { checkinNotes, checkins, lessons, patternTricks, problems, profiles, topicLinks, topics } from "@/db/schema";
 import { type Mastery, masteryState } from "./map-layout";
 
 /** Library areas and how their tab shows up. */
@@ -148,67 +148,78 @@ export async function areaTopics(domain: string) {
       description: topics.description,
       parent: topics.parentSlug,
       importance: topics.importance,
-      docs: sql<number>`(select count(*) from ${documents} d where d.topic_slug = ${topics.slug})::int`,
+      summary: lessons.summary,
+      words: lessons.words,
     })
     .from(topics)
+    .leftJoin(lessons, eq(lessons.topicSlug, topics.slug))
     .where(eq(topics.domain, domain))
     .orderBy(asc(topics.sort));
 }
 
-/** Topics and notes in a non-problem area whose name or title matches. */
+/** Topics in a non-problem area whose name or lesson summary matches. */
 export async function searchArea(domain: string, q: string, limit = 40) {
-  const [topicHits, docHits] = await Promise.all([
-    db
-      .select({
-        slug: topics.slug,
-        name: topics.name,
-        docs: sql<number>`(select count(*) from ${documents} d where d.topic_slug = ${topics.slug})::int`,
-      })
-      .from(topics)
-      .where(and(eq(topics.domain, domain), ilike(topics.name, contains(q))))
-      .orderBy(asc(topics.sort))
-      .limit(limit),
-    db
-      .select({ id: documents.id, title: documents.title, topic: topics.name })
-      .from(documents)
-      .leftJoin(topics, eq(topics.slug, documents.topicSlug))
-      .where(and(eq(documents.domain, domain), ilike(documents.title, contains(q))))
-      .orderBy(asc(documents.title))
-      .limit(limit),
-  ]);
-  return { topics: topicHits, docs: docHits };
-}
-
-export async function unfiledCount(domain: string) {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(documents)
-    .where(and(eq(documents.domain, domain), isNull(documents.topicSlug)));
-  return row?.n ?? 0;
+  const hits = await db
+    .select({
+      slug: topics.slug,
+      name: topics.name,
+      summary: lessons.summary,
+      words: lessons.words,
+    })
+    .from(topics)
+    .leftJoin(lessons, eq(lessons.topicSlug, topics.slug))
+    .where(
+      and(
+        eq(topics.domain, domain),
+        or(ilike(topics.name, contains(q)), ilike(lessons.summary, contains(q))),
+      ),
+    )
+    .orderBy(asc(topics.sort))
+    .limit(limit);
+  return { topics: hits };
 }
 
 export async function topicDetail(slug: string) {
   const [topic] = await db.select().from(topics).where(eq(topics.slug, slug));
   if (!topic) return null;
-  const docs = await db
-    .select({
-      id: documents.id,
-      title: documents.title,
-      url: documents.url,
-      sourceId: documents.sourceId,
-      length: sql<number>`length(${documents.bodyMd})::int`,
-    })
-    .from(documents)
-    .where(eq(documents.topicSlug, slug))
-    .orderBy(asc(documents.sourceId), asc(documents.sort));
-  return { topic, docs };
+  const [lesson] = await db.select().from(lessons).where(eq(lessons.topicSlug, slug));
+  return { topic, lesson: lesson ?? null };
 }
 
-export async function documentDetail(id: string) {
-  const [doc] = await db.select().from(documents).where(eq(documents.id, id));
-  if (!doc) return null;
-  const [topic] = doc.topicSlug
-    ? await db.select({ slug: topics.slug, name: topics.name }).from(topics).where(eq(topics.slug, doc.topicSlug))
+export type Practice = {
+  problems: { slug: string; title: string; difficulty: string; companies: string[] }[];
+  questions: { slug: string; title: string; difficulty: string | null; url: string }[];
+};
+
+/** What a lesson unlocks: our own problems, and real interview questions. */
+export async function practiceFor(lesson: { practice: unknown }): Promise<Practice> {
+  const raw = (lesson.practice ?? {}) as { problems?: string[]; questions?: Practice["questions"] };
+  const slugs = raw.problems ?? [];
+  const rows = slugs.length
+    ? await db
+        .select({
+          slug: problems.slug,
+          title: problems.title,
+          difficulty: problems.difficulty,
+          companies: problems.companies,
+        })
+        .from(problems)
+        .where(inArray(problems.slug, slugs))
     : [];
-  return { doc, topic: topic ?? null };
+  // Keep the pipeline's order: most important first, NeetCode 150 and Blind 75 ahead of the rest.
+  const bySlug = new Map(rows.map((r) => [r.slug, r]));
+  return {
+    problems: slugs.flatMap((s) => {
+      const row = bySlug.get(s);
+      if (!row) return [];
+      const freq = (row.companies ?? {}) as Record<string, number>;
+      const companies = Object.entries(freq)
+        .filter(([, f]) => f >= 60)
+        .toSorted((a, b) => b[1] - a[1])
+        .slice(0, 4)
+        .map(([name]) => name);
+      return [{ slug: row.slug, title: row.title, difficulty: row.difficulty, companies }];
+    }),
+    questions: raw.questions ?? [],
+  };
 }
