@@ -6,7 +6,7 @@ import { MAX_PER_SLOT, parseTemplates, SLOT_TYPES, type Templates } from "@/lib/
 // read of the week, and at most three template changes that only apply after
 // the user accepts them. Pure rules; lib/coach/weekly.ts does I/O.
 
-export const MAX_CHANGES = 3;
+const MAX_CHANGES = 3;
 
 /** The Monday of the week that `date` falls in; a Sunday review covers Monday to Sunday. */
 export function weekStartOf(date: string): string {

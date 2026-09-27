@@ -41,13 +41,7 @@ describe("validChanges", () => {
   });
 
   it("allows only one change per weekday and slot, and at most three", () => {
-    const many = [
-      change(),
-      change({ to: 3 }),
-      change({ weekday: 2 }),
-      change({ weekday: 3 }),
-      change({ weekday: 4 }),
-    ];
+    const many = [change(), change({ to: 3 }), change({ weekday: 2 }), change({ weekday: 3 }), change({ weekday: 4 })];
     expect(validChanges(templates(), many).map((c) => c.weekday)).toEqual([1, 2, 3]);
   });
 
