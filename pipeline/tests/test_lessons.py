@@ -64,6 +64,18 @@ def test_rejects_a_follow_up_that_is_not_a_prompt():
     assert any("interviewer would say" in p for p in problems)
 
 
+def test_java_generics_are_not_html():
+    """A Java lesson writes List<Integer> in prose. Matching any <word> as a
+    tag failed the lesson for writing Java the way Java is written."""
+    fine = body_with("A HashMap<String, Integer> resizes when the load factor is exceeded.")
+    assert checks.check(fine, ["A?", "B?", "C?"]) == [], checks.check(fine, ["A?", "B?", "C?"])
+
+
+def test_real_html_is_still_rejected():
+    for markup in ("<div class='note'>x</div>", "<BR>", "<span>y</span>"):
+        assert any("raw HTML" in p for p in checks.check(body_with(markup), ["A?", "B?", "C?"])), markup
+
+
 def test_an_example_url_in_prose_is_allowed():
     """A lesson on URL shorteners has to be able to write a URL. The rule
     exists to stop reference lists, not to ban the topic's own subject."""

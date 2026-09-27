@@ -25,7 +25,15 @@ REFERS_TO_SOURCE = re.compile(
     r"|\baccording\s+to\s+this\b",
     re.IGNORECASE,
 )
-HTML_TAG = re.compile(r"<(?:/?[a-zA-Z][a-zA-Z0-9]*)(?:\s[^<>]*)?/?>")
+# Only real HTML tag names. Matching any <word> read Java generics as markup
+# and failed a lesson for writing List<Integer>, which is how you write Java.
+HTML_TAG = re.compile(
+    r"</?(?:div|span|p|a|img|br|hr|table|thead|tbody|tr|td|th|ul|ol|li|h[1-6]|b|i|u|"
+    r"strong|em|code|pre|blockquote|section|article|nav|header|footer|main|aside|"
+    r"form|input|label|button|select|option|script|style|link|meta|iframe|svg|path|"
+    r"figure|figcaption|details|summary|font|center|small|sup|sub)\b[^<>]*>",
+    re.IGNORECASE,
+)
 CODE = re.compile(r"```.*?```|`[^`]+`", re.DOTALL)
 MARKDOWN_LINK = re.compile(r"\]\(")
 BARE_URL = re.compile(r"https?://")
