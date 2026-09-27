@@ -22,7 +22,13 @@ export function CheckinPanel({ slug, leetcodeUrl }: { slug: string; leetcodeUrl:
         <span className="text-small font-semibold text-text-2">How did it go?</span>
         <div className="flex gap-2">
           {RESULTS.map((r) => (
-            <button key={r.value} type="button" className={chip(result === r.value)} onClick={() => setResult(r.value)}>
+            <button
+              key={r.value}
+              type="button"
+              aria-pressed={result === r.value}
+              className={chip(result === r.value)}
+              onClick={() => setResult(r.value)}
+            >
               {r.label}
             </button>
           ))}
@@ -32,7 +38,13 @@ export function CheckinPanel({ slug, leetcodeUrl }: { slug: string; leetcodeUrl:
         <span className="text-small font-semibold text-text-2">Time</span>
         <div className="flex gap-2">
           {TIME_CHIPS.map((m) => (
-            <button key={m} type="button" className={chip(minutes === m)} onClick={() => setMinutes(minutes === m ? null : m)}>
+            <button
+              key={m}
+              type="button"
+              aria-pressed={minutes === m}
+              className={chip(minutes === m)}
+              onClick={() => setMinutes(minutes === m ? null : m)}
+            >
               {m === 60 ? "60m+" : `${m}m`}
             </button>
           ))}
