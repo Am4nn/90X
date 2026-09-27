@@ -57,6 +57,8 @@ const REST_DAYS = 3;
 const DIAGNOSTIC_PER_AREA = 4;
 const MAX_ANSWER_CHARS = 4000;
 const DAY_MS = 86_400_000;
+/** Far enough out that a retired card leaves the rotation for this campaign. */
+const RETIRED_DAYS = 365;
 const QUEUE_TTL = 7 * 24 * 60 * 60;
 const DIAGNOSTIC_TTL = 30 * 24 * 60 * 60;
 // Guards the serve loop against a queue that is somehow all unservable.
@@ -548,6 +550,67 @@ async function topicRecord(userId: string, topicSlug: string | null, q: Db = db)
   };
 }
 
+/** How many cards in this topic the reader has not retired or answered yet.
+ *
+ * Offered once, never taken automatically: retiring eight cards on one tap is
+ * a big invisible action, and they only earned the right by proving the topic. */
+async function retireOffer(userId: string, topicSlug: string | null, q: Db) {
+  if (!topicSlug) return null;
+  const [topic] = await q.select({ name: topics.name }).from(topics).where(eq(topics.slug, topicSlug));
+  const seen = q.select({ id: cardState.cardId }).from(cardState).where(eq(cardState.userId, userId));
+  const [left] = await q
+    .select({ n: sql<number>`count(*)::int` })
+    .from(cards)
+    .where(and(eq(cards.topicSlug, topicSlug), eq(cards.status, "live"), eq(cards.hidden, false), notInArray(cards.id, seen)));
+  const remaining = left?.n ?? 0;
+  return remaining > 0 ? { topicSlug, topicName: topic?.name ?? topicSlug, remaining } : null;
+}
+
+/** Retire every card in a topic the reader has not met yet. */
+export async function retireTopic(userId: string, topicSlug: string, q: Db = db, now = new Date()): Promise<number> {
+  if (!canDeclareKnown(await topicRecord(userId, topicSlug, q))) return 0;
+  const seen = q.select({ id: cardState.cardId }).from(cardState).where(eq(cardState.userId, userId));
+  const rest = await q
+    .select({ id: cards.id })
+    .from(cards)
+    .where(and(eq(cards.topicSlug, topicSlug), eq(cards.status, "live"), eq(cards.hidden, false), notInArray(cards.id, seen)));
+  if (!rest.length) return 0;
+  const far = new Date(now.getTime() + RETIRED_DAYS * DAY_MS);
+  await q.transaction(async (tx) => {
+    await tx.insert(cardReviews).values(
+      rest.map((c) => ({
+        userId,
+        cardId: c.id,
+        answer: "",
+        score: 0,
+        pointsHit: [],
+        outcome: "known",
+        gradedBy: "declared",
+        usedOptions: false,
+        diagnostic: false,
+        createdAt: now.toISOString(),
+      })),
+    );
+    await tx
+      .insert(cardState)
+      .values(
+        rest.map((c) => ({
+          userId,
+          cardId: c.id,
+          stability: RETIRED_DAYS,
+          difficulty: 1,
+          dueAt: far.toISOString(),
+          reps: 1,
+          lapses: 0,
+          state: 2,
+          lastReview: now.toISOString(),
+        })),
+      )
+      .onConflictDoNothing();
+  });
+  return rest.length;
+}
+
 async function gradeAndSave(
   userId: string,
   input: AnswerInput,
@@ -626,6 +689,7 @@ async function gradeAndSave(
     correctOption: card.options && correct >= 0 && correct < card.options.length ? correct : null,
     sourceRefs: sourceLinks(row.sourceRefs),
     nextDue: state.dueAt.toISOString(),
+    retireOffer: declared === "known" ? await retireOffer(userId, row.topicSlug, q) : null,
     diagnosticSummary,
   };
 }

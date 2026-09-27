@@ -6,6 +6,7 @@ import { requireViewer } from "@/lib/auth/viewer";
 import { reportCard } from "@/lib/feed/flag-service";
 import {
   answerCard,
+  retireTopic,
   emptyReason,
   nextCard,
   sessionStats,
@@ -68,6 +69,19 @@ export async function submitAnswer(input: unknown): Promise<AnswerState> {
   } catch (e) {
     console.error("answer failed", e);
     return { error: "Your answer didn't save. Try again.", retry: true };
+  }
+}
+
+/** Retire the rest of a topic the reader has proved they know. Offered after
+ *  "I already know this", never taken automatically. */
+export async function retireTopicAction(topicSlug: string): Promise<{ retired: number } | { error: string }> {
+  const viewer = await requireViewer();
+  if (!/^[a-z0-9-]{1,120}$/.test(topicSlug)) return { error: "Unknown topic." };
+  try {
+    return { retired: await retireTopic(viewer.id, topicSlug) };
+  } catch (e) {
+    console.error("retire topic failed", e);
+    return { error: "That didn't save. Try again." };
   }
 }
 

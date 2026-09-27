@@ -58,6 +58,8 @@ export type AnswerResult = {
   correctOption: number | null;
   sourceRefs: SourceLink[];
   nextDue: string;
+  /** After "I already know this": the rest of the topic, offered once. */
+  retireOffer: { topicSlug: string; topicName: string; remaining: number } | null;
   /** Set when this answer finished the diagnostic. */
   diagnosticSummary: AreaSummary[] | null;
 };

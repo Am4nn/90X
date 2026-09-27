@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { type AnswerState, submitAnswer } from "@/app/actions/feed";
+import { type AnswerState, retireTopicAction, submitAnswer } from "@/app/actions/feed";
 import { button } from "@/components/button-styles";
 import { useServerAction } from "@/components/form";
 import { Markdown } from "@/components/markdown";
@@ -335,6 +335,8 @@ function Result({
     <div className="flex flex-col gap-5">
       {typed && <div className="rounded-xl border border-line-2 px-4 py-3 whitespace-pre-wrap text-text-2">{answer}</div>}
 
+      {result.retireOffer && <RetireOffer offer={result.retireOffer} />}
+
       <div className="flex items-baseline gap-3" aria-live="polite">
         {isGraded(result.outcome) && (
           <span className={`tabular font-display text-display font-bold ${OUTCOME_TEXT[result.outcome]}`}>
@@ -427,6 +429,43 @@ function Result({
           {nextPending ? "Loading…" : result.diagnosticSummary ? "See your results" : "Next card"}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Offered once after "I already know this", because the saving is the rest of
+ *  the topic, not the one card. Never taken automatically: retiring eight
+ *  cards on one tap is a big, invisible action. */
+function RetireOffer({ offer }: { offer: NonNullable<AnswerResult["retireOffer"]> }) {
+  const [done, setDone] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  if (done !== null) {
+    return (
+      <p className="rounded-xl border border-line bg-surface px-4 py-3 text-small text-text-2">
+        Retired {done} more {done === 1 ? "card" : "cards"} on {offer.topicName}.
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-line bg-surface px-4 py-3">
+      <p className="text-small text-text-2">
+        You have {offer.remaining} more {offer.remaining === 1 ? "card" : "cards"} on {offer.topicName}.
+      </p>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => {
+          setBusy(true);
+          void retireTopicAction(offer.topicSlug).then((r) => {
+            setBusy(false);
+            if ("retired" in r) setDone(r.retired);
+          });
+        }}
+        className="self-start text-small font-semibold text-cyan underline-offset-2 hover:underline disabled:opacity-60"
+      >
+        {busy ? "Retiring…" : `Retire them too`}
+      </button>
     </div>
   );
 }
