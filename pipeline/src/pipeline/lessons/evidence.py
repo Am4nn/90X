@@ -38,11 +38,18 @@ def top_companies(companies_json: str | None) -> list[str]:
 
 
 def problems_for(con, topic_slug: str) -> list[dict]:
-    """DSA topics are pattern buckets: every problem tagged with the pattern."""
+    """DSA topics are pattern buckets: every problem tagged with the pattern.
+
+    Interview problems only. The catalog also holds 268 contest problems with
+    stdin/stdout and huge hidden test suites; they are a different sport, and
+    four of them turned up in the sliding-window practice list, which is not
+    what someone with 90 days before an SDE loop should be spending time on.
+    A NeetCode 150 or Blind 75 problem outranks a merely important one.
+    """
     rows = con.execute(
         """select slug, title, difficulty, companies, importance
-           from problems where pattern_slug = ?
-           order by importance desc limit ?""",
+           from problems where pattern_slug = ? and kind = 'leetcode'
+           order by (nc150 or blind75) desc, importance desc limit ?""",
         [topic_slug, MAX_PROBLEMS],
     ).fetchall()
     return [
