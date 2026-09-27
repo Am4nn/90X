@@ -60,6 +60,9 @@ create table if not exists lessons (
 -- findings: what the fact-checker still objected to, when status is 'failed'.
 alter table lessons add column if not exists practice json;
 alter table lessons add column if not exists findings json;
+alter table cards add column if not exists source text default 'chunk';
+alter table cards add column if not exists reject_reason text;
+alter table cards add column if not exists created_at timestamp;
 create table if not exists pattern_tricks (
     id text primary key, pattern_slug text not null, name text not null, idea_md text not null,
     snippets json, problem_slugs text[], sort int default 0
