@@ -155,6 +155,8 @@ export function nextReviewText(nextDue: string, now: Date): string {
 export function scoreLine(result: { outcome: Outcome; pointsHit: boolean[] | null }): string {
   if (result.pointsHit?.length) return `${result.pointsHit.filter(Boolean).length} of ${result.pointsHit.length} key points`;
   if (result.outcome === "skipped") return "Skipped";
+  if (result.outcome === "new_to_me") return "New to you — here's the answer";
+  if (result.outcome === "known") return "Marked as known";
   return result.outcome === "correct" ? "Correct" : "Not quite";
 }
 

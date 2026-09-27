@@ -43,3 +43,33 @@ describe("weakTopics", () => {
     expect(weakTopics(rates, ["heap", "graphs"])).toEqual(["java-threads", "two-pointers", "graphs", "heap"]);
   });
 });
+
+describe("declared outcomes", () => {
+  it("never makes a topic look weak or strong", () => {
+    // "New to me" says nothing about performance. Counting it as a miss would
+    // pull the Feed toward topics the reader has only declared, not tried.
+    const declared = topicWeakness([
+      { topic: "caching", outcome: "new_to_me" },
+      { topic: "caching", outcome: "new_to_me" },
+      { topic: "caching", outcome: "known" },
+    ]);
+    expect(declared.get("caching")).toBeUndefined();
+  });
+
+  it("still counts real answers on a topic that also has declarations", () => {
+    const mixed = topicWeakness([
+      { topic: "caching", outcome: "wrong" },
+      { topic: "caching", outcome: "correct" },
+      { topic: "caching", outcome: "new_to_me" },
+    ]);
+    expect(mixed.get("caching")).toBe(0.5);
+  });
+
+  it("keeps treating a skip as evidence of struggle", () => {
+    const skipped = topicWeakness([
+      { topic: "caching", outcome: "skipped" },
+      { topic: "caching", outcome: "skipped" },
+    ]);
+    expect(skipped.get("caching")).toBe(1);
+  });
+});

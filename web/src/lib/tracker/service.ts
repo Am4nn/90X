@@ -618,6 +618,8 @@ export async function snapshotReadiness(userId: string, date: string, q: Db = db
   const cardAttempts = (area: string): CardAttempt[] =>
     cardRows
       .filter((r) => r.area === area)
+      // A declared card is not an attempt, so it never moves accuracy.
+      .filter((r) => r.outcome !== "new_to_me" && r.outcome !== "known")
       .map((r) => ({ topic: r.topic, score: r.score, skipped: r.outcome === "skipped", date: localDate(tz, new Date(r.createdAt)) }));
   const studiedSet = new Set(studied.map((s) => s.slug));
   const perArea: Record<string, { coverage: number; accuracy: number | null; score: number | null }> = {
@@ -692,7 +694,7 @@ export async function onCardAnswered(userId: string, q: Db = db, now = new Date(
       .where(
         and(
           eq(cardReviews.userId, userId),
-          sql`${cardReviews.outcome} <> 'skipped'`,
+          sql`${cardReviews.outcome} in ('correct', 'wrong')`,
           sql`(${cardReviews.createdAt} at time zone ${tz})::date = ${today}::date`,
         ),
       ),

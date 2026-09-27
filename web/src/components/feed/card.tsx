@@ -7,6 +7,7 @@ import { button } from "@/components/button-styles";
 import { useServerAction } from "@/components/form";
 import { Markdown } from "@/components/markdown";
 import { areaDot } from "@/lib/admin/review";
+import { isGraded } from "@/lib/feed/grade";
 import { type AnswerInput, type AnswerResult, type CardView, nextReviewText, scoreLine, type SessionStats } from "@/lib/feed/view";
 import { dropCard, queueAnswer } from "@/lib/offline/store";
 
@@ -19,7 +20,14 @@ type Phase =
 
 const PRIMARY = button({ variant: "primary", size: "lg" });
 const SECONDARY = "h-11 rounded-xl border border-line-2 px-5 font-semibold text-text hover:border-mute disabled:opacity-60";
-const OUTCOME_TEXT = { correct: "text-ok", wrong: "text-bad", skipped: "text-mute" } as const;
+const OUTCOME_TEXT: Record<string, string> = {
+  correct: "text-ok",
+  wrong: "text-bad",
+  skipped: "text-mute",
+  // Declared, not graded: no score is shown for these, so the colour is never used.
+  new_to_me: "text-cyan",
+  known: "text-mute",
+};
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "BUTTON", "A"].includes(target.tagName));
@@ -302,12 +310,12 @@ function Result({
       {typed && <div className="rounded-xl border border-line-2 px-4 py-3 whitespace-pre-wrap text-text-2">{answer}</div>}
 
       <div className="flex items-baseline gap-3" aria-live="polite">
-        {result.outcome !== "skipped" && (
+        {isGraded(result.outcome) && (
           <span className={`tabular font-display text-display font-bold ${OUTCOME_TEXT[result.outcome]}`}>
             {Math.round(result.score * 100)}%
           </span>
         )}
-        <span className={result.outcome === "skipped" ? "font-semibold text-text-2" : "text-small text-mute"}>{scoreLine(result)}</span>
+        <span className={isGraded(result.outcome) ? "text-small text-mute" : "font-semibold text-text-2"}>{scoreLine(result)}</span>
       </div>
 
       {result.options && (

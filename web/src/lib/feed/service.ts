@@ -614,7 +614,7 @@ export async function sessionStats(userId: string, q: Db = db, now = new Date())
   const [[answers], [open]] = await Promise.all([
     q
       .select({
-        answered: sql<number>`count(*) filter (where ${cardReviews.outcome} <> 'skipped')::int`,
+        answered: sql<number>`count(*) filter (where ${cardReviews.outcome} in ('correct', 'wrong'))::int`,
         correct: sql<number>`count(*) filter (where ${cardReviews.outcome} = 'correct')::int`,
         skipped: sql<number>`count(*) filter (where ${cardReviews.outcome} = 'skipped')::int`,
       })
