@@ -44,6 +44,8 @@ User: I learn best when you give me one hint at a time instead of the full solut
     "a goal with the interview date is remembered",
     facts.some((f) => f.kind === "goal" && /nov|20/i.test(f.text)),
   );
+  const dated = facts.find((f) => f.kind === "goal" && /nov|20/i.test(f.text));
+  expect("the dated goal expires on its date", Boolean(dated?.expiresOn?.endsWith("-11-20")), dated?.expiresOn ?? "no date");
 
   const habit = facts.find((f) => f.kind === "habit");
   const second = await extractMemory(

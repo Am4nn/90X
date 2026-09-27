@@ -67,7 +67,7 @@ From the new material, extract only LASTING facts worth remembering across sessi
 - context: stable background (role, language, schedule constraints)
 Don't record one-off events, scores, or anything about other people. Write each fact in one short sentence.
 If a new fact corrects or updates a known fact (a moved date, a changed goal), set "replaces" to that fact's [id].
-If a goal or context stops being true on a known date, set "expires" to that date as YYYY-MM-DD.
+Whenever a goal or context has a date (an interview, a deadline, "until December"), set "expires" to that date as YYYY-MM-DD, using the next such date after today.
 In "seen", list the ids of known facts that the new material shows again.
 In "retired", list the ids of known facts the new material shows are no longer true (a goal met or dropped, a habit they say they've fixed).
 Never record anything under "Removed by the user", or anything that means the same.

@@ -28,8 +28,11 @@ export const leetcode: ProblemActivitySource = {
   provider: "leetcode",
 
   async recentSubmissions(username) {
+    // For an unknown user the submission lists just come back empty; matchedUser
+    // is what errors ("That user does not exist."), so a typo isn't read as "no activity".
     const data = await query<{ recentSubmissionList: Recent[] | null; recentAcSubmissionList: RecentAc[] | null }>(
       `query($u: String!, $l: Int!) {
+         matchedUser(username: $u) { username }
          recentSubmissionList(username: $u, limit: $l) { title titleSlug timestamp statusDisplay lang }
          recentAcSubmissionList(username: $u, limit: $l) { id title titleSlug timestamp lang }
        }`,

@@ -9,20 +9,49 @@ One subagent per area; I checked the load-bearing code claims myself (file:line 
 | Area | Verdict | Cost if the verdict is wrong |
 |---|---|---|
 | Laya, all jobs | **Skip**. Close the SPEC §3 experiment row | Under $1: the triage it targets already ran and a re-run costs ~$0.90 |
-| Jev, grading | **Spike further** (optional, ~15 min with a Gateway key) | Skipping a good Jev: ~$1/month and maybe less consistent grades |
+| Jev, grading | **Skip** (was "spike further" until Flash was measured: ~$0.70/month and 0 grade changes over 3 repeats) | Skipping a good Jev: at most ~$0.60/month |
 | Jev, coach / triage / cards | **Skip**. It can't chat, generate text or call tools | None |
 | leetcode-stats-api | **Skip**. Keep SPEC §6.6 "No third-party proxy" | If LeetCode blocks Vercel's IPs: sync shows "unavailable", manual check-ins keep working; a self-hosted relay is ~half a day |
 | Mem0 | **Skip** | Low: we can add pgvector retrieval ourselves if a user passes ~150 facts |
 | Zep / Graphiti | **Skip** | Low to medium: no time-scoped memory queries ("what did I struggle with in August") |
 | Letta | **Skip** | Very low |
 
-Seven verdicts, zero adopts. The two things this research found that are actually worth doing
-are both in our own code: the web cost meter undercounts DeepSeek thinking tokens, and
-`coach_memory` keeps contradicted facts. See "What to do instead" at the end.
+Seven verdicts, zero adopts, zero spikes. What this research found worth doing is in our own code:
+`coach_memory` kept contradicted facts, and its aging clock was wrong. A suspected cost-meter gap
+for DeepSeek thinking tokens turned out not to exist once measured (see "Measured later").
+See "What to do instead" at the end.
 
-## What could not be measured, and why
+## Measured later (2026-09-27, after keys were added)
 
-Nothing ran against a live model. This container has **no AI keys** (`DEEPSEEK_API_KEY` /
+Run from this environment against the real DeepSeek API once the owner added the env vars.
+
+| What | Result |
+|---|---|
+| Grading benchmark (`check-grading.ts`, 7 answers over 3 questions, not 12) | 7/7 within one key point; **0 grade changes across 3 repeats**; 0 errors |
+| Grading latency, Flash, `NO_THINKING` | p50 1.01 s, p90 1.21 s |
+| Grading tokens, Flash | avg 269 in, 10 out, 0 hidden → $0.000093/grade → **~$0.70/month** at 7,500 grades |
+| Same with thinking on | 7/7, avg 117 out (≈11×), p50 1.23 s → ~$1.72/month; `NO_THINKING` is worth keeping |
+| Pro, thinking on, raw usage | `prompt 95, completion 168, reasoning 78, total 263`: **thinking is inside `completion_tokens`**, so `total − in − out = 0` |
+| `check:coach` with the real model (local DB copy) | all pass, twice, including correction, expiry, dismissed and aging checks |
+| LeetCode adapter, live | real user: 32 submissions with Accepted / Wrong Answer / TLE; unknown user: see Area 2 note |
+
+What this changes:
+- **The cost meter was not undercounting.** DeepSeek now reports thinking inside
+  `completion_tokens`, so the handoff's 5× gap no longer happens on either model. `billedTokens`
+  stays as a zero-cost guard (it adds only what `total_tokens` bills beyond prompt + completion,
+  which is 0 today), matching what the pipeline does.
+- **Jev's ceiling is even lower.** Flash grading is ~$0.70/month and already fully consistent on
+  our set, so Jev could save at most ~$0.60/month and can't improve consistency on these cases.
+  Verdict moves from "spike further" to **skip** unless grading volume grows 10×.
+  (`AI_GATEWAY_API_KEY` is still unset, so Jev itself was not run.)
+- **Supabase Postgres is still unreachable from here**: the pooler on port 6543 times out
+  (the network allows HTTPS, not raw Postgres), so `check:rls`, `check:tracker`, `check:feed`
+  and `check:coach-tools` ran against a local Postgres 16 with every migration applied, not
+  against production.
+
+## What could not be measured at first, and why
+
+At first nothing ran against a live model. This container has **no AI keys** (`DEEPSEEK_API_KEY` /
 `AI_API_KEY`, `AI_GATEWAY_API_KEY`, `TYPESAFE_AI_API_KEY` are all unset) and its network policy
 blocks the hosts: **api.deepseek.com, ai-gateway.vercel.sh, api.typesafe.ai, leetcode.com,
 leetcode-stats-api.herokuapp.com** (proxy `connect_rejected`). Web reading was also blocked for
@@ -81,7 +110,7 @@ key point. But the upside is small, because grading is already cheap:
 | Monthly, Jev | ~$0.10 |
 
 So Jev saves at most ~$1.40/month. It is only worth adopting if it also grades **more
-consistently** than Flash, which the 12-case benchmark can test but not prove. Verdict: spike
+consistently** than Flash, which the 7-answer benchmark can test but not prove. Verdict: spike
 further, low priority. Adopt only after it matches Flash on 50–100 real answers graded by hand
 and varies less across repeats. If adopted and wrong, every card answer drifts silently, which
 is what users feel most, so keep Flash as the fallback.
@@ -100,7 +129,7 @@ under $1. Card generation is generation; neither applies.
 
 `web/scripts/check-grading.ts` uses whatever `AI_*` env is set, so it already covers DeepSeek
 direct and any OpenAI-compatible endpoint. For Jev and for hidden-token counting, a throwaway
-spike is committed at `.planning/research/spikes/grading/` (same 12 cases and prompt; records
+spike is committed at `.planning/research/spikes/grading/` (same 7 answers and prompt; records
 latency, input/output/hidden tokens, Jev's per-key-point probability, and grade changes across
 repeats). It runs here up to authentication and fails with exactly:
 `DeepSeek API key is missing … DEEPSEEK_API_KEY`,
@@ -158,9 +187,11 @@ already cover it, and a self-hosted relay is the answer if it happens, not someo
 
 ### Gaps in our adapter worth fixing instead
 
-1. **A wrong username looks like an outage.** "LeetCode user not found" (`leetcode.ts:48`) goes
-   through the same failure path as a network error (`service.ts:95-104`), so a typo shows "sync
-   unavailable" after 3 tries and backs off to daily. It should say "username not found" at once.
+1. **A wrong username is invisible.** Measured live later: for a username that doesn't exist,
+   `recentSubmissionList` returns `[]` and `userProfileUserQuestionProgressV2` returns empty
+   lists, not an error or null, so sync just says "Up to date" forever. Only `matchedUser` errors
+   ("That user does not exist."). Fixed in #16 by asking for `matchedUser` in the same query and
+   returning `unknown_user`, which the Sync button explains.
 2. **A LeetCode relabel would silently flip every solve to failed.** `"Accepted"` is hardcoded
    (`merge.ts:15`, `sync.ts:30`) and GraphQL errors aren't tagged for Sentry. Report unknown
    `statusDisplay` values and GraphQL errors to Sentry.
@@ -250,9 +281,10 @@ deletion path for when a user leaves. About 2–3 days plus a new vendor in the 
 ## What to do instead (ranked)
 
 Items 1, 2 (gaps 1–4) and the first LeetCode gap were fixed in the same PR as this doc (#16),
-after the owner asked for them.
+after the owner asked for them. Item 1 turned out to be a non-issue once measured (see
+"Measured later"); the guard stays because it costs nothing.
 
-1. **Count DeepSeek thinking tokens in the web cost meter.** `recordUsage` / `trackCoachUsage`
+1. ~~**Count DeepSeek thinking tokens in the web cost meter.**~~ Measured: no gap. `recordUsage` / `trackCoachUsage`
    (`web/src/lib/ai/usage.ts:18`, `web/src/lib/coach/model.ts:25`) record only
    `inputTokens` / `outputTokens`. `@ai-sdk/deepseek@3.0.54` sets
    `outputTokens.total = completion_tokens` and never reads `total_tokens` (checked in its
