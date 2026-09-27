@@ -57,7 +57,7 @@ describe("toolLabel", () => {
   });
 
   it("has a plain fallback for tools it doesn't know", () => {
-    expect(toolLabel("queue_ladder", "done")).toBe("Used queue ladder");
+    expect(toolLabel("draw_diagram", "done")).toBe("Used draw diagram");
   });
 });
 

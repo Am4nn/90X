@@ -62,6 +62,8 @@ const ACTION_LABEL: Record<string, string> = {
   suggest_template_change: "Suggested a plan change",
   save_memory: "Suggested something to remember",
   start_mock: "Suggested a mock interview",
+  queue_ladder: "Suggested problems for your plan",
+  finish_lesson: "Noted what you learned",
 };
 
 export type ToolPhase = "running" | "done" | "error";

@@ -25,6 +25,13 @@ const TemplateChange = z.strictObject({
     .max(14),
 });
 const SaveMemory = z.strictObject({ id: z.uuid().nullable(), kind: z.enum(MEMORY_KINDS), text: z.string().trim().min(3).max(300) });
+// The lesson's ladder (brief F, modes/lesson.ts): first problem today, the rest tomorrow.
+const QueueLadder = z.strictObject({
+  slugs: z
+    .array(z.string().regex(/^[a-z0-9-]{1,200}$/))
+    .min(1)
+    .max(3),
+});
 const StartMock = z.strictObject({ type: z.enum(["design", "behavioral"]), topic: z.string().trim().min(1).max(80) });
 
 const summary = z.string().min(1).max(300);
@@ -34,6 +41,7 @@ const ProposalSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("suggest_template_change"), summary, payload: TemplateChange }),
   z.strictObject({ type: z.literal("save_memory"), summary, payload: SaveMemory }),
   z.strictObject({ type: z.literal("start_mock"), summary, payload: StartMock }),
+  z.strictObject({ type: z.literal("queue_ladder"), summary, payload: QueueLadder }),
 ]);
 
 export type Proposal = z.infer<typeof ProposalSchema>;

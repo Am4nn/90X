@@ -34,6 +34,15 @@ describe("parseProposal", () => {
     expect(parseProposal({ error: "nope" })).toBeNull();
   });
 
+  it("reads the lesson's queue_ladder proposal (brief F)", () => {
+    const out = parseProposal({
+      proposal: { type: "queue_ladder", summary: "Add CT 1 to today", payload: { slugs: ["two-sum", "3sum"] } },
+    });
+    expect(out?.proposal.type).toBe("queue_ladder");
+    expect(parseProposal({ proposal: { type: "queue_ladder", summary: "x", payload: { slugs: ["../etc"] } } })).toBeNull();
+    expect(parseProposal({ proposal: { type: "queue_ladder", summary: "x", payload: { slugs: ["a", "b", "c", "d"] } } })).toBeNull();
+  });
+
   it("refuses extra payload fields, so nothing unchecked rides along", () => {
     expect(
       parseProposal({ proposal: { type: "queue_cards", summary: "x", payload: { cardIds: [card], userId: "someone-else" } } }),

@@ -8,6 +8,7 @@ import { type Db, refreshDay } from "@/lib/tracker/service";
 import { key } from "@/lib/upstash/keys";
 import { redis } from "@/lib/upstash/redis";
 import { addFact, editFact } from "./memory-edit";
+import { queueProblems } from "./missions";
 import { applyTemplateChanges, mockHref, type Proposal, type ProposalStatus, parseProposal } from "./proposals";
 import { activeTemplates, liveCards, problemBySlug, topicBySlugOrName } from "./tools-data";
 
@@ -86,6 +87,12 @@ async function perform(userId: string, proposal: Proposal, q: Db): Promise<Done 
     }
     case "start_mock":
       return { href: mockHref(proposal.payload) };
+    case "queue_ladder": {
+      const result = await queueProblems(userId, proposal.payload.slugs, "Queued from your pattern lesson");
+      if ("error" in result) return result;
+      if (!result.added) return { note: "Already on your plan." };
+      return { note: result.today === result.added ? "Added to today." : "Added to your plan: the first today, the rest tomorrow." };
+    }
   }
 }
 

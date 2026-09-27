@@ -11,6 +11,7 @@ const CONFIRM_LABEL: Record<Proposal["type"], string> = {
   suggest_template_change: "Accept",
   save_memory: "Save",
   start_mock: "Start mock",
+  queue_ladder: "Add to plan",
 };
 
 const DONE_LABEL: Record<Proposal["type"], string> = {
@@ -19,6 +20,7 @@ const DONE_LABEL: Record<Proposal["type"], string> = {
   suggest_template_change: "Plan updated",
   save_memory: "Saved to what Coach knows",
   start_mock: "Mock started",
+  queue_ladder: "Added to your plan",
 };
 
 /** An action the coach proposed. Nothing happens until Confirm (spec §6.8). */
