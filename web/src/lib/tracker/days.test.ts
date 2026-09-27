@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardMissionsToTick, dayStatus, latestPerProblem, matchMission, revivable, revivedDates, streak } from "./days";
+import { cardMissionsToTick, dayStatus, latestPerProblem, matchMission, revivable, reviveRef, revivedDates, streak } from "./days";
 
 const m = (status: string, extra: Partial<{ isRevive: boolean }> = {}) => ({ status, isRevive: extra.isRevive ?? false });
 
@@ -157,5 +157,23 @@ describe("cardMissionsToTick", () => {
   it("counts missions already done", () => {
     expect(cardMissionsToTick([cards("done", "c1"), cards("open", "c2")], 12)).toEqual([]);
     expect(cardMissionsToTick([cards("done", "c1"), cards("open", "c2")], 20)).toEqual(["c2"]);
+  });
+
+  it("ticks today's own card missions before revive ones, then the revive ones", () => {
+    const ms = [{ ...cards("open", "r1"), isRevive: true }, cards("open", "c1")];
+    expect(cardMissionsToTick(ms, 10)).toEqual(["c1"]);
+    expect(cardMissionsToTick(ms, 20)).toEqual(["c1", "r1"]);
+  });
+});
+
+describe("reviveRef", () => {
+  it("gives a revived card mission its own ref, so it never collides with today's cards-1", () => {
+    expect(reviveRef({ slotType: "cards", ref: "cards-1" }, "2026-09-26")).toBe("cards-1-2026-09-26");
+    expect(reviveRef({ slotType: "cards", ref: "cards-1" }, "2026-09-26")).not.toBe("cards-1");
+  });
+
+  it("keeps problem and topic refs, which link to the Library", () => {
+    expect(reviveRef({ slotType: "new_problem", ref: "two-sum" }, "2026-09-26")).toBe("two-sum");
+    expect(reviveRef({ slotType: "topic", ref: "sd-caching" }, "2026-09-26")).toBe("sd-caching");
   });
 });

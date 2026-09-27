@@ -17,7 +17,17 @@ import {
 } from "@/db/schema";
 import { patternMap } from "@/lib/library/queries";
 import { addDays, daysBetween, localDate, weekday } from "./dates";
-import { cardMissionsToTick, type DayStatus, dayStatus, latestPerProblem, matchMission, revivable, revivedDates, streak } from "./days";
+import {
+  cardMissionsToTick,
+  type DayStatus,
+  dayStatus,
+  latestPerProblem,
+  matchMission,
+  revivable,
+  reviveRef,
+  revivedDates,
+  streak,
+} from "./days";
 import { applyCheckin, dismiss, postpone, type Result, type Review } from "./ladder";
 import { planDay } from "./planner";
 import { type CardAttempt, dsaArea, localAttempts, overall, topicArea } from "./readiness";
@@ -489,8 +499,8 @@ export async function startRevive(userId: string, date: string, q: Db = db) {
   // Leftovers already on today's list (the same unsolved problem, the same
   // topic) get a fresh mission of the same kind, so reviving is real extra work.
   // A day that was never opened has no leftovers: its whole template is planned.
-  let extra = leftovers.filter((m) => !todays.has(m.ref));
-  const collided = leftovers.filter((m) => todays.has(m.ref));
+  let extra = leftovers.filter((m) => !todays.has(reviveRef(m, date)));
+  const collided = leftovers.filter((m) => todays.has(reviveRef(m, date)));
   if (!leftovers.length || collided.length) {
     const ctx = await context(userId, q);
     if (!ctx?.campaign) return { error: "No active campaign." };
@@ -525,7 +535,7 @@ export async function startRevive(userId: string, date: string, q: Db = db) {
         userId,
         date: today,
         slotType: m.slotType,
-        ref: m.ref,
+        ref: reviveRef(m, date),
         estMinutes: m.estMinutes,
         status: "open",
         reason: `Reviving ${date}`,
@@ -609,15 +619,13 @@ export async function snapshotReadiness(userId: string, date: string, q: Db = db
   return { overall: score, perArea };
 }
 
-/** Side stats on Today: latest readiness, problems solved, reviews due. */
+/**
+ * Side stats on Today: readiness, problems solved, reviews due. Readiness is
+ * computed now, like the dial on Me, so the two never show different numbers.
+ */
 export async function todayStats(userId: string, today: string, q: Db = db) {
-  const [[snap], [solved], [due]] = await Promise.all([
-    q
-      .select({ overall: readinessSnapshots.overall })
-      .from(readinessSnapshots)
-      .where(eq(readinessSnapshots.userId, userId))
-      .orderBy(desc(readinessSnapshots.date))
-      .limit(1),
+  const [readiness, [solved], [due]] = await Promise.all([
+    snapshotReadiness(userId, today, q),
     q
       .select({ n: sql<number>`count(distinct ${checkins.problemSlug})::int` })
       .from(checkins)
@@ -627,7 +635,7 @@ export async function todayStats(userId: string, today: string, q: Db = db) {
       .from(problemReviews)
       .where(and(eq(problemReviews.userId, userId), eq(problemReviews.status, "active"), lte(problemReviews.dueDate, today))),
   ]);
-  return { readiness: snap?.overall ?? null, solved: solved?.n ?? 0, reviewsDue: due?.n ?? 0 };
+  return { readiness: readiness.overall, solved: solved?.n ?? 0, reviewsDue: due?.n ?? 0 };
 }
 
 export async function isStudied(userId: string, topicSlug: string, q: Db = db) {
@@ -655,9 +663,9 @@ export async function onCardAnswered(userId: string, q: Db = db, now = new Date(
         ),
       ),
     q
-      .select({ id: missions.id, slotType: missions.slotType, status: missions.status })
+      .select({ id: missions.id, slotType: missions.slotType, status: missions.status, isRevive: missions.isRevive })
       .from(missions)
-      .where(and(eq(missions.userId, userId), eq(missions.date, today), eq(missions.isRevive, false))),
+      .where(and(eq(missions.userId, userId), eq(missions.date, today))),
   ]);
   const ids = cardMissionsToTick(todays, counted[0]?.n ?? 0);
   if (ids.length) {
