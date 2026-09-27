@@ -83,3 +83,33 @@ def test_card_budget_follows_importance():
     assert card_budget(0.5) == 8
     assert card_budget(0.8) == 10
     assert card_budget(1.0) == 12
+
+
+def test_risk_column_holds_confidence_not_risk():
+    """pickReviewSample sorts ascending and reviews the first half, so a LOW
+    value is what gets looked at. Inverting the gate's confidence would put
+    the cards it liked most in front of the reviewer."""
+    from pipeline.cards.rebatch import risk_of
+
+    doubtful = risk_of('{"gate_confidence": 0.3}')
+    confident = risk_of('{"gate_confidence": 0.95}')
+    assert doubtful < confident, "the doubtful card must sort first"
+    assert confident == 0.95
+
+    # Chunk-generated cards keep the old scale: lowest of three 0-5 scores.
+    assert risk_of('{"correct": 2, "clear": 5, "relevant": 5}') == 0.4
+    assert risk_of(None) is None
+
+
+def test_lesson_card_ids_are_stable_uuids():
+    """public.cards.id is a uuid, so a readable "slug:l0" id never publishes.
+    uuid5 keeps regeneration idempotent instead of duplicating every card."""
+    import uuid
+
+    from pipeline.cards.run_lessons import CARD_NAMESPACE
+
+    first = uuid.uuid5(CARD_NAMESPACE, "sliding-window:0")
+    assert first == uuid.uuid5(CARD_NAMESPACE, "sliding-window:0")
+    assert first != uuid.uuid5(CARD_NAMESPACE, "sliding-window:1")
+    assert first != uuid.uuid5(CARD_NAMESPACE, "two-pointers:0")
+    uuid.UUID(str(first))  # parses as a uuid, which Postgres requires

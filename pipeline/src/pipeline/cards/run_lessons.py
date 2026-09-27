@@ -8,6 +8,7 @@ lessons have drifted, and that is invisible if failures are thrown away.
 
 import json
 import threading
+import uuid
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
@@ -17,6 +18,8 @@ from . import gate
 from .from_lessons import for_lesson
 
 WORKERS = 4
+# Fixed namespace so a card id is stable across runs.
+CARD_NAMESPACE = uuid.UUID("90c0de00-0000-4000-8000-000000000001")
 
 
 def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
@@ -36,27 +39,36 @@ def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bo
     return out[:limit] if limit else out
 
 
-def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[object, str]]]:
+def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[object, str]], dict]:
     cards = for_lesson(llm, topic, topic["lesson"], tier=tier)
-    rejected = gate.judge(cards, gate.review(llm, topic, cards))
+    result = gate.review(llm, topic, cards)
+    rejected = gate.judge(cards, result)
     bad = {id(c) for c, _ in rejected}
-    return [c for c in cards if id(c) not in bad], rejected
+    confidence = {id(c): gate.confidence_of(result).get(i, 0.5) for i, c in enumerate(cards)}
+    return [c for c in cards if id(c) not in bad], rejected, confidence
 
 
-def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]]) -> None:
+def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confidence: dict) -> None:
     now = datetime.now(timezone.utc)
     con.execute("delete from cards where topic_slug = ? and source = 'lesson'", [topic["slug"]])
     rows = [(c, None) for c in kept] + [(c, reason) for c, reason in rejected]
+    # kept, quality and source_refs are what /admin/cards reads: without them a
+    # lesson card never reaches the review screen, which is where Aman looks.
+    refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
+    # public.cards.id is a uuid, so a readable "slug:l0" id would never publish.
+    # uuid5 keeps it deterministic: regenerating a topic reuses the same ids.
     for i, (card, reason) in enumerate(rows):
         con.execute(
             """insert or replace into cards
                (id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points,
-                status, source, reject_reason, created_at)
-               values (?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?, ?)""",
+                source_refs, quality, kept, status, source, reject_reason, created_at)
+               values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?, ?)""",
             [
-                f"{topic['slug']}:l{i}", topic["slug"], card.format, card.difficulty, card.prompt,
+                str(uuid.uuid5(CARD_NAMESPACE, f"{topic['slug']}:{i}")), topic["slug"], card.format, card.difficulty, card.prompt,
                 json.dumps(card.options) if card.options else None, card.answer,
-                json.dumps(card.key_points), "rejected" if reason else "draft", reason, now,
+                json.dumps(card.key_points), refs,
+                json.dumps({"gate_confidence": confidence.get(id(card), 0.5)}),
+                reason is None, "rejected" if reason else "draft", reason, now,
             ],
         )
 
@@ -76,7 +88,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
             for future in as_completed(futures):
                 topic = futures[future]
                 try:
-                    kept, rejected = future.result()
+                    kept, rejected, confidence = future.result()
                 except BudgetExceeded as e:
                     print(f"  stopping: {e}", flush=True)
                     break
@@ -88,7 +100,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                     print(f"{topic['slug']}: FAILED {type(e).__name__}: {e}", flush=True)
                     continue
                 with db:
-                    save(con, topic, kept, rejected)
+                    save(con, topic, kept, rejected, confidence)
                     spent = spend_usd(con) - before
                 done += 1
                 kept_total += len(kept)

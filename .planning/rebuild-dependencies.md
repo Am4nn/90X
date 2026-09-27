@@ -19,9 +19,9 @@ Three things are wrong:
 - Nothing renders a Sources line. It was never built.
 - `lessons.source_refs` holds document ids (`ostep:67e179be074f96fd`), and
   documents no longer exist in Supabase. The references dangle.
-- `_source_rows` in `publish.py` was narrowed to source ids used by
-  *problems*, so the `sources` rows for OSTEP and the rest may not publish at
-  all.
+- ~~`_source_rows` may not publish OSTEP's row at all.~~ **Wrong when
+  written:** `_source_rows` always publishes every entry in `sources.py`, so
+  the rows were there. Only the refs were broken.
 
 **Proposed:** resolve `source_refs` at publish into
 `{source_id, name, url}` by looking up each document's source in staging, and
@@ -103,3 +103,35 @@ admin screen simply shows nothing.
 Tests catch what breaks. They do not catch what quietly stops happening. That
 is the gap, and a dependency pass like this one is the thing that closes it.
 Worth repeating before the next deletion, not after it.
+
+
+---
+
+## Fixed 2026-09-28
+
+All three, plus two bugs the fixes uncovered.
+
+1. **Sources line.** `source_refs` resolve at publish into `{id, name, url}`
+   from the source id prefix, and the lesson page renders a "Written from"
+   line with real titles ("Operating Systems: Three Easy Pieces", not
+   "ostep"). One bullet above was wrong: the `sources` rows were always
+   published.
+2. **The cascade guard.** `publish` now removes cards staging no longer has,
+   and refuses when any of them holds a card answer, naming the count. The
+   safety is a rule, not the Feed happening to be unused. `--force` exists
+   and says what it costs.
+3. **Lesson cards reach the review screen.** They carry `kept`, `quality`,
+   `source_refs`, and batch through the existing `rebatch` into ~16 area
+   batches, inside Aman's 20-25 cap.
+
+Uncovered on the way:
+
+- **`risk` is not risk.** `pickReviewSample` sorts ascending and reviews the
+  first half, treating an unscored card as safest, so the column holds
+  *confidence*: low means doubtful. The first version of the gate mapping
+  inverted it, which would have put the cards the gate liked most in front of
+  the reviewer and hidden the doubtful ones. Pinned by a test.
+- **Card ids must be uuids.** `public.cards.id` is a uuid, so the readable
+  `sliding-window:l0` ids would never have published. They are uuid5 of the
+  slug and index now, so regenerating a topic reuses ids rather than
+  duplicating every card.

@@ -6,8 +6,31 @@ import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
 import { MarkStudied } from "@/components/tracker/missions";
 import { requireViewer } from "@/lib/auth/viewer";
-import { practiceFor, topicDetail } from "@/lib/library/queries";
+import { practiceFor, sourcesOf, topicDetail } from "@/lib/library/queries";
 import { isStudied } from "@/lib/tracker/service";
+
+// Source ids are folder names; these are what the books and repos are called.
+const SOURCE_NAMES: Record<string, string> = {
+  ostep: "Operating Systems: Three Easy Pieces",
+  "little-book-of-semaphores": "The Little Book of Semaphores",
+  "system-design-primer": "System Design Primer",
+  "system-design-101": "ByteByteGo System Design 101",
+  "system-design-karan": "Karan Pratap Singh, System Design",
+  "grokking-system-design": "Grokking the System Design Interview",
+  "grokking-ood": "Grokking the Object Oriented Design Interview",
+  "awesome-lld": "Awesome Low Level Design",
+  "tech-interview-handbook": "Tech Interview Handbook",
+  "ml-interviews-book": "Chip Huyen, Machine Learning Interviews",
+  "aiml-interviews": "AI/ML Interviews",
+  "cs-fundamentals-interview": "CS Fundamentals Interview",
+  "last-minute-notes": "Last Minute Notes",
+  "devops-exercises": "DevOps Exercises",
+  "java-basics": "Java Basics",
+  "sql-basics": "SQL Basics",
+  "roadmap-sh": "roadmap.sh",
+  "systemdesign-io": "systemdesign.io",
+  "90x": "90x",
+};
 
 export async function generateMetadata({ params }: PageProps<"/library/topic/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -21,6 +44,7 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
   if (!detail?.lesson) notFound();
   const { topic, lesson, tricks } = detail;
   const practice = await practiceFor(lesson);
+  const sources = sourcesOf(lesson);
 
   return (
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-6">
@@ -84,6 +108,26 @@ export default async function TopicPage({ params }: PageProps<"/library/topic/[s
               </a>
             ))}
           </div>
+        </section>
+      )}
+
+      {sources.length > 0 && (
+        <section className="flex flex-col gap-2 border-t border-line pt-4">
+          <h2 className="text-small font-semibold text-mute">Written from</h2>
+          <p className="text-small text-text-2">
+            {sources.map((s, i) => (
+              <span key={s.id}>
+                {i > 0 && " · "}
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noreferrer" className="text-cyan hover:underline">
+                    {SOURCE_NAMES[s.id] ?? s.name}
+                  </a>
+                ) : (
+                  (SOURCE_NAMES[s.id] ?? s.name)
+                )}
+              </span>
+            ))}
+          </p>
         </section>
       )}
 

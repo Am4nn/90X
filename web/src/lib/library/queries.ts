@@ -195,6 +195,19 @@ export async function topicDetail(slug: string) {
   return { topic, lesson: lesson ?? null, tricks };
 }
 
+export type LessonSource = { id: string; name: string; url: string | null };
+
+/** The books and repos a lesson was written from, for its Sources line. */
+export function sourcesOf(lesson: { sourceRefs: unknown }): LessonSource[] {
+  const refs = lesson.sourceRefs;
+  if (!Array.isArray(refs)) return [];
+  return refs.flatMap((r) => {
+    const { id, name, url } = (r ?? {}) as Record<string, unknown>;
+    if (typeof id !== "string" || !id) return [];
+    return [{ id, name: typeof name === "string" && name ? name : id, url: typeof url === "string" ? url : null }];
+  });
+}
+
 export type Practice = {
   problems: { slug: string; title: string; difficulty: string; companies: string[] }[];
   questions: { slug: string; title: string; difficulty: string | null; url: string }[];

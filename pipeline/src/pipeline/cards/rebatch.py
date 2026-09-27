@@ -49,11 +49,21 @@ def group_of(domain: str, topic: str | None, parent: str | None, sort: int, sd_s
         if topic in CS_DB:
             return "cs-db", "CS · Databases"
         return "cs-os", "CS · Operating systems, OOP"
-    return domain, {"java": "Java", "sql": "SQL"}.get(domain, domain)
+    return domain, {"java": "Java", "sql": "SQL", "ai": "AI / ML", "lld": "Low level design",
+                    "behavioral": "Behavioural"}.get(domain, domain)
 
 
 def risk_of(quality) -> float | None:
+    """Despite the name, LOW means doubtful.
+
+    `pickReviewSample` sorts ascending and reviews the first half, treating a
+    card with no score as safest. So the column holds confidence: the old
+    reviewer's lowest 0-5 score scaled down, and for lesson cards the gate's
+    own confidence, which is already 0-1. Inverting it here would put the
+    cards the gate liked most in front of the reviewer."""
     q = json.loads(quality) if isinstance(quality, str) else (quality or {})
+    if isinstance(q.get("gate_confidence"), (int, float)):
+        return round(float(q["gate_confidence"]), 3)
     scores = [q[k] for k in ("correct", "clear", "relevant") if isinstance(q.get(k), (int, float))]
     return round(min(scores) / 5, 3) if scores else None
 

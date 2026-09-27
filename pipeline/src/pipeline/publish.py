@@ -37,6 +37,22 @@ def _source_rows(con) -> list[tuple]:
     return list(rows.values())
 
 
+def _sources_of(refs, by_id: dict) -> str:
+    """Turn a lesson's chunk references into the books and repos behind it.
+
+    A ref is "<source id>:<document id>", so the prefix names the source.
+    Documents no longer exist in Supabase, so a lesson that kept raw ids would
+    point at nothing; what the reader wants is the original anyway.
+    """
+    ids, seen = [], set()
+    for ref in json.loads(refs) if isinstance(refs, str) else (refs or []):
+        source_id = str(ref).split(":", 1)[0]
+        if source_id in by_id and source_id not in seen:
+            seen.add(source_id)
+            ids.append(source_id)
+    return json.dumps([{"id": i, "name": by_id[i][1], "url": by_id[i][3]} for i in ids])
+
+
 def _with_titles(practice) -> str:
     """Practice holds slugs; the app needs something to display.
 
@@ -75,12 +91,13 @@ def _staging_rows(con, table: str, columns: list[str]) -> list[tuple]:
         return _source_rows(con)
     if table == "lessons":
         # Only lessons that passed the contract and the fact check are published.
+        by_id = {r[0]: r for r in _source_rows(con)}
         rows = con.execute(
             "select topic_slug, title, body_md, practice, source_refs, words, generated_at "
             "from lessons where status = 'ok'"
         ).fetchall()
         # Column order must match TABLES: topic_slug, title, summary, body_md, ...
-        return [(slug, title, _first_sentence(body), body, _with_titles(practice), refs, words, at)
+        return [(slug, title, _first_sentence(body), body, _with_titles(practice), _sources_of(refs, by_id), words, at)
                 for slug, title, body, practice, refs, words, at in rows]
     if table == "topics":  # parents before children
         rows = con.execute(f"select {', '.join(columns)} from topics order by parent_slug is not null, sort").fetchall()
@@ -96,7 +113,7 @@ def _prepare(value, column):
     return value
 
 
-def publish(con, pg: psycopg.Connection, dry_run: bool = False) -> dict:
+def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = False) -> dict:
     counts = {}
     with pg.transaction():
         cur = pg.cursor()
@@ -117,6 +134,7 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False) -> dict:
             cur.execute("drop table _keep")
             counts[table] = (len(rows), deleted)
         card_counts, published_batches = _publish_cards(con, cur)
+        counts["cards_retired"] = (0, _retire_superseded_cards(con, cur, force))
         counts.update(card_counts)
         if dry_run:
             raise _DryRun(counts)
@@ -150,15 +168,45 @@ def _publish_cards(con, cur) -> tuple[dict, list[str]]:
     return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}, [b[0] for b in batches]
 
 
+class StudyHistoryAtRisk(RuntimeError):
+    """Raised rather than cascade away someone's spaced repetition."""
+
+
+def _retire_superseded_cards(con, cur, force: bool) -> int:
+    """Delete published cards that staging no longer has.
+
+    card_reviews, card_state, card_flags and batch_review_items all cascade
+    from a card, so removing one takes every answer, interval and flag with
+    it. That is free while the Feed is unused and irreversible afterwards, so
+    the rule lives here rather than in whoever remembers to check.
+    """
+    staged = [r[0] for r in con.execute("select id from cards").fetchall()]
+    cur.execute("create temp table _staged_cards (id uuid) on commit drop")
+    if staged:
+        cur.executemany("insert into _staged_cards values (%s)", [[i] for i in staged])
+    cur.execute(
+        """select count(*) from public.card_reviews r
+           where not exists (select 1 from _staged_cards s where s.id = r.card_id)"""
+    )
+    at_risk = cur.fetchone()[0]
+    if at_risk and not force:
+        raise StudyHistoryAtRisk(
+            f"{at_risk} card answers belong to cards staging no longer has. Deleting them "
+            "would erase that study history. Re-run with force=True only if you mean it."
+        )
+    cur.execute("delete from public.cards c where not exists (select 1 from _staged_cards s where s.id = c.id)")
+    return cur.rowcount
+
+
 class _DryRun(Exception):
     def __init__(self, counts):
         super().__init__("dry run")
         self.counts = counts
 
 
-def run(con, url: str, dry_run: bool = False) -> dict:
+def run(con, url: str, dry_run: bool = False, force: bool = False) -> dict:
     with psycopg.connect(url, prepare_threshold=None) as pg:
         try:
-            return publish(con, pg, dry_run=dry_run)
+            return publish(con, pg, dry_run=dry_run, force=force)
         except _DryRun as d:
             return d.counts

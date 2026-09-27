@@ -28,6 +28,8 @@ For each card, rule on whether a competent engineer who has studied this topic c
 - "wrong_format": the question is fine but the format is not. The commonest case is a "typed" card whose honest answer is a list to enumerate, where free typing is unfair and it should be multiple choice. Also flag a "flash" card that really needs a paragraph.
 - "ambiguous": you cannot tell what is being asked, or several different answers would all be correct.
 
+Give `confidence` from 0 to 1 on every card: how sure you are it is fair and well formed. A card you would happily put in front of a candidate is near 1. A card you are letting through with reservations is near 0.5. The review screen shows the least confident cards first, so this decides what a human looks at.
+
 For multiple-choice cards, also give the option you would pick, copied exactly.
 
 Judge only answerability and format. Do not comment on style, difficulty, or what you would have asked instead. Marking a good card as bad costs us a real question, so when a card is fair, say so."""
@@ -38,6 +40,8 @@ class Verdict(BaseModel):
     verdict: Literal["answerable", "needs_context", "wrong_format", "ambiguous"]
     reason: str = Field(default="", description="one short sentence; empty when answerable")
     picked: str = Field(default="", description="multiple choice only: the option you would pick")
+    confidence: float = Field(default=0.5, ge=0, le=1,
+                              description="how sure you are this card is fair and well formed")
 
 
 class GateResult(BaseModel):
@@ -58,6 +62,11 @@ def review(llm, topic: dict, cards: list, tier: str = "review") -> GateResult:
     body = "\n\n".join(f"[{i}]\n{prompt_only(c)}" for i, c in enumerate(cards))
     user = f"Topic: {topic['name']} ({topic['domain']})\n\n{body}"
     return llm.complete_json(SYSTEM, user, GateResult, tier=tier, purpose="card-gate")
+
+
+def confidence_of(result: GateResult) -> dict[int, float]:
+    """How sure the gate was, per card index. Missing means it never ruled."""
+    return {v.index: v.confidence for v in result.verdicts}
 
 
 def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:

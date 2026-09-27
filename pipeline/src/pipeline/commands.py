@@ -163,7 +163,7 @@ def publish(args, con) -> None:
 
     from . import publish as p
 
-    for table, (n, deleted) in p.run(con, os.environ["DATABASE_URL"], dry_run=args.dry_run).items():
+    for table, (n, deleted) in p.run(con, os.environ["DATABASE_URL"], dry_run=args.dry_run, force=args.force).items():
         print(f"  {table:15} {n:6} upserted, {deleted} removed")
     print("dry run: rolled back" if args.dry_run else "published")
 

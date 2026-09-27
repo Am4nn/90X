@@ -47,6 +47,8 @@ def main() -> None:
     sub.add_parser("roadmaps", help="fetch roadmap.sh structures and stage their nodes")
     pb = sub.add_parser("publish", help="publish staging to Supabase")
     pb.add_argument("--dry-run", action="store_true", help="run everything, then roll back")
+    pb.add_argument("--force", action="store_true",
+                    help="delete published cards even when they hold study history")
     rb = sub.add_parser("rebatch", help="regroup draft cards into review batches (area x part)")
     rb.add_argument("--dry-run", action="store_true", help="show the batches without changing anything")
     sub.add_parser("status", help="counts and LLM spend in staging")
