@@ -133,13 +133,14 @@ export function scoredMock(type: MockType, raw: z.infer<typeof ScoringSchema>): 
   return { rubric, score, strengths: raw.strengths, improvements: raw.improvements };
 }
 
+const bullets = (items: string[]) => items.map((i) => `- ${i}`).join("\n");
+
 export function feedbackMarkdown(s: Scored): string {
-  const list = (items: string[]) => items.map((i) => `- ${i}`).join("\n");
   return [
     `Score: **${s.score}/100**`,
-    `## Rubric\n\n${list(s.rubric.map((r) => `${r.label}: ${r.score}/5. ${r.evidence}`))}`,
-    `## Strengths\n\n${list(s.strengths)}`,
-    `## To improve\n\n${list(s.improvements)}`,
+    `## Rubric\n\n${bullets(s.rubric.map((r) => `${r.label}: ${r.score}/5. ${r.evidence}`))}`,
+    `## Strengths\n\n${bullets(s.strengths)}`,
+    `## To improve\n\n${bullets(s.improvements)}`,
   ].join("\n\n");
 }
 
@@ -161,4 +162,9 @@ export function openingMessage(type: MockType, topic: string): string {
     return `This is a ${mockMinutes(type)}-minute behavioral interview. Take your time, and answer with a real example.\n\n${topic}`;
   }
   return `This is a ${mockMinutes(type)}-minute system design interview. Today: **${topic}**.\n\nStart with requirements: what should it do, and at what scale?`;
+}
+
+/** The mock's conversation in the coach chat (brief E's UI opens /coach?kind=&ref=). */
+export function mockThreadHref(mockId: string, threadId: string | null): string {
+  return `/coach?kind=mock&ref=${mockId}${threadId ? `&thread=${threadId}` : ""}`;
 }
