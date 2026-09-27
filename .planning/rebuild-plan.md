@@ -28,7 +28,7 @@ deleted from this file, not left in it.
 | B2 | Eligibility rule for "I already know this" | done |
 | B3 | `declareCard` service and server action | **next** |
 | B4 | Two buttons in the card UI, with teach-mode reveal | **next** |
-| B5 | Weak pool restricted to topics with a real answer | to do |
+| B5 | Weak pool restricted to topics with a real answer | **already true** |
 | B6 | Coach reads declared gaps in `get_weak_spots` | to do |
 | B7 | Planner pulls declared gaps into tomorrow's missions | to do |
 | B8 | Weekly review counts declarations | to do |
@@ -70,3 +70,20 @@ rewritten. C2-C4 also belong before A3, since they change what gets written.
 - Nothing has been checked in a browser. Typecheck and e2e prove the code
   compiles and the fixtures work, not that a 1,100-word lesson reads well on
   a phone.
+
+
+## Correction, 2026-09-28
+
+B5 needed no change, and the claim behind it was wrong. I told Aman the Feed's
+weak pool reaches into topics he has never studied. It does not:
+`topicWeakness` needs at least two answers on a topic before it counts one,
+and `masteryState` returns "untouched" with no attempts and "weak" only when
+failures outnumber solves, so an unstudied pattern can never reach
+`weakTopics`.
+
+The only pool that can serve an unmet idea is the 20% "new" pool, which
+selects cards the reader has never seen, in any topic. That is the real
+exposure, and it is exactly what the "New to me" button addresses. Aman chose
+"weak means weak at something you've met" on the strength of my wrong claim;
+the behaviour he chose is what the code already did, so the decision stands
+either way. Pinned with tests so it cannot drift.

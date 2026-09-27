@@ -73,3 +73,22 @@ describe("declared outcomes", () => {
     expect(skipped.get("caching")).toBe(1);
   });
 });
+
+describe("the weak pool only draws on evidence", () => {
+  it("ignores a topic with a single answer", () => {
+    // One answer says too little to call a topic weak, so a first wrong guess
+    // never drags the Feed toward something the reader has barely met.
+    expect(topicWeakness([{ topic: "caching", outcome: "wrong" }]).get("caching")).toBeUndefined();
+  });
+
+  it("never ranks a topic with no answers at all", () => {
+    expect(weakTopics(topicWeakness([]), [])).toEqual([]);
+  });
+
+  it("only takes patterns the check-ins actually call weak", () => {
+    // masteryState returns "untouched" with no attempts and "weak" only when
+    // failures outnumber solves, so an unstudied pattern cannot arrive here.
+    expect(weakTopics(new Map(), ["two-pointers"])).toEqual(["two-pointers"]);
+    expect(weakTopics(new Map(), [])).toEqual([]);
+  });
+});
