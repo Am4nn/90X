@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { checkIn, type CheckinState } from "@/app/actions/checkin";
-import { button } from "@/components/button-styles";
+import { button, chip } from "@/components/button-styles";
 import { RESULTS, TIME_CHIPS } from "@/lib/library/checkin";
-
-const chip = (on: boolean) =>
-  `h-10 flex-1 rounded-lg border text-small font-semibold ${on ? "border-cyan bg-cyan-bg text-cyan" : "border-line-2 text-text-2"}`;
 
 export function CheckinPanel({ slug, leetcodeUrl }: { slug: string; leetcodeUrl: string | null }) {
   const [state, action, pending] = useActionState<CheckinState, FormData>(checkIn, {});
@@ -27,7 +24,7 @@ export function CheckinPanel({ slug, leetcodeUrl }: { slug: string; leetcodeUrl:
               key={r.value}
               type="button"
               aria-pressed={result === r.value}
-              className={chip(result === r.value)}
+              className={`${chip(result === r.value)} flex-1`}
               onClick={() => setResult(r.value)}
             >
               {r.label}
@@ -43,7 +40,7 @@ export function CheckinPanel({ slug, leetcodeUrl }: { slug: string; leetcodeUrl:
               key={m}
               type="button"
               aria-pressed={minutes === m}
-              className={chip(minutes === m)}
+              className={`${chip(minutes === m)} flex-1`}
               onClick={() => setMinutes(minutes === m ? null : m)}
             >
               {m === 60 ? "60m+" : `${m}m`}

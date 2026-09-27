@@ -128,7 +128,29 @@ export function TemplateEditor({ initial }: { initial: Templates }) {
   return (
     <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="templates" value={JSON.stringify(templates)} />
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface">
+      {/* Phones: one card per day, since four steppers across don't fit. */}
+      <ul className="flex flex-col divide-y divide-line rounded-xl border border-line bg-surface md:hidden">
+        {WEEK_ORDER.map((d) => (
+          <li key={d} className="flex flex-col gap-3 px-4 py-3.5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-semibold text-text">{DAY_NAMES[d]}</span>
+              <span className="tabular text-small text-text-2">{hours(templateMinutes(templates[d]))}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+              {SLOT_TYPES.map((s) => (
+                <div key={s} className="flex items-center justify-between gap-2">
+                  <span className="flex flex-col">
+                    <span className="text-small font-semibold text-text-2">{SLOT_LABEL[s]}</span>
+                    <span className="text-tag text-mute">{SLOT_MINUTES[s]}m each</span>
+                  </span>
+                  <Stepper value={templates[d][s]} onChange={(v) => set(d, s, v)} label={`${SLOT_LABEL[s]} on ${DAY_NAMES[d]}`} />
+                </div>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto rounded-xl border border-line bg-surface md:block">
         <table className="w-full text-small">
           <thead>
             <tr className="text-mute">

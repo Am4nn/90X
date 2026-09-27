@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BackLink } from "@/components/back-link";
 import { NewStory, StoryCard } from "@/components/coach/story-editor";
 import { PageHeader } from "@/components/page-header";
 import { requireViewer } from "@/lib/auth/viewer";
@@ -15,9 +16,7 @@ export default async function StoriesPage() {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Link href="/me" className="text-small text-mute hover:text-text-2">
-          ← Me
-        </Link>
+        <BackLink href="/me">Me</BackLink>
         <PageHeader title="Story bank" />
         <p className="text-small text-mute">
           Six to eight STAR stories cover most behavioral questions. Behavioral mocks use them; only you can see them.

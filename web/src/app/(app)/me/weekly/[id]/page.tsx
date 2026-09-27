@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { BackLink } from "@/components/back-link";
 import { WeeklyDecision } from "@/components/coach/weekly-decision";
 import { EmptyState } from "@/components/empty-state";
 import { Markdown } from "@/components/markdown";
@@ -40,9 +41,7 @@ export default async function WeeklyPage({ params }: PageProps<"/me/weekly/[id]"
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Link href="/me" className="text-small text-mute hover:text-text-2">
-          ← Me
-        </Link>
+        <BackLink href="/me">Me</BackLink>
         <PageHeader title={`Week of ${week}`} />
       </div>
 

@@ -4,14 +4,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { after } from "next/server";
 import { z } from "zod";
+import { BackLink } from "@/components/back-link";
 import { button } from "@/components/button-styles";
 import { CoachChat } from "@/components/coach/chat";
 import { MockThreadHeader } from "@/components/coach/mock-thread-header";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { requireViewer } from "@/lib/auth/viewer";
-import { COACH_KINDS, whenLabel } from "@/lib/coach/chat-rules";
 import "@/lib/coach/modes";
+import { COACH_KINDS, whenLabel } from "@/lib/coach/chat-rules";
 import { type CoachKind, modeFor } from "@/lib/coach/mode";
 import { coachDegraded } from "@/lib/coach/model";
 import { extractQuietThreads, findThread, getThread, listThreads, type Thread, threadMessages } from "@/lib/coach/threads";
@@ -93,16 +94,19 @@ export default async function CoachPage({ searchParams }: PageProps<"/coach">) {
 
   return (
     <>
-      <PageHeader
-        title="Coach"
-        action={
-          <Link href="/me/coach" className={button({ size: "sm" })}>
-            What Coach knows
-          </Link>
-        }
-      />
+      {/* Inside a chat on a phone, the chat gets the height; "All chats" leads back. */}
+      <div className={inThread ? "hidden md:block" : undefined}>
+        <PageHeader
+          title="Coach"
+          action={
+            <Link href="/me/coach" className={button({ size: "sm" })}>
+              What Coach knows
+            </Link>
+          }
+        />
+      </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] md:gap-8">
+      <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] md:gap-8">
         <aside className={`${inThread ? "hidden md:flex" : "flex"} flex-col gap-6`}>
           <nav aria-label="Coach modes" className="flex flex-col overflow-hidden rounded-xl border border-line bg-surface">
             {MODES.map((m) => (
@@ -131,9 +135,9 @@ export default async function CoachPage({ searchParams }: PageProps<"/coach">) {
         </aside>
 
         <section className={`${inThread ? "flex" : "hidden md:flex"} flex-col gap-3`}>
-          <Link href="/coach" className="text-small font-semibold text-text-2 hover:text-text md:hidden">
-            ← All chats
-          </Link>
+          <BackLink href="/coach" className="md:hidden">
+            All chats
+          </BackLink>
           {kind === "mock" && ref && <MockThreadHeader userId={viewer.id} mockId={ref} />}
           {modeFor(kind) ? (
             <CoachChat
