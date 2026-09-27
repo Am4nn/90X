@@ -74,9 +74,12 @@ def for_topic(topic: dict, documents: list[dict]) -> tuple[str, list[str]]:
         parts.append(f"{doc['title']}\n{body[:MAX_DOC_CHARS]}")
         refs.append(doc["id"])
 
-    context = ""
+    context, used = "", 0
     for part in parts:
         if len(context) + len(part) > MAX_CHARS:
             break
         context += part + "\n\n---\n\n"
-    return context.strip(), refs[: len(context.split("---")) - 1]
+        used += 1
+    # Count the parts we kept. Splitting on "---" also counts horizontal rules
+    # inside a document body, which credited sources we never included.
+    return context.strip(), refs[:used]

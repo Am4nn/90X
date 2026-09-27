@@ -141,20 +141,24 @@ export async function problemDetail(slug: string, userId: string) {
 }
 
 export async function areaTopics(domain: string) {
-  return db
-    .select({
-      slug: topics.slug,
-      name: topics.name,
-      description: topics.description,
-      parent: topics.parentSlug,
-      importance: topics.importance,
-      summary: lessons.summary,
-      words: lessons.words,
-    })
-    .from(topics)
-    .leftJoin(lessons, eq(lessons.topicSlug, topics.slug))
-    .where(eq(topics.domain, domain))
-    .orderBy(asc(topics.sort));
+  return (
+    db
+      .select({
+        slug: topics.slug,
+        name: topics.name,
+        description: topics.description,
+        parent: topics.parentSlug,
+        importance: topics.importance,
+        summary: lessons.summary,
+        words: lessons.words,
+      })
+      .from(topics)
+      // Inner join: a topic whose lesson is not published has no page, so
+      // listing it would link to a 404.
+      .innerJoin(lessons, eq(lessons.topicSlug, topics.slug))
+      .where(eq(topics.domain, domain))
+      .orderBy(asc(topics.sort))
+  );
 }
 
 /** Topics in a non-problem area whose name or lesson summary matches. */
@@ -167,7 +171,7 @@ export async function searchArea(domain: string, q: string, limit = 40) {
       words: lessons.words,
     })
     .from(topics)
-    .leftJoin(lessons, eq(lessons.topicSlug, topics.slug))
+    .innerJoin(lessons, eq(lessons.topicSlug, topics.slug))
     .where(and(eq(topics.domain, domain), or(ilike(topics.name, contains(q)), ilike(lessons.summary, contains(q)))))
     .orderBy(asc(topics.sort))
     .limit(limit);

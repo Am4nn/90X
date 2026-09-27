@@ -83,6 +83,10 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                 except LLMError as e:
                     print(f"{topic['slug']}: FAILED {e}", flush=True)
                     continue
+                except Exception as e:
+                    # One provider error must not cancel the topics in flight.
+                    print(f"{topic['slug']}: FAILED {type(e).__name__}: {e}", flush=True)
+                    continue
                 with db:
                     save(con, topic, kept, rejected)
                     spent = spend_usd(con) - before

@@ -136,6 +136,12 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                     print(f"{topic['slug']}: FAILED {e}", flush=True)
                     failed += 1
                     continue
+                except Exception as e:
+                    # A provider timeout or a bad tier must not cancel the
+                    # topics still in flight: one bad call used to end the run.
+                    print(f"{topic['slug']}: FAILED {type(e).__name__}: {e}", flush=True)
+                    failed += 1
+                    continue
                 with db:
                     save(con, topic, result)
                     spent = spend_usd(con) - before

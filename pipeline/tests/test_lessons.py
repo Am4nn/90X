@@ -211,3 +211,31 @@ def test_rank_prefers_the_closer_title():
     )
     assert items[0] == "tcp"
     assert "deadlocks" not in items, "a title sharing no words is dropped, not ranked last"
+
+
+def test_source_refs_name_only_the_documents_actually_used(monkeypatch):
+    """A document body containing a horizontal rule used to inflate the count,
+    so source_refs credited sources the context never included."""
+    from pipeline.lessons import context as ctx
+
+    monkeypatch.setattr(ctx, "roadmap_nodes", lambda: ())
+    docs = [
+        {"id": "doc-with-rule", "title": "Caching", "body_md": "One\n\n---\n\nTwo\n\n---\n\nThree"},
+        {"id": "doc-plain", "title": "Caching again", "body_md": "Plain body"},
+    ]
+    text, refs = ctx.for_topic({"name": "Caching", "description": ""}, docs)
+    assert refs == ["doc-with-rule", "doc-plain"], refs
+    assert "doc-with-rule" in refs and text
+
+
+def test_refs_stop_at_the_character_budget(monkeypatch):
+    from pipeline.lessons import context as ctx
+
+    monkeypatch.setattr(ctx, "roadmap_nodes", lambda: ())
+    monkeypatch.setattr(ctx, "MAX_CHARS", 120)
+    docs = [
+        {"id": "first", "title": "Caching", "body_md": "x" * 100},
+        {"id": "second", "title": "Caching", "body_md": "y" * 100},
+    ]
+    _, refs = ctx.for_topic({"name": "Caching", "description": ""}, docs)
+    assert refs == ["first"], refs
