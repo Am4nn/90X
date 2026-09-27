@@ -249,6 +249,9 @@ deletion path for when a user leaves. About 2–3 days plus a new vendor in the 
 
 ## What to do instead (ranked)
 
+Items 1, 2 (gaps 1–4) and the first LeetCode gap were fixed in the same PR as this doc (#16),
+after the owner asked for them.
+
 1. **Count DeepSeek thinking tokens in the web cost meter.** `recordUsage` / `trackCoachUsage`
    (`web/src/lib/ai/usage.ts:18`, `web/src/lib/coach/model.ts:25`) record only
    `inputTokens` / `outputTokens`. `@ai-sdk/deepseek@3.0.54` sets
