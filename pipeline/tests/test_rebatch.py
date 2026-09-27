@@ -30,3 +30,30 @@ def test_risk_is_the_lowest_reviewer_score_scaled():
     assert rebatch.risk_of('{"correct": 5, "clear": 4, "relevant": 5}') == 0.8
     assert rebatch.risk_of("{}") is None
     assert rebatch.risk_of(None) is None
+
+
+def test_a_batch_pass_rate_counts_the_cards_the_gate_rejected(tmp_path):
+    """Lesson cards the gate turned down are stored as `rejected`, not as a
+    draft with kept = false. Grouping only drafts left nothing in the
+    denominator that could fail, so every lesson batch reported a 100% pass
+    rate on the admin screen no matter what the gate did."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("insert into topics (slug, domain, name, sort) values ('java-streams', 'java', 'Streams', 0)")
+    for i, (kept, status) in enumerate([(True, "draft"), (True, "draft"), (True, "draft"), (False, "rejected")]):
+        con.execute(
+            """insert into cards (id, topic_slug, format, prompt_md, answer_md, kept, status, source)
+               values (?, 'java-streams', 'typed', ?, 'a', ?, ?, 'lesson')""",
+            [f"00000000-0000-4000-8000-00000000000{i}", f"q{i}", kept, status],
+        )
+    # A repaired row records the question as first written; its replacement is
+    # already one of the drafts, so counting it too would punish the fix.
+    con.execute(
+        """insert into cards (id, topic_slug, format, prompt_md, answer_md, kept, status, source)
+           values ('00000000-0000-4000-8000-0000000000ff', 'java-streams', 'typed', 'old wording', 'a', false, 'repaired', 'lesson')"""
+    )
+    group = rebatch.plan(con)["java"]
+    assert group["generated"] == 4, group
+    assert len(group["card_ids"]) == 3
+    assert group["pass_rate"] == 0.75, group["pass_rate"]

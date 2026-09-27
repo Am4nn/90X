@@ -75,17 +75,24 @@ def plan(con) -> dict[str, dict]:
            where domain = 'system_design' and slug <> ? and coalesce(parent_slug, '') <> ?""",
         [CASE_STUDIES, CASE_STUDIES],
     ).fetchone()[0] or 0
+    # Drafts are what ship; rejected cards are here for the denominator only.
+    # Filtering to drafts alone made `ai_pass_rate` 1.0 for every lesson batch,
+    # because a lesson card the gate turned down is stored as `rejected` rather
+    # than as a draft with kept = false, so nothing was left to fail. A
+    # `repaired` row is excluded on purpose: its replacement is already counted
+    # as a draft, and counting both would penalise a topic for being fixed.
     rows = con.execute(
         """select c.id, c.kept, c.quality, t.domain, c.topic_slug, t.parent_slug, coalesce(t.sort, 0)
            from cards c join topics t on t.slug = c.topic_slug
-           where coalesce(c.status, 'draft') = 'draft'"""
+           where coalesce(c.status, 'draft') in ('draft', 'rejected')"""
     ).fetchall()
     groups: dict[str, dict] = {}
     for card_id, kept, quality, domain, topic, parent, sort in rows:
         key, label = group_of(domain, topic, parent, sort, split)
-        g = groups.setdefault(key, {"label": label, "domain": domain, "topics": set(), "card_ids": [], "risks": {},
-                                    "generated": 0})
+        g = groups.setdefault(key, {"label": label, "domain": domain, "topics": set(), "card_ids": [],
+                                    "all_ids": [], "risks": {}, "generated": 0})
         g["generated"] += 1
+        g["all_ids"].append(card_id)
         if kept:
             g["topics"].add(topic)
             g["card_ids"].append(card_id)
@@ -126,7 +133,8 @@ def run(con, database_url: str | None, dry_run: bool = False) -> dict[str, int]:
                values (?, ?, ?, ?, 'draft', true)""",
             [ids[key], g["domain"], sorted(g["topics"]), g["pass_rate"]],
         )
-        con.executemany("update cards set batch_id = ? where id = ?", [[ids[key], c] for c in g["card_ids"]])
-    # Dropped (not kept) cards move with their group too, so old batches empty out.
+        con.executemany("update cards set batch_id = ? where id = ?", [[ids[key], c] for c in g["all_ids"]])
+    # Dropped cards move with their group too, so no card is left pointing at a
+    # batch row that is about to be deleted.
     con.execute(f"delete from card_batches where id in ({', '.join('?' * len(old))})", old) if old else None
     return summary
