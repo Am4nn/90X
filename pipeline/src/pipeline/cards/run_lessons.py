@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 from ..llm import LLM, BudgetExceeded, LLMError, spend_usd
 from . import gate
-from .from_lessons import for_lesson
+from .from_lessons import for_lesson, rewrite
 
 WORKERS = 4
 # Fixed namespace so a card id is stable across runs.
@@ -39,13 +39,35 @@ def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bo
     return out[:limit] if limit else out
 
 
-def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[object, str]], dict]:
-    cards = for_lesson(llm, topic, topic["lesson"], tier=tier)
-    result = gate.review(llm, topic, cards)
+def _kept(cards: list, result) -> tuple[list, list[tuple[object, str]], dict]:
     rejected = gate.judge(cards, result)
     bad = {id(c) for c, _ in rejected}
     confidence = {id(c): gate.confidence_of(result).get(i, 0.5) for i, c in enumerate(cards)}
     return [c for c in cards if id(c) not in bad], rejected, confidence
+
+
+def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[object, str]], dict]:
+    """Generate, gate, and repair once what the gate turned down.
+
+    The gate says exactly why it rejected each card, which is usually enough
+    to fix the wording without changing the idea. Throwing them away instead
+    costs roughly 160 cards across a full run.
+    """
+    cards = for_lesson(llm, topic, topic["lesson"], tier=tier)
+    kept, rejected, confidence = _kept(cards, gate.review(llm, topic, cards))
+    if not rejected:
+        return kept, rejected, confidence
+
+    try:
+        fixed = rewrite(llm, topic, topic["lesson"], rejected, tier=tier)
+    except LLMError:
+        # A failed repair is not worse than the discard it replaces.
+        return kept, rejected, confidence
+    if not fixed:
+        return kept, rejected, confidence
+
+    repaired, still_bad, fixed_confidence = _kept(fixed, gate.review(llm, topic, fixed))
+    return kept + repaired, still_bad, {**confidence, **fixed_confidence}
 
 
 def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confidence: dict) -> None:

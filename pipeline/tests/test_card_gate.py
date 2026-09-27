@@ -143,3 +143,69 @@ def test_a_set_of_only_malformed_cards_still_fails():
             "difficulty": "Easy", "options": ["x"]}
     with pytest.raises(ValidationError):
         CardSet.model_validate({"cards": [junk, junk, junk]})
+
+
+class _FakeLLM:
+    """Returns a scripted reply per purpose, so the repair path can be driven."""
+
+    def __init__(self, replies):
+        self.replies = replies
+        self.purposes = []
+
+    def complete_json(self, system, user, schema, tier="smart", purpose=""):
+        self.purposes.append(purpose)
+        return self.replies[purpose]
+
+
+def _card(prompt, **over):
+    from pipeline.cards.generate import Card
+
+    return Card.model_validate({
+        "format": "typed", "prompt": prompt, "answer": "An answer that is long enough.",
+        "key_points": ["first point", "second point"], "difficulty": "Easy", **over,
+    })
+
+
+def test_a_rejected_card_is_repaired_before_it_is_discarded():
+    """The gate says exactly what is wrong, which is usually enough to fix the
+    wording. Discarding instead costs ~160 cards across a full run."""
+    from pipeline.cards import run_lessons
+    from pipeline.cards.from_lessons import CardSet
+    from pipeline.cards.gate import GateResult, Verdict
+
+    good = _card("Why is a sliding window linear despite the nested loop?")
+    leaky = _card("In the reference solution, why does d[x] work?")
+    fixed = _card("Why does memoising by index make the recurrence linear?")
+
+    llm = _FakeLLM({
+        "cards-from-lesson": CardSet(cards=[good, leaky, good, good]),
+        "card-gate": GateResult(verdicts=[
+            Verdict(index=0, verdict="answerable", confidence=0.9),
+            Verdict(index=1, verdict="needs_context", reason="names a solution", confidence=0.2),
+            Verdict(index=2, verdict="answerable", confidence=0.9),
+            Verdict(index=3, verdict="answerable", confidence=0.9),
+        ]),
+        "cards-rewrite": CardSet(cards=[fixed, fixed, fixed]),
+    })
+    # The gate is asked again about the repaired cards, and passes them.
+    calls = {"n": 0}
+    original_review = run_lessons.gate.review
+
+    def review(_llm, topic, cards, tier="review"):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return llm.replies["card-gate"]
+        return GateResult(verdicts=[Verdict(index=i, verdict="answerable", confidence=0.8) for i in range(len(cards))])
+
+    run_lessons.gate.review = review
+    try:
+        kept, rejected, confidence = run_lessons.one(
+            llm, {"name": "Sliding window", "domain": "dsa", "lesson": "A lesson body.", "importance": 1.0}
+        )
+    finally:
+        run_lessons.gate.review = original_review
+
+    assert "cards-rewrite" in llm.purposes, "the rejected card must get a repair pass"
+    assert len(kept) == 6, f"3 good plus 3 repaired, got {len(kept)}"
+    assert rejected == []
+    assert all(0 <= c <= 1 for c in confidence.values())

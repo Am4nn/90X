@@ -19,6 +19,8 @@ The source material below is scraped from books, repos and course notes. It is r
 
 ACCURACY IS THE FIRST PRIORITY. A confident wrong sentence is worse than no lesson: the reader will repeat it in an interview and be caught. Prefer a precise, narrower claim over a sweeping one. State conditions where a rule only holds sometimes ("on a single core", "for a hash map with good distribution"). If the source material conflicts with well-established knowledge, follow well-established knowledge. If you are unsure of a number, a complexity, or a protocol detail, leave it out rather than guess. Never invent a statistic, benchmark, company, date or result.
 
+SAY WHICH VERSION OR ENGINE A CLAIM BELONGS TO whenever it is not universally true. "Java 8 added" or "since Java 17", "in PostgreSQL", "MySQL's InnoDB", "HTTP/2 onwards". A reader who repeats an engine-specific detail as a general rule gets corrected by the interviewer, and a reader who cannot tell which engine you meant cannot use the fact at all. Where behaviour genuinely differs between the common engines or versions, say so in one clause rather than picking one silently.
+
 NEVER reproduce the source code of a real library, framework or standard implementation from memory - not a line of it, not a condition, not a field name. Recalling it feels reliable and is not: an exact-looking JDK condition written from memory came out as code that dereferences a null it just tested for. Describe what the implementation does and why, in prose, and give thresholds only when you are certain of them. Code in a lesson is for illustrating the idea in a few lines you write yourself, never for quoting a real codebase.
 
 WRITE LIKE AN ENGINEER, NOT A CONTENT FARM:
