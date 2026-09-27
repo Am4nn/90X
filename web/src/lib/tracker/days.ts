@@ -35,11 +35,11 @@ export function streak(days: { date: string; status: string }[], today: string):
 
 const REVIVE_WINDOW_DAYS = 2;
 
-/** Missed or partial days from the last two days that can still be revived. */
-export function revivable(days: { date: string; status: string }[], today: string): string[] {
+/** Missed or partial days from the last two days that can still be revived, leaving out ones already `started`. */
+export function revivable(days: { date: string; status: string }[], today: string, started: string[] = []): string[] {
   const from = addDays(today, -REVIVE_WINDOW_DAYS);
   return days
-    .filter((d) => (d.status === "missed" || d.status === "partial") && d.date >= from && d.date < today)
+    .filter((d) => (d.status === "missed" || d.status === "partial") && d.date >= from && d.date < today && !started.includes(d.date))
     .map((d) => d.date)
     .toSorted();
 }

@@ -83,6 +83,14 @@ describe("revivable", () => {
     ];
     expect(revivable(d, "2026-09-27")).toEqual(["2026-09-25", "2026-09-26"]);
   });
+
+  it("leaves out a day whose revive has already started", () => {
+    const d = [
+      { date: "2026-09-25", status: "missed" },
+      { date: "2026-09-26", status: "partial" },
+    ];
+    expect(revivable(d, "2026-09-27", ["2026-09-26"])).toEqual(["2026-09-25"]);
+  });
 });
 
 const rv = (reviveOf: string, status: string) => ({ status, isRevive: true, reviveOf });

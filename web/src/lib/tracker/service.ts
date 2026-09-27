@@ -278,7 +278,7 @@ export async function ensureToday(userId: string, now = new Date(), q: Db = db):
 }
 
 async function todayView(userId: string, campaign: CampaignInfo, today: string, q: Db): Promise<TodayView> {
-  const [rows, dayRows] = await Promise.all([
+  const [rows, dayRows, started] = await Promise.all([
     q
       .select({
         id: missions.id,
@@ -302,6 +302,11 @@ async function todayView(userId: string, campaign: CampaignInfo, today: string, 
       .select({ date: days.date, status: days.status })
       .from(days)
       .where(and(eq(days.userId, userId), eq(days.campaignId, campaign.id))),
+    // Days whose revive already started, so the banner doesn't offer them again.
+    q
+      .selectDistinct({ date: missions.reviveOf })
+      .from(missions)
+      .where(and(eq(missions.userId, userId), eq(missions.isRevive, true), gte(missions.reviveOf, addDays(today, -2)))),
   ]);
   const list: TodayMission[] = rows.map((r) => ({
     id: r.id,
@@ -325,7 +330,11 @@ async function todayView(userId: string, campaign: CampaignInfo, today: string, 
     status: (todayRow?.status ?? "pending") as DayStatus,
     missions: list,
     grid: grid(campaign, dayRows),
-    revivable: revivable(dayRows, today),
+    revivable: revivable(
+      dayRows,
+      today,
+      started.flatMap((r) => (r.date ? [r.date] : [])),
+    ),
     campaign,
   };
 }
