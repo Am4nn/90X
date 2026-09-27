@@ -26,6 +26,17 @@ REFERS_TO_SOURCE = re.compile(
     re.IGNORECASE,
 )
 HTML_TAG = re.compile(r"<(?:/?[a-zA-Z][a-zA-Z0-9]*)(?:\s[^<>]*)?/?>")
+CODE = re.compile(r"```.*?```|`[^`]+`", re.DOTALL)
+MARKDOWN_LINK = re.compile(r"\]\(")
+BARE_URL = re.compile(r"https?://")
+# One or two example URLs are normal prose ("https://short.ly/abc" in a lesson
+# on URL shorteners). A handful is a reference list, which a lesson never has.
+MAX_EXAMPLE_URLS = 2
+
+
+def without_code(text: str) -> str:
+    """Code is where angle brackets and URLs legitimately live."""
+    return CODE.sub(" ", text)
 LIGATURE = re.compile(r"[ﬀ-ﬆ]")  # ﬀ ﬁ ﬂ ﬃ ﬄ ﬅ from bad PDF extraction
 URL = re.compile(r"https?://|\]\(")
 PIPE_TABLE = re.compile(r"^\s*\|.*\|\s*$", re.MULTILINE)
@@ -63,12 +74,15 @@ def check(body_md: str, follow_ups: list[str]) -> list[str]:
         problems.append(f"too long ({words} words, maximum {MAX_WORDS})")
     if m := REFERS_TO_SOURCE.search(body_md):
         problems.append(f"refers to source the reader cannot see: {m.group(0)!r}")
-    if m := HTML_TAG.search(body_md):
+    prose = without_code(body_md)
+    if m := HTML_TAG.search(prose):
         problems.append(f"raw HTML: {m.group(0)!r}")
     if LIGATURE.search(body_md):
         problems.append("PDF ligature characters")
-    if m := URL.search(body_md):
+    if m := MARKDOWN_LINK.search(prose):
         problems.append(f"contains a link: {m.group(0)!r}")
+    if len(BARE_URL.findall(prose)) > MAX_EXAMPLE_URLS:
+        problems.append("reads like a list of references, not a lesson")
     if PIPE_TABLE.search(body_md):
         problems.append("contains a table")
     if m := BROKEN_WORD.search(body_md):

@@ -31,7 +31,6 @@ def test_clean_lesson_passes():
         ("The lesson explains why paging is transparent.", "refers to source"),
         ("<div class='note'>Careful</div>", "raw HTML"),
         ("The deﬁnition of a process is simple.", "ligature"),
-        ("Read more at https://example.com/paging", "link"),
         ("See [the guide](https://example.com)", "link"),
         ("| Pattern | Use |\n| --- | --- |", "table"),
         ("A process is defined infor- mally as a running program.", "broken by PDF"),
@@ -63,6 +62,29 @@ def test_accepts_an_imperative_follow_up():
 def test_rejects_a_follow_up_that_is_not_a_prompt():
     problems = checks.check(GOOD_BODY, ["What is a process?", "Processes are useful.", "Why?"])
     assert any("interviewer would say" in p for p in problems)
+
+
+def test_an_example_url_in_prose_is_allowed():
+    """A lesson on URL shorteners has to be able to write a URL. The rule
+    exists to stop reference lists, not to ban the topic's own subject."""
+    fine = body_with("A shortener maps https://short.ly/abc to the original address.")
+    assert checks.check(fine, ["A?", "B?", "C?"]) == []
+
+
+def test_a_pile_of_urls_reads_as_a_reference_list():
+    bad = body_with("See https://a.test and https://b.test and https://c.test and https://d.test")
+    assert any("references" in p for p in checks.check(bad, ["A?", "B?", "C?"]))
+
+
+def test_angle_brackets_inside_code_are_not_html():
+    """`https://short.ly/<key>` is a placeholder, not markup."""
+    fine = body_with("The path is the key: `https://short.ly/<key>` resolves by lookup.")
+    assert checks.check(fine, ["A?", "B?", "C?"]) == [], checks.check(fine, ["A?", "B?", "C?"])
+
+
+def test_markdown_links_are_still_rejected():
+    bad = body_with("See [the guide](https://example.com) for more.")
+    assert any("link" in p for p in checks.check(bad, ["A?", "B?", "C?"]))
 
 
 def test_postcard_metaphor_is_not_a_false_positive():
