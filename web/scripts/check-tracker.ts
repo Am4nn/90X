@@ -3,7 +3,7 @@
 
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { checkins, days, missions, problemReviews, problems } from "@/db/schema";
+import { checkins, days, missions, problemReviews, problems, roadmapProgress } from "@/db/schema";
 import { addDays, localDate } from "@/lib/tracker/dates";
 import {
   ensureToday,
@@ -14,7 +14,9 @@ import {
   skipReview,
   snapshotReadiness,
   startRevive,
+  tickRoadmapNode,
   todayStats,
+  unmarkStudied,
 } from "@/lib/tracker/service";
 
 const failures: string[] = [];
@@ -127,6 +129,26 @@ try {
       ladder.length === 2 && ladder.every((r) => r.step === 1 && r.dueDate === addDays(today, 3)),
       `${ladder.length}`,
     );
+
+    // Undoing a study must untick the boxes studying ticked and leave alone the
+    // ones the reader ticked by hand. `roadmap_progress.source` exists for this,
+    // and the delete ignored it, so a hand-ticked node was lost on every undo.
+    await tx.execute(sql`insert into public.roadmap_nodes (id, roadmap, domain, label, kind, sort, topic_slug) values
+      ('tt-node-linked', 'tt', 'system_design', 'Linked', 'topic', 1, 'tt-sd'),
+      ('tt-node-hand', 'tt', 'system_design', 'By hand', 'topic', 2, 'tt-sd')`);
+    await tickRoadmapNode(user, "tt-node-hand", tx);
+    await markStudied(user, "tt-sd", tx, now);
+    await unmarkStudied(user, "tt-sd", tx);
+    const ticks = await tx
+      .select({ nodeId: roadmapProgress.nodeId, source: roadmapProgress.source })
+      .from(roadmapProgress)
+      .where(eq(roadmapProgress.userId, user));
+    expect(
+      "undoing a study unticks its own boxes and keeps the hand-ticked one",
+      ticks.length === 1 && ticks[0]?.nodeId === "tt-node-hand" && ticks[0]?.source === "manual",
+      JSON.stringify(ticks),
+    );
+    await tx.delete(roadmapProgress).where(eq(roadmapProgress.userId, user));
 
     // Finish the rest: topic via Mark studied, review via "Not today".
     const topic = mine.find((m) => m.slotType === "topic");

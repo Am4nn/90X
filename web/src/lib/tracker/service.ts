@@ -509,6 +509,9 @@ export async function unmarkStudied(userId: string, topicSlug: string, q: Db = d
     await q.delete(roadmapProgress).where(
       and(
         eq(roadmapProgress.userId, userId),
+        // Only the ticks studying put there. A box the reader checked by hand
+        // is theirs, and undoing a study is not a claim about it.
+        eq(roadmapProgress.source, "topic"),
         inArray(
           roadmapProgress.nodeId,
           nodes.map((n) => n.id),

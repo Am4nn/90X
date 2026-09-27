@@ -10,13 +10,12 @@ and fixed rather than silently published.
 """
 
 import json
-import threading
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
-from ..llm import LLM, BudgetExceeded, LLMError, spend_usd
+from ..llm import LLM, BudgetExceeded, LLMError, lock_for, spend_usd
 from ..normalize.interview_questions import parse_all
 from . import check as checks
 from . import evidence as ev
@@ -132,8 +131,9 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
 
     print(f"{len(todo)} topics to write, {WORKERS} at a time", flush=True)
     # DuckDB connections are not thread-safe, so every touch of `con` - the
-    # document read, the save, the spend total - happens under this lock.
-    db = threading.Lock()
+    # document read, the save, the spend total, and the LLM's own cost log -
+    # happens under the connection's one lock.
+    db = lock_for(con)
     done = 0
 
     def work(topic: dict):

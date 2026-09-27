@@ -7,17 +7,18 @@ lessons have drifted, and that is invisible if failures are thrown away.
 """
 
 import json
-import threading
 import uuid
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
-from ..llm import LLM, BudgetExceeded, LLMError, spend_usd
+from ..llm import LLM, BudgetExceeded, LLMError, lock_for, spend_usd
 from . import gate
 from .from_lessons import for_lesson, rewrite
 
-WORKERS = 4
+WORKERS = 12
+# Topics in flight. Like the lesson run, a worker spends its time waiting on
+# an HTTP response, so the ceiling is the provider's rate limit, not our cores.
 # Fixed namespace so a card id is stable across runs.
 CARD_NAMESPACE = uuid.UUID("90c0de00-0000-4000-8000-000000000001")
 
@@ -110,7 +111,9 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     llm = llm or LLM(con)
     todo = topics_with_lessons(con, only, limit, redo)
     started, before = time.time(), spend_usd(con)
-    db = threading.Lock()
+    # The connection's lock, not one of our own: a save here and a worker's
+    # cost log are the same connection, and two locks let them interleave.
+    db = lock_for(con)
     kept_total = rejected_total = done = 0
 
     print(f"{len(todo)} topics with lessons, {WORKERS} at a time", flush=True)

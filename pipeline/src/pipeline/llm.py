@@ -31,6 +31,27 @@ DEFAULT_PRICE = (1.0, 5.0)  # unknown model: count it conservatively
 PEAK_WINDOWS = ((1, 4), (6, 10))
 
 
+# One lock per connection, shared by everything that touches it.
+#
+# A DuckDB connection is not thread-safe, and the lock belongs to the
+# connection rather than to whoever happens to be using it. A worker pool
+# holding its own lock while LLM held a second one over the same connection
+# left the two of them free to interleave: a select's rows came back short,
+# `dict(zip(cols, row))` quietly dropped the missing keys, and the topic died
+# on `KeyError: 'title'` - twice in 274, never in the same place.
+#
+# Reentrant, so a caller that already holds it and reaches code that takes it
+# again stalls nothing. A 40-minute run deadlocking on its own lock is a worse
+# outcome than a nested acquire nobody notices.
+_LOCKS: dict[int, threading.RLock] = {}
+_LOCKS_GUARD = threading.Lock()
+
+
+def lock_for(con: duckdb.DuckDBPyConnection) -> threading.RLock:
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(id(con), threading.RLock())
+
+
 class LLMError(RuntimeError):
     pass
 
@@ -94,7 +115,9 @@ class LLM:
         self.max_usd = max_usd if max_usd is not None else float(os.environ.get("PIPELINE_MAX_USD", DEFAULT_MAX_USD))
         self.client = client or _default_client()
         # DuckDB connections aren't thread-safe; calls may run in a thread pool.
-        self.lock = threading.Lock()
+        # The lock is the connection's, so a runner that also reads it in
+        # workers waits on the same one rather than on a lock of its own.
+        self.lock = lock_for(con)
         # This process's calls per model: {model: [calls, cost_usd]}, for live progress lines.
         self.run_costs: dict[str, list] = {}
         # Calls started but not yet charged, so the cap accounts for them.
