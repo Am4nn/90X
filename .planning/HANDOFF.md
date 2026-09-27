@@ -113,7 +113,9 @@ them): `check:rls` (29 checks), `check:tracker` (22), `check:feed` (14),
 `check:grading` (12 fixed answers), `check:coach` (memory extraction end to end).
 
 CI runs everything except the AI ones, plus Playwright browser tests against a
-throwaway Supabase and a Redis stand-in.
+throwaway Supabase, a Redis stand-in and a fake model (`web/e2e/fake-model.ts`,
+an OpenAI-compatible server with fixed replies), so the Coach specs never call
+a real model.
 
 ## Conventions
 
