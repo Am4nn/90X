@@ -56,6 +56,10 @@ create table if not exists lessons (
     source_refs json, words int, status text default 'draft', problems text,
     generated_at timestamp
 );
+-- practice: problems and real interview questions this lesson unlocks.
+-- findings: what the fact-checker still objected to, when status is 'failed'.
+alter table lessons add column if not exists practice json;
+alter table lessons add column if not exists findings json;
 create table if not exists pattern_tricks (
     id text primary key, pattern_slug text not null, name text not null, idea_md text not null,
     snippets json, problem_slugs text[], sort int default 0

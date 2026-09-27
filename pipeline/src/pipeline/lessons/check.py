@@ -33,14 +33,27 @@ PIPE_TABLE = re.compile(r"^\s*\|.*\|\s*$", re.MULTILINE)
 BROKEN_WORD = re.compile(r"\b[a-z]{2,}-\s+[a-z]{2,}\b")
 
 MIN_WORDS = 250
-MAX_WORDS = 1200
+MAX_WORDS = 1400
+
+# An interviewer's follow-up is often an instruction, not a question:
+# "Walk me through the TLS handshake." is exactly what gets asked.
+IMPERATIVE = re.compile(
+    r"^(walk|explain|describe|compare|contrast|design|sketch|derive|show|"
+    r"tell|give|name|estimate|trace|implement|justify|defend)\b",
+    re.IGNORECASE,
+)
+
+
+def is_interviewer_prompt(text: str) -> bool:
+    text = text.strip()
+    return text.endswith("?") or bool(IMPERATIVE.match(text))
 
 
 def word_count(text: str) -> int:
     return len(text.split())
 
 
-def check(body_md: str, should_answer: list[str]) -> list[str]:
+def check(body_md: str, follow_ups: list[str]) -> list[str]:
     """Returns the reasons this lesson is not publishable. Empty means it is."""
     problems: list[str] = []
     words = word_count(body_md)
@@ -60,7 +73,7 @@ def check(body_md: str, should_answer: list[str]) -> list[str]:
         problems.append("contains a table")
     if m := BROKEN_WORD.search(body_md):
         problems.append(f"word broken by PDF extraction: {m.group(0)!r}")
-    not_questions = [q for q in should_answer if not q.strip().endswith("?")]
-    if not_questions:
-        problems.append(f"should_answer entry is not a question: {not_questions[0]!r}")
+    bad_prompts = [q for q in follow_ups if not is_interviewer_prompt(q)]
+    if bad_prompts:
+        problems.append(f"follow-up is not something an interviewer would say: {bad_prompts[0]!r}")
     return problems

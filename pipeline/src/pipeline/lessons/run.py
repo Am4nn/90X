@@ -2,18 +2,29 @@
 
 Saving per topic is not a detail: the first card run lost 278 sources of work
 when it was interrupted, because it only wrote at the end.
+
+Each lesson goes through write -> structural contract -> independent fact
+check -> rewrite with corrections. A lesson that still has findings after the
+last pass is stored as `failed` with the findings attached, so it can be read
+and fixed rather than silently published.
 """
 
 import json
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
 from ..llm import LLM, BudgetExceeded, LLMError, spend_usd
+from ..normalize.interview_questions import parse_all
 from . import check as checks
+from . import evidence as ev
+from . import verify
 from .context import for_topic
 from .write import render, write
 
-RETRIES = 2  # a failed contract is regenerated rather than published
+PASSES = 3  # write, then up to two rewrites carrying the reviewer's corrections
+WORKERS = 4  # topics in flight; the writer waits on the API, not on us
 
 
 def topics_to_write(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
@@ -41,28 +52,49 @@ def documents_for(con, slug: str) -> list[dict]:
     return [dict(zip(["id", "title", "body_md"], r)) for r in rows]
 
 
-def one(llm: LLM, topic: dict, documents: list[dict], tier: str = "smart") -> tuple[str, list[str], str]:
-    """Write one lesson, regenerating while it fails the contract.
-    Returns (body_md, refs, problems_text). Empty problems means publishable."""
+def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier: str = "smart",
+        lock=None) -> dict:
+    """Write, fact-check, and rewrite once with the corrections."""
     context, refs = for_topic(topic, documents)
-    problems: list[str] = []
-    for _ in range(RETRIES):
-        lesson = write(llm, topic, context, tier=tier)
+    if lock:
+        with lock:
+            evidence_text, linked = ev.for_topic(con, topic, questions)
+    else:
+        evidence_text, linked = ev.for_topic(con, topic, questions)
+    notes, findings = "", []
+
+    for _ in range(PASSES):
+        lesson = write(llm, topic, context, evidence=evidence_text, notes=notes, tier=tier)
         body = render(lesson)
-        problems = checks.check(body, lesson.should_answer)
-        if not problems:
-            return body, refs, ""
-    return body, refs, "; ".join(problems)
+        problems = checks.check(body, [f.question for f in lesson.follow_ups])
+        if problems:
+            notes = "\n".join(f"- [contract] {p}" for p in problems)
+            findings = []
+            continue
+        findings = verify.blocking(verify.review(llm, topic, body))
+        if not findings:
+            return {"body": body, "refs": refs, "linked": linked, "problems": "", "findings": []}
+        notes = verify.notes(findings)
+
+    return {
+        "body": body,
+        "refs": refs,
+        "linked": linked,
+        "problems": "; ".join(problems) if problems else f"{len(findings)} unresolved findings",
+        "findings": [f.model_dump() for f in findings],
+    }
 
 
-def save(con, topic: dict, body: str, refs: list[str], problems: str) -> None:
+def save(con, topic: dict, result: dict) -> None:
     con.execute(
         """insert or replace into lessons
-           (topic_slug, title, body_md, source_refs, words, status, problems, generated_at)
-           values (?, ?, ?, ?, ?, ?, ?, ?)""",
+           (topic_slug, title, body_md, source_refs, practice, findings, words, status, problems, generated_at)
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         [
-            topic["slug"], topic["name"], body, json.dumps(refs), checks.word_count(body),
-            "failed" if problems else "ok", problems or None,
+            topic["slug"], topic["name"], result["body"], json.dumps(result["refs"]),
+            json.dumps(result["linked"]), json.dumps(result["findings"]),
+            checks.word_count(result["body"]),
+            "failed" if result["problems"] else "ok", result["problems"] or None,
             datetime.now(timezone.utc),
         ],
     )
@@ -73,31 +105,54 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     """Returns (written, failed)."""
     llm = llm or LLM(con)
     todo = topics_to_write(con, only, limit, redo)
+    questions = parse_all()  # parsed once; every system_design topic searches it
     started, before = time.time(), spend_usd(con)
     written = failed = 0
 
-    print(f"{len(todo)} topics to write", flush=True)
-    for i, topic in enumerate(todo, 1):
-        docs = documents_for(con, topic["slug"])
+    print(f"{len(todo)} topics to write, {WORKERS} at a time", flush=True)
+    # DuckDB connections are not thread-safe, so every touch of `con` - the
+    # document read, the save, the spend total - happens under this lock.
+    db = threading.Lock()
+    done = 0
+
+    def work(topic: dict):
+        with db:
+            docs = documents_for(con, topic["slug"])
+        return topic, docs, one(llm, con, topic, docs, questions, tier=tier, lock=db)
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        futures = {pool.submit(work, t): t for t in todo}
         try:
-            body, refs, problems = one(llm, topic, docs, tier=tier)
-        except BudgetExceeded as e:
-            print(f"  stopping: {e}", flush=True)
-            break
-        except LLMError as e:
-            print(f"[{i}/{len(todo)}] {topic['slug']}: FAILED {e}", flush=True)
-            failed += 1
-            continue
-        save(con, topic, body, refs, problems)
-        written += not problems
-        failed += bool(problems)
-        spent = spend_usd(con) - before
-        rate = spent / i
-        print(
-            f"[{i}/{len(todo)}] {topic['slug']}  {checks.word_count(body)}w  "
-            f"{len(docs)} docs  ${spent:.3f} (${rate:.4f}/topic, ~${rate * len(todo):.2f} total)  "
-            f"{int(time.time() - started)}s"
-            + (f"  FAILED CONTRACT: {problems}" if problems else ""),
-            flush=True,
-        )
+            for future in as_completed(futures):
+                topic = futures[future]
+                try:
+                    topic, docs, result = future.result()
+                except BudgetExceeded as e:
+                    print(f"  stopping: {e}", flush=True)
+                    for f in futures:
+                        f.cancel()
+                    break
+                except LLMError as e:
+                    print(f"{topic['slug']}: FAILED {e}", flush=True)
+                    failed += 1
+                    continue
+                with db:
+                    save(con, topic, result)
+                    spent = spend_usd(con) - before
+                done += 1
+                written += not result["problems"]
+                failed += bool(result["problems"])
+                rate = spent / done
+                linked = result["linked"]
+                print(
+                    f"[{done}/{len(todo)}] {topic['slug']}  {checks.word_count(result['body'])}w  "
+                    f"{len(docs)} docs  {len(linked['problems'])}p/{len(linked['questions'])}q  "
+                    f"${spent:.3f} (${rate:.4f}/topic, ~${rate * len(todo):.2f} total)  "
+                    f"{int(time.time() - started)}s"
+                    + (f"  FAILED: {result['problems']}" if result["problems"] else ""),
+                    flush=True,
+                )
+        finally:
+            pool.shutdown(wait=False, cancel_futures=True)
+
     return written, failed
