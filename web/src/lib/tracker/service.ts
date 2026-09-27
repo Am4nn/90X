@@ -365,9 +365,13 @@ export async function refreshDay(userId: string, today: string, q: Db) {
   }
 }
 
-async function userToday(userId: string, q: Db) {
+// `now` is threaded through rather than read from the clock, the same way
+// ensureToday, onCheckins and onCardAnswered already take it. Without it these
+// paths cannot be exercised at a pinned time, and check-tracker silently
+// stopped ticking missions the moment the real date passed its fixture date.
+async function userToday(userId: string, q: Db, now = new Date()) {
   const [p] = await q.select({ timezone: profiles.timezone }).from(profiles).where(eq(profiles.userId, userId));
-  return localDate(p?.timezone ?? "UTC");
+  return localDate(p?.timezone ?? "UTC", now);
 }
 
 function toReview(r: { step: number; dueDate: string; status: string } | undefined): Review | null {
@@ -461,8 +465,8 @@ export async function skipReview(userId: string, missionId: string, mode: "not_t
 }
 
 /** Library "Mark studied": records the topic and ticks today's topic mission for it. */
-export async function markStudied(userId: string, topicSlug: string, q: Db = db) {
-  const today = await userToday(userId, q);
+export async function markStudied(userId: string, topicSlug: string, q: Db = db, now = new Date()) {
+  const today = await userToday(userId, q, now);
   await q.insert(topicProgress).values({ userId, topicSlug }).onConflictDoNothing();
   await q
     .update(missions)
@@ -484,8 +488,8 @@ export async function unmarkStudied(userId: string, topicSlug: string, q: Db = d
 }
 
 /** Copy a missed day's unfinished missions into today as extra work. */
-export async function startRevive(userId: string, date: string, q: Db = db) {
-  const today = await userToday(userId, q);
+export async function startRevive(userId: string, date: string, q: Db = db, now = new Date()) {
+  const today = await userToday(userId, q, now);
   const dayRows = await q
     .select({ date: days.date, status: days.status })
     .from(days)
