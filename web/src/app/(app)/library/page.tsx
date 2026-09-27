@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EmptyState } from "@/components/empty-state";
 import { PatternMap } from "@/components/library/pattern-map";
 import { ProblemList } from "@/components/library/problem-list";
 import { PageHeader } from "@/components/page-header";
 import { requireViewer } from "@/lib/auth/viewer";
-import { AREAS, type AreaKey, areaTopics, patternMap, problemList, unfiledCount } from "@/lib/library/queries";
+import { AREAS, type AreaKey, areaTopics, patternMap, problemList, searchArea, unfiledCount } from "@/lib/library/queries";
 
 export const metadata: Metadata = { title: "Library" };
+
+const notes = (n: number) => `${n} ${n === 1 ? "note" : "notes"}`;
 
 function AreaTabs({ area }: { area: AreaKey }) {
   return (
@@ -25,15 +28,15 @@ function AreaTabs({ area }: { area: AreaKey }) {
   );
 }
 
-function Search({ area, q }: { area: AreaKey; q?: string }) {
+function Search({ area, q, placeholder }: { area: AreaKey; q?: string; placeholder: string }) {
   return (
     <form action="/library" className="flex">
       <input type="hidden" name="area" value={area} />
       <input
         name="q"
         defaultValue={q}
-        placeholder="Search problems"
-        aria-label="Search problems"
+        placeholder={placeholder}
+        aria-label={placeholder}
         className="h-10 w-full rounded-xl border border-line-2 bg-surface px-3.5 text-small text-text outline-none focus:border-cyan md:w-72"
       />
     </form>
@@ -55,7 +58,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
     const rows = await problemList(viewer.id, { kind, pattern: area === "dsa" ? pattern : undefined, q });
     return (
       <>
-        <PageHeader title="Library" action={<Search area={area} q={q} />} />
+        <PageHeader title="Library" action={<Search area={area} q={q} placeholder="Search problems" />} />
         <AreaTabs area={area} />
         {map && map.patterns.length > 0 && (
           <section className="flex flex-col gap-3">
@@ -98,13 +101,57 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
     );
   }
 
+  const header = (
+    <>
+      <PageHeader title="Library" action={<Search area={area} q={q} placeholder="Search notes" />} />
+      <AreaTabs area={area} />
+    </>
+  );
+
+  if (q) {
+    const hits = await searchArea(area, q);
+    const none = hits.topics.length === 0 && hits.docs.length === 0;
+    return (
+      <>
+        {header}
+        <section className="flex flex-col gap-3">
+          <h2 className="font-display text-heading font-semibold">Results for “{q}”</h2>
+          {none ? (
+            <EmptyState title="No matches">Nothing in this area has that in a topic name or note title.</EmptyState>
+          ) : (
+            <ul className="flex flex-col rounded-xl border border-line bg-surface">
+              {hits.topics.map((t) => (
+                <li key={`t-${t.slug}`} className="border-t border-line first:border-0">
+                  <Link
+                    href={`/library/topic/${t.slug}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-surface-2"
+                  >
+                    <span className="font-semibold text-text">{t.name}</span>
+                    <span className="shrink-0 text-small text-mute">Topic · {notes(t.docs)}</span>
+                  </Link>
+                </li>
+              ))}
+              {hits.docs.map((d) => (
+                <li key={`d-${d.id}`} className="border-t border-line first:border-0">
+                  <Link href={`/library/doc/${d.id}`} className="flex flex-col gap-0.5 px-4 py-3.5 hover:bg-surface-2">
+                    <span className="font-semibold text-text">{d.title}</span>
+                    <span className="text-small text-mute">{d.topic ?? "Unfiled"}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </>
+    );
+  }
+
   const [topicRows, unfiled] = await Promise.all([areaTopics(area), unfiledCount(area)]);
   const parents = topicRows.filter((t) => !t.parent);
   const children = (slug: string) => topicRows.filter((t) => t.parent === slug);
   return (
     <>
-      <PageHeader title="Library" />
-      <AreaTabs area={area} />
+      {header}
       {topicRows.length === 0 ? (
         <p className="rounded-xl border border-line bg-surface p-4 text-small text-mute">Topics for this area are being prepared.</p>
       ) : (
@@ -113,7 +160,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
             <div key={t.slug} className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-4">
               <Link href={`/library/topic/${t.slug}`} className="flex items-baseline justify-between gap-3">
                 <span className="font-display text-heading font-semibold hover:text-cyan">{t.name}</span>
-                <span className="shrink-0 text-small text-mute">{t.docs} notes</span>
+                <span className="shrink-0 text-small text-mute">{notes(t.docs)}</span>
               </Link>
               {t.description && <p className="text-small text-mute">{t.description}</p>}
               {children(t.slug).length > 0 && (
