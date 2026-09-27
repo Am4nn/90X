@@ -102,6 +102,16 @@ def cards(args, con) -> None:
     print(f"cards: {stats}, spend ${llm.spend_usd(con):.2f}")
 
 
+def lessons(args, con) -> None:
+    from . import llm
+    from .lessons import run as lesson_run
+
+    written, failed = lesson_run.run(
+        con, only=args.topics or None, limit=args.limit, redo=args.redo, tier=args.tier
+    )
+    print(f"lessons: {written} written, {failed} failed, spend ${llm.spend_usd(con):.2f}")
+
+
 def publish(args, con) -> None:
     import os
 
@@ -124,7 +134,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

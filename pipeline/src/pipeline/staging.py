@@ -51,6 +51,11 @@ create table if not exists cards (
     answer_md text not null, key_points json, source_refs json, quality json,
     status text default 'draft', kept boolean
 );
+create table if not exists lessons (
+    topic_slug text primary key, title text not null, body_md text not null,
+    source_refs json, words int, status text default 'draft', problems text,
+    generated_at timestamp
+);
 create table if not exists pattern_tricks (
     id text primary key, pattern_slug text not null, name text not null, idea_md text not null,
     snippets json, problem_slugs text[], sort int default 0
