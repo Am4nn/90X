@@ -175,6 +175,20 @@ class StudyHistoryAtRisk(RuntimeError):
     """Raised rather than cascade away someone's spaced repetition."""
 
 
+def staged_card_ids(con) -> list[str]:
+    """The cards staging still stands behind: `kept`, not every row.
+
+    Staging keeps a rejected card with the gate's reason on it, and a card
+    published before a later run rejected it still has its id here. Matching on
+    presence alone left that card live in the Feed for good, which is the one
+    thing rejecting it was meant to prevent.
+
+    A null `kept` counts as staged, so only an explicit rejection retires a
+    card and an older row with the column unset is never deleted by surprise.
+    """
+    return [r[0] for r in con.execute("select id from cards where kept is not false").fetchall()]
+
+
 def _retire_superseded_cards(con, cur, force: bool) -> int:
     """Delete published cards that staging no longer has.
 
@@ -183,7 +197,7 @@ def _retire_superseded_cards(con, cur, force: bool) -> int:
     it. That is free while the Feed is unused and irreversible afterwards, so
     the rule lives here rather than in whoever remembers to check.
     """
-    staged = [r[0] for r in con.execute("select id from cards").fetchall()]
+    staged = staged_card_ids(con)
     cur.execute("create temp table _staged_cards (id uuid) on commit drop")
     if staged:
         cur.executemany("insert into _staged_cards values (%s)", [[i] for i in staged])
