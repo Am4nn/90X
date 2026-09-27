@@ -15,7 +15,7 @@ Branch: your pinned branch. PR to `main`.
 ## Build
 
 ### 0. The approved design (owner chose it from a mock — follow it)
-- **Mark = the wordmark**: "90" in Sora 700, text colour `#e6e9ef`, followed by an **"x" drawn as two cyan (`#67e8f9`) round-capped strokes** (not a font glyph), on the dark tile `#0a0c10` with ~22% corner radius. In a 100×100 box: "90" centred at x≈45, baseline y≈62, font-size ≈38; strokes from (66,43)→(80,60) and (80,43)→(66,60), stroke width ≈6.
+- **Mark = the wordmark**: "90" in Sora 700, text colour `#e6e9ef`, followed by an **"x" drawn as two cyan (`#67e8f9`) round-capped strokes** (not a font glyph), on the dark tile `#0a0c10` with ~22% corner radius. In a 100×100 box: "90" left-aligned starting at x≈16, baseline y≈62, font-size ≈38 (it ends near x≈62); strokes from (68,44)→(83,61) and (83,44)→(68,61), stroke width ≈6. **The x must not touch the "0"** — keep a visible gap (≈6 units) and measure the real glyph width when you render, adjusting positions so the whole mark is centred in the tile.
 - Use the same mark at every size, the 16px favicon included (the owner accepted that it's soft at 16px).
 - **Loading splash**: dark screen, the mark without the tile at ~120px; "90" fades in (0–300ms), then the x draws its first stroke (300–600ms) and second stroke (520–820ms), then a thin 64px cyan progress line slides under it until ready. Reduced motion: everything visible at once, no animation.
 - **iOS launch image**: the same mark (no tile) centred on `#0a0c10`, matching the splash's first frame so the hand-off is seamless.
