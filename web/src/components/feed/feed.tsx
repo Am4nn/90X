@@ -119,7 +119,7 @@ export function Feed({
       if (wasOffline.current || summary.graded || summary.dropped) load(getNextCard);
       wasOffline.current = false;
       setOffline(null);
-      void refreshCards(userId, getUpcomingCards);
+      void refreshCards(userId, getUpcomingCards, { topUp: true });
     });
     return () => {
       cancelled = true;
@@ -136,7 +136,7 @@ export function Feed({
       if (result.diagnosticSummary) setScreen({ kind: "summary", summary: result.diagnosticSummary });
       else {
         load(getNextCard);
-        void refreshCards(userId, getUpcomingCards);
+        void refreshCards(userId, getUpcomingCards, { topUp: true });
       }
     },
     [nextPending, load, online, showOffline, userId],

@@ -21,8 +21,10 @@ export type FlushSummary = { graded: number; dropped: number; left: number; sess
 
 /** A refused answer is tried this many times, then dropped, so one bad answer can't hold the rest back for good. */
 export const MAX_ATTEMPTS = 3;
-const REFRESH_BELOW = 15;
 const REFRESH_AFTER_MS = 30 * 60_000;
+const TOP_UP_BELOW = 15;
+/** A short copy is topped up at most this often: a small card pool can't fill it anyway. */
+const TOP_UP_AFTER_MS = 2 * 60_000;
 
 export function pendingFor(items: OutboxItem[], userId: string): OutboxItem[] {
   return items.filter((item) => item.userId === userId).toSorted((a, b) => a.queuedAt - b.queuedAt);
@@ -33,8 +35,15 @@ export function nextOfflineCard(cards: CardView[], answeredIds: string[]): CardV
   return cards.find((card) => !answered.has(card.id)) ?? null;
 }
 
-export function cardsNeedRefresh(saved: SavedCards | null, now: number): boolean {
-  return !saved || saved.cards.length < REFRESH_BELOW || now - saved.savedAt > REFRESH_AFTER_MS;
+/**
+ * Fetch again when there is no copy or it is old. With `topUp` (the Feed, as
+ * cards get answered) also when the copy runs short, but not more than every
+ * couple of minutes.
+ */
+export function cardsNeedRefresh(saved: SavedCards | null, now: number, { topUp = false } = {}): boolean {
+  if (!saved) return true;
+  const age = now - saved.savedAt;
+  return age > REFRESH_AFTER_MS || (topUp && saved.cards.length < TOP_UP_BELOW && age > TOP_UP_AFTER_MS);
 }
 
 /**

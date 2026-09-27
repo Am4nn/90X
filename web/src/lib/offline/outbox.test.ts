@@ -58,15 +58,20 @@ describe("nextOfflineCard", () => {
 
 describe("cardsNeedRefresh", () => {
   const now = 1_000_000_000;
-  it("refreshes when nothing is cached, too few cards are left, or the copy is old", () => {
+  const plenty = Array.from({ length: 20 }, (_, i) => card(String(i)));
+  const few = [card("1")];
+  it("refreshes when nothing is cached or the copy is old", () => {
     expect(cardsNeedRefresh(null, now)).toBe(true);
-    expect(cardsNeedRefresh({ cards: [card("1")], savedAt: now }, now)).toBe(true);
-    const plenty = Array.from({ length: 20 }, (_, i) => card(String(i)));
     expect(cardsNeedRefresh({ cards: plenty, savedAt: now - 31 * 60_000 }, now)).toBe(true);
   });
-  it("leaves a fresh, full copy alone", () => {
-    const plenty = Array.from({ length: 20 }, (_, i) => card(String(i)));
+  it("leaves a recent copy alone, however short, unless asked to top up", () => {
     expect(cardsNeedRefresh({ cards: plenty, savedAt: now - 5 * 60_000 }, now)).toBe(false);
+    expect(cardsNeedRefresh({ cards: few, savedAt: now - 5 * 60_000 }, now)).toBe(false);
+  });
+  it("tops up a short copy, but not more than every couple of minutes", () => {
+    expect(cardsNeedRefresh({ cards: few, savedAt: now - 5 * 60_000 }, now, { topUp: true })).toBe(true);
+    expect(cardsNeedRefresh({ cards: few, savedAt: now - 30_000 }, now, { topUp: true })).toBe(false);
+    expect(cardsNeedRefresh({ cards: plenty, savedAt: now - 5 * 60_000 }, now, { topUp: true })).toBe(false);
   });
 });
 

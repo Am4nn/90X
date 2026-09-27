@@ -30,11 +30,18 @@ export function sendQueuedAnswers(userId: string, submit: Submit): Promise<Flush
   return sending;
 }
 
-/** Keeps the next ~30 cards on the device, fetching again only when the copy runs low or gets old. */
-export function refreshCards(userId: string, fetchCards: () => Promise<{ cards: CardView[] } | { error: string }>): Promise<void> {
+/**
+ * Keeps the next ~30 cards on the device, fetching again only when there is
+ * no copy or it is old, or with `topUp` when it runs short (see cardsNeedRefresh).
+ */
+export function refreshCards(
+  userId: string,
+  fetchCards: () => Promise<{ cards: CardView[] } | { error: string }>,
+  options: { topUp?: boolean } = {},
+): Promise<void> {
   refreshing ??= (async () => {
     try {
-      if (!cardsNeedRefresh(await loadCards(userId), Date.now())) return;
+      if (!cardsNeedRefresh(await loadCards(userId), Date.now(), options)) return;
       const state = await fetchCards();
       if ("cards" in state) await saveCards(userId, state.cards);
     } catch {
