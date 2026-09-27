@@ -58,39 +58,62 @@ def _kept(cards: list, result) -> tuple[list, list[tuple[object, str]], dict]:
     return [c for c in cards if id(c) not in bad], rejected, confidence
 
 
-def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[object, str]], dict]:
+def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[object, str]], list[tuple[object, str]], dict]:
     """Generate, gate, and repair once what the gate turned down.
 
     The gate says exactly why it rejected each card, which is usually enough
     to fix the wording without changing the idea. Throwing them away instead
     costs roughly 160 cards across a full run.
+
+    Returns (kept, discarded, sent_back, confidence). `sent_back` is what the
+    gate caught on the first pass and the rewrite then fixed. Reporting only
+    `discarded` made the run look like a 1% rejection rate and said nothing
+    about how much work the gate was actually doing - which is the number Aman
+    is judging when he reads the sample.
     """
     cards = for_lesson(llm, topic, topic["lesson"], tier=tier)
     kept, rejected, confidence = _kept(cards, gate.review(llm, topic, cards))
     if not rejected:
-        return kept, rejected, confidence
+        return kept, rejected, [], confidence
 
     try:
         fixed = rewrite(llm, topic, topic["lesson"], rejected, tier=tier)
     except LLMError:
         # A failed repair is not worse than the discard it replaces.
-        return kept, rejected, confidence
+        return kept, rejected, [], confidence
     if not fixed:
-        return kept, rejected, confidence
+        return kept, rejected, [], confidence
 
     repaired, still_bad, fixed_confidence = _kept(fixed, gate.review(llm, topic, fixed))
-    return kept + repaired, still_bad, {**confidence, **fixed_confidence}
+    # Every first-pass reject went to the rewrite; `still_bad` holds the
+    # replacements the gate turned down again, which are different cards. A
+    # card the gate caught and the rewrite fixed did not fail, but it is
+    # evidence the gate earned its place, so it is kept and labelled.
+    return kept + repaired, still_bad, rejected, {**confidence, **fixed_confidence}
 
 
-def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confidence: dict) -> None:
+def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confidence: dict,
+         sent_back: list[tuple[object, str]] | None = None) -> None:
     now = datetime.now(timezone.utc)
     con.execute("delete from cards where topic_slug = ? and source = 'lesson'", [topic["slug"]])
-    rows = [(c, None) for c in kept] + [(c, reason) for c, reason in rejected]
+    # Three statuses: draft is what publishes, rejected is what the gate threw
+    # away for good, repaired is the wording the gate caught before the rewrite
+    # replaced it. Only draft reaches Supabase; the other two are the record of
+    # what the gate did, which is the thing under review alongside the cards.
+    #
+    # Drafts go last. A card's id comes from its question, and a rewrite that
+    # changed only the answer keeps the question, so the two rows collide on
+    # `insert or replace`; the publishable one has to be the survivor.
+    rows = (
+        [(c, reason, "repaired") for c, reason in (sent_back or [])]
+        + [(c, reason, "rejected") for c, reason in rejected]
+        + [(c, None, "draft") for c in kept]
+    )
     # kept, quality and source_refs are what /admin/cards reads: without them a
     # lesson card never reaches the review screen, which is where Aman looks.
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     # public.cards.id is a uuid, so a readable "slug:l0" id would never publish.
-    for card, reason in rows:
+    for card, reason, status in rows:
         con.execute(
             """insert or replace into cards
                (id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points,
@@ -101,7 +124,7 @@ def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confi
                 json.dumps(card.options) if card.options else None, card.answer,
                 json.dumps(card.key_points), refs,
                 json.dumps({"gate_confidence": confidence.get(id(card), 0.5)}),
-                reason is None, "rejected" if reason else "draft", reason, now,
+                status == "draft", status, reason, now,
             ],
         )
 
@@ -114,7 +137,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     # The connection's lock, not one of our own: a save here and a worker's
     # cost log are the same connection, and two locks let them interleave.
     db = lock_for(con)
-    kept_total = rejected_total = done = 0
+    kept_total = rejected_total = sent_back_total = done = 0
 
     print(f"{len(todo)} topics with lessons, {WORKERS} at a time", flush=True)
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -123,7 +146,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
             for future in as_completed(futures):
                 topic = futures[future]
                 try:
-                    kept, rejected, confidence = future.result()
+                    kept, rejected, sent_back, confidence = future.result()
                 except BudgetExceeded as e:
                     print(f"  stopping: {e}", flush=True)
                     break
@@ -135,15 +158,22 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                     print(f"{topic['slug']}: FAILED {type(e).__name__}: {e}", flush=True)
                     continue
                 with db:
-                    save(con, topic, kept, rejected, confidence)
+                    save(con, topic, kept, rejected, confidence, sent_back)
                     spent = spend_usd(con) - before
                 done += 1
                 kept_total += len(kept)
                 rejected_total += len(rejected)
-                share = rejected_total / max(1, kept_total + rejected_total)
+                sent_back_total += len(sent_back)
+                seen = kept_total + rejected_total
+                # Two rates, because they answer different questions: how much
+                # the gate caught, and how much it could not save.
+                caught = (sent_back_total + rejected_total) / max(1, seen)
+                lost = rejected_total / max(1, seen)
                 print(
-                    f"[{done}/{len(todo)}] {topic['slug']}  kept {len(kept)}  rejected {len(rejected)}  "
-                    f"(rejected {share:.0%} so far)  ${spent:.3f}  {int(time.time() - started)}s",
+                    f"[{done}/{len(todo)}] {topic['slug']}  kept {len(kept)}  "
+                    f"fixed {len(sent_back)}  dropped {len(rejected)}  "
+                    f"(gate caught {caught:.0%}, dropped {lost:.0%} so far)  "
+                    f"${spent:.3f}  {int(time.time() - started)}s",
                     flush=True,
                 )
         finally:

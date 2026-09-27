@@ -204,7 +204,7 @@ def test_a_rejected_card_is_repaired_before_it_is_discarded():
 
     run_lessons.gate.review = review
     try:
-        kept, rejected, confidence = run_lessons.one(
+        kept, rejected, sent_back, confidence = run_lessons.one(
             llm, {"name": "Sliding window", "domain": "dsa", "lesson": "A lesson body.", "importance": 1.0}
         )
     finally:
@@ -213,6 +213,10 @@ def test_a_rejected_card_is_repaired_before_it_is_discarded():
     assert "cards-rewrite" in llm.purposes, "the rejected card must get a repair pass"
     assert len(kept) == 6, f"3 good plus 3 repaired, got {len(kept)}"
     assert rejected == []
+    # What the gate caught is reported separately from what it could not save.
+    # Counting only the discards made a run the gate worked hard on look like a
+    # 1% rejection rate, which reads as "the gate found almost nothing".
+    assert len(sent_back) == 1, f"the gate's first-pass objection must be recorded, got {len(sent_back)}"
     assert all(0 <= c <= 1 for c in confidence.values())
 
 

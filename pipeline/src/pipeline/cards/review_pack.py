@@ -67,17 +67,20 @@ def sample(con, size: int = SAMPLE) -> list[dict]:
     return picked[:size]
 
 
-def rejected(con) -> list[dict]:
+def rejected(con, status: str = "rejected") -> list[dict]:
     rows = con.execute(
         """select topic_slug, format, prompt_md, reject_reason from cards
-           where source = 'lesson' and status = 'rejected' order by topic_slug"""
+           where source = 'lesson' and status = ? order by topic_slug""",
+        [status],
     ).fetchall()
     return [dict(zip(["slug", "format", "prompt", "reason"], r)) for r in rows]
 
 
 def report(con) -> str:
-    kept, dropped = con.execute(
-        """select count(*) filter (where status = 'draft'), count(*) filter (where status = 'rejected')
+    kept, dropped, fixed = con.execute(
+        """select count(*) filter (where status = 'draft'),
+                  count(*) filter (where status = 'rejected'),
+                  count(*) filter (where status = 'repaired')
            from cards where source = 'lesson'"""
     ).fetchone()
     mix = con.execute(
@@ -85,12 +88,20 @@ def report(con) -> str:
            group by 1 order by 2 desc"""
     ).fetchall()
     picked, refused = sample(con), rejected(con)
+    sent_back = rejected(con, "repaired")
 
+    seen = kept + dropped
+    caught = dropped + fixed
     lines = [
         "# 90x card review",
         "",
-        f"{kept} cards were generated and {dropped} rejected by an automated gate "
-        f"({dropped / max(1, kept + dropped):.0%}). Mix: " + ", ".join(f"{n} {f}" for f, n in mix) + ".",
+        f"{kept} cards are ready to publish. An automated gate read {seen} and objected to "
+        f"{caught} of them ({caught / max(1, seen):.0%}): {fixed} were rewritten and passed on the "
+        f"second look, {dropped} could not be saved and were dropped "
+        f"({dropped / max(1, seen):.0%}). Mix: " + ", ".join(f"{n} {f}" for f, n in mix) + "."
+        + ("" if fixed else "\n\n*No card here is recorded as caught-and-rewritten. Card runs before "
+           "2026-09-28 did not keep that record, so on an older run the rewrite pass is invisible "
+           "rather than idle, and the drop rate is the only measured number above.*"),
         "",
         "## What these are",
         "",
@@ -156,4 +167,19 @@ def report(con) -> str:
               "Judge whether it was right. Each was thrown away." if refused else "None.", ""]
     for card in refused:
         lines += [f"- **{card['slug']}** ({card['format']}): {card['prompt']}", f"  - Gate said: {card['reason']}", ""]
+
+    if sent_back:
+        lines += [
+            "## Cards the gate caught and the rewrite fixed",
+            "",
+            "These are the questions as first written. The gate objected, a rewrite pass "
+            "replaced each one, and the replacement passed - so these are not in the app. "
+            "They are here because the gate is on trial too: if its objections below look "
+            "wrong, it is throwing away good work, and if they look right, it is earning "
+            "its cost.",
+            "",
+        ]
+        for card in sent_back:
+            lines += [f"- **{card['slug']}** ({card['format']}): {card['prompt']}",
+                      f"  - Gate said: {card['reason']}", ""]
     return "\n".join(lines)
