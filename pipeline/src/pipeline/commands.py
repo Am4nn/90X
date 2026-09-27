@@ -124,6 +124,17 @@ def lesson_cards(args, con) -> None:
     print(f"cards: {kept} kept, {rejected} rejected ({share:.0%}), spend ${llm.spend_usd(con):.2f}")
 
 
+def lesson_review(args, con) -> None:
+    from pathlib import Path
+
+    from .config import REPO_DIR
+    from .lessons import review_pack
+
+    out = Path(REPO_DIR) / ".planning" / "lesson-review.md"
+    out.write_text(review_pack.report(con), encoding="utf-8")
+    print(f"written to {out}")
+
+
 def gaps(args, con) -> None:
     from pathlib import Path
 
@@ -169,7 +180,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

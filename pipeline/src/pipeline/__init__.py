@@ -40,6 +40,7 @@ def main() -> None:
     lc.add_argument("--limit", type=int, help="at most N topics")
     lc.add_argument("--redo", action="store_true", help="regenerate topics that already have lesson cards")
     lc.add_argument("--tier", default="smart")
+    sub.add_parser("lesson-review", help="write the short list of lessons worth reading")
     gp = sub.add_parser("gaps", help="sort roadmap nodes 90x lacks into real gaps (AI)")
     gp.add_argument("domains", nargs="*", help="only these areas")
     gp.add_argument("--tier", default="smart")
