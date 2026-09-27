@@ -12,6 +12,7 @@ and fixed rather than silently published.
 import json
 import threading
 import time
+import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
@@ -159,7 +160,11 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                 except Exception as e:
                     # A provider timeout or a bad tier must not cancel the
                     # topics still in flight: one bad call used to end the run.
-                    print(f"{topic['slug']}: FAILED {type(e).__name__}: {e}", flush=True)
+                    # The traceback goes with it: a bare "KeyError: 'title'" from
+                    # a 40-minute run tells you nothing about which of the six
+                    # places that touch a title raised it.
+                    print(f"{topic['slug']}: FAILED {type(e).__name__}: {e}\n"
+                          + "".join(traceback.format_exception(e)).rstrip(), flush=True)
                     failed += 1
                     continue
                 with db:

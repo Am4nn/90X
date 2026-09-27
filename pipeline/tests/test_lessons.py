@@ -59,6 +59,17 @@ def test_accepts_an_imperative_follow_up():
                                     "Compare it with the alternative."]) == []
 
 
+def test_accepts_a_question_followed_by_an_instruction():
+    """A real follow-up is often two sentences: "Can a table violate both 2NF
+    and 3NF at once? Give an example." Testing only the whole string saw a
+    trailing full stop and no leading verb, and threw away a correct lesson."""
+    assert checks.check(GOOD_BODY, [
+        "Can a table violate both 2NF and 3NF at the same time? Give an example.",
+        "What breaks under load?",
+        "Why does that matter here?",
+    ]) == []
+
+
 def test_rejects_a_follow_up_that_is_not_a_prompt():
     problems = checks.check(GOOD_BODY, ["What is a process?", "Processes are useful.", "Why?"])
     assert any("interviewer would say" in p for p in problems)
