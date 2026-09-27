@@ -73,12 +73,12 @@ describe("coverage counts cards, not answers", () => {
 
   it("judges each card on its latest answer", () => {
     // Retrying one card until it is right must not outvote three others.
-    const answers = [
+    const retried = [
       { outcome: "wrong" as const, cardId: "a" },
       { outcome: "correct" as const, cardId: "a" },
       { outcome: "wrong" as const, cardId: "b" },
       { outcome: "wrong" as const, cardId: "c" },
     ];
-    expect(canDeclareKnown({ answers, cardsInTopic: 9 })).toBe(false);
+    expect(canDeclareKnown({ answers: retried, cardsInTopic: 9 })).toBe(false);
   });
 });
