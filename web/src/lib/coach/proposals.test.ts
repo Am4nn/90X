@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { proposeTemplate } from "@/lib/tracker/template";
-import { applyTemplateChanges, changeLine, mockHref, parseProposal, templateDiff } from "./proposals";
+import { applyTemplateChanges, changeLine, parseProposal, templateDiff } from "./proposals";
 
 const card = "7a1c1b0e-1f2d-4c3b-9a8e-0f1e2d3c4b5a";
 
@@ -83,8 +83,9 @@ describe("template changes", () => {
   });
 });
 
-describe("mockHref", () => {
-  it("links to a new mock thread on the topic", () => {
-    expect(mockHref({ type: "design", topic: "Rate limiter" })).toBe("/coach?kind=mock&ref=Rate%20limiter");
+describe("end_mock (brief G)", () => {
+  it("needs a mock id", () => {
+    expect(parseProposal({ proposal: { type: "end_mock", summary: "End", payload: { mockId: card } } })?.proposal.type).toBe("end_mock");
+    expect(parseProposal({ proposal: { type: "end_mock", summary: "End", payload: { mockId: null } } })).toBeNull();
   });
 });

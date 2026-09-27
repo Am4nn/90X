@@ -32,7 +32,9 @@ const QueueLadder = z.strictObject({
     .min(1)
     .max(3),
 });
-const StartMock = z.strictObject({ type: z.enum(["design", "behavioral"]), topic: z.string().trim().min(1).max(80) });
+// The interviewer's end_mock (brief G, modes/mock.ts).
+const EndMock = z.strictObject({ mockId: z.uuid() });
+const StartMock = z.strictObject({ type: z.enum(["design", "behavioral"]), topic: z.string().trim().min(1).max(200) });
 
 const summary = z.string().min(1).max(300);
 const ProposalSchema = z.discriminatedUnion("type", [
@@ -42,6 +44,7 @@ const ProposalSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("save_memory"), summary, payload: SaveMemory }),
   z.strictObject({ type: z.literal("start_mock"), summary, payload: StartMock }),
   z.strictObject({ type: z.literal("queue_ladder"), summary, payload: QueueLadder }),
+  z.strictObject({ type: z.literal("end_mock"), summary, payload: EndMock }),
 ]);
 
 export type Proposal = z.infer<typeof ProposalSchema>;
@@ -90,9 +93,4 @@ const SLOT_NAMES: Record<SlotType, string> = { new_problem: "New problems", revi
 
 export function changeLine(c: TemplateChangeRow): string {
   return `${DAY_NAMES[c.weekday] ?? "?"} · ${SLOT_NAMES[c.slot]} ${c.from} → ${c.to}`;
-}
-
-/** Where a confirmed start_mock goes: a new mock thread (brief G's mode) on the topic. */
-export function mockHref(payload: { type: string; topic: string }): string {
-  return `/coach?kind=mock&ref=${encodeURIComponent(payload.topic)}`;
 }

@@ -64,6 +64,7 @@ const ACTION_LABEL: Record<string, string> = {
   start_mock: "Suggested a mock interview",
   queue_ladder: "Suggested problems for your plan",
   finish_lesson: "Noted what you learned",
+  end_mock: "Offered to end the mock",
 };
 
 export type ToolPhase = "running" | "done" | "error";

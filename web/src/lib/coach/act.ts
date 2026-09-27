@@ -9,7 +9,9 @@ import { key } from "@/lib/upstash/keys";
 import { redis } from "@/lib/upstash/redis";
 import { addFact, editFact } from "./memory-edit";
 import { queueProblems } from "./missions";
-import { applyTemplateChanges, mockHref, type Proposal, type ProposalStatus, parseProposal } from "./proposals";
+import { mockThreadHref } from "./mock-rules";
+import { endMock, startMock } from "./mocks";
+import { applyTemplateChanges, type Proposal, type ProposalStatus, parseProposal } from "./proposals";
 import { activeTemplates, liveCards, problemBySlug, topicBySlugOrName } from "./tools-data";
 
 // Performs a proposal the user confirmed in the chat (spec §6.8: nothing
@@ -85,8 +87,19 @@ async function perform(userId: string, proposal: Proposal, q: Db): Promise<Done 
       }
       return { note: "Saved. Coach will remember this." };
     }
-    case "start_mock":
-      return { href: mockHref(proposal.payload) };
+    case "start_mock": {
+      // Brief G's startMock: ends any running mock, opens its thread with the interviewer's first question.
+      const started = await startMock(userId, proposal.payload.type, proposal.payload.topic);
+      if ("error" in started) return { error: "That topic isn't on the mock list. Pick one in Coach → Mocks." };
+      return { href: mockThreadHref(started.mockId, started.threadId) };
+    }
+    case "end_mock": {
+      const ended = await endMock(userId, proposal.payload.mockId);
+      if ("error" in ended) return ended;
+      return ended.scored
+        ? { note: "Scored.", href: `/coach/mocks/${proposal.payload.mockId}` }
+        : { note: "Ended without answers, so there's no score." };
+    }
     case "queue_ladder": {
       const result = await queueProblems(userId, proposal.payload.slugs, "Queued from your pattern lesson");
       if ("error" in result) return result;

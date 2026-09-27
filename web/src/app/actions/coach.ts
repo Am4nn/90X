@@ -38,6 +38,8 @@ export async function decideProposal(input: {
       revalidatePath("/today");
       revalidatePath("/me/plan");
       revalidatePath("/me/coach");
+      revalidatePath("/coach/mocks");
+      revalidatePath("/me");
     }
     return { ok: true, status: result.status, note: result.note, href: result.href };
   } catch (e) {

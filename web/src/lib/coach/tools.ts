@@ -4,6 +4,8 @@ import { z } from "zod";
 import { SLOT_MINUTES, SLOT_TYPES } from "@/lib/tracker/template";
 import { listMemory } from "./memory";
 import { MEMORY_KINDS } from "./memory-rules";
+import { BEHAVIORAL_QUESTIONS } from "./mock-rules";
+import { designTopics } from "./mocks";
 import { applyTemplateChanges, type Proposal, templateDiff } from "./proposals";
 import {
   summarizeActivity,
@@ -188,15 +190,20 @@ export function coachTools(userId: string): ToolSet {
       }),
     }),
     start_mock: tool({
-      description: "Propose starting a text mock interview: system design on a topic, or behavioral.",
-      inputSchema: z.object({ type: z.enum(["design", "behavioral"]), topic: z.string().min(1).max(80) }),
-      execute: safely("start_mock", async ({ type, topic }) =>
-        propose({
+      description:
+        "Propose starting a text mock interview: system design on a topic from the mock list, or a behavioral question from the list. A wrong topic returns the list.",
+      inputSchema: z.object({ type: z.enum(["design", "behavioral"]), topic: z.string().min(1).max(200) }),
+      execute: safely("start_mock", async ({ type, topic }) => {
+        // Only topics brief G's startMock accepts, so a confirmed proposal always starts.
+        const allowed: string[] = type === "design" ? await designTopics() : [...BEHAVIORAL_QUESTIONS];
+        const match = allowed.find((t) => t.toLowerCase() === topic.trim().toLowerCase());
+        if (!match) return { error: `"${topic}" isn't on the ${type} mock list.`, topics: allowed };
+        return propose({
           type: "start_mock",
-          summary: `Start a ${type === "design" ? "design" : "behavioral"} mock: ${topic.trim()}`,
-          payload: { type, topic: topic.trim() },
-        }),
-      ),
+          summary: `Start a ${type} mock: ${match}. Any mock still running ends.`,
+          payload: { type, topic: match },
+        });
+      }),
     }),
   };
 }
