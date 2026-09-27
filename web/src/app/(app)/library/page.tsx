@@ -13,17 +13,20 @@ const notes = (n: number) => `${n} ${n === 1 ? "note" : "notes"}`;
 
 function AreaTabs({ area }: { area: AreaKey }) {
   return (
-    <nav aria-label="Areas" className="flex gap-1 overflow-x-auto rounded-xl border border-line bg-surface p-1">
-      {AREAS.map((a) => (
-        <Link
-          key={a.key}
-          href={`/library?area=${a.key}`}
-          aria-current={a.key === area ? "page" : undefined}
-          className={`shrink-0 rounded-lg px-3.5 py-2 text-small font-semibold ${a.key === area ? "bg-surface-2 text-text" : "text-mute hover:text-text-2"}`}
-        >
-          {a.label}
-        </Link>
-      ))}
+    <nav aria-label="Areas" className="rounded-xl border border-line bg-surface p-1">
+      {/* Nine areas don't fit a phone: the fade says the row scrolls. */}
+      <div className="flex gap-1 overflow-x-auto mask-r-from-85% md:mask-none">
+        {AREAS.map((a) => (
+          <Link
+            key={a.key}
+            href={`/library?area=${a.key}`}
+            aria-current={a.key === area ? "page" : undefined}
+            className={`shrink-0 rounded-lg px-3.5 py-2 text-small font-semibold ${a.key === area ? "bg-surface-2 text-text" : "text-mute hover:text-text-2"}`}
+          >
+            {a.label}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }

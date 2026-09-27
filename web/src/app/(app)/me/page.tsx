@@ -56,7 +56,7 @@ export default async function MePage() {
         action={
           <div className="flex gap-2">
             {viewer.isAdmin && (
-              <Link href="/admin" className={button({ size: "sm" })}>
+              <Link href="/admin" className={`${button({ size: "sm" })} md:hidden`}>
                 Admin
               </Link>
             )}
