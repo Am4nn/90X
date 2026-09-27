@@ -59,10 +59,15 @@ def test_mcq_agreement_is_kept():
     assert gate([card], [Verdict(index=0, verdict="answerable", picked=" It is connection-oriented ")]) == []
 
 
-def test_a_card_the_reviewer_skipped_is_kept():
-    """A short reply must not silently shrink the batch."""
+def test_a_card_the_reviewer_never_ruled_on_is_rejected():
+    """Keeping it meant a truncated reply silently passed questions nobody
+    checked. Rejected is not deleted: it goes through the repair pass and is
+    gated again, so an omission costs a retry rather than a card."""
     cards = [FakeCard("Why is TCP reliable?"), FakeCard("Why is UDP fast?")]
-    assert gate(cards, [Verdict(index=0, verdict="answerable")]) == []
+    rejected = gate(cards, [Verdict(index=0, verdict="answerable")])
+    assert len(rejected) == 1
+    assert rejected[0][0].prompt == "Why is UDP fast?"
+    assert "did not rule" in rejected[0][1]
 
 
 def test_the_gate_never_sees_the_answer():

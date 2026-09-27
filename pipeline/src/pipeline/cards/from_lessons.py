@@ -14,6 +14,8 @@ vary?") is unfair to type and belongs in multiple choice.
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
+from ..llm import LLMError
+
 from .generate import Card
 
 # Roughly one card per key idea; the important topics earn a few more.
@@ -48,7 +50,7 @@ Write in plain, direct English."""
 
 
 class CardSet(BaseModel):
-    cards: list[Card] = Field(min_length=3, max_length=12)
+    cards: list[Card] = Field(min_length=1, max_length=12)
 
     @model_validator(mode="before")
     @classmethod
@@ -69,14 +71,23 @@ class CardSet(BaseModel):
         return data
 
 
+MIN_CARDS = 3
+
+
 def for_lesson(llm, topic: dict, lesson_md: str, tier: str = "smart") -> list[Card]:
+    """A topic's worth of cards. The set model allows one card because the
+    repair pass reuses it and usually has one or two to fix; a generation that
+    comes back with fewer than MIN_CARDS is the thing worth rejecting."""
     n = card_budget(topic.get("importance") or 0.5)
     user = (
         f"Topic: {topic['name']} ({topic['domain']})\n"
         f"Write {n} cards.\n\n"
         f"Lesson:\n{lesson_md}"
     )
-    return llm.complete_json(SYSTEM, user, CardSet, tier=tier, purpose="cards-from-lesson").cards
+    cards = llm.complete_json(SYSTEM, user, CardSet, tier=tier, purpose="cards-from-lesson").cards
+    if len(cards) < MIN_CARDS:
+        raise LLMError(f"only {len(cards)} cards for {topic['slug']}, wanted at least {MIN_CARDS}")
+    return cards
 
 
 REWRITE_SYSTEM = f"""You are fixing interview-prep cards that failed review. For each one you are given the card and the reason it was rejected.

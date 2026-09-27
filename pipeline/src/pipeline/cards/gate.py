@@ -79,9 +79,11 @@ def confidence_of(result: GateResult) -> dict[int, float]:
 def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
     """Returns (card, reason) for every card that must not ship.
 
-    A card the reviewer never ruled on is kept: a missing verdict is the
-    reviewer's omission, not evidence against the card, and dropping silently
-    on a short reply would quietly shrink every batch.
+    A card the reviewer never ruled on is rejected, not kept. Keeping it means
+    a short or truncated reply silently passes questions nobody checked, and
+    the phrase-matching fallback only catches the obvious ones. Rejected is
+    not deleted: these go through the repair pass and are gated again, so an
+    omission costs a retry rather than a card.
     """
     verdicts = {v.index: v for v in result.verdicts}
     rejected = []
@@ -91,6 +93,7 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
             continue
         v = verdicts.get(i)
         if v is None:
+            rejected.append((card, "the reviewer did not rule on this card"))
             continue
         if v.verdict != "answerable":
             rejected.append((card, f"{v.verdict}: {v.reason}"))

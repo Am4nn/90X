@@ -98,7 +98,13 @@ def difficulty_by_slug(index_page: str) -> dict[str, str]:
 
 
 def parse_all(source_dir: Path = SOURCE_DIR) -> list[dict]:
-    index = (source_dir / "_index.html").read_text(encoding="utf-8", errors="replace")
+    # Evidence, not a dependency: without the download, lessons still get
+    # written, they just cite no real interview questions. Raising here used to
+    # stop every topic, including the ones that never wanted this source.
+    index_path = source_dir / "_index.html"
+    if not index_path.exists():
+        return []
+    index = index_path.read_text(encoding="utf-8", errors="replace")
     meta = rows_by_slug(index)
     out = []
     for path in sorted(source_dir.glob("*.html")):

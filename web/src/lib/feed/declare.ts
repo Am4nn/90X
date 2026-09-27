@@ -16,7 +16,7 @@ const MIN_ANSWERS = 3;
 /** ...and this share of the topic's cards, so the bar scales with topic size. */
 const MIN_SHARE = 1 / 3;
 
-export type TopicRecord = { answers: { outcome: Outcome }[]; cardsInTopic: number };
+export type TopicRecord = { answers: { outcome: Outcome; cardId: string }[]; cardsInTopic: number };
 
 // A skip counts against you here, unlike in accuracy. Answering three cards
 // and skipping five is not evidence that you know the topic; it is evidence
@@ -24,11 +24,21 @@ export type TopicRecord = { answers: { outcome: Outcome }[]; cardsInTopic: numbe
 // nothing either way.
 const isAttempt = (outcome: Outcome) => outcome === "correct" || outcome === "wrong" || outcome === "skipped";
 
-/** Whether the reader has earned the right to retire a card on this topic. */
+/** Whether the reader has earned the right to retire a card on this topic.
+ *
+ * Coverage counts DISTINCT cards, not answers. A due card answered four times
+ * over four days is one card's worth of evidence, and counting the rows would
+ * let someone clear a twelve-card topic having seen one of them, then retire
+ * the other eleven unseen. */
 export function canDeclareKnown({ answers, cardsInTopic }: TopicRecord): boolean {
   const tried = answers.filter((a) => isAttempt(a.outcome));
-  if (tried.length < MIN_ANSWERS) return false;
-  if (cardsInTopic > 0 && tried.length < Math.ceil(cardsInTopic * MIN_SHARE)) return false;
-  const correct = tried.filter((a) => a.outcome === "correct").length;
-  return correct / tried.length >= MIN_ACCURACY;
+  const distinct = new Set(tried.map((a) => a.cardId));
+  if (distinct.size < MIN_ANSWERS) return false;
+  if (cardsInTopic > 0 && distinct.size < Math.ceil(cardsInTopic * MIN_SHARE)) return false;
+  // Accuracy is the latest answer per card, so repeated attempts on one card
+  // cannot outvote the rest of the topic either.
+  const latest = new Map<string, Outcome>();
+  for (const a of tried) latest.set(a.cardId, a.outcome);
+  const correct = [...latest.values()].filter((o) => o === "correct").length;
+  return correct / latest.size >= MIN_ACCURACY;
 }

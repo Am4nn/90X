@@ -93,12 +93,15 @@ def _staging_rows(con, table: str, columns: list[str]) -> list[tuple]:
         # Only lessons that passed the contract and the fact check are published.
         by_id = {r[0]: r for r in _source_rows(con)}
         rows = con.execute(
-            "select topic_slug, title, body_md, practice, source_refs, words, generated_at "
+            "select topic_slug, title, summary, body_md, practice, source_refs, words, generated_at "
             "from lessons where status = 'ok'"
         ).fetchall()
         # Column order must match TABLES: topic_slug, title, summary, body_md, ...
-        return [(slug, title, _first_sentence(body), body, _with_titles(practice), _sources_of(refs, by_id), words, at)
-                for slug, title, body, practice, refs, words, at in rows]
+        # The writer's own summary is what lists and search show; the opening
+        # sentence is only a fallback for lessons written before it was stored.
+        return [(slug, title, summary or _first_sentence(body), body, _with_titles(practice),
+                 _sources_of(refs, by_id), words, at)
+                for slug, title, summary, body, practice, refs, words, at in rows]
     if table == "topics":  # parents before children
         rows = con.execute(f"select {', '.join(columns)} from topics order by parent_slug is not null, sort").fetchall()
         return rows

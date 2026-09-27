@@ -24,7 +24,10 @@ from .context import for_topic
 from .write import render, write
 
 PASSES = 4  # write, a correction pass for soft findings, and rewrites for false ones
-WORKERS = 4  # topics in flight; the writer waits on the API, not on us
+WORKERS = 14  # topics in flight
+# Not a CPU number. A worker spends almost all its time waiting on an HTTP
+# response - the whole run uses about half a second of CPU per 45 seconds - so
+# cores are irrelevant and the ceiling is the provider's rate limit.
 
 
 def topics_to_write(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
@@ -87,13 +90,14 @@ def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier:
                 softened = True
                 notes = verify.notes(findings)
                 continue
-            return {"body": body, "refs": refs, "linked": linked, "problems": "",
-                    "findings": [f.model_dump() for f in findings]}
+            return {"body": body, "summary": lesson.summary, "refs": refs, "linked": linked,
+                    "problems": "", "findings": [f.model_dump() for f in findings]}
         notes = verify.notes(findings)
 
     unresolved = [f for f in findings if f.verdict == "wrong"]
     return {
         "body": body,
+        "summary": lesson.summary,
         "refs": refs,
         "linked": linked,
         "problems": "; ".join(problems) if problems else f"{len(unresolved)} false claims unresolved",
@@ -104,10 +108,10 @@ def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier:
 def save(con, topic: dict, result: dict) -> None:
     con.execute(
         """insert or replace into lessons
-           (topic_slug, title, body_md, source_refs, practice, findings, words, status, problems, generated_at)
-           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (topic_slug, title, summary, body_md, source_refs, practice, findings, words, status, problems, generated_at)
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         [
-            topic["slug"], topic["name"], result["body"], json.dumps(result["refs"]),
+            topic["slug"], topic["name"], result.get("summary"), result["body"], json.dumps(result["refs"]),
             json.dumps(result["linked"]), json.dumps(result["findings"]),
             checks.word_count(result["body"]),
             "failed" if result["problems"] else "ok", result["problems"] or None,

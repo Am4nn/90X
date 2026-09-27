@@ -510,7 +510,7 @@ async function eligibleTopics(userId: string, slugs: string[], q: Db = db): Prom
   if (!wanted.length) return new Set();
   const [answers, counts] = await Promise.all([
     q
-      .select({ topic: cards.topicSlug, outcome: cardReviews.outcome })
+      .select({ topic: cards.topicSlug, outcome: cardReviews.outcome, cardId: cardReviews.cardId })
       .from(cardReviews)
       .innerJoin(cards, eq(cards.id, cardReviews.cardId))
       .where(and(eq(cardReviews.userId, userId), inArray(cards.topicSlug, wanted))),
@@ -520,9 +520,9 @@ async function eligibleTopics(userId: string, slugs: string[], q: Db = db): Prom
       .where(and(inArray(cards.topicSlug, wanted), eq(cards.status, "live")))
       .groupBy(cards.topicSlug),
   ]);
-  const byTopic = new Map(wanted.map((slug) => [slug, [] as { outcome: import("./grade").Outcome }[]]));
+  const byTopic = new Map(wanted.map((slug) => [slug, [] as { outcome: import("./grade").Outcome; cardId: string }[]]));
   for (const a of answers) {
-    if (a.topic) byTopic.get(a.topic)?.push({ outcome: a.outcome as import("./grade").Outcome });
+    if (a.topic) byTopic.get(a.topic)?.push({ outcome: a.outcome as import("./grade").Outcome, cardId: a.cardId });
   }
   const cardCount = new Map(counts.flatMap((c) => (c.topic ? [[c.topic, c.n]] : [])));
   return new Set(wanted.filter((slug) => canDeclareKnown({ answers: byTopic.get(slug) ?? [], cardsInTopic: cardCount.get(slug) ?? 0 })));
@@ -533,7 +533,7 @@ async function topicRecord(userId: string, topicSlug: string | null, q: Db = db)
   if (!topicSlug) return { answers: [], cardsInTopic: 0 };
   const [answers, [count]] = await Promise.all([
     q
-      .select({ outcome: cardReviews.outcome })
+      .select({ outcome: cardReviews.outcome, cardId: cardReviews.cardId })
       .from(cardReviews)
       .innerJoin(cards, eq(cards.id, cardReviews.cardId))
       .where(and(eq(cardReviews.userId, userId), eq(cards.topicSlug, topicSlug))),
@@ -543,7 +543,7 @@ async function topicRecord(userId: string, topicSlug: string | null, q: Db = db)
       .where(and(eq(cards.topicSlug, topicSlug), eq(cards.status, "live"))),
   ]);
   return {
-    answers: answers.map((a) => ({ outcome: a.outcome as import("./grade").Outcome })),
+    answers: answers.map((a) => ({ outcome: a.outcome as import("./grade").Outcome, cardId: a.cardId })),
     cardsInTopic: count?.n ?? 0,
   };
 }
