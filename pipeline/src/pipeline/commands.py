@@ -124,6 +124,40 @@ def lesson_cards(args, con) -> None:
     print(f"cards: {kept} kept, {rejected} rejected ({share:.0%}), spend ${llm.spend_usd(con):.2f}")
 
 
+def consistency(args, con) -> None:
+    import json
+    from pathlib import Path
+
+    from . import llm
+    from .config import REPO_DIR
+    from .lessons import consistency as c
+    from .lessons import run as lesson_run
+
+    ai = llm.LLM(con)
+    found = c.run(con, ai, domains=args.domains or None, tier=args.tier)
+    out = Path(REPO_DIR) / ".planning" / "lesson-contradictions.md"
+    lines = ["# Claims that disagree across lessons", "",
+             f"{len(found)} found." if found else "None found.", ""]
+    for x in found:
+        lines += [f"## {x['domain']}: {', '.join(x['topics'])}", "",
+                  f"- **They disagree:** {x['disagreement']}",
+                  f"- **Correct:** {x['correct']}",
+                  f"- **Rewriting:** `{x['fix']}`", ""]
+    out.write_text("
+".join(lines), encoding="utf-8")
+    print(f"{len(found)} contradictions, written to {out}")
+
+    if args.fix and found:
+        # Each named lesson is rewritten once, carrying the correction.
+        for slug in sorted({x["fix"] for x in found}):
+            notes = "
+".join(f"- [contradicts {', '.join(t for t in x['topics'] if t != slug)}] {x['correct']}"
+                               for x in found if x["fix"] == slug)
+            con.execute("update lessons set status = 'draft', problems = ? where topic_slug = ?", [notes, slug])
+        print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them")
+    print(f"spend ${llm.spend_usd(con):.2f}")
+
+
 def card_review(args, con) -> None:
     from pathlib import Path
 
@@ -191,7 +225,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

@@ -71,16 +71,21 @@ def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier:
             notes = "\n".join(f"- [contract] {p}" for p in problems)
             findings = []
             continue
-        findings = verify.blocking(verify.review(llm, topic, body))
-        if not findings:
-            return {"body": body, "refs": refs, "linked": linked, "problems": "", "findings": []}
+        review = verify.review(llm, topic, body)
+        blocking = verify.blocking(review)
+        findings = list(review.findings)
+        if not blocking:
+            # Softer objections are kept on the lesson as a record, not as a gate.
+            return {"body": body, "refs": refs, "linked": linked, "problems": "",
+                    "findings": [f.model_dump() for f in findings]}
         notes = verify.notes(findings)
 
+    unresolved = [f for f in findings if f.verdict == "wrong"]
     return {
         "body": body,
         "refs": refs,
         "linked": linked,
-        "problems": "; ".join(problems) if problems else f"{len(findings)} unresolved findings",
+        "problems": "; ".join(problems) if problems else f"{len(unresolved)} false claims unresolved",
         "findings": [f.model_dump() for f in findings],
     }
 

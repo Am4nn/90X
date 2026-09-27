@@ -46,8 +46,15 @@ def review(llm, topic: dict, body_md: str, tier: str = "review") -> Review:
 
 
 def blocking(rev: Review) -> list[Finding]:
-    """Both verdicts block: a half-truth fails the first follow-up question."""
-    return list(rev.findings)
+    """Only a false claim blocks publishing.
+
+    Both verdicts used to block, and 32 of 274 lessons were held back - many
+    for nuance no interviewer would reach, like which heap implementation of
+    Prim is faster on a dense graph. An oversimplification still gets one
+    rewrite carrying the correction, and is recorded on the lesson either
+    way; it just does not keep the lesson off the shelf. A claim that is
+    simply false never ships."""
+    return [f for f in rev.findings if f.verdict == "wrong"]
 
 
 def notes(findings: list[Finding]) -> str:

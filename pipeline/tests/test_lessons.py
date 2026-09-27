@@ -239,3 +239,28 @@ def test_refs_stop_at_the_character_budget(monkeypatch):
     ]
     _, refs = ctx.for_topic({"name": "Caching", "description": ""}, docs)
     assert refs == ["first"], refs
+
+
+def test_only_a_false_claim_keeps_a_lesson_off_the_shelf():
+    """Both verdicts used to block and held back 32 of 274 lessons, many for
+    nuance no interviewer would reach. A wrong claim still never ships."""
+    from pipeline.lessons.verify import Finding, Review, blocking, notes
+
+    review = Review(
+        findings=[
+            Finding(claim="Prim is faster on dense graphs", verdict="oversimplified",
+                    correction="An array implementation is O(V^2) and beats a binary heap there."),
+            Finding(claim="TCP is connectionless", verdict="wrong",
+                    correction="TCP is connection-oriented."),
+        ]
+    )
+    assert [f.verdict for f in blocking(review)] == ["wrong"]
+    # The rewrite still sees both, so a softened claim gets its correction.
+    assert "oversimplified" in notes(review.findings) and "wrong" in notes(review.findings)
+
+
+def test_a_lesson_with_only_soft_objections_publishes():
+    from pipeline.lessons.verify import Finding, Review, blocking
+
+    soft = Review(findings=[Finding(claim="Mostly right", verdict="oversimplified", correction="Needs a condition.")])
+    assert blocking(soft) == []
