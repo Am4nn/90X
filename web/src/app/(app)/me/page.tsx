@@ -34,10 +34,10 @@ export default async function MePage() {
   const enabled = syncEnabled();
   const [status, pendingTime] = enabled ? await Promise.all([leetcodeStatus(viewer.id), syncedWithoutTime(viewer.id)]) : [null, []];
   const t = status?.totals;
-  // The dial's number is computed and saved first, so "You" on the scoreboard reads the same one.
-  const mine = await myDashboard(viewer.id, viewer.timezone);
-  const [people, activity, mocks, weekly, stories, [prefs]] = await Promise.all([
-    scoreboard(viewer.id),
+  // The scoreboard waits for the dial's number to be computed and saved, so "You" reads the same one.
+  const dashboard = myDashboard(viewer.id, viewer.timezone).then(async (mine) => ({ mine, people: await scoreboard(viewer.id) }));
+  const [{ mine, people }, activity, mocks, weekly, stories, [prefs]] = await Promise.all([
+    dashboard,
     friendActivity(viewer.id),
     friendMocks(viewer.id),
     latestWeekly(viewer.id),

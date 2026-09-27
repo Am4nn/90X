@@ -312,14 +312,18 @@ try {
         values (${r5}, ${liveCard?.id}, 'x', 1, 'correct', 'match', ${new Date(now.getTime() - i * 1000).toISOString()})`);
     }
     await onCardAnswered(r5, tx, now);
+    const r5CardsAfter = await tx
+      .select({ status: missions.status })
+      .from(missions)
+      .where(and(eq(missions.userId, r5), eq(missions.date, today), eq(missions.slotType, "cards")));
     const [r5Day] = await tx
       .select({ status: days.status })
       .from(days)
       .where(and(eq(days.userId, r5), eq(days.date, r5Yesterday)));
     expect(
       "20 card answers finish today's card mission and the revived one, so the day is revived",
-      r5Day?.status === "revived",
-      r5Day?.status,
+      r5Day?.status === "revived" && r5CardsAfter.length === 2 && r5CardsAfter.every((m) => m.status === "done"),
+      JSON.stringify({ day: r5Day?.status, cards: r5CardsAfter.map((m) => m.status) }),
     );
 
     // Time zones: 06:00Z is still the 26th in Los Angeles.
