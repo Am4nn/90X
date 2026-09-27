@@ -505,7 +505,7 @@ export async function answerCard(
  *
  * Batched: the Feed prefetches several cards, and asking per card would be a
  * pair of queries each. */
-export async function eligibleTopics(userId: string, slugs: string[], q: Db = db): Promise<Set<string>> {
+async function eligibleTopics(userId: string, slugs: string[], q: Db = db): Promise<Set<string>> {
   const wanted = [...new Set(slugs.filter(Boolean))];
   if (!wanted.length) return new Set();
   const [answers, counts] = await Promise.all([
@@ -529,7 +529,7 @@ export async function eligibleTopics(userId: string, slugs: string[], q: Db = db
 }
 
 /** What the reader has done on a card's topic, for the "I already know this" gate. */
-export async function topicRecord(userId: string, topicSlug: string | null, q: Db = db) {
+async function topicRecord(userId: string, topicSlug: string | null, q: Db = db) {
   if (!topicSlug) return { answers: [], cardsInTopic: 0 };
   const [answers, [count]] = await Promise.all([
     q

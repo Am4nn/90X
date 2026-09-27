@@ -12,7 +12,6 @@ export type Outcome = "correct" | "wrong" | "skipped" | "new_to_me" | "known";
  * weakness and session counts. Treating them as answers would let either
  * button quietly move the readiness score. */
 export const isGraded = (outcome: string): boolean => outcome === "correct" || outcome === "wrong";
-export const isDeclared = (outcome: string): boolean => outcome === "new_to_me" || outcome === "known";
 /** Again, Hard, Good, Easy (same numbers as ts-fsrs Rating). */
 export type Rating = 1 | 2 | 3 | 4;
 

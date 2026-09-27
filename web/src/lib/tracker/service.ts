@@ -133,7 +133,7 @@ async function buildPlan(
   exclude = new Set<string>(),
 ) {
   const slots = campaign.templates[weekday(forDate)];
-  const [map, candidates, attempted, due, topicRows, studied, scores, liveCards] = await Promise.all([
+  const [map, candidates, attempted, due, topicRows, studied, scores, liveCards, declaredNew] = await Promise.all([
     patternMap(userId, q),
     q
       .select({
@@ -165,6 +165,13 @@ async function buildPlan(
       .from(cards)
       .where(and(eq(cards.status, "live"), eq(cards.hidden, false)))
       .limit(1),
+    // Topics the reader told the Feed they had not met. A declared gap beats
+    // any inference from importance when the planner picks a topic mission.
+    q
+      .selectDistinct({ slug: cards.topicSlug })
+      .from(cardReviews)
+      .innerJoin(cards, eq(cards.id, cardReviews.cardId))
+      .where(and(eq(cardReviews.userId, userId), eq(cardReviews.outcome, "new_to_me"))),
   ]);
   return planDay({
     date: today,
@@ -180,6 +187,7 @@ async function buildPlan(
     attempted: new Set([...attempted.map((a) => a.slug), ...exclude]),
     topics: topicRows.map((t) => ({ ...t, importance: t.importance ?? 0 })),
     studied: new Set([...studied.map((s) => s.slug), ...exclude]),
+    declaredNew: new Set(declaredNew.flatMap((d) => (d.slug ? [d.slug] : []))),
     areaScores: scores,
     hasPremium,
     companyFocus: campaign.companyFocus,

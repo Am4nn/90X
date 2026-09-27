@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { answersUntilKnown, canDeclareKnown } from "./declare";
+import { canDeclareKnown } from "./declare";
 
 const answers = (correct: number, wrong = 0) => [
   ...Array.from({ length: correct }, () => ({ outcome: "correct" as const })),
@@ -39,10 +39,5 @@ describe("canDeclareKnown", () => {
     expect(canDeclareKnown({ answers: avoided, cardsInTopic: 8 })).toBe(false);
     // One skip among four clean answers still clears 80%.
     expect(canDeclareKnown({ answers: [...answers(4), { outcome: "skipped" }], cardsInTopic: 8 })).toBe(true);
-  });
-
-  it("says how many answers are still needed", () => {
-    expect(answersUntilKnown({ answers: answers(1), cardsInTopic: 12 })).toBe(3);
-    expect(answersUntilKnown({ answers: answers(4), cardsInTopic: 12 })).toBe(0);
   });
 });

@@ -11,12 +11,10 @@ import type { Outcome } from "./grade";
 // mean answering nearly all of them before the button appeared, leaving
 // nothing to retire and making the feature pointless.
 
-export const DECLARED: Outcome[] = ["new_to_me", "known"];
-
-export const MIN_ACCURACY = 0.8;
-export const MIN_ANSWERS = 3;
+const MIN_ACCURACY = 0.8;
+const MIN_ANSWERS = 3;
 /** ...and this share of the topic's cards, so the bar scales with topic size. */
-export const MIN_SHARE = 1 / 3;
+const MIN_SHARE = 1 / 3;
 
 export type TopicRecord = { answers: { outcome: Outcome }[]; cardsInTopic: number };
 
@@ -33,11 +31,4 @@ export function canDeclareKnown({ answers, cardsInTopic }: TopicRecord): boolean
   if (cardsInTopic > 0 && tried.length < Math.ceil(cardsInTopic * MIN_SHARE)) return false;
   const correct = tried.filter((a) => a.outcome === "correct").length;
   return correct / tried.length >= MIN_ACCURACY;
-}
-
-/** How many more answers are needed, for the UI to explain the lock. */
-export function answersUntilKnown({ answers, cardsInTopic }: TopicRecord): number {
-  const graded = answers.filter((a) => isAttempt(a.outcome)).length;
-  const needed = Math.max(MIN_ANSWERS, cardsInTopic > 0 ? Math.ceil(cardsInTopic * MIN_SHARE) : 0);
-  return Math.max(0, needed - graded);
 }
