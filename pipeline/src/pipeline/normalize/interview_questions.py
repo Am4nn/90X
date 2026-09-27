@@ -48,6 +48,36 @@ def links(page: str) -> list[str]:
     return sorted({u for u in re.findall(r"https?://[^\s\"'<>]+", _text(page)) if "systemdesign.io" not in u})
 
 
+def rows_by_slug(index_page: str) -> dict[str, dict]:
+    """Difficulty and companies per question, read from its own table row.
+
+    The row is four cells: number, title, companies, difficulty. The company
+    cell is the real prize - "Google Amazon Microsoft Doordash + 2" is who
+    actually asks this question, which is the evidence a lesson should cite
+    instead of guessing at what is popular.
+    """
+    out: dict[str, dict] = {}
+    for row in re.split(r"(?i)<tr\b", index_page)[1:]:
+        m = re.search(r'href="/question/([a-z0-9-]+)"', row)
+        if not m or m.group(1) in out:
+            continue
+        # Fixed columns: number, title, companies, difficulty. Reading them by
+        # position beats guessing, which picked words out of the title.
+        cells = re.findall(r"(?is)<td\b.*?</td>", row)
+        if len(cells) < 4:
+            continue
+        level = next((d for d in DIFFICULTIES if _text(cells[3]).strip() == d), None)
+        # Each company is its own element; the trailing "+ 2" counts the ones
+        # the site does not name, so it drops out with the non-element text.
+        companies = [
+            name
+            for chunk in re.split(r"(?is)<[^>]+>", cells[2])
+            if (name := html.unescape(chunk).strip()) and not re.fullmatch(r"\+?\s*\d*", name)
+        ]
+        out[m.group(1)] = {"difficulty": level, "companies": companies}
+    return out
+
+
 def difficulty_by_slug(index_page: str) -> dict[str, str]:
     """Difficulty per question, read from its own table row.
 
@@ -69,7 +99,7 @@ def difficulty_by_slug(index_page: str) -> dict[str, str]:
 
 def parse_all(source_dir: Path = SOURCE_DIR) -> list[dict]:
     index = (source_dir / "_index.html").read_text(encoding="utf-8", errors="replace")
-    levels = difficulty_by_slug(index)
+    meta = rows_by_slug(index)
     out = []
     for path in sorted(source_dir.glob("*.html")):
         if path.name == "_index.html":
@@ -81,7 +111,8 @@ def parse_all(source_dir: Path = SOURCE_DIR) -> list[dict]:
             "slug": slug,
             "kind": "system_design",
             "title": title_of(page),
-            "difficulty": levels.get(slug),
+            "difficulty": (meta.get(slug) or {}).get("difficulty"),
+            "companies": (meta.get(slug) or {}).get("companies") or [],
             "follow_ups": follow_ups(page),
             "links": links(page),
             "source_id": "systemdesign-io",

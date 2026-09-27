@@ -20,8 +20,10 @@ TABLES = [
                             "solutions", "video_id", "url", "source_id"]),
     ("documents", ["id"], ["id", "topic_slug", "domain", "title", "body_md", "url", "source_id", "sort"]),
     ("pattern_tricks", ["id"], ["id", "pattern_slug", "name", "idea_md", "snippets", "problem_slugs", "sort"]),
+    ("lessons", ["topic_slug"], ["topic_slug", "title", "summary", "body_md", "practice", "source_refs",
+                                 "words", "generated_at"]),
 ]
-JSON_COLUMNS = {"companies", "solutions", "snippets"}
+JSON_COLUMNS = {"companies", "solutions", "snippets", "practice", "source_refs"}
 ARRAY_COLUMNS = {"topic_slugs", "tags", "techniques", "problem_slugs"}
 
 
@@ -35,9 +37,50 @@ def _source_rows(con) -> list[tuple]:
     return list(rows.values())
 
 
+def _with_titles(practice) -> str:
+    """Practice holds slugs; the app needs something to display.
+
+    Problem slugs resolve against our own `problems` table, but the real
+    interview questions live only in the scraped pages, so their titles are
+    folded in here rather than making the app parse HTML."""
+    data = json.loads(practice) if isinstance(practice, str) else (practice or {})
+    slugs = data.get("questions") or []
+    if slugs:
+        from .normalize.interview_questions import parse_all
+
+        by_slug = {q["slug"]: q for q in parse_all()}
+        data["questions"] = [
+            {
+                "slug": s,
+                "title": by_slug[s]["title"],
+                "difficulty": by_slug[s]["difficulty"],
+                "url": f"https://systemdesign.io/question/{s}",
+            }
+            for s in slugs
+            if s in by_slug
+        ]
+    return json.dumps(data)
+
+
+def _first_sentence(text: str, limit: int = 200) -> str:
+    """A lesson opens with its definition, so its first sentence is its summary."""
+    head = text.strip().splitlines()[0] if text.strip() else ""
+    cut = head.find(". ")
+    sentence = head[: cut + 1] if cut > 0 else head
+    return sentence[:limit].strip()
+
+
 def _staging_rows(con, table: str, columns: list[str]) -> list[tuple]:
     if table == "sources":
         return _source_rows(con)
+    if table == "lessons":
+        # Only lessons that passed the contract and the fact check are published.
+        rows = con.execute(
+            "select topic_slug, title, body_md, practice, source_refs, words, generated_at "
+            "from lessons where status = 'ok'"
+        ).fetchall()
+        return [(slug, title, _first_sentence(body), _with_titles(practice), refs, words, at)
+                for slug, title, body, practice, refs, words, at in rows]
     if table == "topics":  # parents before children
         rows = con.execute(f"select {', '.join(columns)} from topics order by parent_slug is not null, sort").fetchall()
         return rows

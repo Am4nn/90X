@@ -96,9 +96,12 @@ def for_topic(con, topic: dict, questions: list[dict] | None = None) -> tuple[st
             linked["questions"] = [q["slug"] for q in found]
             for q in found:
                 ladder = "\n".join(f"    {i}. {f}" for i, f in enumerate(q["follow_ups"], 1))
+                asked_at = ", ".join(q.get("companies") or [])
                 parts.append(
-                    f"A real interview question on this topic: \"{q['title']}\" ({q['difficulty']}).\n"
-                    f"  The follow-ups interviewers actually probe with, in the order they escalate:\n{ladder}"
+                    f"A real interview question on this topic: \"{q['title']}\" ({q['difficulty']})"
+                    + (f", asked at {asked_at}" if asked_at else "")
+                    + ".\n  The follow-ups interviewers actually probe with, in the order they escalate:\n"
+                    + ladder
                 )
 
     return "\n\n".join(parts), linked
