@@ -9,6 +9,7 @@
     "lint": "eslint . --max-warnings=0 && oxlint --deny-warnings",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "db:start": "supabase start --workdir ..",
     "db:stop": "supabase stop --workdir ..",
     "db:reset": "supabase db reset --workdir ..",
@@ -27,7 +28,8 @@
     "check:deps": "bun run scripts/check-deps.ts",
     "check:actions": "bun run scripts/check-actions.ts",
     "check:grading": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-grading.ts",
-    "check:feed": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-feed.ts"
+    "check:feed": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-feed.ts",
+    "check:coach": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-coach.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",
@@ -59,6 +61,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

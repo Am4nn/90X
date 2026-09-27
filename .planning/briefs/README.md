@@ -2,10 +2,9 @@
 
 90x is a small, invite-only interview-prep app (Aman and friends). You are one of several agents building it in parallel; another agent (the "lead") reviews your pull request before it is merged. Follow this file and your brief exactly.
 
-## Ask when in doubt
+## Decide, don't ask
 
-- The owner (Aman) is watching your session. **If something in the brief is ambiguous, contradicts the code, or needs a product decision, stop and ask him in the session** with a short question and 2–3 concrete options (recommended first). Do not guess on product behaviour.
-- If you cannot ask (no reply), pick the option closest to the spec, keep going, and list it under **Decisions** in the PR description with what it would cost if wrong.
+- **Don't ask the owner questions** — he isn't answering them. When something in the brief is ambiguous, contradicts the code, or needs a product decision, pick the option closest to the spec and the plan's Decisions, keep going, and list it under **Decisions** in the PR description with what it would cost if wrong. The lead reviews every decision before merging.
 - Never widen scope: do only what the brief says. Ideas for more go under **Suggestions** in the PR.
 
 ## Source of truth
