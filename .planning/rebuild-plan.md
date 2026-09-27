@@ -87,3 +87,11 @@ exposure, and it is exactly what the "New to me" button addresses. Aman chose
 "weak means weak at something you've met" on the strength of my wrong claim;
 the behaviour he chose is what the code already did, so the decision stands
 either way. Pinned with tests so it cannot drift.
+
+## Later, agreed but not now (2026-09-28)
+
+Coach should be able to write a lesson on demand when the existing ones do
+not cover what the reader is asking about - through the same pipeline this
+rebuild established, not a shortcut: the structural contract, the independent
+fact check, and the answerability gate on any cards it spawns. Aman's call:
+worth having, after the current content is in.
