@@ -3,4 +3,4 @@
 // import "./chat"; (brief E)
 // import "./lesson"; import "./review"; (brief F)
 // import "./mock"; (brief G)
-export {};
+export const MODES_LOADED = true;
