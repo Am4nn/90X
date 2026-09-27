@@ -209,3 +209,17 @@ def test_a_rejected_card_is_repaired_before_it_is_discarded():
     assert len(kept) == 6, f"3 good plus 3 repaired, got {len(kept)}"
     assert rejected == []
     assert all(0 <= c <= 1 for c in confidence.values())
+
+
+def test_a_card_id_follows_its_question_not_its_position():
+    """Keying on position meant the gate changing its mind about one card
+    moved every later card's id, so published study history could attach to a
+    different question."""
+    from pipeline.cards.run_lessons import card_id
+
+    first = card_id("sliding-window", "Why is it O(n) despite the nested loop?")
+    assert first == card_id("sliding-window", "Why is it O(n) despite the nested loop?")
+    # Reflowed whitespace is the same question.
+    assert first == card_id("sliding-window", "  Why is it O(n)   despite the nested loop?\n")
+    assert first != card_id("sliding-window", "When does the technique stop working?")
+    assert first != card_id("two-pointers", "Why is it O(n) despite the nested loop?")

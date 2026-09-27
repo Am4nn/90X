@@ -22,6 +22,17 @@ WORKERS = 4
 CARD_NAMESPACE = uuid.UUID("90c0de00-0000-4000-8000-000000000001")
 
 
+def card_id(topic_slug: str, prompt: str) -> str:
+    """A card's identity is its question, not where it landed in the list.
+
+    Keying on position meant a card's id moved whenever the gate changed its
+    mind about an earlier card, so published study history could end up
+    attached to a different question, and `on conflict do nothing` could leave
+    the old question sitting under that id. The question is what the reader
+    answered, so the question is the identity."""
+    return str(uuid.uuid5(CARD_NAMESPACE, f"{topic_slug}:{' '.join(prompt.split())}"))
+
+
 def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
     rows = con.execute(
         """
@@ -78,15 +89,14 @@ def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confi
     # lesson card never reaches the review screen, which is where Aman looks.
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     # public.cards.id is a uuid, so a readable "slug:l0" id would never publish.
-    # uuid5 keeps it deterministic: regenerating a topic reuses the same ids.
-    for i, (card, reason) in enumerate(rows):
+    for card, reason in rows:
         con.execute(
             """insert or replace into cards
                (id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points,
                 source_refs, quality, kept, status, source, reject_reason, created_at)
                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?, ?)""",
             [
-                str(uuid.uuid5(CARD_NAMESPACE, f"{topic['slug']}:{i}")), topic["slug"], card.format, card.difficulty, card.prompt,
+                card_id(topic["slug"], card.prompt), topic["slug"], card.format, card.difficulty, card.prompt,
                 json.dumps(card.options) if card.options else None, card.answer,
                 json.dumps(card.key_points), refs,
                 json.dumps({"gate_confidence": confidence.get(id(card), 0.5)}),

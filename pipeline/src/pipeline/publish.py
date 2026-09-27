@@ -184,15 +184,24 @@ def _retire_superseded_cards(con, cur, force: bool) -> int:
     cur.execute("create temp table _staged_cards (id uuid) on commit drop")
     if staged:
         cur.executemany("insert into _staged_cards values (%s)", [[i] for i in staged])
-    cur.execute(
-        """select count(*) from public.card_reviews r
-           where not exists (select 1 from _staged_cards s where s.id = r.card_id)"""
-    )
-    at_risk = cur.fetchone()[0]
+    # What a person cannot get back: their answers and the spaced-repetition
+    # schedule those answers earned. A card's flags and its admin batch verdict
+    # cascade too, but they are bookkeeping about the card, meaningless once
+    # the card is gone, and blocking on them would mean every retirement needs
+    # --force, which is how a guard stops being read.
+    at_risk = {}
+    for table, label in (("card_reviews", "answers"), ("card_state", "review schedules")):
+        cur.execute(
+            f"""select count(*) from public.{table} t
+                where not exists (select 1 from _staged_cards s where s.id = t.card_id)"""
+        )
+        if found := cur.fetchone()[0]:
+            at_risk[label] = found
     if at_risk and not force:
+        detail = ", ".join(f"{n} {label}" for label, n in at_risk.items())
         raise StudyHistoryAtRisk(
-            f"{at_risk} card answers belong to cards staging no longer has. Deleting them "
-            "would erase that study history. Re-run with force=True only if you mean it."
+            f"{detail} belong to cards staging no longer has. Deleting them would erase "
+            "that history. Re-run with force=True only if you mean it."
         )
     cur.execute("delete from public.cards c where not exists (select 1 from _staged_cards s where s.id = c.id)")
     return cur.rowcount

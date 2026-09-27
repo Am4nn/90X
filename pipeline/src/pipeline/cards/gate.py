@@ -32,6 +32,7 @@ How the formats actually work here, because this decides most of your verdicts:
 - A typed card is only "wrong_format" when its honest answer is a list of items to enumerate ("name the four isolation levels"), where the candidate cannot know how many you want, or when it genuinely needs several paragraphs to answer at all.
 - "flash" is one crisp sentence. Flag it if the honest answer needs a paragraph.
 - "mcq" needs four options with one unambiguously correct.
+- "output" shows a short code snippet and asks what it prints or returns. It is graded by exact match, so it is fair only when the expected output is unambiguous - no timestamps, no hash ordering, no locale. Flag it when the snippet could print more than one thing, not for being a code question.
 - "ambiguous": you cannot tell what is being asked, or several different answers would all be correct.
 
 Give `confidence` from 0 to 1 on every card: how sure you are it is fair and well formed. A card you would happily put in front of a candidate is near 1. A card you are letting through with reservations is near 0.5. The review screen shows the least confident cards first, so this decides what a human looks at.

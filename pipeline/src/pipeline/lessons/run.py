@@ -23,21 +23,22 @@ from . import verify
 from .context import for_topic
 from .write import render, write
 
-PASSES = 3  # write, then up to two rewrites carrying the reviewer's corrections
+PASSES = 4  # write, a correction pass for soft findings, and rewrites for false ones
 WORKERS = 4  # topics in flight; the writer waits on the API, not on us
 
 
 def topics_to_write(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
     rows = con.execute(
         """
-        select t.slug, t.name, t.domain, t.description, t.importance, p.name as parent_name
+        select t.slug, t.name, t.domain, t.description, t.importance, p.name as parent_name,
+               (select l.problems from lessons l where l.topic_slug = t.slug) as carried_notes
         from topics t left join topics p on p.slug = t.parent_slug
         where (? or t.slug not in (select topic_slug from lessons where status = 'ok'))
         order by t.importance desc, t.slug
         """,
         [redo],
     ).fetchall()
-    cols = ["slug", "name", "domain", "description", "importance", "parent_name"]
+    cols = ["slug", "name", "domain", "description", "importance", "parent_name", "carried_notes"]
     out = [dict(zip(cols, r)) for r in rows]
     if only:
         wanted = set(only)
@@ -56,12 +57,16 @@ def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier:
         lock=None) -> dict:
     """Write, fact-check, and rewrite once with the corrections."""
     context, refs = for_topic(topic, documents)
+    # `consistency --fix` leaves its correction on the lesson. Without this the
+    # rewrite it asks for runs without the finding that prompted it.
+    notes = topic.get("carried_notes") or ""
     if lock:
         with lock:
             evidence_text, linked = ev.for_topic(con, topic, questions)
     else:
         evidence_text, linked = ev.for_topic(con, topic, questions)
-    notes, findings = "", []
+    findings = []
+    softened = False
 
     for _ in range(PASSES):
         lesson = write(llm, topic, context, evidence=evidence_text, notes=notes, tier=tier)
@@ -75,7 +80,13 @@ def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier:
         blocking = verify.blocking(review)
         findings = list(review.findings)
         if not blocking:
-            # Softer objections are kept on the lesson as a record, not as a gate.
+            # A soft objection is not a gate, but it does earn one correction
+            # pass: the reviewer found something real, and the rewrite usually
+            # takes it. Whatever comes back after that is accepted.
+            if findings and not softened:
+                softened = True
+                notes = verify.notes(findings)
+                continue
             return {"body": body, "refs": refs, "linked": linked, "problems": "",
                     "findings": [f.model_dump() for f in findings]}
         notes = verify.notes(findings)
