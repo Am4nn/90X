@@ -100,6 +100,14 @@ serious bugs were caught (see below).
   Reset such state in the event handler instead.
 - **Vercel Hobby allows 300s** when Fluid Compute is on (it is, by default). A
   route timing out at 60s was our own `maxDuration = 60`, not the plan.
+- **Signing in on a preview deployment lands on production.** Supabase Auth
+  drops a `redirectTo` that isn't in its allow-list and silently falls back to
+  Site URL, so the preview looks like it redirects to prod on purpose. Fix is
+  one entry in Authentication → URL Configuration → Redirect URLs:
+  `https://90x-*-am4nns-projects.vercel.app/**` (`*` spans hyphens, not dots,
+  so it covers both deployment hashes and branch aliases). Note that previews
+  then sign in against the **production** database — there is no separate
+  Supabase project for them.
 
 ## Verifying work
 
