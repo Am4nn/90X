@@ -5,6 +5,7 @@ import Link from "next/link";
 import { after } from "next/server";
 import { z } from "zod";
 import { CoachChat } from "@/components/coach/chat";
+import { MockThreadHeader } from "@/components/coach/mock-thread-header";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { requireViewer } from "@/lib/auth/viewer";
@@ -16,6 +17,9 @@ import { extractQuietThreads, findThread, getThread, listThreads, type Thread, t
 import { localDate } from "@/lib/tracker/dates";
 
 export const metadata: Metadata = { title: "Coach" };
+
+// The mock header's End button (brief G) runs the scoring call from this page.
+export const maxDuration = 60;
 
 const KIND_LABEL: Record<CoachKind, string> = { chat: "Chat", lesson: "Lesson", review: "Solution review", mock: "Mock" };
 
@@ -63,7 +67,8 @@ function ThreadList({ threads, current, timezone }: { threads: Thread[]; current
 export default async function CoachPage({ searchParams }: PageProps<"/coach">) {
   const viewer = await requireViewer();
   const params = await searchParams;
-  const t = one(params.t);
+  // Brief G links a mock thread as ?kind=mock&ref=<mockId>&thread=<threadId>.
+  const t = one(params.t) ?? one(params.thread);
   const kindParam = COACH_KINDS.find((k) => k === one(params.kind));
   const refParam = one(params.ref)?.trim().slice(0, 200) || null;
   const draft = one(params.q)?.slice(0, 2000);
@@ -132,6 +137,7 @@ export default async function CoachPage({ searchParams }: PageProps<"/coach">) {
           <Link href="/coach" className="text-small font-semibold text-text-2 hover:text-text md:hidden">
             ← All chats
           </Link>
+          {kind === "mock" && ref && <MockThreadHeader userId={viewer.id} mockId={ref} />}
           {modeFor(kind) ? (
             <CoachChat
               key={threadId}
@@ -140,7 +146,8 @@ export default async function CoachPage({ searchParams }: PageProps<"/coach">) {
               refValue={ref}
               title={thread?.title || (kind === "chat" ? "New chat" : KIND_LABEL[kind])}
               initialMessages={stored as UIMessage[]}
-              ended={Boolean(thread?.memoryExtractedAt)}
+              // Mock threads end from the mock header, which scores and extracts memory itself.
+              ended={kind === "mock" || Boolean(thread?.memoryExtractedAt)}
               degraded={degraded}
               draft={draft}
               starters={KIND_STARTERS[kind]}

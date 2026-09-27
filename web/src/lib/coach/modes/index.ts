@@ -3,4 +3,4 @@
 import "./chat";
 import "./lesson";
 import "./review";
-// import "./mock"; (brief G)
+import "./mock";
