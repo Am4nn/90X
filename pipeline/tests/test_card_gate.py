@@ -113,3 +113,33 @@ def test_lesson_card_ids_are_stable_uuids():
     assert first != uuid.uuid5(CARD_NAMESPACE, "sliding-window:1")
     assert first != uuid.uuid5(CARD_NAMESPACE, "two-pointers:0")
     uuid.UUID(str(first))  # parses as a uuid, which Postgres requires
+
+
+def test_one_malformed_card_does_not_cost_the_whole_topic():
+    """A multiple-choice card with three options used to fail the whole set,
+    losing eleven good cards and the topic with it."""
+    from pipeline.cards.from_lessons import CardSet
+
+    good = {
+        "format": "typed",
+        "prompt": "Why does a hash map give O(1) average lookup?",
+        "answer": "Keys spread across buckets, so each holds a constant number.",
+        "key_points": ["hashing spreads keys", "buckets stay short"],
+        "difficulty": "Easy",
+    }
+    malformed = {**good, "format": "mcq", "answer": "not one of the options", "options": ["x", "y", "z"]}
+    kept = CardSet.model_validate({"cards": [good, malformed, good, good]}).cards
+    assert len(kept) == 3
+    assert all(c.format == "typed" for c in kept)
+
+
+def test_a_set_of_only_malformed_cards_still_fails():
+    import pytest
+    from pydantic import ValidationError
+
+    from pipeline.cards.from_lessons import CardSet
+
+    junk = {"format": "mcq", "prompt": "Which?", "answer": "nope", "key_points": ["a", "b"],
+            "difficulty": "Easy", "options": ["x"]}
+    with pytest.raises(ValidationError):
+        CardSet.model_validate({"cards": [junk, junk, junk]})

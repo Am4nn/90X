@@ -25,7 +25,13 @@ For each card, rule on whether a competent engineer who has studied this topic c
 
 - "answerable": a fair question with a knowable answer. The candidate may need to know the topic well, but nothing is missing.
 - "needs_context": it refers to something not present - a specific solution, passage, diagram, snippet, variable or example the candidate cannot see. Phrases like "the reference solution", "the given code", "in the example above", or a bare variable name such as d[x] with no setup are the signature.
-- "wrong_format": the question is fine but the format is not. The commonest case is a "typed" card whose honest answer is a list to enumerate, where free typing is unfair and it should be multiple choice. Also flag a "flash" card that really needs a paragraph.
+- "wrong_format": the question is fine but the format is not.
+
+How the formats actually work here, because this decides most of your verdicts:
+- "typed" is free prose of one to three sentences, graded by a model against key points. It is NOT an exact-match answer box. An open-ended conceptual question - "why does this work", "what is the trade-off", "when would you not use it" - is the BEST kind of typed card, not a wrong one. Do not flag a typed card for being conceptual, open-ended, or requiring explanation. That is the format working as intended.
+- A typed card is only "wrong_format" when its honest answer is a list of items to enumerate ("name the four isolation levels"), where the candidate cannot know how many you want, or when it genuinely needs several paragraphs to answer at all.
+- "flash" is one crisp sentence. Flag it if the honest answer needs a paragraph.
+- "mcq" needs four options with one unambiguously correct.
 - "ambiguous": you cannot tell what is being asked, or several different answers would all be correct.
 
 Give `confidence` from 0 to 1 on every card: how sure you are it is fair and well formed. A card you would happily put in front of a candidate is near 1. A card you are letting through with reservations is near 0.5. The review screen shows the least confident cards first, so this decides what a human looks at.

@@ -12,7 +12,7 @@ answer is an enumerable list ("along which dimensions can content negotiation
 vary?") is unfair to type and belongs in multiple choice.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 from .generate import Card
 
@@ -45,6 +45,24 @@ Write in plain, direct English."""
 
 class CardSet(BaseModel):
     cards: list[Card] = Field(min_length=3, max_length=12)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_malformed(cls, data):
+        """One bad card must not cost the eleven good ones beside it.
+
+        A multiple-choice card with three options, or an answer that is not
+        one of them, used to fail the whole set and lose the topic. It is
+        dropped instead; if too few survive, the set still fails."""
+        if isinstance(data, dict) and isinstance(data.get("cards"), list):
+            good = []
+            for item in data["cards"]:
+                try:
+                    good.append(Card.model_validate(item))
+                except ValidationError:
+                    continue
+            return {**data, "cards": good}
+        return data
 
 
 def for_lesson(llm, topic: dict, lesson_md: str, tier: str = "smart") -> list[Card]:
