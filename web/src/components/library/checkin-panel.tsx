@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { checkIn, type CheckinState } from "@/app/actions/checkin";
+import { button } from "@/components/button-styles";
 import { RESULTS, TIME_CHIPS } from "@/lib/library/checkin";
 
 const chip = (on: boolean) =>
@@ -74,20 +75,11 @@ export function CheckinPanel({ slug, leetcodeUrl }: { slug: string; leetcodeUrl:
       )}
       <div className="flex gap-2.5">
         {leetcodeUrl && (
-          <a
-            href={leetcodeUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="flex h-11 flex-1 items-center justify-center rounded-xl border border-line-2 font-semibold text-text"
-          >
+          <a href={leetcodeUrl} target="_blank" rel="noreferrer" className={`${button({ size: "lg" })} flex-1`}>
             Open on LeetCode
           </a>
         )}
-        <button
-          disabled={pending}
-          aria-busy={pending || undefined}
-          className="h-11 flex-1 rounded-xl bg-cyan font-bold text-on-cyan disabled:opacity-60"
-        >
+        <button disabled={pending} aria-busy={pending || undefined} className={`${button({ variant: "primary", size: "lg" })} flex-1`}>
           {pending ? "Saving…" : "Check in"}
         </button>
       </div>

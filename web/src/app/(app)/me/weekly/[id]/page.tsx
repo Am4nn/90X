@@ -46,7 +46,7 @@ export default async function WeeklyPage({ params }: PageProps<"/me/weekly/[id]"
         <PageHeader title={`Week of ${week}`} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-2 divide-x divide-line rounded-xl border border-line bg-surface">
             <Score label="Readiness" value={review.formulaScore} hint="The formula on your dial" />

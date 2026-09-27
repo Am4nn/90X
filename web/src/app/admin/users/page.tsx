@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { button } from "@/components/button-styles";
 import { ActionForm, SubmitButton } from "@/components/form";
 import { PageHeader } from "@/components/page-header";
 import { db } from "@/db";
@@ -56,18 +57,13 @@ export default async function AdminUsersPage() {
                             name="status"
                             value="approved"
                             pendingLabel="Approving…"
-                            className="h-9 rounded-lg bg-cyan px-4 text-small font-bold text-on-cyan disabled:opacity-60"
+                            className={button({ variant: "primary", size: "sm" })}
                           >
                             Approve
                           </SubmitButton>
                         )}
                         {status !== "rejected" && (
-                          <SubmitButton
-                            name="status"
-                            value="rejected"
-                            pendingLabel="Saving…"
-                            className="h-9 rounded-lg border border-line-2 px-4 text-small font-semibold text-text-2 disabled:opacity-60"
-                          >
+                          <SubmitButton name="status" value="rejected" pendingLabel="Saving…" className={button({ size: "sm" })}>
                             {status === "approved" ? "Revoke" : "Reject"}
                           </SubmitButton>
                         )}

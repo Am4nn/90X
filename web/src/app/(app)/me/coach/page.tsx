@@ -40,7 +40,7 @@ export default async function CoachMemoryPage() {
       </p>
 
       {facts.length ? (
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
           {MEMORY_KINDS.map((kind) => {
             const group = facts.filter((f) => f.kind === kind);
             return group.length ? <MemoryGroup key={kind} title={HEADINGS[kind]} facts={group} /> : null;
