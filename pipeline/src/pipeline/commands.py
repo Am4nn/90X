@@ -143,16 +143,17 @@ def consistency(args, con) -> None:
                   f"- **They disagree:** {x['disagreement']}",
                   f"- **Correct:** {x['correct']}",
                   f"- **Rewriting:** `{x['fix']}`", ""]
-    out.write_text("
-".join(lines), encoding="utf-8")
+    out.write_text("\n".join(lines), encoding="utf-8")
     print(f"{len(found)} contradictions, written to {out}")
 
     if args.fix and found:
         # Each named lesson is rewritten once, carrying the correction.
         for slug in sorted({x["fix"] for x in found}):
-            notes = "
-".join(f"- [contradicts {', '.join(t for t in x['topics'] if t != slug)}] {x['correct']}"
-                               for x in found if x["fix"] == slug)
+            notes = "\n".join(
+                f"- [contradicts {', '.join(t for t in x['topics'] if t != slug)}] {x['correct']}"
+                for x in found
+                if x["fix"] == slug
+            )
             con.execute("update lessons set status = 'draft', problems = ? where topic_slug = ?", [notes, slug])
         print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them")
     print(f"spend ${llm.spend_usd(con):.2f}")
