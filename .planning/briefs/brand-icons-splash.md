@@ -14,8 +14,15 @@ Branch: your pinned branch. PR to `main`.
 
 ## Build
 
+### 0. The approved design (owner chose it from a mock — follow it)
+- **Mark = the wordmark**: "90" in Sora 700, text colour `#e6e9ef`, followed by an **"x" drawn as two cyan (`#67e8f9`) round-capped strokes** (not a font glyph), on the dark tile `#0a0c10` with ~22% corner radius. In a 100×100 box: "90" centred at x≈45, baseline y≈62, font-size ≈38; strokes from (66,43)→(80,60) and (80,43)→(66,60), stroke width ≈6.
+- Use the same mark at every size, the 16px favicon included (the owner accepted that it's soft at 16px).
+- **Loading splash**: dark screen, the mark without the tile at ~120px; "90" fades in (0–300ms), then the x draws its first stroke (300–600ms) and second stroke (520–820ms), then a thin 64px cyan progress line slides under it until ready. Reduced motion: everything visible at once, no animation.
+- **iOS launch image**: the same mark (no tile) centred on `#0a0c10`, matching the splash's first frame so the hand-off is seamless.
+- **Link card**: the tiled mark on the left, "90x" and "Interview-ready in 90 days, with friends." on the right, dark background.
+
 ### 1. One mark, everywhere
-- `web/src/app/icon.svg`: the favicon as SVG (the "90x" mark on the dark ground, cyan x; legible at 16px — if "90x" is unreadable that small, use a simplified mark such as a cyan "x" in a rounded dark square, and use it only for the tiny sizes; explain in the PR).
+- `web/src/app/icon.svg`: the favicon as SVG — the approved mark from section 0 (Sora converted to outlines/paths in the SVG so it doesn't depend on an installed font).
 - Replace `web/src/app/favicon.ico` with a real multi-size ICO (16, 32, 48) generated from the same mark (script output committed).
 - `apple-icon` (180, no transparency, mark at ~58% of the tile) and manifest icons 192/512 + maskable 192/512 (mark inside the safe circle: ~22% inset), all from `make-icons.ts` so every icon comes from one drawing function. Keep file names the manifest and SW expect, or update both.
 
