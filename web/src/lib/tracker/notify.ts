@@ -8,8 +8,8 @@ const EVENING_HOUR = 20;
 const WEEKLY_HOUR = 18;
 const SUNDAY = 0;
 
-/** `weekly` only mutes the "review is ready" push; the review is written either way. */
-export type JobUser = { userId: string; timezone: string; morningHour: number | null; evening: boolean; weekly: boolean };
+// Every user gets a weekly review; notifications.weekly only mutes its push (lib/coach/weekly.ts).
+export type JobUser = { userId: string; timezone: string; morningHour: number | null; evening: boolean };
 export type Job = { userId: string; kind: "rollover" | "morning" | "evening" | "weekly" };
 
 export function dueJobs(users: JobUser[], now: Date): Job[] {

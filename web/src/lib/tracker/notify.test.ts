@@ -6,7 +6,6 @@ const user = (over: Partial<Parameters<typeof dueJobs>[0][number]> = {}) => ({
   timezone: "Asia/Kolkata",
   morningHour: 8 as number | null,
   evening: true,
-  weekly: true,
   ...over,
 });
 
@@ -40,10 +39,6 @@ describe("dueJobs weekly review", () => {
   it("writes the review at 18:00 local on Sunday", () => {
     const at18 = new Date("2026-09-27T12:30:00Z"); // 18:00 Kolkata
     expect(dueJobs([user()], at18)).toEqual([{ userId: "u", kind: "weekly" }]);
-  });
-
-  it("writes it even when weekly push is off; the flag only mutes the push", () => {
-    expect(dueJobs([user({ weekly: false })], new Date("2026-09-27T12:30:00Z"))).toEqual([{ userId: "u", kind: "weekly" }]);
   });
 
   it("skips 18:00 on other days and other hours on Sunday", () => {
