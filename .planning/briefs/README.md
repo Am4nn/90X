@@ -66,7 +66,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000 bun run build
 
 ## Git and PR
 
-- Branch from `main` with the name in your brief. Small commits, message = what changed and why, in plain English. End every commit message with:
+- Branch from `main` with the name in your brief (if your session is pinned to its own branch name, use that and say so in the PR). Small commits, message = what changed and why, in plain English. End every commit message with:
   ```
   Co-Authored-By: Claude <noreply@anthropic.com>
   ```
