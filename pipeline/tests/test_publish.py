@@ -38,8 +38,7 @@ def test_dry_run_publishes_everything_then_rolls_back(tmp_path):
     # The lesson layer and the roadmap checklist publish alongside everything else.
     assert counts["lessons"][0] == 1 and counts["roadmap_nodes"][0] == 1
     assert counts["sources"][0] >= 40
-    # dry run: staging not marked published, Supabase unchanged
-    assert con.execute("select published from card_batches").fetchone()[0] is False
+    # dry run: Supabase unchanged
     import psycopg
     with psycopg.connect(os.environ["DATABASE_URL"]) as pg:
         assert pg.execute("select count(*) from public.problems where slug = 'zz-test-problem'").fetchone()[0] == 0

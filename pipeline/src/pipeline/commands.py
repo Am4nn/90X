@@ -215,14 +215,12 @@ def publish(args, con) -> None:
 
 
 def rebatch(args, con) -> None:
-    import os
-
     from .cards import rebatch as rb
 
-    summary = rb.run(con, None if args.dry_run else os.environ["DATABASE_URL"], dry_run=args.dry_run)
+    summary = rb.run(con, dry_run=args.dry_run)
     for label, n in sorted(summary.items()):
         print(f"  {label:40} {n:5} cards")
-    print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", applied to staging and Supabase"))
+    print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", in staging; run publish to send them"))
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,

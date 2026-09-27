@@ -59,11 +59,11 @@ def test_a_batch_pass_rate_counts_the_cards_the_gate_rejected(tmp_path):
     assert group["pass_rate"] == 0.75, group["pass_rate"]
 
 
-def test_a_batch_built_before_its_first_publish_is_not_marked_published(tmp_path):
-    """`published` says Supabase already has it, and publish skips what is
-    published. Hard-coding true was right while rebatch only regrouped cards
-    already up there; the first time a batch was grouped before publishing, its
-    cards were marked done and never sent."""
+def test_a_batch_carries_its_label_and_risk_in_staging(tmp_path):
+    """Both used to be written straight to Supabase, so a card published after
+    being grouped arrived with an unlabelled batch and a null risk - and the
+    review screen sorts risk ascending, so a null card reads as the safest
+    there is. Publish is the one path up, so staging has to hold them."""
     from pipeline import staging
 
     con = staging.connect(tmp_path / "s.duckdb")
@@ -73,12 +73,10 @@ def test_a_batch_built_before_its_first_publish_is_not_marked_published(tmp_path
            values ('00000000-0000-4000-8000-000000000001', 'sql-joins', 'typed', 'q', 'a', '[]',
                    '{"gate_confidence": 0.4}', true, 'draft', 'lesson')"""
     )
-    rebatch.run(con, database_url=None)
-    published, label, risk = con.execute(
-        """select b.published, b.label, c.risk from card_batches b
-           join cards c on c.batch_id = b.id"""
+    rebatch.run(con)
+    label, risk = con.execute(
+        """select b.label, c.risk from card_batches b join cards c on c.batch_id = b.id"""
     ).fetchone()
-    assert published is False, "a staging-only rebatch must leave the batch for publish to send"
     assert label == "SQL"
     # The review screen sorts on risk ascending, so a null card looks safest.
     assert risk == 0.4

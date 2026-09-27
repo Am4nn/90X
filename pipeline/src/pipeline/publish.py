@@ -136,27 +136,34 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = Fa
             deleted = cur.rowcount
             cur.execute("drop table _keep")
             counts[table] = (len(rows), deleted)
-        card_counts, published_batches = _publish_cards(con, cur)
+        card_counts = _publish_cards(con, cur)
         counts["cards_retired"] = (0, _retire_superseded_cards(con, cur, force))
         counts["batches_retired"] = (0, _retire_empty_batches(cur))
         counts.update(card_counts)
         if dry_run:
             raise _DryRun(counts)
-    # Only after Supabase committed: remember which batches went up.
-    for bid in published_batches:
-        con.execute("update card_batches set published = true where id = ?", [bid])
     return counts
 
 
-def _publish_cards(con, cur) -> tuple[dict, list[str]]:
-    """New batches only; cards already published keep their status (draft/live)."""
+def _publish_cards(con, cur) -> dict:
+    """Every batch staging holds, every time.
+
+    Publishing only the batches staging had not sent yet made the result depend
+    on bookkeeping instead of on the data: a regrouped card kept the batch and
+    risk it was published with, because its row already existed. So this
+    converges instead - a card's group and risk are whatever staging says, and
+    `status` and `hidden` are left alone, because those are the admin's.
+    """
     batches = con.execute(
-        """select id, domain, topic_slugs, created_at, ai_pass_rate, label
-           from card_batches where not published""").fetchall()
+        "select id, domain, topic_slugs, created_at, ai_pass_rate, label from card_batches").fetchall()
     n_cards = 0
     for bid, domain, topics, created, pass_rate, label in batches:
         cur.execute("""insert into public.card_batches (id, domain, topic_slugs, created_at, ai_pass_rate, label, status)
-                       values (%s, %s, %s, %s, %s, %s, 'draft') on conflict (id) do nothing""",
+                       values (%s, %s, %s, %s, %s, %s, 'draft')
+                       on conflict (id) do update set
+                         topic_slugs = excluded.topic_slugs,
+                         ai_pass_rate = excluded.ai_pass_rate,
+                         label = excluded.label""",
                     (bid, domain, list(topics or []), created, pass_rate, label))
         # `risk` comes with the card. It is the review screen's sort key, and it
         # sorts ascending, so a card that arrives without one looks safest.
@@ -167,13 +174,14 @@ def _publish_cards(con, cur) -> tuple[dict, list[str]]:
             """insert into public.cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md,
                    options, answer_md, key_points, source_refs, quality, risk, status)
                values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, 'draft')
-               on conflict (id) do nothing""",
+               on conflict (id) do update set
+                 batch_id = excluded.batch_id, risk = excluded.risk""",
             [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
               json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")),
               json.dumps(json.loads(c[10] or "{}")), c[11])
              for c in cards])
         n_cards += len(cards)
-    return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}, [b[0] for b in batches]
+    return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}
 
 
 class StudyHistoryAtRisk(RuntimeError):

@@ -43,7 +43,7 @@ create table if not exists chunks (
 );
 create table if not exists card_batches (
     id text primary key, domain text not null, topic_slugs text[], created_at timestamp default now(),
-    ai_pass_rate double, sample_pass_rate double, status text default 'draft', published boolean default false
+    ai_pass_rate double, sample_pass_rate double, status text default 'draft'
 );
 create table if not exists cards (
     id text primary key, batch_id text, topic_slug text, problem_slug text, document_id text,
@@ -70,6 +70,10 @@ alter table cards add column if not exists created_at timestamp;
 -- card arrived with no risk, which the review screen reads as "safest".
 alter table cards add column if not exists risk double;
 alter table card_batches add column if not exists label text;
+-- `published` decided what publish sent, which made the result depend on
+-- bookkeeping rather than on the data. Publish sends every batch and
+-- converges, so nothing reads this any more.
+alter table card_batches drop column if exists published;
 create table if not exists roadmap_nodes (
     id text primary key, roadmap text not null, domain text not null, label text not null,
     kind text not null, sort int not null, topic_slug text

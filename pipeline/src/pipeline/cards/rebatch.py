@@ -3,14 +3,15 @@ reviews a handful of batches instead of one per generation run. Each card also
 gets a risk score (the reviewer's lowest score, scaled 0-1) so the review
 screen can show the riskiest cards first.
 
-Works on staging and on Supabase in one go: cards are already published there
-as drafts, so the new batches are inserted, cards are moved, and the old,
-now-empty draft batches are removed."""
+Staging only. This used to write to Supabase as well, which worked while the
+cards were always already up there and broke the first time a batch was built
+before its first publish: the batch was marked published, publish sends
+unpublished batches, and 2,692 cards were grouped and never sent. Publish is
+the one path to Supabase now, and it carries the batch, the label and the
+risk together."""
 
 import json
 import uuid
-
-import psycopg
 
 DSA_GROUPS = {
     "dsa-arrays": ("DSA · Arrays, strings, windows",
@@ -102,7 +103,7 @@ def plan(con) -> dict[str, dict]:
     return groups
 
 
-def run(con, database_url: str | None, dry_run: bool = False) -> dict[str, int]:
+def run(con, dry_run: bool = False) -> dict[str, int]:
     groups = plan(con)
     ids = {key: str(uuid.uuid4()) for key in groups}
     summary = {groups[k]["label"]: len(groups[k]["card_ids"]) for k in groups}
@@ -110,43 +111,18 @@ def run(con, database_url: str | None, dry_run: bool = False) -> dict[str, int]:
         return summary
 
     old = [r[0] for r in con.execute("select id from card_batches").fetchall()]
-    if database_url:
-        with psycopg.connect(database_url, prepare_threshold=None) as pg, pg.cursor() as cur:
-            for key, g in groups.items():
-                cur.execute(
-                    """insert into public.card_batches (id, domain, label, topic_slugs, ai_pass_rate, status)
-                       values (%s, %s, %s, %s, %s, 'draft')""",
-                    [ids[key], g["domain"], g["label"], sorted(g["topics"]), g["pass_rate"]],
-                )
-                cur.executemany(
-                    "update public.cards set batch_id = %s, risk = %s where id = %s and status = 'draft'",
-                    [[ids[key], g["risks"][c], c] for c in g["card_ids"]],
-                )
-            # Old draft batches that no longer hold any card.
-            cur.execute(
-                """delete from public.card_batches b where b.status = 'draft' and b.label is null
-                   and not exists (select 1 from public.cards c where c.batch_id = b.id)""",
-            )
     for key, g in groups.items():
-        # `published` says whether Supabase already has this batch. Hard-coding
-        # true was right when rebatch only ever regrouped cards that were
-        # already up there, and wrong the first time a batch was built before
-        # its first publish: publish skips published batches, so 2,692 cards
-        # would have been grouped, marked done, and never sent.
         con.execute(
-            """insert into card_batches (id, domain, label, topic_slugs, ai_pass_rate, status, published)
-               values (?, ?, ?, ?, ?, 'draft', ?)""",
-            [ids[key], g["domain"], g["label"], sorted(g["topics"]), g["pass_rate"], bool(database_url)],
+            """insert into card_batches (id, domain, label, topic_slugs, ai_pass_rate, status)
+               values (?, ?, ?, ?, ?, 'draft')""",
+            [ids[key], g["domain"], g["label"], sorted(g["topics"]), g["pass_rate"]],
         )
+        # Dropped cards move with their group too, so no card is left pointing
+        # at a batch row this same call then deletes.
         con.executemany("update cards set batch_id = ? where id = ?", [[ids[key], c] for c in g["all_ids"]])
-        # Risk lives in staging now so publish can carry it. Writing it only to
-        # Supabase left a not-yet-published card with no risk at all, and
-        # `pickReviewSample` sorts ascending, so a null reads as the safest card
-        # in the batch - the review screen would have shown the least useful
-        # cards first, for every card.
+        # Risk is the review screen's sort key and it sorts ascending, so a card
+        # with none reads as the safest in the batch.
         con.executemany("update cards set risk = ? where id = ?",
                         [[g["risks"][c], c] for c in g["card_ids"]])
-    # Dropped cards move with their group too, so no card is left pointing at a
-    # batch row that is about to be deleted.
     con.execute(f"delete from card_batches where id in ({', '.join('?' * len(old))})", old) if old else None
     return summary
