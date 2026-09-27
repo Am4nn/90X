@@ -6,6 +6,7 @@ const user = (over: Partial<Parameters<typeof dueJobs>[0][number]> = {}) => ({
   timezone: "Asia/Kolkata",
   morningHour: 8 as number | null,
   evening: true,
+  weekly: true,
   ...over,
 });
 
@@ -31,6 +32,33 @@ describe("dueJobs", () => {
     const la = user({ userId: "la", timezone: "America/Los_Angeles" });
     // 03:00Z is 20:00 in Los Angeles and 08:30 in Kolkata.
     expect(dueJobs([user({ morningHour: 9 }), la], new Date("2026-09-27T03:00:00Z"))).toEqual([{ userId: "la", kind: "evening" }]);
+  });
+});
+
+describe("dueJobs weekly review", () => {
+  // 2026-09-27 is a Sunday.
+  it("writes the review at 18:00 local on Sunday", () => {
+    const at18 = new Date("2026-09-27T12:30:00Z"); // 18:00 Kolkata
+    expect(dueJobs([user()], at18)).toEqual([{ userId: "u", kind: "weekly" }]);
+  });
+
+  it("writes it even when weekly push is off; the flag only mutes the push", () => {
+    expect(dueJobs([user({ weekly: false })], new Date("2026-09-27T12:30:00Z"))).toEqual([{ userId: "u", kind: "weekly" }]);
+  });
+
+  it("skips 18:00 on other days and other hours on Sunday", () => {
+    expect(dueJobs([user()], new Date("2026-09-26T12:30:00Z"))).toEqual([]); // Saturday 18:00
+    expect(dueJobs([user()], new Date("2026-09-27T11:30:00Z"))).toEqual([]); // Sunday 17:00
+  });
+
+  it("uses the local weekday, not the UTC one", () => {
+    // 2026-09-28T01:00Z is Monday in UTC but Sunday 18:00 in Los Angeles.
+    const la = user({ userId: "la", timezone: "America/Los_Angeles", morningHour: null });
+    expect(dueJobs([la], new Date("2026-09-28T01:00:00Z"))).toEqual([{ userId: "la", kind: "weekly" }]);
+    // 05:00Z on Sunday is 18:00 Sunday in Auckland, while UTC is still in the morning.
+    const auckland = user({ userId: "nz", timezone: "Pacific/Auckland", morningHour: null, evening: false });
+    expect(dueJobs([auckland], new Date("2026-09-27T05:00:00Z"))).toEqual([{ userId: "nz", kind: "weekly" }]);
+    expect(dueJobs([auckland], new Date("2026-09-26T05:00:00Z"))).toEqual([]);
   });
 });
 
