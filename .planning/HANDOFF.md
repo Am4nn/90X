@@ -373,10 +373,24 @@ From `pipeline/`: `.venv/Scripts/python.exe -m pytest -q`.
   decisions, no shortcuts when something looks wrong, and proof rather than
   claims. He pushed back correctly when a number was guessed instead of measured.
   Quantify before asserting.
-- **Ask before spending on AI runs.** The pipeline cap is `PIPELINE_MAX_USD`.
-  Lifetime pipeline spend is **$65.47** as of 2026-09-29; the approved ceiling was
-  ~$44.50 of that (earlier spend predates it). The app's own budget is $10/month
-  in `ai_usage` plus a Redis meter.
+- **The pipeline AI budget is $100 lifetime**, raised on 2026-09-29 from $40.
+  Spend was **$67.18** at that point. Aman's condition when he raised it was
+  reporting, not permission: *"just make sure keeping me updated on usage no over
+  usage"*. So state the running total and what is left whenever a run spends
+  anything, **without being asked**, and pass `PIPELINE_MAX_USD` on every run as
+  a hard stop. Read the figure off the pipeline's own spend line rather than
+  estimating it. Stop and ask before a run that would cross $100.
+
+  Measured costs, 2026-09-29: all 274 lessons ~$8.60 · `card-regate` over 2,810
+  cards ~$1.08 · `lesson-cards` ~$0.02 a topic · `consistency --redo` ~$1.40-2.40
+  · `card-fix` ~$0 when every objection is already applied. A `NoSource` refusal
+  is free, because it raises before any model call.
+
+  The app's own budget is separate: $10/month in `ai_usage` plus a Redis meter.
+- **`pipeline consistency` reuses what it already found.** It prints "N known"
+  and spends nothing, by design, so that applying a fix does not re-pay for the
+  scan (`commands.py:142`). After any lesson rewrite its stored findings describe
+  text that no longer exists — **pass `--redo` or you have not re-run it.**
 - Server code uses Drizzle over a connection that **bypasses row-level
   security**, so every query must be scoped to the signed-in user or admin-gated.
   RLS is the second line of defence, not the first — changing a policy without
