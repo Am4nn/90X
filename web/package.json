@@ -30,7 +30,8 @@
     "check:grading": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-grading.ts",
     "check:feed": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-feed.ts",
     "check:coach": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-coach.ts",
-    "check:coach-tools": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-coach-tools.ts"
+    "check:coach-tools": "dotenv -e .env.local -- bun --conditions=react-server scripts/check-coach-tools.ts",
+    "check:dupes": "bun run scripts/check-dupes.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",
