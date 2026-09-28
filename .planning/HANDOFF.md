@@ -94,29 +94,18 @@ CI **and both reviewers clean on the same commit**, then squash-merge.
 
 ## Do this next, in order
 
-1. **Finish the card pass over the re-grounded lessons.** Every lesson was
-   rewritten on 2026-09-29 against the wider corpus, so the cards generated from
-   the old text need re-judging: `pipeline card-regate` (~$1),
-   `pipeline lesson-cards --redo` for the topics whose lessons changed most,
-   `pipeline card-fix`, `rebatch`, `publish --dry-run`, `publish`,
-   `pipeline card-review`. Then send `.planning/card-review.md` to Aman.
+1. **Top up Gemini** — see the first known open item. Everything below that
+   touches a model is blocked on it.
 2. **Re-run cross-lesson consistency (~$1.40).** It was run and its five
    contradictions were fixed (`.planning/lesson-contradictions.md`) — and then
    every lesson was rewritten underneath it, so that pass no longer describes
    the current text. It is not exhaustive either: an area is read in overlapping
    windows of eight, so two lessons far apart in the sort order are never
    compared.
-3. **Coach writes a lesson on demand.** Agreed, never built. Port the contract
-   to `web/src/lib/lessons/contract.ts` (`pipeline/.../lessons/check.py` is pure
-   regex and word counts, cheap to port, and it gives the app its own copy of
-   the one gate that must never be skipped). Gate it on `search_knowledge`
-   finding material — the source rule applies to the Coach too. Cost-guard via
-   `lib/coach/rate-limit.ts` and the `ai_usage` meter. Mark such lessons so
-   `pipeline publish` does not treat them as staging's to overwrite.
-4. **Build the friend graph** — `.planning/briefs/friends.md`, written and
+3. **Build the friend graph** — `.planning/briefs/friends.md`, written and
    reviewed, waiting on a session. Today every approved user sees every other
-   approved user.
-5. **Read the Sentry error.** `SENTRY_READ_TOKEN` is in `web/.env.local`
+   approved user. Needs no model, so it is not blocked.
+4. **Read the Sentry error.** `SENTRY_READ_TOKEN` is in `web/.env.local`
    (scopes `event:read`, `project:read`, `org:read`). Pull
    `https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/issues/`.
    One real production error was captured and, as far as this file knows, has
@@ -194,12 +183,39 @@ Result over 274 topics, $8.61:
 | `simulation` | was held with no source; now 1,161 words from 10 LeetCode statements |
 | `beh-teamwork` | **still held.** 0 refs, 0 characters. One document mentions teamwork and it is about questions to ask an interviewer. It stays held until something is downloaded for it — it will not be written from memory. |
 
-## Known open items (none are blocking)
+## Known open items
 
+- **BLOCKING: the Gemini key's AI Studio *project* has no prepay credit left.**
+  `402` on every model tried (`gemini-3.8-flash`, `gemini-3.5-flash`,
+  `gemini-3.5-flash-lite`), so it is account-level, not a model or quota problem.
+  AI Studio prepay is **per project**, and the error says so: "manage your
+  project and billing". Aman reports a Gemini balance, so it is almost certainly
+  on a different project than this key. A project with no billing at all returns
+  `429`, not `402`, so this project is on prepay and the prepay is spent.
+
+  The same key is in both `pipeline/.env` (`REVIEW_API_KEY`) and
+  `web/.env.local` (`GEMINI_API_KEY`) — 53 characters, prefix `AQ.Ab8R`,
+  `sha256` beginning `c2090209`. Either issue a key in the project that holds the
+  balance and replace it in both files, or add prepay to this key's project.
+
+  Gemini is the review tier — the independent fact-checker on every lesson — so
+  **no `pipeline lessons`, `lesson-cards`, `cards` or `consistency` run can
+  finish until this is sorted.** DeepSeek still works, so a run produces text and
+  then fails at verification: the right way round, but it spends DeepSeek tokens
+  to reach the wall.
 - **`beh-teamwork` has no source material** and is therefore not in the Library.
-  Download something for it or leave it held.
+  Confirmed twice, including after the `spare_documents` cap was removed and all
+  2,071 unassigned documents became visible: it still resolves to 0 refs. Either
+  download something for it or leave it held.
+  - Its staging row still holds an **841-word body with `source_refs = []` and
+    `generated_at 2026-09-28`** — text from the pre-rebuild era, written from the
+    model's own memory, which is the one thing the source rule forbids. It is
+    inert (`status = 'failed'`, and `publish` only sends `status = 'ok'`) and a
+    successful rewrite would overwrite it, so it was left alone rather than
+    quietly deleted. **Do not flip its status by hand.** If you want it gone,
+    `update lessons set body_md = '' where topic_slug = 'beh-teamwork'`.
 - **Cross-lesson consistency is stale and not exhaustive** — see "Do this next".
-- **Coach cannot write a lesson on demand** — see "Do this next".
+  It needs Gemini, so it is blocked on the item above.
 - **Every approved user can see every other approved user.** There is no friend
   graph; `lib/tracker/me.ts:42` says "You and every approved friend" and means
   every approved user. Three leaks come with it: `profiles_read` hands a friend
