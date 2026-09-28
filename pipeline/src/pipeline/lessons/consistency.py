@@ -14,8 +14,11 @@ rather than whole lessons.
 
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
+
+from ..llm import lock_for
 
 BATCH = 8
 WORKERS = 4  # each window waits on the API, not on us
@@ -68,6 +71,34 @@ def check(llm, domain: str, group: list[dict], tier: str = "smart") -> list[Cont
                              tier=tier, purpose="consistency").contradictions
 
 
+def save(con, rows: list[dict], lock=None) -> None:
+    """Keep each window's findings as they land.
+
+    A run killed 61 windows of 69 in lost every one of them, because they were
+    collected in memory and returned at the end - about $2 of model calls for
+    nothing. The same mistake the lesson run was built to avoid.
+    """
+    if not rows:
+        return
+    now = datetime.now(timezone.utc)
+    args = [[r["domain"], r["topics"], r["disagreement"], r["correct"], r["fix"], now] for r in rows]
+    statement = """insert or replace into lesson_contradictions
+                   (domain, topics, disagreement, correct, fix, found_at) values (?, ?, ?, ?, ?, ?)"""
+    if lock:
+        with lock:
+            con.executemany(statement, args)
+    else:
+        con.executemany(statement, args)
+
+
+def stored(con) -> list[dict]:
+    rows = con.execute(
+        """select domain, topics, disagreement, correct, fix from lesson_contradictions
+           order by domain, disagreement"""
+    ).fetchall()
+    return [dict(zip(["domain", "topics", "disagreement", "correct", "fix"], r)) for r in rows]
+
+
 def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list[dict]:
     areas = domains or [r[0] for r in con.execute("select distinct domain from topics order by 1").fetchall()]
     # Overlapping windows: a contradiction between neighbours in the sort order
@@ -83,8 +114,9 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list
                 break
             windows.append((domain, window))
 
-    found: list[dict] = []
+    found: list[dict] = stored(con)
     done = 0
+    db = lock_for(con)
     print(f"{len(windows)} windows across {len(areas)} areas, {WORKERS} at a time", flush=True)
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         futures = {pool.submit(check, llm, domain, window, tier): domain for domain, window in windows}
@@ -92,8 +124,9 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list
             domain = futures[future]
             done += 1
             try:
-                for c in future.result():
-                    found.append({"domain": domain, **c.model_dump()})
+                landed = [{"domain": domain, **c.model_dump()} for c in future.result()]
+                found += landed
+                save(con, landed, db)
             except Exception as e:  # one window failing must not lose the rest
                 print(f"  {domain}: window failed, {type(e).__name__}: {e}", flush=True)
             print(f"  [{done}/{len(windows)}] {domain}", flush=True)

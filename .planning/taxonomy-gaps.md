@@ -1,12 +1,10 @@
 # Topics roadmap.sh has that 90x does not
 
-**104 worth reading.** Of 1357 candidates, 805 are gaps 90x genuinely does not cover, and 104 of those scored 0.7 or higher for "a real SDE loop will go here". The other 701 are gaps the sorter itself rated unlikely to come up; they are below the line.
+**119 worth reading.** Of 1934 candidates, 1057 are gaps 90x genuinely does not cover, and 119 of those scored 0.7 or higher for "a real SDE loop will go here". The other 938 are gaps the sorter itself rated unlikely to come up; they are below the line.
 
-258 candidates were already covered under another name and 293 were headings rather than topics; 1 was the same topic listed twice.
+428 candidates were already covered under another name and 447 were headings rather than topics; 2 were the same topic listed twice.
 
 **Deleting a line is the whole review.** Anything you keep gets a lesson written for it, at roughly $0.04 each - and 90x is 274 curated topics, which is the thing worth protecting. The score is a suggestion, not a decision.
-
-> **sql, system_design are missing from this report.** The sort stopped before reaching them, so an absent area means nothing was looked at, not that nothing was found.
 
 ## Worth writing
 
@@ -132,9 +130,30 @@
 - **Composition over Inheritance** (0.8) - Commonly discussed OOP design principle.
 - **Repositories** (0.7) - Repository pattern is common in LLD for data access.
 
+### sql
+
+- **ACID** (0.9) - ACID properties are fundamental and frequently asked in SQL interviews.
+- **Transaction Isolation Levels** (0.9) - Common interview topic for ACID and concurrency anomalies.
+- **Transactions** (0.9) - Transactions are core to SQL interviews, covering isolation, atomicity, and concurrency.
+- **SQL vs NoSQL Databases** (0.8) - Common architecture interview question comparing relational and non-relational tradeoffs.
+- **Schema Design Patterns / Anti-patterns** (0.8) - Schema design and normalization are commonly asked in database design interviews.
+- **B-Tree** (0.7) - B-tree index internals and trade-offs are common in SQL interviews.
+- **MVCC** (0.7) - Database internals question about concurrency and transaction isolation.
+- **Sharding Patterns** (0.7) - Sharding is a common scalability topic in system design interviews.
+- **Write-ahead Log** (0.7) - Write-ahead logging is asked when discussing durability and recovery.
+
+### system_design
+
+- **Webhooks vs Polling** (0.8) - Common integration pattern asked when discussing real-time updates.
+- **Error Handling / Retries** (0.7) - Critical reliability topic in distributed systems.
+- **HTTP Versions** (0.7) - Differences between HTTP/1.1, HTTP/2, and HTTP/3 are sometimes asked for performance.
+- **Leader Election** (0.7) - A key distributed systems concept sometimes directly asked.
+- **Serverless Concepts** (0.7) - Serverless architecture tradeoffs are frequently asked in system design.
+- **Understand TCP / IP** (0.7) - Core networking knowledge often probed in system design interviews.
+
 ---
 
-## Below the line (701)
+## Below the line (938)
 
 The sorter called each of these a real gap and then rated an interview unlikely to reach it - mostly tooling and operations engineers use without being asked to explain. Here in case it was wrong about one.
 
@@ -857,9 +876,252 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Model-Driven Design** (0.1) - Rarely asked in product company SDE interviews; more common in enterprise or formal methods contexts.
 - **Use correct constructs** (0.1) - Too vague to be a standalone interview topic; rarely asked explicitly.
 
+### sql
+
+- **Normalization / Normal Forms** (0.6) - Normalization is a core database design topic that interviewers may probe.
+- **SQL Query Patterns / Anti-patterns** (0.6) - Common query anti-patterns are asked when discussing performance and maintainability.
+- **Data Partitioning** (0.5) - Partitioning strategies are moderately likely in database design discussions.
+- **Lock Management** (0.5) - Locking and isolation levels can come up in backend or database interviews.
+- **OLAP** (0.5) - OLAP and analytical workloads are moderately common in design discussions.
+- **Pivot / Unpivot Operations** (0.5) - Interviewers may ask how to transform rows to columns in SQL.
+- **PostgreSQL vs NoSQL Databases** (0.5) - Occasionally asked in system design discussions when justifying database choice.
+- **PostgreSQL vs Other RDBMS** (0.5) - Sometimes asked to compare specific relational databases.
+- **Dynamic SQL** (0.4) - Dynamic SQL construction and its risks can come up in backend interviews.
+- **Lateral Join** (0.4) - Lateral joins are a specific SQL feature occasionally asked in advanced SQL interviews.
+- **Logical Replication** (0.4) - Replication concepts can come up in backend interviews.
+- **OLTP** (0.4) - OLTP concept is sometimes discussed in context of database workloads.
+- **Operators** (0.4) - SQL operators are fundamental but rarely asked about in isolation.
+- **Bulk Loading / Processing Data** (0.3) - Efficiently loading large datasets is sometimes discussed, though less common for SDE loops.
+- **Hash** (0.3) - Hash index use cases and limitations are occasionally asked.
+- **Roles** (0.3) - Database roles and privileges are sometimes discussed in access-control questions.
+- **Streaming Replication** (0.3) - PostgreSQL streaming replication is specific and rarely central.
+- **Row-Level Security** (0.2) - Row-level security is occasionally relevant in multi-tenant design discussions.
+- **Checkpoints / Background Writer** (0.2) - Postgres internals occasionally come up but mostly operational.
+- **Domains** (0.2) - PostgreSQL-specific feature rarely asked in general SDE interviews.
+- **Replication** (0.2) - Replication is a specific topic sometimes discussed in system design contexts.
+- **Using Logical Replication** (0.2) - Logical replication is sometimes relevant in data sync discussions.
+- **Default Privileges** (0.1) - PostgreSQL-specific privilege defaults; sometimes asked in DBA-oriented interviews.
+- **PL/pgSQL** (0.1) - PL/pgSQL specifics are rarely asked; stored procedure concepts are covered separately.
+- **Processes & Memory Architecture** (0.1) - PostgreSQL internal architecture is rarely asked outside DBA roles.
+- **Authentication Models** (0.1) - Authentication models are operational and not usually an SDE interview topic.
+- **Backup Validation Procedures** (0.1) - Backup validation is operational, occasionally mentioned in reliability questions.
+- **Buffer Management** (0.1) - PostgreSQL buffer management is internal and rarely asked.
+- **CEILING** (0.1) - Rarely asked in isolation; basic scalar numeric function.
+- **Connect using `psql`** (0.1) - Tooling for connecting to PostgreSQL, rarely asked directly in SDE interviews.
+- **DATEADD** (0.1) - Date function rarely asked standalone.
+- **DATEPART** (0.1) - Date function rarely asked standalone.
+- **GIN** (0.1) - Generalized inverted index relevant for full-text and JSON, occasionally asked.
+- **HTAP** (0.1) - HTAP is a niche architecture rarely asked.
+- **Import / Export Using `COPY`** (0.1) - Data import/export tooling; rarely an SDE interview focus.
+- **Installation and Setup** (0.1) - Operational setup is rarely part of SDE interview loops.
+- **LOWER** (0.1) - Basic string function rarely asked standalone.
+- **Migration Related Tools** (0.1) - Database migration tooling is operational and rarely a core interview topic.
+- **Package Managers** (0.1) - Package tooling, not SQL interview material.
+- **Patroni** (0.1) - Specific PostgreSQL HA tool rarely asked in SDE interviews.
+- **Per-User, Per-Database Setting** (0.1) - Configuration settings are rarely a focus of SDE interviews.
+- **PgBouncer** (0.1) - Connection pooling tool sometimes relevant but rarely asked.
+- **Physical Storage and File Layout** (0.1) - Physical storage details are rarely asked in SDE interviews.
+- **SSL Settings** (0.1) - Transport encryption settings are operational, rarely asked in SDE interviews.
+- **Storage Parameters** (0.1) - Storage parameters are operational details, not common in interviews.
+- **System Catalog** (0.1) - System catalogs are PostgreSQL-specific and rarely asked.
+- **UPPER** (0.1) - Basic string function rarely asked standalone.
+- **Using Docker** (0.1) - Tooling for running databases, rarely asked as interview topic.
+- **Using `systemd`** (0.1) - Linux service management tooling, not SQL interview material.
+- **Vacuum Processing** (0.1) - Vacuum/autovacuum is operational and seldom covered in SDE interviews.
+- **Vacuums** (0.1) - PostgreSQL maintenance operation; not commonly asked in SDE interviews.
+- **pg_basebackup** (0.1) - Base backup utility, rarely asked directly.
+- **pg_dump** (0.1) - Backup utility, rarely asked directly.
+- **pg_hba.conf** (0.1) - Postgres client authentication config is operational, not typical interview content.
+- **pg_restore** (0.1) - Restore utility, rarely asked directly.
+- **Ansible** (0.1) - Configuration management tool not an interview topic.
+- **BRIN** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles.
+- **Chef** (0.1) - Configuration management tool not an interview topic.
+- **Consul** (0.1) - Service discovery infrastructure rarely asked about.
+- **Etcd** (0.1) - Distributed key-value store infrastructure rarely asked about.
+- **GiST** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles.
+- **HAProxy** (0.1) - Load balancing infrastructure rarely asked about in SDE interviews.
+- **Helm** (0.1) - Kubernetes package manager not an interview topic.
+- **KeepAlived** (0.1) - High availability infrastructure rarely asked about.
+- **PgQ** (0.1) - PgQ is a niche PostgreSQL queueing tool rarely asked in interviews.
+- **PostgreSQL Anonymizer** (0.1) - Specialized extension, not typical SDE interview content.
+- **Prometheus** (0.1) - Monitoring tool rarely asked about in SDE interviews.
+- **Puppet** (0.1) - Configuration management tool not an interview topic.
+- **SELinux** (0.1) - System-level security module, not SQL interview material.
+- **Salt** (0.1) - Configuration management tool not an interview topic.
+- **Using `pg_ctl`** (0.1) - Server control tooling; not a typical SQL interview topic.
+- **Using `pg_upgrade`** (0.1) - Version upgrade tooling, operational.
+- **WAL-G** (0.1) - Backup tooling, operational rather than interview.
+- **Zabbix** (0.1) - Monitoring tool rarely asked about in SDE interviews.
+- **barman** (0.1) - Backup tooling, operational rather than interview.
+- **check_pgactivity** (0.1) - PostgreSQL monitoring tool rarely asked about.
+- **check_pgbackrest** (0.1) - PostgreSQL backup monitoring tool rarely asked about.
+- **pg_dumpall** (0.1) - Backup utility, rarely asked directly.
+- **pg_probackup** (0.1) - Backup tooling, operational.
+- **pg_stat_activity** (0.1) - Monitoring views are operational and not typical interview material.
+- **pg_stat_statements** (0.1) - Query statistics extension is operational and rarely asked.
+- **pgbackrest** (0.1) - Backup tooling, operational.
+- **temBoard** (0.1) - PostgreSQL monitoring tool rarely asked about.
+- **Adding Extra Extensions** (0.0) - Extension management is operational and rarely asked.
+- **Using `pg_ctlcluster`** (0.0) - Debian-specific cluster management tooling.
+- **Depesz** (0.0) - EXPLAIN visualizer tool, not an interview topic.
+- **PEV2** (0.0) - EXPLAIN visualizer tool, not an interview topic.
+- **SP-GiST** (0.0) - Niche index type rarely relevant.
+- **explain.dalibo.com** (0.0) - EXPLAIN visualizer tool, not an interview topic.
+- **Tensor** (0.0) - Obscure tool, not an interview topic.
+- **iotop** (0.0) - I/O monitoring tool, not SQL interview material.
+- **perf-tools** (0.0) - Linux performance tooling is not SQL-specific and rarely asked.
+- **sysstat** (0.0) - System performance tools, not SQL interview material.
+- **top** (0.0) - System monitoring command, not an interview topic.
+- **Core Dumps** (0.0) - Debugging crash dumps is operational and rarely asked in SQL interviews.
+- **Golden Signals** (0.0) - Monitoring framework, not SQL interview material.
+- **RED** (0.0) - Observability method, not SQL-specific and rarely asked.
+- **Reviewing Patches** (0.0) - Open-source contribution process, not asked in interviews.
+- **USE** (0.0) - Observability method, not SQL-specific and rarely asked.
+- **Writing Patches** (0.0) - Open-source contribution process, not asked in interviews.
+- **awk** (0.0) - Text processing tool, not SQL interviews.
+- **ebpf** (0.0) - Kernel tracing technology, not SQL interview material.
+- **gdb** (0.0) - Debugger tool, not SQL interview material.
+- **grep** (0.0) - Text search tool, not SQL interviews.
+- **pgBadger** (0.0) - Log analysis tool, not an interview topic.
+- **pgCluu** (0.0) - PostgreSQL monitoring tool, not an interview topic.
+- **pgcenter** (0.0) - PostgreSQL monitoring tool, not an interview topic.
+- **sed** (0.0) - Stream editor, not SQL interviews.
+- **strace** (0.0) - System call tracer, not SQL interview material.
+
+### system_design
+
+- **BFF Pattern** (0.6) - Specific API architecture pattern for client-specific backends.
+- **Bulkhead** (0.6) - Isolation pattern often discussed alongside circuit breakers.
+- **Database Caching** (0.6) - Database-level caching is a distinct performance topic.
+- **Domain Name System** (0.6) - Fundamental system design concept directly asked about resolution, records, and TTL.
+- **Event Driven Architecture** (0.6) - Common architectural pattern in distributed systems.
+- **GraphQL** (0.6) - GraphQL is occasionally discussed as an API alternative in design interviews.
+- **Latency vs Throughput** (0.6) - Commonly asked conceptual distinction in system design interviews.
+- **Performance vs Scalability** (0.6) - Commonly asked conceptual distinction in system design interviews.
+- **RBAC** (0.6) - Role-based access control is a standard part of system authorization design.
+- **SQL Tuning** (0.6) - Query optimization and indexing are common database interview questions.
+- **Service Mesh** (0.6) - Service-to-service communication infrastructure often asked with microservices.
+- **Basics of DNS** (0.6) - DNS is a foundational system design component.
+- **Queue-Based Load Leveling** (0.6) - A specific pattern for handling load with queues, sometimes asked in design.
+- **Real-time APIs** (0.6) - Real-time API choices beyond WebSockets, such as SSE and long polling, are interview-relevant.
+- **Application Caching** (0.5) - Application-level caching is a common interview topic.
+- **Batch Processing** (0.5) - Designing batch data pipelines is a common system design topic.
+- **Denormalization** (0.5) - Schema design technique often discussed in database scaling and NoSQL modeling.
+- **Filtering, Sorting & Search** (0.5) - Backend listing and search design is common in system design interviews.
+- **HTTP Caching** (0.5) - Important for web performance and API design.
+- **HTTP, HTTPS** (0.5) - HTTP/HTTPS fundamentals are commonly asked in interviews.
+- **Health Endpoint Monitoring** (0.5) - Health checks are common in system design but not explicitly covered.
+- **LB vs Reverse Proxy** (0.5) - Difference between load balancers and reverse proxies is a common interview question.
+- **Retry Storm** (0.5) - Specific failure mode in distributed systems.
+- **Server Sent Events** (0.5) - Often compared with WebSockets for real-time server push.
+- **Session Based Auth** (0.5) - Session vs token authentication is a common web security question.
+- **Sidecar** (0.5) - Microservices deployment pattern commonly asked in system design.
+- **Synchronous vs Asynchronous APIs** (0.5) - API design choice commonly discussed in system design.
+- **TCP** (0.5) - Networking protocols like TCP are sometimes asked in backend and system design interviews.
+- **Web Server Caching** (0.5) - Specific caching layer at the web server not explicitly covered.
+- **Background Jobs** (0.5) - Background job processing is relevant to system designs but rarely a standalone interview topic.
+- **GraphQL APIs** (0.5) - Modern API technology occasionally asked.
+- **HTTP Headers** (0.5) - Common interview question about web APIs and caching.
+- **PII** (0.5) - Handling personally identifiable information is relevant in system design.
+- **Performance Antipatterns** (0.5) - Common performance pitfalls like chatty I/O and over-fetching are interview-relevant.
+- **Strangler Fig** (0.5) - Legacy system migration pattern asked in system design.
+- **ABAC** (0.4) - Attribute-based access control is sometimes asked in authorization design.
+- **API Integration Patterns** (0.4) - Integration patterns like polling and webhooks appear in design discussions.
+- **Back Pressure** (0.4) - Backpressure is key in streaming and message pipeline reliability.
+- **CORS** (0.4) - Web API security topic often asked.
+- **Client Caching** (0.4) - Client-side caching via HTTP and service workers is occasionally discussed for performance.
+- **Deployment Stamps** (0.4) - A scaling isolation pattern, occasionally relevant in design discussions.
+- **Noisy Neighbor** (0.4) - Multi-tenant performance problem relevant in cloud design.
+- **Pagination** (0.4) - Pagination strategies are frequently part of API design.
+- **Pipes & Filters** (0.4) - Architectural pattern for processing pipelines occasionally asked.
+- **Retry** (0.4) - Retry with backoff is a common reliability pattern; not covered by circuit breaker alone.
+- **Serverless** (0.4) - Serverless architecture is increasingly relevant in system design.
+- **Static Content Hosting** (0.4) - A common pattern but often covered under CDN or object storage.
+- **Streaming Responses** (0.4) - Streaming responses are relevant for real-time and large data APIs.
+- **UDP** (0.4) - UDP vs TCP is a common networking question in backend interviews.
+- **Versioning Strategies** (0.4) - API versioning strategies are commonly discussed in API design.
+- **Cookies** (0.3) - Session management and web security may come up.
+- **GDPR** (0.3) - Data privacy regulations can affect system design for user data.
+- **Materialized View** (0.3) - Database optimization concept sometimes asked in design discussions.
+- **ReBAC** (0.3) - Relationship-based access control like Google Zanzibar is an emerging topic.
+- **Security Monitoring** (0.3) - Security-specific monitoring and incident detection can be asked for secure system design.
+- **API Keys & Management** (0.3) - Operational API authentication method occasionally discussed but not a core interview topic.
+- **Actors** (0.3) - Actor model concurrency is sometimes discussed in distributed systems.
+- **Availability Monitoring** (0.3) - Subset of monitoring not explicitly covered.
+- **ETL, Datawarehouses** (0.3) - Data engineering topics sometimes appear in data-heavy system designs.
+- **Federated Identity** (0.3) - SSO/federation is asked in auth design; OAuth alone doesn't cover.
+- **Hadoop, Spark, MapReduce** (0.3) - Big data processing frameworks are sometimes asked for data-intensive designs.
+- **Health Monitoring** (0.3) - Subset of monitoring not explicitly covered.
+- **Integration Testing** (0.3) - Software testing topic sometimes asked.
+- **Key Generation & Rotation** (0.3) - Key management and rotation is relevant for secret handling but not a core interview topic.
+- **OSI** (0.3) - Networking model often asked in system design interviews.
+- **PKI** (0.3) - Public key infrastructure underpins TLS and service authentication, occasionally discussed.
+- **Proxies** (0.3) - Forward and reverse proxies are foundational but not explicitly covered.
+- **RPC** (0.3) - Generic RPC concept beyond gRPC is occasionally asked.
+- **SOLID** (0.3) - Object-oriented design principles mostly asked in coding interviews, not system design.
+- **SPA, SSR, SSG** (0.3) - Rendering patterns relevant to frontend system design.
+- **TCP/IP Model** (0.3) - Networking model often asked alongside OSI.
+- **Unit Testing** (0.3) - Software testing topic sometimes asked.
+- **Content Negotiation** (0.2) - Specific HTTP API concept that may be asked in API design discussions.
+- **DDD** (0.2) - Domain-driven design is an architectural approach occasionally referenced.
+- **PBAC** (0.2) - Policy-based access control is less common and often conflated with ABAC.
+- **PCI DSS** (0.2) - Payment compliance relevant for fintech system design interviews.
+- **Priority Queue** (0.2) - Priority queues can be asked for task scheduling and message ordering.
+- **API Documentation Tools** (0.2) - Tooling topic rarely probed in system design interviews.
+- **API Testing** (0.2) - Occasionally asked but not core system design.
+- **Backends for Frontend** (0.2) - BFF pattern not covered by generic API Gateway.
+- **Basic Auth** (0.2) - Basic authentication is a simple baseline but less commonly asked.
+- **CCPA** (0.2) - US privacy regulation sometimes asked in product company interviews.
+- **CI / CD** (0.2) - Foundational engineering practice rarely probed in system design.
+- **Chatty I/O** (0.2) - Anti-pattern sometimes discussed in performance contexts.
+- **DAC** (0.2) - Discretionary access control model rarely asked directly outside security roles.
+- **ESB, SOAP** (0.2) - Legacy integration technologies occasionally referenced.
+- **Extraneous Fetching** (0.2) - Over-fetching anti-pattern relevant to API design.
+- **Functional Programming** (0.2) - Programming paradigm not commonly a system design interview topic.
+- **HATEOAS** (0.2) - REST maturity model advanced constraint, occasionally asked.
+- **HIPAA** (0.2) - Healthcare compliance sometimes relevant to system design.
+- **Index Table** (0.2) - NoSQL secondary index pattern not covered by general indexes.
+- **Infrastructure as Code** (0.2) - Tooling practice rarely asked to explain in depth in SDE interviews.
+- **Layered** (0.2) - Layered architecture is a basic pattern, rarely a deep interview topic.
+- **Load Testing** (0.2) - Performance testing concept occasionally asked in system design discussions.
+- **MAC** (0.2) - Mandatory access control is rarely asked outside security contexts.
+- **MVC, MVP, MVVM** (0.2) - Architectural patterns are sometimes discussed in software design interviews.
+- **Microfrontends** (0.2) - Frontend architecture pattern occasionally discussed.
+- **Monolithic Persistence** (0.2) - Anti-pattern relevant to microservices decomposition.
+- **Performance Testing** (0.2) - Testing topic less central to system design.
+- **Pipes and Filters** (0.2) - Integration pattern occasionally referenced in data processing design.
+- **Reactive Programming** (0.2) - Programming paradigm not typically asked in system design interviews.
+- **Service Oriented** (0.2) - SOA is an older architectural style, sometimes contrasted with microservices.
+- **Swagger / Open API** (0.2) - API documentation tools are rarely asked in system design interviews.
+- **Synchronous I/O** (0.2) - Blocking I/O concept sometimes asked.
+- **TDD** (0.2) - Testing practice rarely central to system design interviews.
+- **Valet Key** (0.2) - A specific access delegation pattern, rarely asked in interviews.
+- **Anti-Corruption Layer** (0.2) - DDD pattern occasionally referenced in microservices design.
+- **Ambassador** (0.1) - Specific cloud design pattern for offloading client connectivity tasks.
+- **Contract Testing** (0.1) - Testing strategy for service integrations, rarely asked in system design.
+- **External Config Store** (0.1) - Externalized configuration pattern for microservices; rarely asked directly.
+- **Firewalls** (0.1) - Network security topic tangential to system design interviews.
+- **Mocking APIs** (0.1) - Development practice rarely asked in system design interviews.
+- **SOAP APIs** (0.1) - Legacy API protocol rarely asked in modern product companies.
+- **Claim Check** (0.1) - Messaging pattern for large payloads; rarely asked.
+- **Apache Spark** (0.1) - Big data technology rarely asked in SDE interviews.
+- **Compute Resource Consolidation** (0.1) - Specialized Azure pattern rarely asked in SDE interviews.
+- **Gatekeeper** (0.1) - Specialized security pattern rarely asked in SDE interviews.
+- **Geodes** (0.1) - An obscure edge data distribution pattern, rarely relevant.
+- **Hadoop** (0.1) - Big data technology rarely asked in SDE interviews.
+- **Postman** (0.1) - API testing tool, low relevance to system design.
+- **RFC 7807 - Problem Details** (0.1) - Standardised API error responses are niche.
+- **React, Vue, Angular** (0.1) - Frontend frameworks are outside system design scope.
+- **Readme.com** (0.1) - API documentation platform, rarely relevant to system design.
+- **Scheduler Agent Supervisor** (0.1) - Specialized Azure pattern rarely asked in SDE interviews.
+- **Sequential Convoy** (0.1) - Enterprise integration pattern rarely asked in SDE interviews.
+- **Stoplight** (0.1) - API design tool, rarely asked in interviews.
+- **Git** (0.1) - Tooling rarely asked in system design interviews.
+- **Scheduling Agent Supervisor** (0.1) - Obscure pattern rarely asked in SDE interviews.
+
 ---
 
-## Already covered under another name (258)
+## Already covered under another name (427)
 
 - AI Agents -> Agents and Agentic Systems
 - APIs -> Software Engineering
@@ -1119,3 +1381,172 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Publish-Subscribe -> Pub/Sub System Design
 - SOLID -> SOLID Principles
 - Scope / Visibility -> Encapsulation
+- ABS -> Functions
+- AVG -> Aggregate functions
+- Aggregate Queries -> Aggregate functions
+- Alter Table -> DDL/DML/DCL/TCL
+- Attributes -> Relational database fundamentals
+- BEGIN -> DDL/DML/DCL/TCL
+- Basic RDBMS Concepts -> Relational database fundamentals
+- CASE -> CASE expression
+- CHECK -> Constraints
+- COALESCE -> NULL handling
+- COMMIT -> DDL/DML/DCL/TCL
+- CONCAT -> Functions
+- COUNT -> Aggregate functions
+- CTE -> CTEs
+- Column -> Subqueries
+- Columns -> Relational database fundamentals
+- Common Table Expressions -> CTEs
+- Correlated Subqueries -> Correlated vs nested subqueries
+- Create Table -> DDL/DML/DCL/TCL
+- Creating Views -> Views
+- Cross Join -> Joins
+- DATE -> Data types
+- DELETE -> DDL/DML/DCL/TCL
+- Data Constraints -> Constraints
+- Data Definition Language (DDL) -> DDL/DML/DCL/TCL
+- Data Integrity Constraints -> Constraints
+- Data Manipulation Language (DML) -> DDL/DML/DCL/TCL
+- Drop Table -> DDL/DML/DCL/TCL
+- Dropping Views -> Views
+- EXPLAIN -> Execution plans
+- FLOOR -> Functions
+- FROM -> DDL/DML/DCL/TCL
+- FULL OUTER JOIN -> INNER vs OUTER JOIN
+- Foreign Key -> Constraints
+- GRANT and Revoke -> DDL/DML/DCL/TCL
+- GROUP BY -> GROUP BY and HAVING
+- Grant / Revoke -> DDL/DML/DCL/TCL
+- Grouping -> GROUP BY and HAVING
+- HAVING -> GROUP BY and HAVING
+- INNER JOIN -> INNER vs OUTER JOIN
+- INSERT -> DDL/DML/DCL/TCL
+- Indexes and their Usecases -> Indexes
+- JOIN Queries -> Joins
+- Joining Tables -> Joins
+- LEFT JOIN -> INNER vs OUTER JOIN
+- LENGTH -> Functions
+- MAX -> Aggregate functions
+- MIN -> Aggregate functions
+- MOD -> Functions
+- Managing Indexes -> Indexes
+- Modifying Views -> Views
+- NOT NULL -> Constraints
+- NULL -> NULL handling
+- NULLIF -> NULL handling
+- Nested Subqueries -> Correlated vs nested subqueries
+- ORDER BY -> DDL/DML/DCL/TCL
+- Object Privileges -> DDL/DML/DCL/TCL
+- Optimizing Joins -> Query performance tuning
+- Performance Optimization -> Query performance tuning
+- Primary Key -> Constraints
+- Query Analysis Techniques -> Execution plans
+- Query Optimization -> Query performance tuning
+- Query Planner -> Execution plans
+- RDBMS Benefits and Limitations -> Relational database fundamentals
+- REPLACE -> Functions
+- RIGHT JOIN -> INNER vs OUTER JOIN
+- ROLLBACK -> DDL/DML/DCL/TCL
+- ROUND -> Functions
+- Recursive CTE -> Recursive CTEs
+- Recursive Queries -> Recursive CTEs
+- Reducing Subqueries -> JOIN vs Subquery
+- Relational Model -> Relational database fundamentals
+- Relations -> Relational database fundamentals
+- Row -> Subqueries
+- Rows -> Relational database fundamentals
+- SAVEPOINT -> DDL/DML/DCL/TCL
+- SELECT -> DDL/DML/DCL/TCL
+- SUBSTRING -> Functions
+- SUM -> Aggregate functions
+- Scalar -> Subqueries
+- Schemas -> Relational database fundamentals
+- Selective Projection -> Query performance tuning
+- Self Join -> Joins
+- Stored Procedures & Functions -> Stored procedures
+- TIME -> Data types
+- TIMESTAMP -> Data types
+- Table -> Subqueries
+- Tables -> Relational database fundamentals
+- Truncate Table -> DDL/DML/DCL/TCL
+- Tuples -> Relational database fundamentals
+- UPDATE -> DDL/DML/DCL/TCL
+- Unique -> Constraints
+- Using Indexes -> Indexes
+- WHERE -> DDL/DML/DCL/TCL
+- What are Relational Databases? -> Relational database fundamentals
+- dense_rank -> ROW_NUMBER/RANK/DENSE_RANK
+- first_value -> Window functions
+- lag -> LAG and LEAD
+- lead -> LAG and LEAD
+- rank -> ROW_NUMBER/RANK/DENSE_RANK
+- row_number -> ROW_NUMBER/RANK/DENSE_RANK
+- ACID, CAP Theorem -> ACID vs BASE
+- API Gateways -> API Gateway
+- Async Request Reply -> Message queues
+- Availability -> High availability
+- Availability in Numbers -> High availability
+- Availability vs Consistency -> CAP theorem
+- Building JSON / RESTful APIs -> REST API
+- CDN Caching -> CDN
+- CQRS, Eventual Consistency -> CQRS
+- CRUD Operations -> REST API
+- Cache Aside -> Cache strategies
+- Cache-Aside -> Cache strategies
+- Caching Strategies -> Cache strategies
+- Choreography -> Sagas
+- Compensating Transaction -> Sagas
+- Competing Consumers -> Message queues
+- Content Delivery Networks -> CDN
+- Document Store -> NoSQL types
+- Eventual Consistency -> Consistency models
+- Fail-Over -> High availability
+- Federation -> Database federation
+- Gateway Aggregation -> API Gateway
+- Gateway Offloading -> API Gateway
+- Gateway Routing -> API Gateway
+- Graph Databases -> NoSQL types
+- HTTP Methods -> REST API
+- HTTP Status Codes -> REST API
+- Idempotent Operations -> Idempotency
+- Instrumentation -> Monitoring and observability
+- Kafka -> Message queues
+- Key-Value Store -> NoSQL types
+- Layer 4 Load Balancing -> Layer 4 vs Layer 7 load balancing
+- Layer 7 Load Balancing -> Layer 4 vs Layer 7 load balancing
+- Load Balancers -> Load balancing
+- Load Balancing Algorithms -> Load balancing
+- Messaging Queues -> Message queues
+- Microservices Architecture -> Microservices
+- Monitoring -> Monitoring and observability
+- OIDC -> OAuth 2.0
+- Observability -> Monitoring and observability
+- Performance Monitoring -> Monitoring and observability
+- Publisher/Subscriber -> Publish-subscribe
+- Pull CDNs -> CDN
+- Push CDNs -> CDN
+- REST -> REST API
+- REST Principles -> REST API
+- RESTful APIs -> REST API
+- Rabbit MQ -> Message queues
+- Rate Limiting / Throttling -> Rate limiting
+- Refresh Ahead -> Cache strategies
+- Resource modeling -> REST API
+- Scopes & Permissions -> OAuth 2.0
+- Sharding -> Database sharding
+- Simple JSON APIs -> REST API
+- Strong Consistency -> Consistency models
+- Task Queues -> Message queues
+- Throttling -> Rate limiting
+- Token Based Auth -> OAuth 2.0
+- URI Design -> REST API
+- URL, Query & Path Parameters -> REST API
+- Usage Monitoring -> Monitoring and observability
+- Visualization & Alerts -> Monitoring and observability
+- Weak Consistency -> Consistency models
+- Web Sockets -> WebSockets
+- Wide Column Store -> NoSQL types
+- Write-behind -> Cache strategies
+- Write-through -> Cache strategies
+- gRPC APIs -> gRPC

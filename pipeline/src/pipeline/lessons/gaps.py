@@ -93,14 +93,25 @@ def judge(llm, domain: str, our_topics: list[str], candidates: list[str], tier: 
     return llm.complete_json(SYSTEM, user, Judgements, tier=tier, purpose="taxonomy-gaps").judgements
 
 
-def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list[dict]:
-    """Returns every candidate with its verdict, ready to be written up."""
+def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: bool = False) -> list[dict]:
+    """Returns every candidate with its verdict, ready to be written up.
+
+    Resumes by default: a candidate already sorted is not sorted again. The
+    first run died on a provider balance error with two areas left, and
+    starting over would have paid a second time for the 1,357 verdicts already
+    stored. `redo` sorts everything again, for when the prompt changes.
+    """
     rows = uncovered(con)
     wanted = set(domains or {r["domain"] for r in rows})
-    out: list[dict] = []
+    done = set() if redo else {(r["domain"], r["label"]) for r in stored(con)}
+    out: list[dict] = [r for r in stored(con) if r["domain"] in wanted] if not redo else []
     for domain in sorted(wanted):
         ours = [r[0] for r in con.execute("select name from topics where domain = ? order by sort", [domain]).fetchall()]
-        candidates = [r["label"] for r in rows if r["domain"] == domain]
+        candidates = [r["label"] for r in rows
+                      if r["domain"] == domain and (domain, r["label"]) not in done]
+        if not candidates:
+            print(f"  {domain}: already sorted", flush=True)
+            continue
         for i in range(0, len(candidates), BATCH):
             chunk = candidates[i : i + BATCH]
             judged = {j.label: j for j in judge(llm, domain, ours, chunk, tier=tier)}

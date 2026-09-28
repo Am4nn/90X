@@ -74,6 +74,14 @@ alter table card_batches add column if not exists label text;
 -- bookkeeping rather than on the data. Publish sends every batch and
 -- converges, so nothing reads this any more.
 alter table card_batches drop column if exists published;
+-- Contradictions between lessons, saved as each window lands. The first run to
+-- be interrupted - 61 of 69 windows in, killed for machine memory - lost every
+-- finding, because they were only collected in memory and returned at the end.
+create table if not exists lesson_contradictions (
+    domain text not null, topics text[] not null, disagreement text not null,
+    correct text, fix text, found_at timestamp,
+    primary key (domain, disagreement)
+);
 -- What the sorter decided about each roadmap candidate. Kept because the
 -- verdicts cost a model run and the write-up does not: rewording the report,
 -- changing where the shortlist is cut, or deduplicating it should not mean

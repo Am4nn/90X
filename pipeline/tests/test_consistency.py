@@ -38,3 +38,27 @@ def test_claims_are_the_definition_and_the_key_points():
 
 def test_a_lesson_without_key_points_still_yields_its_definition():
     assert claims_of("Just an opening line.\n\n## Worked example\n\nStuff.") == "Just an opening line."
+
+
+def test_findings_survive_an_interrupted_run(tmp_path):
+    """A run killed 61 windows of 69 in lost every finding, because they were
+    collected in memory and returned at the end - about $2 of model calls for
+    nothing, and the same mistake the lesson run was built to avoid."""
+    from pipeline import staging
+    from pipeline.lessons import consistency
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    consistency.save(con, [{
+        "domain": "java",
+        "topics": ["java-hashmap-internals", "java-concurrenthashmap"],
+        "disagreement": "One says a treeified bin never reverts, the other says it untreeifies at six.",
+        "correct": "A treeified bin reverts to a list when it shrinks to six entries.",
+        "fix": "java-hashmap-internals",
+    }])
+    back = consistency.stored(con)
+    assert len(back) == 1
+    assert back[0]["fix"] == "java-hashmap-internals"
+    assert back[0]["topics"] == ["java-hashmap-internals", "java-concurrenthashmap"]
+    # The same window landing twice must not double the list Aman reads.
+    consistency.save(con, back)
+    assert len(consistency.stored(con)) == 1

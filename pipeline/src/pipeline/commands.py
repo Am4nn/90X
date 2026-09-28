@@ -191,7 +191,7 @@ def gaps(args, con) -> None:
     # --report-only rewrites the write-up from the verdicts already stored. The
     # sort costs a model run over ~2,000 candidates; the wording does not.
     rows = g.stored(con) if args.report_only else g.run(
-        con, llm.LLM(con), domains=args.domains or None, tier=args.tier)
+        con, llm.LLM(con), domains=args.domains or None, tier=args.tier, redo=args.redo)
     if args.report_only and not rows:
         raise SystemExit("no stored verdicts: run `pipeline gaps` without --report-only first")
     out = Path(REPO_DIR) / ".planning" / "taxonomy-gaps.md"
