@@ -108,9 +108,13 @@ def superseded(con, slug: str, match: str) -> bool:
     run can tell "applied" from "I cannot find the card you mean" - which it
     otherwise reported as a failure every time.
     """
+    # `repaired` only. A replacement that failed re-gating is stored as
+    # `rejected` and can still carry the objection's fragment, so counting
+    # rejected rows reported a failed fix as applied - and a later run would
+    # skip the objection for good. A repaired row means something replaced it.
     row = con.execute(
         """select 1 from cards where topic_slug = ? and source = 'lesson'
-             and status in ('repaired', 'rejected') and lower(prompt_md) like ? limit 1""",
+             and status = 'repaired' and lower(prompt_md) like ? limit 1""",
         [slug, f"%{' '.join(match.split()).casefold()}%"],
     ).fetchone()
     return row is not None

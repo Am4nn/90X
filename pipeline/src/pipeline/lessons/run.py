@@ -23,6 +23,7 @@ from . import verify
 from .context import for_topic
 from .write import render, write
 
+MIN_CONTEXT = 400  # characters; below this there is nothing to write from
 PASSES = 4  # write, a correction pass for soft findings, and rewrites for false ones
 WORKERS = 14  # topics in flight
 # Not a CPU number. A worker spends almost all its time waiting on an HTTP
@@ -56,10 +57,26 @@ def documents_for(con, slug: str) -> list[dict]:
     return [dict(zip(["id", "title", "body_md"], r)) for r in rows]
 
 
+class NoSource(LLMError):
+    """Raised rather than let a model write a lesson out of its own memory.
+
+    Every lesson must come from material we downloaded: a document, or a
+    roadmap.sh node's own text. Two of the first 274 slipped through with
+    neither - `beh-teamwork` and `simulation`, both topics we hold no documents
+    for - and a lesson written from memory is exactly the thing the gates
+    downstream cannot catch, because it reads perfectly well and cites nothing.
+    """
+
+
 def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier: str = "smart",
         lock=None) -> dict:
     """Write, fact-check, and rewrite once with the corrections."""
     context, refs = for_topic(topic, documents)
+    if not refs or len(context) < MIN_CONTEXT:
+        raise NoSource(
+            f"no source material for {topic['slug']}: {len(refs)} refs, {len(context)} characters. "
+            "Download something for it first."
+        )
     # `consistency --fix` leaves its correction on the lesson. Without this the
     # rewrite it asks for runs without the finding that prompted it.
     notes = topic.get("carried_notes") or ""

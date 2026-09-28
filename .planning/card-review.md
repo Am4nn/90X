@@ -1,6 +1,6 @@
 # 90x card review
 
-2805 cards are ready to publish. An automated gate read 2810 and objected to 96 of them (3%): 91 were rewritten and passed on the second look, 5 could not be saved and were dropped (0%). Mix: 1378 typed, 769 mcq, 596 flash, 62 output.
+2790 cards are ready to publish. An automated gate read 2810 and objected to 111 of them (4%): 91 were rewritten and passed on the second look, 20 could not be saved and were dropped (1%). Mix: 1368 typed, 767 mcq, 593 flash, 62 output.
 
 ## What these are
 
@@ -2137,6 +2137,36 @@ Given a table orders(order_id, status, amount), conditional aggregation can prod
 
 Judge whether it was right. Each was thrown away.
 
+- **beh-teamwork** (flash): In behavioral interviews, what does the STAR acronym stand for?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): Why do interviewers ask teamwork questions instead of only focusing on individual technical skill?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (flash): What is psychological safety in a team?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): A candidate describes a project almost entirely with 'we did this' and 'we delivered that.' Why does this weaken their teamwork answer?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (mcq): Which of the following is the strongest way to describe handling a disagreement with a teammate?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): How should you handle a teammate who is not pulling their weight?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): Why is real collaboration slower in the short term but faster over the life of a project?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): What should a good story show when you sacrificed your own preferred approach for the team?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): A candidate says: 'We launched the feature; we worked weekends; we resolved the bugs.' What is missing from this teamwork story, and how should they fix it?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (mcq): In a teamwork story, which of the following is a more credible behavioral signal than a broad claim about communication skills?
+  - Gate said: its lesson was written without a source and has been held back
+
 - **java-equals-and-hashcode-contract** (typed): What rules must an equals implementation itself obey?
   - Gate said: wrong_format: The honest answer is an enumeration of five specific contract properties (reflexive, symmetric, transitive, consistent, non-nullity).
 
@@ -2151,6 +2181,21 @@ Judge whether it was right. Each was thrown away.
 
 - **sd-indexes** (flash): What is the default index structure in most relational engines, and why is it broadly useful?
   - Gate said: wrong_format: Answering both what the default structure is and explaining why it is broadly useful cannot be done in a single crisp sentence.
+
+- **simulation** (flash): What is the simulation pattern in DSA?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): Why do interviewers use simulation problems to screen candidates?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): Why is mutating a Game of Life board in place while scanning incorrect?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): How do you implement gravity in a Candy Crush-style board simulation after cells are removed?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): What is the worst-case time complexity of a naive Candy Crush simulation that rescans the whole board after each removal round, and why?
+  - Gate said: its lesson was written without a source and has been held back
 
 ## Cards the gate caught and the rewrite fixed
 

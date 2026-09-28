@@ -83,8 +83,11 @@ def selector(con, slug: str, prompt: str) -> str:
     open the same way, and `pick` refuses an ambiguous fragment - so the report
     would print an instruction that cannot be followed.
     """
+    # Matched the way `pick` matches - case-insensitively, anywhere in the
+    # question - because a selector tested any other way can still be ambiguous
+    # to the code that has to use it.
     others = [
-        " ".join(r[0].split())
+        " ".join(r[0].split()).casefold()
         for r in con.execute(
             """select prompt_md from cards where topic_slug = ? and source = 'lesson'
                  and status in ('draft', 'rejected') and prompt_md <> ?""",
@@ -94,7 +97,7 @@ def selector(con, slug: str, prompt: str) -> str:
     mine = " ".join(prompt.split())
     for n in (60, 90, 120, 160, 200):
         head = mine[:n]
-        if not any(o.startswith(head) for o in others):
+        if not any(head.casefold() in o for o in others):
             return head
     return mine
 

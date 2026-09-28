@@ -372,3 +372,49 @@ def test_an_objection_block_parses_its_match_line(tmp_path):
     assert item.match == "At the senior level"
     assert "levelling ladder" in item.text
     assert "match:" not in item.text, "the directive must not reach the rewrite prompt"
+
+
+def test_a_failed_fix_is_not_reported_as_applied(tmp_path):
+    """A replacement that fails re-gating is stored as `rejected` and can still
+    carry the objection's fragment. Counting rejected rows as evidence reported
+    a failed fix as applied, and a later run would skip it for good."""
+    from pipeline import staging
+    from pipeline.cards.fix import superseded
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into cards (id, topic_slug, format, prompt_md, answer_md, kept, status, source)
+        values ('00000000-0000-4000-8000-00000000000a', 'sd-jwt', 'typed',
+                'When a server verifies a JWT, what should it check?', 'a', false, 'rejected', 'lesson')""")
+    assert superseded(con, "sd-jwt", "When a server verifies a JWT") is False
+    con.execute("""insert into cards (id, topic_slug, format, prompt_md, answer_md, kept, status, source)
+        values ('00000000-0000-4000-8000-00000000000b', 'sd-jwt', 'typed',
+                'When a server verifies a JWT, what should it check?', 'a', false, 'repaired', 'lesson')""")
+    assert superseded(con, "sd-jwt", "When a server verifies a JWT") is True
+
+
+def test_the_printed_selector_matches_the_way_pick_matches(tmp_path):
+    """The report printed a fragment tested with a case-sensitive prefix match
+    while `pick` looks for it anywhere, ignoring case - so a selector the report
+    called unique could still be ambiguous to the code that uses it."""
+    from pipeline import staging
+    from pipeline.cards.fix import pick
+    from pipeline.cards.review_pack import selector
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    shared = "Which statement about transaction isolation is correct"
+    rows = [
+        ("00000000-0000-4000-8000-00000000000c", f"{shared} for read committed?"),
+        # Same words, but later in the question and differently cased.
+        ("00000000-0000-4000-8000-00000000000d", f"In MySQL: {shared.lower()} for repeatable read?"),
+    ]
+    for cid, prompt in rows:
+        con.execute("""insert into cards (id, topic_slug, format, prompt_md, answer_md, kept, status, source)
+            values (?, 'sql-iso', 'mcq', ?, 'a', true, 'draft', 'lesson')""", [cid, prompt])
+
+    class Row:
+        def __init__(self, prompt):
+            self.prompt = prompt
+
+    picked = selector(con, "sql-iso", rows[0][1])
+    cards = [Row(p) for _, p in rows]
+    assert pick(cards, picked) is not None, f"{picked!r} is still ambiguous to pick"
