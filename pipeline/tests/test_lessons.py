@@ -70,6 +70,19 @@ def test_accepts_a_question_followed_by_an_instruction():
     ]) == []
 
 
+def test_accepts_setup_before_the_ask():
+    """Interviewers set the scene and then ask, more often than they open with
+    the question. Requiring every sentence to be a prompt threw away
+    lld-polymorphism and sd-sql-vs-nosql on the re-grounding run: the first
+    rejected for a leading statement, the second because "use" was missing from
+    the imperative verbs."""
+    assert checks.check(GOOD_BODY, [
+        "Your team has a method with a long chain of instanceof checks. How would you refactor it?",
+        "Can a NoSQL system with quorum reads be considered CP under CAP? Use Cassandra as an example.",
+        "Traffic tripled overnight. The cache is cold. What do you look at first?",
+    ]) == []
+
+
 def test_rejects_an_answer_hiding_behind_a_question():
     """The whole field is rendered as what the interviewer says, so a
     declarative second sentence shows the reader the answer. Accepting a

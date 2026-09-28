@@ -60,25 +60,39 @@ MAX_WORDS = 1400
 # "Walk me through the TLS handshake." is exactly what gets asked.
 IMPERATIVE = re.compile(
     r"^(walk|explain|describe|compare|contrast|design|sketch|derive|show|"
-    r"tell|give|name|estimate|trace|implement|justify|defend)\b",
+    r"tell|give|name|estimate|trace|implement|justify|defend|use|outline|"
+    r"list|propose|argue|critique|identify|rank|prove|quantify|evaluate|"
+    r"state|write)\b",
     re.IGNORECASE,
 )
 
 
 def is_interviewer_prompt(text: str) -> bool:
-    """True if every sentence in it is a question or an instruction.
+    """True if it sets up and then asks, and never answers itself.
 
     Testing only the whole string rejected "Can a table violate both 2NF and
     3NF at the same time? Give an example." - a question and then an
     instruction, which is how people actually talk, and it cost a correct
     lesson a full rewrite.
 
-    Every sentence, not any: the whole field is rendered as the prompt the
-    interviewer says, so "What breaks under load? The lock serializes every
-    request." would show the reader the answer next to the question.
+    Requiring every sentence to be a prompt then overshot the other way. It
+    rejected "Your team has a method with a long chain of instanceof checks.
+    How would you refactor it?" - a line of setup and then the ask, which is
+    how interviewers talk far more often than they open with the question.
+
+    So the shape is setup, then asking: statements may lead, and once a
+    sentence prompts, every sentence after it must prompt too. The whole field
+    is rendered as what the interviewer says, and the thing that must never
+    happen is answering it in place - "What breaks under load? The lock
+    serializes every request." hands the reader the answer beside the question.
+    A statement before any prompt cannot do that: there is nothing yet to
+    answer.
     """
     parts = [p.strip() for p in re.split(r"(?<=[.?!])\s+", text.strip()) if p.strip()]
-    return bool(parts) and all(p.endswith("?") or IMPERATIVE.match(p) for p in parts)
+    prompts = [p.endswith("?") or bool(IMPERATIVE.match(p)) for p in parts]
+    if not any(prompts):
+        return False
+    return all(prompts[prompts.index(True) :])
 
 
 def word_count(text: str) -> int:
