@@ -43,6 +43,8 @@ def main() -> None:
     cn = sub.add_parser("consistency", help="find claims that contradict across lessons in an area (AI)")
     cn.add_argument("domains", nargs="*", help="only these areas")
     cn.add_argument("--fix", action="store_true", help="rewrite the lesson each contradiction names")
+    cn.add_argument("--redo", action="store_true",
+                    help="run the check again instead of using the findings already stored")
     cn.add_argument("--tier", default="smart")
     sub.add_parser("card-review", help="write the card sample to review before a bulk run")
     sub.add_parser("lesson-review", help="write the short list of lessons worth reading")
@@ -52,6 +54,11 @@ def main() -> None:
     gp.add_argument("--redo", action="store_true", help="sort every candidate again, not just the unsorted")
     gp.add_argument("--report-only", action="store_true",
                     help="rewrite the report from stored verdicts, without paying to sort again")
+    cf = sub.add_parser("card-fix", help="apply .planning/card-objections.md to the cards named there (AI)")
+    cf.add_argument("--tier", default="smart")
+    cr = sub.add_parser("card-regate", help="judge the cards we already have again, after a gate change (AI)")
+    cr.add_argument("topics", nargs="*", help="only these topic slugs")
+    cr.add_argument("--tier", default="review")
     sub.add_parser("roadmaps", help="fetch roadmap.sh structures and stage their nodes")
     pb = sub.add_parser("publish", help="publish staging to Supabase")
     pb.add_argument("--dry-run", action="store_true", help="run everything, then roll back")

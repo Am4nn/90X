@@ -134,7 +134,13 @@ def consistency(args, con) -> None:
     from .lessons import run as lesson_run
 
     ai = llm.LLM(con)
-    found = c.run(con, ai, domains=args.domains or None, tier=args.tier)
+    # Findings already on disk are used as they are. Re-running the check to
+    # apply a fix it already found costs the whole $2.40 again, which is what
+    # --fix used to do; --redo asks for a fresh look.
+    kept = [] if args.redo else c.stored(con)
+    found = kept or c.run(con, ai, domains=args.domains or None, tier=args.tier)
+    if args.domains:
+        found = [x for x in found if x["domain"] in set(args.domains)]
     out = Path(REPO_DIR) / ".planning" / "lesson-contradictions.md"
     lines = ["# Claims that disagree across lessons", "",
              f"{len(found)} found." if found else "None found.", ""]
@@ -220,6 +226,24 @@ def publish(args, con) -> None:
     print("dry run: rolled back" if args.dry_run else "published")
 
 
+def card_fix(args, con) -> None:
+    from . import llm
+    from .cards import fix
+
+    fixed, failed = fix.run(con, llm.LLM(con), tier=args.tier)
+    print(f"card-fix: {fixed} fixed, {failed} still failing, spend ${llm.spend_usd(con):.2f}")
+
+
+def card_regate(args, con) -> None:
+    from . import llm
+    from .cards import regate
+
+    t = regate.run(con, only=args.topics or None, tier=args.tier)
+    print(f"card-regate: {t['judged']} cards re-judged across {t['topics']} topics, "
+          f"{t['recovered']} recovered, {t['newly_rejected']} newly rejected, "
+          f"{t['rejected']} rejected in total, spend ${llm.spend_usd(con):.2f}")
+
+
 def rebatch(args, con) -> None:
     from .cards import rebatch as rb
 
@@ -230,7 +254,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

@@ -1,39 +1,33 @@
 # Claims that disagree across lessons
 
-6 found.
+5 found.
 
-## behavioral: beh-story-bank, beh-choosing-and-organizing-stories
+## ai: ai-ml-system-design, ai-metrics-offline-and-online
 
-- **They disagree:** One lesson says a story bank should contain 8–12 distinct professional stories, while the other says to collect only 3–5 high-impact experiences as a reusable set.
-- **Correct:** A behavioral story bank should contain enough distinct stories to cover the common competencies, typically 8–12; 3–5 is too few to reliably cover categories like failure, conflict, leadership, and ownership.
-- **Rewriting:** `beh-choosing-and-organizing-stories`
+- **They disagree:** The ML system design lesson says offline metrics measure label prediction quality on held-out data, while the metrics lesson says offline metrics include latency and compute-cost measures, which are system-performance metrics rather than label-quality metrics.
+- **Correct:** Offline metrics should be model-quality metrics such as AUC, precision, recall, and ranking metrics computed offline; latency and compute cost are system performance metrics that can be benchmarked offline but are not label-based offline metrics.
+- **Rewriting:** `ai-metrics-offline-and-online`
 
-## cs: cs-tcp-vs-udp, cs-tcp-3-way-handshake
+## ai: ai-supervised-learning, ai-evaluation-metrics
 
-- **They disagree:** cs-tcp-vs-udp says TCP Fast Open allows data in the initial SYN, while cs-tcp-3-way-handshake says an ACK after a SYN is always the received ISN plus one.
-- **Correct:** A SYN without data consumes exactly one sequence number, so its acknowledgment is ISN+1; if the SYN carries data under TCP Fast Open, the data also consumes sequence numbers and the ACK must be ISN+1 plus the data length.
-- **Rewriting:** `cs-tcp-3-way-handshake`
+- **They disagree:** The supervised learning lesson says ROC/AUC better captures performance on the minority class for imbalanced data, while the evaluation metrics lesson says ROC-AUC can remain high because of the large true-negative denominator and that precision-recall AUC is often more informative.
+- **Correct:** For highly imbalanced classification, ROC-AUC can be optimistic because it summarizes ranking and is less sensitive to the positive class; precision-recall AUC focuses on the minority class and is generally the more informative metric, so ROC/AUC should not be described as reliably capturing minority-class performance.
+- **Rewriting:** `ai-supervised-learning`
 
-## cs: cs-tcp-3-way-handshake, cs-tcp-vs-udp
+## lld: lld-abstraction, lld-interfaces
 
-- **They disagree:** cs-tcp-vs-udp says TCP Fast Open allows application data in the initial SYN, while cs-tcp-3-way-handshake says an ACK after a SYN is always the received ISN plus one; if the SYN carries data, the ACK must also acknowledge that data.
-- **Correct:** A SYN consumes one sequence number, so a data-free SYN is acknowledged as ISN+1; when TCP Fast Open puts data in the initial SYN, the SYN-ACK acknowledges the data and has acknowledgment number ISN+1+data length.
-- **Rewriting:** `cs-tcp-3-way-handshake`
+- **They disagree:** Abstraction states that Java and C# interfaces can have default method bodies since Java 8 and C# 8, while Interfaces states that implementing multiple interfaces provides multiple inheritance of type but not of implementation.
+- **Correct:** Since Java 8 and C# 8, interfaces can include default method implementations, so they do provide limited implementation inheritance; they still cannot hold instance state.
+- **Rewriting:** `lld-interfaces`
 
-## java: java-hashset-vs-treeset, java-comparable-vs-comparator
+## system_design: sd-acid-vs-base, sd-replication
 
-- **They disagree:** One lesson says TreeSet/TreeMap use a supplied Comparator, while the other says TreeSet keeps elements in natural order or a supplied Comparator.
-- **Correct:** TreeSet and TreeMap use natural ordering (Comparable) when no Comparator is supplied, and use the supplied Comparator when one is provided.
-- **Rewriting:** `java-comparable-vs-comparator`
+- **They disagree:** sd-acid-vs-base states that an ACID database can serve stale reads across replicas unless synchronous replication is configured, while sd-replication states that some synchronous replication modes such as PostgreSQL remote_write and MySQL semi-sync may acknowledge before applying changes, so reads from that follower can still be stale.
+- **Correct:** Synchronous replication can reduce but not eliminate stale reads; only modes that wait for a follower to apply the change before acknowledging (such as PostgreSQL remote_apply or MySQL synchronous replication that waits for apply) prevent reads from that acknowledged follower from being stale. remote_write and semi-sync are durable but not queryable.
+- **Rewriting:** `sd-acid-vs-base`
 
-## java: java-comparable-vs-comparator, java-hashset-vs-treeset
+## system_design: sd-caching, sd-distributed-cache
 
-- **They disagree:** java-comparable-vs-comparator states that ordered collections such as TreeSet and TreeMap use a supplied Comparator, while java-hashset-vs-treeset states that TreeSet keeps elements in ascending natural order or a supplied Comparator.
-- **Correct:** TreeSet and TreeMap use natural ordering via Comparable when constructed without a Comparator, and use a supplied Comparator only when one is provided at construction.
-- **Rewriting:** `java-comparable-vs-comparator`
-
-## system_design: sd-distributed-transactions, sd-sagas
-
-- **They disagree:** The distributed transactions lesson says saga-based approaches are distributed transactions that make all changes either become durable or all roll back, while the sagas lesson says each local transaction commits independently and is reversed by compensating transactions, not distributed rollback.
-- **Correct:** A saga does not provide atomic all-or-nothing rollback; its local transactions commit, and failures are handled by later compensating actions, so intermediate states remain visible. Atomic all-or-nothing durability/rollback applies to protocols such as two-phase commit.
-- **Rewriting:** `sd-distributed-transactions`
+- **They disagree:** sd-caching states that distributed caches shard keys with consistent hashing, but sd-distributed-cache states that Redis Cluster, a common distributed cache, divides keys into 16,384 hash slots rather than using consistent hashing.
+- **Correct:** Not all distributed caches use consistent hashing: Memcached clusters typically use client-side consistent hashing, while Redis Cluster uses 16,384 hash slots assigned to primary nodes.
+- **Rewriting:** `sd-caching`
