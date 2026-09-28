@@ -22,11 +22,16 @@ function href(m: TodayMission) {
   return `/library/problem/${m.ref}`;
 }
 
-/** The status square. Decorative on purpose: `Meta` beside it already says
- *  "Done", "Skipped", "Soon" or the estimate, so labelling this too made a
- *  screen reader announce the status twice. These spans did carry aria-labels,
- *  but aria-label is prohibited on a span with no role and was being ignored -
- *  so the fix for that is to say what they are, not to make them speak. */
+/** The status square.
+ *
+ *  Decorative for a done, skipped or coming-soon mission, because `Meta` beside
+ *  it already says "Done", "Skipped" or "Soon" and labelling this repeated it.
+ *  Named for an open one, because there `Meta` shows the estimate - "45m" - and
+ *  nothing else says the mission is still to do.
+ *
+ *  All four used to carry an aria-label on a bare span, where the attribute is
+ *  prohibited and was being ignored, so none of them were announced at all.
+ *  Making them work is what revealed the duplication. */
 function Box({ status }: { status: TodayMission["status"] }) {
   if (status === "done")
     return (
@@ -45,7 +50,7 @@ function Box({ status }: { status: TodayMission["status"] }) {
   return (
     <span
       className={`size-5 rounded-md border-[1.5px] ${status === "coming_soon" ? "border-dashed border-line-2" : "border-line-2"}`}
-      aria-hidden="true"
+      {...(status === "coming_soon" ? { "aria-hidden": "true" as const } : { role: "img", "aria-label": "Open" })}
     />
   );
 }
