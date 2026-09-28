@@ -88,12 +88,19 @@ if (over.length) {
   process.exit(1);
 }
 
-const under = [
-  sharedKb < SHARED_CEILING ? `SHARED_CEILING to ${sharedKb}` : null,
-  totalKb < TOTAL_CEILING ? `TOTAL_CEILING to ${totalKb}` : null,
+// Slack is reported, not failed on. The design-token check fails when it finds
+// fewer than its ceiling, and that is right for counting discrete things: the
+// number is the same on every machine. Bytes are not - gzip and the minifier
+// differ enough between a laptop and a CI runner that this measured 292 KB
+// locally and 291 in CI, which turned a green build red for nothing. So it asks
+// for the ratchet to be turned only when there is real headroom, and never
+// fails for being small.
+const SLACK = 0.05;
+const roomy = [
+  sharedKb < Math.floor(SHARED_CEILING * (1 - SLACK)) ? `SHARED_CEILING to ${sharedKb}` : null,
+  totalKb < Math.floor(TOTAL_CEILING * (1 - SLACK)) ? `TOTAL_CEILING to ${totalKb}` : null,
 ].filter(Boolean);
-if (under.length) {
-  console.log(`\n    Under budget. Lower ${under.join(" and ")} so it cannot creep back.\n`);
-  process.exit(1);
+if (roomy.length) {
+  console.log(`\n    Well under budget. Lower ${roomy.join(" and ")} so it cannot creep back.`);
 }
 console.log("\n    ok: the app still fits on a phone.\n");

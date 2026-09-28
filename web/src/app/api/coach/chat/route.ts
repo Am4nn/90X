@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import {
-  consumeStream,
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  readUIMessageStream,
   safeValidateUIMessages,
   stepCountIs,
   streamText,
@@ -142,31 +142,48 @@ export async function POST(request: Request) {
         console.error("coach chat failed", e);
         return BUSY;
       },
-      onEnd: async ({ responseMessage }) => {
-        // step-start parts stay: they split the answer into steps when the history is sent back.
-        const { parts } = responseMessage;
-        if (!parts.some((p) => p.type !== "step-start")) return;
-        try {
-          await saveMessage(viewer.id, thread.id, {
-            id: z.uuid().safeParse(responseMessage.id).success ? responseMessage.id : randomUUID(),
-            role: "assistant",
-            parts,
-            citations: citationsOf(parts),
-          });
-        } catch (e) {
-          console.error("coach answer not saved", e);
+    });
+
+    // Saving does not go through this stream's own end callback, and the client
+    // is not what drives it. Two things have to be true for a reader to get
+    // their answer after closing the app: the model must keep going, and
+    // something must still be reading it. `abortSignal` is gone, which handles
+    // the first; this handles the second.
+    //
+    // The chunks are split in two here. The response takes one branch, and the
+    // other is read to the end on the server, which both assembles the message
+    // to save and keeps the source advancing when nobody is listening to the
+    // first. `consumeSseStream` looked like it would do this and did not - a
+    // cancelled response branch stopped the run anyway.
+    const [toClient, toStore] = stream.tee();
+    void (async () => {
+      let latest: UIMessage | undefined;
+      try {
+        for await (const message of readUIMessageStream({
+          stream: toStore,
+          onError: (e) => console.error("coach stream failed while saving", e),
+        })) {
+          latest = message;
         }
-      },
-    });
-    // A tee'd copy, drained here. Without it the only thing pulling the stream is
-    // the client's connection, so a disconnect stalls it at the first unread
-    // chunk and `onEnd` never runs - which is the same lost answer by a
-    // different route. Draining a copy costs nothing and does not block the
-    // response.
-    return createUIMessageStreamResponse({
-      stream,
-      consumeSseStream: ({ stream: copy }) => consumeStream({ stream: copy, onError: (e) => console.error("coach stream copy failed", e) }),
-    });
+      } catch (e) {
+        console.error("coach answer could not be assembled", e);
+      }
+      // step-start parts stay: they split the answer into steps when the history is sent back.
+      const parts = latest?.parts ?? [];
+      if (!parts.some((p) => p.type !== "step-start")) return;
+      try {
+        await saveMessage(viewer.id, thread.id, {
+          id: z.uuid().safeParse(latest?.id).success ? latest!.id : randomUUID(),
+          role: "assistant",
+          parts,
+          citations: citationsOf(parts),
+        });
+      } catch (e) {
+        console.error("coach answer not saved", e);
+      }
+    })();
+
+    return createUIMessageStreamResponse({ stream: toClient });
   } catch (e) {
     console.error("coach chat setup failed", e);
     return plain(BUSY, 500);
