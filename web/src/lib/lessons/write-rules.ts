@@ -44,41 +44,45 @@ export const LessonSchema = z.object({
 });
 export type Lesson = z.infer<typeof LessonSchema>;
 
+/** Fewer claims than this is not a fact check. A 700-word lesson has many more,
+ *  so an empty or near-empty list means the checker no-opped rather than that
+ *  the draft was clean, and the caller must refuse rather than publish. */
+export const MIN_CLAIMS_CHECKED = 4;
+
 export const FactCheckSchema = z.object({
   claims: z.array(z.object({ claim: z.string().max(400), supported: z.boolean(), why: z.string().max(300) })).max(20),
 });
 
-/** Same shape as the pipeline's render. */
+/**
+ * The one place a Coach-written lesson becomes Markdown.
+ *
+ * A faithful port of `render()` in `pipeline/src/pipeline/lessons/write.py`,
+ * headings and order included. It has to be: 273 lessons in the Library already
+ * have this shape, and a lesson that opened with a "## What it is" heading and
+ * called its bullets "Worth remembering" would read as a different app. The
+ * first section deliberately has no heading — the body opens with it — and the
+ * follow-up ladder is part of the lesson, with its answers, not just the
+ * questions the contract checks.
+ */
 export function renderLesson(lesson: Lesson): string {
+  const ladder = lesson.followUps.map((f) => `**${f.question.trim()}**\n\n${f.answer.trim()}`).join("\n\n");
   return [
-    "## What it is",
-    "",
-    lesson.whatItIs,
-    "",
+    lesson.whatItIs.trim(),
     "## Why interviewers ask this",
-    "",
-    lesson.whyAsked,
-    "",
+    lesson.whyAsked.trim(),
     "## The core idea",
-    "",
-    lesson.coreIdea,
-    "",
-    "## Worth remembering",
-    "",
-    ...lesson.keyPoints.map((p) => `- ${p}`),
-    "",
-    "## A worked example",
-    "",
-    lesson.workedExample,
-    "",
-    "## Traps",
-    "",
-    ...lesson.traps.map((t) => `- ${t}`),
-    "",
-    "## The 60-second answer",
-    "",
-    lesson.sixtySecondAnswer,
-  ].join("\n");
+    lesson.coreIdea.trim(),
+    "## Key points",
+    lesson.keyPoints.map((p) => `- ${p.trim()}`).join("\n"),
+    "## Your 60-second answer",
+    lesson.sixtySecondAnswer.trim(),
+    "## If they dig deeper",
+    ladder,
+    "## Worked example",
+    lesson.workedExample.trim(),
+    "## Common traps",
+    lesson.traps.map((t) => `- ${t.trim()}`).join("\n"),
+  ].join("\n\n");
 }
 
 /**

@@ -15,6 +15,7 @@ import {
   type Lesson,
   LESSONS_PER_DAY,
   LessonSchema,
+  MIN_CLAIMS_CHECKED,
   type Passage,
   PASSAGES,
   renderLesson,
@@ -65,7 +66,12 @@ async function takeLessonSlot(userId: string): Promise<{ allowed: boolean; used:
   const k = key("coach", "lesson-writes", userId, new Date().toISOString().slice(0, 10));
   try {
     const used = await redis().incr(k);
-    if (used === 1) await redis().expire(k, DAY_SECONDS);
+    // Expire every time, not only on the first. `incr` creates the key with no
+    // TTL, so a failure between the two calls would leave it there forever and
+    // lock the user out of writing lessons for good. The key is date-stamped,
+    // so refreshing its TTL cannot extend today's window - the TTL is only
+    // garbage collection, and setting it twice is cheaper than that bug.
+    await redis().expire(k, DAY_SECONDS);
     return { allowed: used <= LESSONS_PER_DAY, used };
   } catch (e) {
     console.error("lesson write allowance unavailable", e);
@@ -79,7 +85,7 @@ Rules that are checked after you answer, so breaking one wastes the attempt:
 - Every claim must be supported by the passages. If they do not cover something, leave it out. Do not fill gaps from your own knowledge.
 - Never refer to the passages, the text, the document, the article or the source. The reader never sees them. Write as if you know the subject.
 - No HTML, no Markdown tables, no links, no URLs on their own line.
-- ${MIN_WORDS}-${MAX_WORDS} words across the prose fields together. Aim for 700.
+- ${MIN_WORDS}-${MAX_WORDS} words for the whole lesson, counting the follow-up answers, which are part of it. Aim for 900.
 - Each follow-up is what an interviewer actually says. It may set the scene and then ask, but it must never answer itself.
 - Plain prose. Short sentences. No filler and no encouragement.`;
 
@@ -105,6 +111,11 @@ async function generate(userId: string, topicName: string, passages: Passage[]):
  * It is asked to find each claim in the passages, not to judge whether the claim
  * is true. A model asked the second question answers from its own knowledge,
  * which is exactly the failure this module exists to prevent.
+ *
+ * Returns the unsupported claims, or null for "not checked" — which the caller
+ * refuses on. Too few claims counts as not checked: a model that returns an
+ * empty list would otherwise pass every draft in silence, and a gate that can
+ * no-op is worse than no gate, because it reads as a pass.
  */
 async function factCheck(userId: string, bodyMd: string, passages: Passage[]): Promise<string[] | null> {
   const { model } = await coachModel();
@@ -119,7 +130,12 @@ async function factCheck(userId: string, bodyMd: string, passages: Passage[]): P
       output: Output.object({ schema: FactCheckSchema }),
     });
     await trackCoachUsage(userId, "coach.write-lesson.verify", model, result);
-    return result.output.claims.filter((c) => !c.supported).map((c) => `${c.claim} — ${c.why}`);
+    const { claims } = result.output;
+    if (claims.length < MIN_CLAIMS_CHECKED) {
+      console.error("lesson fact check returned too few claims to be a check", { claims: claims.length });
+      return null;
+    }
+    return claims.filter((c) => !c.supported).map((c) => `${c.claim} — ${c.why}`);
   } catch (e) {
     console.error("lesson fact check failed", e);
     return null; // Unchecked is not the same as clean; the caller refuses.
@@ -185,7 +201,7 @@ export async function writeLessonOnDemand(userId: string, topicSlug: string, q =
   }
 
   const words = wordCount(bodyMd);
-  await q
+  const stored = await q
     .insert(lessons)
     .values({
       topicSlug,
@@ -200,7 +216,12 @@ export async function writeLessonOnDemand(userId: string, topicSlug: string, q =
     })
     // Two chats racing on one topic: the first wins, the second is a no-op
     // rather than a crash on the primary key.
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning({ slug: lessons.topicSlug });
+  // Nothing returned means the other chat got there first. Saying "written" then
+  // would hand the model this draft's title for a lesson that holds someone
+  // else's text, and tell the reader to go and find it.
+  if (!stored.length) return { ok: false, reason: "already-written", detail: `${topic.name} already has a lesson. Read it instead.` };
   return { ok: true, topicSlug, title: lesson.title, words };
 }
 

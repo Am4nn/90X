@@ -90,22 +90,35 @@ describe("renderLesson", () => {
     ).toEqual([]);
   });
 
-  it("renders every section in the order a reader expects", () => {
+  it("renders the same sections, in the same order, as the pipeline's own render", () => {
+    // Taken from pipeline/src/pipeline/lessons/write.py. The first section has
+    // no heading on purpose: the body opens with it. If this list drifts, a
+    // Coach-written lesson reads as a different app from the other 273.
     const body = renderLesson(lesson);
     const order = [
-      "## What it is",
       "## Why interviewers ask this",
       "## The core idea",
-      "## Worth remembering",
-      "## A worked example",
-      "## Traps",
-      "## The 60-second answer",
+      "## Key points",
+      "## Your 60-second answer",
+      "## If they dig deeper",
+      "## Worked example",
+      "## Common traps",
     ];
     let at = -1;
     for (const heading of order) {
       const next = body.indexOf(heading);
       expect(next, heading).toBeGreaterThan(at);
       at = next;
+    }
+    expect(body.startsWith("## ")).toBe(false);
+    expect(body.startsWith(lesson.whatItIs.trim().slice(0, 40))).toBe(true);
+  });
+
+  it("includes the follow-up ladder with its answers, not just the questions", () => {
+    const body = renderLesson(lesson);
+    for (const f of lesson.followUps) {
+      expect(body).toContain(`**${f.question}**`);
+      expect(body).toContain(f.answer.trim());
     }
   });
 
