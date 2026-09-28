@@ -137,10 +137,16 @@ test("the answer arrives even if the app is closed mid-reply", async ({ page, co
   await composer(page).fill(message);
   await composer(page).press("Enter");
 
-  // Wait until the model is genuinely mid-answer, then walk away: closing the
-  // page drops the connection exactly as closing the app does. The run used to
-  // be tied to request.signal, so this aborted it and the answer was lost.
-  await expect(page.getByRole("status").filter({ hasText: "Coach is working" })).toBeVisible();
+  // Wait until the reply has actually begun, then walk away: closing the page
+  // drops the connection exactly as closing the app does. The run used to be
+  // tied to request.signal, so this aborted it and the answer was lost.
+  //
+  // The first chunk, not the "Coach is working" status: that appears the moment
+  // the POST is issued, which is before the server has created the thread or
+  // saved the question. Closing there aborts the setup instead of the stream,
+  // and then there is no thread to come back to - which is how this test failed
+  // the first time, on the heading rather than the answer.
+  await expect(conversation(page).getByText("Stub coach reply to")).toBeVisible({ timeout: 30_000 });
   // The thread id has to be in the URL before we can come back to it.
   await expect(page).toHaveURL(/\/coach\?t=[0-9a-f-]{36}$/);
   const url = page.url();
