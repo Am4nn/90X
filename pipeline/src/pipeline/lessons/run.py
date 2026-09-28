@@ -24,6 +24,7 @@ from .context import for_topic
 from .write import render, write
 
 MIN_CONTEXT = 400  # characters; below this there is nothing to write from
+MAX_PROBLEM_SOURCES = 8  # candidates; context.for_topic takes what fits
 PASSES = 4  # write, a correction pass for soft findings, and rewrites for false ones
 WORKERS = 14  # topics in flight
 # Not a CPU number. A worker spends almost all its time waiting on an HTTP
@@ -57,6 +58,43 @@ def documents_for(con, slug: str) -> list[dict]:
     return [dict(zip(["id", "title", "body_md"], r)) for r in rows]
 
 
+def spare_documents(con) -> list[dict]:
+    """Documents mapped to no topic: 2,346 of 5,290, so nearly half the corpus.
+
+    Read once per run and offered to every topic, where `context.for_topic` takes
+    only the ones whose title overlaps the topic's name. Titles and bodies of
+    every one of them is far too much to hold, so this is capped at the longest -
+    length is a rough proxy for a real article rather than a stub heading.
+    """
+    rows = con.execute(
+        """select id, title, body_md from documents
+           where topic_slug is null and length(coalesce(body_md, '')) > 400
+           order by length(body_md) desc limit 1200"""
+    ).fetchall()
+    return [dict(zip(["id", "title", "body_md"], r)) for r in rows]
+
+
+def problems_for(con, topic: dict) -> list[dict]:
+    """The statements of the problems in a DSA pattern, hardest-earned first.
+
+    A pattern's problems are the best material we hold for it, and no lesson read
+    one until now: `sliding-window` was written from a roadmap paragraph while 150
+    real statements sat in the same database. Interview problems only, and the
+    NeetCode 150 and Blind 75 first, for the same reason `evidence.problems_for`
+    does it - contest problems are a different sport.
+    """
+    if topic["domain"] != "dsa":
+        return []
+    rows = con.execute(
+        """select slug, title, difficulty, statement_md, source_id
+           from problems
+           where pattern_slug = ? and kind = 'leetcode' and length(coalesce(statement_md, '')) > 200
+           order by (nc150 or blind75) desc, importance desc limit ?""",
+        [topic["slug"], MAX_PROBLEM_SOURCES],
+    ).fetchall()
+    return [dict(zip(["slug", "title", "difficulty", "statement_md", "source_id"], r)) for r in rows]
+
+
 class NoSource(LLMError):
     """Raised rather than let a model write a lesson out of its own memory.
 
@@ -69,9 +107,9 @@ class NoSource(LLMError):
 
 
 def one(llm: LLM, con, topic: dict, documents: list[dict], questions=None, tier: str = "smart",
-        lock=None) -> dict:
+        lock=None, spare: list[dict] | None = None, problems: list[dict] | None = None) -> dict:
     """Write, fact-check, and rewrite once with the corrections."""
-    context, refs = for_topic(topic, documents)
+    context, refs = for_topic(topic, documents, spare, problems)
     if not refs or len(context) < MIN_CONTEXT:
         raise NoSource(
             f"no source material for {topic['slug']}: {len(refs)} refs, {len(context)} characters. "
@@ -143,6 +181,9 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     llm = llm or LLM(con)
     todo = topics_to_write(con, only, limit, redo)
     questions = parse_all()  # parsed once; every system_design topic searches it
+    # Also once: 1,200 documents belonging to no topic, offered to every one of
+    # them. `for_topic` keeps only what overlaps the topic's name.
+    spare = spare_documents(con)
     started, before = time.time(), spend_usd(con)
     written = failed = 0
 
@@ -156,7 +197,9 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     def work(topic: dict):
         with db:
             docs = documents_for(con, topic["slug"])
-        return topic, docs, one(llm, con, topic, docs, questions, tier=tier, lock=db)
+            problems = problems_for(con, topic)
+        return topic, docs, one(llm, con, topic, docs, questions, tier=tier, lock=db,
+                                spare=spare, problems=problems)
 
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         futures = {pool.submit(work, t): t for t in todo}
