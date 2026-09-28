@@ -12,6 +12,7 @@ ranking is a suggestion, never the decision, because this is exactly where a
 curated 274 quietly becomes an unfocused 800.
 """
 
+import re
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -42,6 +43,115 @@ class Judgement(BaseModel):
 
 class Judgements(BaseModel):
     judgements: list[Judgement]
+
+
+def canonical(label: str) -> str:
+    """One key per topic, however a roadmap happens to spell it.
+
+    The candidate list carried "Big O", "Big-O Notation" and "Asymptotic
+    Notation" as three separate topics, and "Queue" beside "Queues". Each was
+    sorted separately, paid for separately, and reached the list Aman is meant
+    to cut down. Punctuation, case and a trailing plural are not a new topic.
+    """
+    # Some punctuation IS the name. Stripping it made canonical("C"),
+    # canonical("C++") and canonical("C#") all "c", so one would have been
+    # marked covered by another, or merged away in the report.
+    text = label.casefold().replace("++", " cpp").replace("#", " csharp")
+    text = re.sub(r"[^a-z0-9 ]+", " ", text)
+    words = [w[:-1] if len(w) > 3 and w.endswith("s") else w for w in text.split()]
+    # Words that never distinguish one topic from another.
+    return " ".join(w for w in words if w not in {"notation", "the", "a", "an", "and", "of", "to"})
+
+
+def already_ours(con) -> dict[str, str]:
+    """Every topic we have, keyed canonically - across all areas.
+
+    This is the fix for the worst defect in the first sort: candidates were
+    compared against their own area's topic names only. "Linked List" came off
+    the CS roadmap, our Linked List topic is in DSA, and so it was structurally
+    invisible - the model could not have got it right. Twenty gaps were exact
+    name matches for topics we already had, four of them scored 0.9.
+    """
+    return {canonical(name): name
+            for (name,) in con.execute("select name from topics order by sort").fetchall()}
+
+
+# Words naming the shape of a topic rather than the topic. "Prompt Injection
+# Attacks" is the subject "prompt injection", and searching a body for the whole
+# phrase found nothing while the bare phrase was sitting in two lessons.
+SUBJECT_NOISE = {"attack", "attacks", "basic", "basics", "overview", "introduction",
+                 "fundamental", "fundamentals", "concept", "concepts", "notation",
+                 "practice", "practices", "best", "technique", "techniques",
+                 "strategy", "strategies", "type", "types"}
+COMPARISON = re.compile(r"\s+(?:vs\.?|versus)\s+", re.IGNORECASE)
+# Recognises a note this module wrote, so a later run replaces it instead of
+# adding a second one beside it.
+NOTE = re.compile(r"\s*-?\s*already named in \d+ lessons?\s*\([^)]*\)")
+
+
+def subjects_of(label: str) -> list[str] | None:
+    """The phrases a lesson must contain to be teaching this, or None.
+
+    A comparison is two subjects, not one: "RAG vs Fine-tuning" never appears
+    verbatim in prose, so the whole-phrase search found nothing even though both
+    sides are taught. Each side is searched separately and every side must be
+    present - otherwise half a comparison being mentioned would count as
+    covering it, which is worse than not checking at all.
+
+    None means the label is too short to search on, and the caller must not
+    treat that as "not covered".
+    """
+    parts = COMPARISON.split(label) if COMPARISON.search(label) else [label]
+    out = []
+    for part in parts:
+        words = re.sub(r"[^a-z0-9 ]+", " ", part.casefold()).split()
+        kept = [w for w in words if w not in SUBJECT_NOISE] or words
+        phrase = " ".join(kept).strip()
+        if len(phrase) < 3:
+            return None
+        out.append(phrase)
+    return out or None
+
+
+def _pattern(phrase: str) -> str:
+    """A bounded regex for a phrase, tolerant of the form the prose uses.
+
+    A label and a lesson rarely agree on number: the candidate is "Bloom
+    Filters" and the lesson says "a bloom filter". So the last word is reduced
+    to its stem and the inflections are optional - while both ends stay bounded,
+    because an open end let "RAG" match "ragged arrays".
+    """
+    words = phrase.split()
+    last = words[-1]
+    if last.endswith("es") and len(last) > 4:
+        last = last[:-2]
+    elif last.endswith("s") and len(last) > 3:
+        last = last[:-1]
+    stem = " ".join([*words[:-1], last])
+    return rf"\b{re.escape(stem)}(?:e|es|s|ing|ed)?\b"
+
+
+def taught_in(con, label: str) -> list[str]:
+    """Lessons whose body already teaches this, by name.
+
+    The sorter only ever saw topic titles, so a subject covered inside another
+    lesson looked like a gap: "Prompt Injection" is taught in two lessons and
+    was still scored 0.7. Titles are what a taxonomy knows; bodies are what a
+    reader actually gets.
+
+    Bounded at both ends, with only the inflections a topic name actually takes.
+    An opening boundary alone let "RAG" match "ragged arrays", which would mark
+    a real gap covered on the strength of a coincidence; the suffix group keeps
+    "index" finding "indexes" and "indexing".
+    """
+    subjects = subjects_of(label)
+    if not subjects:
+        return []
+    clause = " and ".join("regexp_matches(lower(body_md), ?)" for _ in subjects)
+    return [r[0] for r in con.execute(
+        f"select topic_slug from lessons where status = 'ok' and {clause} order by topic_slug",
+        [_pattern(subject) for subject in subjects],
+    ).fetchall()]
 
 
 def uncovered(con, domain: str | None = None) -> list[dict]:
@@ -105,6 +215,32 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
     wanted = set(domains or {r["domain"] for r in rows})
     done = set() if redo else {(r["domain"], r["label"]) for r in stored(con)}
     out: list[dict] = [r for r in stored(con) if r["domain"] in wanted] if not redo else []
+    ours_everywhere = already_ours(con)
+    # Everything a query can settle is settled before the model is asked. It got
+    # these wrong - "Linked List", "Stack", "Binary Search" and "CAP Theorem"
+    # came back as gaps at 0.8 and above - and it was never going to get them
+    # right, because it only ever saw one area's topic names and one area's
+    # titles. Cheaper and correct beats a second opinion on a fact.
+    settled: list[dict] = []
+    for row in rows:
+        # Not skipped when already stored: correcting a stored verdict is the
+        # point. A query proving we own the topic outranks the model's guess
+        # that we do not, and the stored guesses are what put "Linked List" in
+        # front of Aman at 0.9.
+        if match := ours_everywhere.get(canonical(row["label"])):
+            settled.append({**row, "verdict": "covered", "covered_by": match,
+                            "relevance": 0.0, "why": ""})
+    if settled:
+        print(f"{len(settled)} candidates settled without asking the model", flush=True)
+        save(con, settled)
+        # Replace, never append: `out` already holds the stored verdict for
+        # these, and two rows for one candidate would put it in the report twice
+        # with opposite answers.
+        corrected = {(s["domain"], s["label"]): s for s in settled}
+        out = [corrected.pop((r["domain"], r["label"]), r) for r in out]
+        out += [s for k, s in corrected.items() if s["domain"] in wanted]
+        done |= {(s["domain"], s["label"]) for s in settled}
+
     for domain in sorted(wanted):
         ours = [r[0] for r in con.execute("select name from topics where domain = ? order by sort", [domain]).fetchall()]
         candidates = [r["label"] for r in rows
@@ -132,21 +268,60 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
             # candidates that dies on the last batch should not have to start
             # over, and the report is rewritten far more often than the sort.
             save(con, out[-len(chunk):])
+
+    # A phrase found in a lesson body is a hint, not a verdict, so it annotates
+    # the candidate rather than settling it. Treating it as coverage marked
+    # "Linear Search" covered because some lesson happened to name it, and a
+    # covered candidate drops out of the list Aman reads - so a passing mention
+    # could hide a lesson still worth writing. He can tell a mention from a
+    # treatment; a LIKE query cannot.
+    annotated = []
+    for row in out:
+        if row["verdict"] != "gap":
+            continue
+        # Stripped and rewritten, never appended. Appending meant a later run
+        # with different matches left both notes on the row, and a run with no
+        # matches left the old one - so the report could claim a gap is named in
+        # lessons that no longer name it.
+        base = NOTE.sub("", row["why"] or "").strip(" -")
+        lessons = taught_in(con, row["label"])
+        if lessons:
+            where = ", ".join(lessons[:2]) + (f" and {len(lessons) - 2} more" if len(lessons) > 2 else "")
+            note = f"already named in {len(lessons)} {'lesson' if len(lessons) == 1 else 'lessons'} ({where})"
+            why = f"{base} - {note}".strip(" -")
+        else:
+            why = base
+        if why != (row["why"] or ""):
+            row["why"] = why
+            annotated.append(row)
+    if annotated:
+        save(con, annotated)
+        named = sum(1 for r in annotated if NOTE.search(r["why"] or ""))
+        print(f"{named} gaps are already named in a lesson; noted, not removed"
+              + (f" ({len(annotated) - named} stale notes cleared)" if len(annotated) > named else ""),
+              flush=True)
     return out
 
 
 LIKELY = 0.7  # "an interview will go here", in the sorter's own terms
 
 
-def _dedupe(gaps: list[dict]) -> list[dict]:
+def _dedupe(gaps: list[dict], across_areas: bool = False) -> list[dict]:
     """One row per topic, keeping the highest relevance it was given.
 
-    The same topic appears on several roadmaps under slightly different
-    capitalisation, and each copy was sorted separately, so the list Aman reads
-    had "Sampling Parameters" twice with different reasons."""
-    best: dict[tuple[str, str], dict] = {}
+    The same topic appears on several roadmaps spelled differently, and each copy
+    was sorted separately, so the list Aman reads had "Sampling Parameters" twice
+    with different reasons, and "Big O" beside "Big-O Notation". `canonical`
+    collapses punctuation, case, plurals and filler; it will not collapse genuine
+    synonyms like "Asymptotic Notation", which needs a model to see.
+
+    `across_areas` is for the list of lessons to write, where one topic means one
+    lesson: "Big O" under cs and "Big-O Notation" under dsa are not two jobs, and
+    keying by area let both through for someone to approve separately.
+    """
+    best: dict[tuple[str, str] | str, dict] = {}
     for row in gaps:
-        key = (row["domain"], " ".join(row["label"].split()).casefold())
+        key = canonical(row["label"]) if across_areas else (row["domain"], canonical(row["label"]))
         if key not in best or row["relevance"] > best[key]["relevance"]:
             best[key] = row
     return list(best.values())
@@ -173,7 +348,7 @@ def report(rows: list[dict], all_domains: list[str] | None = None) -> str:
     and up and counts the rest. The tail is still listed, because a suggestion
     is not a decision, but it is below the line.
     """
-    gaps = _dedupe([r for r in rows if r["verdict"] == "gap"])
+    gaps = _dedupe([r for r in rows if r["verdict"] == "gap"], across_areas=True)
     likely = [r for r in gaps if r["relevance"] >= LIKELY]
     tail = [r for r in gaps if r["relevance"] < LIKELY]
     n_covered = sum(1 for r in rows if r["verdict"] == "covered")

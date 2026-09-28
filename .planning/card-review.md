@@ -1,8 +1,6 @@
 # 90x card review
 
-2783 cards are ready to publish. An automated gate read 2810 and objected to 27 of them (1%): 0 were rewritten and passed on the second look, 27 could not be saved and were dropped (1%). Mix: 1366 typed, 736 mcq, 612 flash, 69 output.
-
-*No card here is recorded as caught-and-rewritten. Card runs before 2026-09-28 did not keep that record, so on an older run the rewrite pass is invisible rather than idle, and the drop rate is the only measured number above.*
+2790 cards are ready to publish. An automated gate read 2810 and objected to 111 of them (4%): 91 were rewritten and passed on the second look, 20 could not be saved and were dropped (1%). Mix: 1368 typed, 767 mcq, 593 flash, 62 output.
 
 ## What these are
 
@@ -20,159 +18,164 @@ Below: 25 cards, spread across areas and formats, weighted toward the ones the g
 
 ---
 
-## 1. Leadership · flash · Easy
+## 1. Lock interface and ReentrantLock · flash · Easy
 
-*behavioral · gate confidence 0.8*
+*java · gate confidence 0.7*
+
+<sub>to object to this card: `## java-lock-interface-and-reentrantlock` then `match: What is ReentrantLock in Java?`</sub>
 
 **Question**
 
-What is the real measure of thought leadership in an interview answer?
+What is ReentrantLock in Java?
 
 **Reference answer**
 
-Concrete artifacts such as internal design docs, blog posts, talks, or open-source contributions tied to a distinctive point of view that influenced a real decision, with focus on changed thinking or adoption rather than visibility or publication count.
+A reentrant, exclusive lock implemented in java.util.concurrent.locks (Java 5) with timed tryLock, interruptible lockInterruptibly, multiple Condition objects, and optional fairness.
 
 **Graded on**
 
-- Concrete artifacts with point of view
-- Influenced a real decision
-- Changed thinking or adoption, not publication count
+- Reentrant exclusive lock
+- Part of java.util.concurrent.locks since Java 5
+- Supports tryLock and lockInterruptibly
+- Provides Condition and optional fairness
 
 <details><summary>The lesson this came from</summary>
 
-In behavioral interviews, leadership is the ability to guide a team or group toward a shared outcome without relying on formal authority. It includes vision-setting, stakeholder influence, thought leadership, and critical-situation leadership. Strong answers describe the concrete mechanisms—communication cadence, decision frameworks, relationship building—rather than claiming a title or listing team size.
+The Lock interface in java.util.concurrent.locks, added in Java 5, is an explicit mutual-exclusion mechanism. ReentrantLock is its primary implementation: a reentrant, exclusive lock with the same memory-synchronization semantics as synchronized, but with timed acquisition via tryLock, interruptible locking via lockInterruptibly, multiple condition objects via newCondition, and optional fairness. Unlike synchronized, lock and unlock are not restricted to one block or method; the programmer must release the lock in a finally block.
 
 ## Why interviewers ask this
 
-Interviewers ask leadership questions to test whether a candidate can operate at the expected level of scope and ambiguity: can they influence across teams, think systematically, and keep a group effective under pressure? They are probing judgment, self-awareness, and communication, not checking whether the candidate held a manager title. Senior candidates are also watched for common failures like unstructured stories, actions without frameworks, and answers that bury the signal in detail.
+The interviewer is checking whether you can choose between synchronized and explicit locks, and whether you understand the lifecycle hazards of manual locking. They may also probe tryLock, interruptibility, fairness, and Condition, because those are the reasons an experienced engineer reaches for ReentrantLock.
 
 ## The core idea
 
-Leadership in a behavioral answer means showing influence without authority: you changed what people did or believed by building credibility, communicating a clear direction, and managing relationships. Interviewers care less about your title than about the mechanisms you used—how you made a decision, how you brought others along, and how you maintained morale during uncertainty. Strong answers deliberately cover multiple dimensions of leadership: people, strategy, stakeholders, risk, and change management, not just a technical or product win. They also state the decision-making framework behind the actions, because listing actions alone makes a senior candidate sound like an executor.
+ReentrantLock is a manual, feature-rich alternative to synchronized. It supports timed acquisition with tryLock, interruptible acquisition with lockInterruptibly, multiple condition queues through newCondition, and an optional fair mode. The cost is that you own both acquisition and release, so failing to call unlock in a finally block can leak the lock and deadlock other threads. Use synchronized for simple critical sections; reach for ReentrantLock when you need a timeout, need interruption, or want separate wait queues for different conditions. Reentrancy means a thread already holding the lock may acquire it again without deadlocking, and it must release once per acquisition.
 
 ## Key points
 
-- Product managers and senior engineers typically lead through vision, credibility, and relationships rather than direct authority.
-- Critical-situation leadership requires clear communication, decisive action, and deliberate attention to team morale while navigating uncertainty.
-- Thought leadership—publishing, speaking, or contributing original perspectives—builds personal and company credibility over time.
-- Senior behavioral answers are expected to cover multiple leadership dimensions: people, strategy, stakeholders, risk, and change management, not only technical or product outcomes.
-- A common senior failure is narrating actions without naming the decision-making framework that produced them, which makes the candidate sound like an executor.
+- Lock and ReentrantLock were introduced in Java 5 as part of java.util.concurrent.locks.
+- ReentrantLock provides tryLock(long, TimeUnit) and lockInterruptibly(); a thread blocked entering a synchronized block cannot be timed out or interrupted.
+- ReentrantLock can be constructed with fairness=true, which grants access to the longest-waiting thread and generally reduces throughput.
+- Unlike synchronized, a ReentrantLock must be explicitly unlocked, typically in a finally block, and each successful lock() must be matched by an unlock().
+- ReentrantLock supports multiple Condition objects via newCondition(), unlike a synchronized monitor's single wait set.
 
 ## Your 60-second answer
 
-Leadership in an interview means influence without formal authority: you moved a group toward a better outcome by setting direction, building credibility, and managing relationships. I'd answer with a specific situation where I had to align people who didn't report to me. I would open with the decision I needed to make and the framework I used, then describe how I communicated it and handled resistance or pressure. The trade-off is that influence without authority is slower; you have to earn trust first, so a strong answer also shows the upfront investment in listening and adjusting the plan. I would close with what actually changed—adoption, risk, morale, or delivery—so the interviewer sees scope, not just activity.
+Lock is an interface in java.util.concurrent.locks, added in Java 5, for explicit mutual exclusion. Its main implementation, ReentrantLock, gives you the same basic mutual exclusion and memory visibility as synchronized, but it adds timed acquisition with tryLock(long, TimeUnit), interruptible acquisition with lockInterruptibly(), multiple condition variables through newCondition(), and an optional fair mode. You would use it when a thread should not block forever: it can try for a lock for a few hundred milliseconds and do fallback work, or it should abort if interrupted. The trade-off is that unlike synchronized, you must release it manually. If an exception occurs after lock() and before unlock(), the lock leaks, so the unlock must be in a finally block. For most simple critical sections synchronized is simpler and safer; ReentrantLock is for when you need those extra controls.
 
 ## If they dig deeper
 
-**Tell me about a time you influenced a team without formal authority.**
+**What is the difference between ReentrantLock and synchronized?**
 
-A strong answer names the specific stakeholder or team, what they initially believed, the mechanism used to change their position—data, framing, relationships, or a pilot—and the observable result. It avoids saying 'I convinced them' and instead shows the steps that led to changed behavior.
+Synchronized is built into the language and tied to a block or method; the JVM releases the monitor automatically on any exit, including exceptions. ReentrantLock is an explicit API: you call lock() and must call unlock() in a finally block. ReentrantLock adds timed tryLock, interruptible locking, multiple Condition objects, and optional fair scheduling; synchronized has none of those.
 
-**How do you handle a high-pressure crisis or significant disruption?**
+**When would you use tryLock instead of lock()?**
 
-A strong answer describes clear communication cadence, prioritization of what not to do, preserving team morale, and a defined owner for decisions. It often includes a simple triage framework: stabilize, communicate, decide, and review afterward.
+Use tryLock when a thread should not wait indefinitely. For example, a task can try for 500 milliseconds and then either do fallback work, retry later, or abandon the operation. A plain lock() blocks uninterruptibly until the lock is available; tryLock(long, TimeUnit) returns false if the timeout elapses and throws InterruptedException if the thread is interrupted while waiting.
 
-**How do you demonstrate thought leadership?**
+**What does it mean that ReentrantLock is reentrant, and what can go wrong with a non-reentrant lock?**
 
-A strong answer cites concrete artifacts—internal design docs, blog posts, talks, or open-source contributions—and ties them to a distinctive point of view that influenced a real decision. It focuses on changed thinking or adoption, not just visibility or publication count.
+Reentrant means a thread that already owns the lock can call lock() again without deadlocking; the lock keeps a hold count, and every lock() must be matched by an unlock(). In a non-reentrant lock, a recursive or callback path that reacquires the lock would block itself forever. With reentrancy, you can have one method call another that also locks the same lock.
 
-**What was the most difficult leadership decision you made, and what framework did you use?**
+**How do ReentrantLock and Conditions support more than wait/notify?**
 
-A strong answer names the explicit trade-offs, the decision criteria, who was consulted, and how the decision was communicated to stakeholders who disagreed. It avoids listing actions and instead reconstructs the reasoning.
+A single synchronized monitor has one wait set, so wait() and notifyAll() wake all waiters, and you often need a condition predicate to recheck. ReentrantLock.newCondition() creates separate Condition objects, each with its own wait queue. A producer can signal only consumers waiting for 'not empty' rather than waking every thread. With multiple conditions you can model more precise state transitions and avoid unnecessary wakeups.
 
-**Tell me about a time you led through change when the team was resistant.**
+**What is the underlying mechanism behind ReentrantLock's blocking and acquisition?**
 
-A strong answer diagnoses the actual source of resistance—loss of autonomy, extra work, unclear benefit—then describes aligning incentives, sequencing a small reversible pilot, and creating visible early wins. It also shows how the candidate managed upward and adjusted the plan rather than pushing the original agenda unchanged.
+ReentrantLock delegates to an internal synchronizer that extends AbstractQueuedSynchronizer. An uncontended non-fair tryLock does a CAS on the synchronizer state from 0 to 1 and records the current thread as owner. If the same thread already holds the lock, the hold count is incremented. If another thread holds it, blocking lock() enqueues the thread in a CLH-like queue and uses LockSupport.park; timed tryLock returns false if the timeout expires.
 
 ## Worked example
 
-A strong answer sounds like: 'As a senior engineer, I saw that [specific cross-team problem] was causing repeated delays. I had no authority over the other teams, so I started by documenting the actual pain in [a short internal note] and framing the proposal around [what those teams cared about]. I met each lead individually, collected their objections, and changed the rollout order so the lowest-risk team could go first. I made the decision criteria explicit: if we hit [specific threshold], we would escalate or adjust scope. I communicated that plan in a weekly update and kept a visible risk list. When one lead resisted, I asked what they would need to feel safe proceeding, and we turned that into a smaller pilot. In the end I measured whether [the actual pain] changed, not just whether people said yes.'
+Suppose a cache refresh task runs on a background thread while request threads read the cache. With a synchronized block, a request thread that reaches the refresh method blocks until the refresh completes, adding latency. With a ReentrantLock, the request thread can call lock.tryLock(200, TimeUnit.MILLISECONDS). If it returns true, the thread updates the cache and calls unlock() in a finally block. If it returns false, the thread serves the last completed value instead of blocking. If the thread is interrupted while waiting, tryLock throws InterruptedException, so the code can restore the interrupt flag and abort cleanly. A synchronized block cannot provide this timeout or interruptible behavior for a thread blocked on monitor entry.
 
 ## Common traps
 
-- Confusing a management title with leadership, so the story relies on authority and reporting lines instead of influence and persuasion.
-- Listing actions chronologically without naming the decision framework or trade-offs, which makes a senior answer sound like project execution.
-- Telling the story from only one leadership dimension, such as technical design, and omitting people, stakeholder, risk, or change management aspects.
-- Being verbose and letting interviewer interruptions pull the story into rabbit holes, so the core signal about scope and judgment never lands.
+- Forgetting to call unlock() in a finally block, which leaks the lock and can deadlock every other thread.
+- Calling unlock() when the current thread does not hold the lock, which throws IllegalMonitorStateException.
+- Using fairness=true by default; it grants near-FIFO ordering but reduces throughput and is only needed when strict ordering is required.
+- Assuming ReentrantLock is always faster than synchronized; since Java 6, intrinsic locks have been optimized, so choose based on features, not performance folklore.
 
 </details>
 
 ---
 
-## 2. Story craft · typed · Medium
+## 2. Supervised Learning · typed · Medium
 
-*behavioral · gate confidence 0.8*
+*ai · gate confidence 0.8*
+
+<sub>to object to this card: `## ai-supervised-learning` then `match: Why is data quality important in supervised learning?`</sub>
 
 **Question**
 
-What is defensive framing in story craft, and why is it useful?
+Why is data quality important in supervised learning?
 
 **Reference answer**
 
-Defensive framing means proactively explaining constraints and mistakes as decisions with reasons, so the interviewer hears your rationale instead of forming an uncharitable interpretation. It is useful because it prevents avoidable problems from being read as carelessness or poor judgment.
+A model learns whatever patterns exist in the labels, so it inherits any bias or noise in the training data. Data collection and preprocessing are therefore part of model design, not separate chores.
 
 **Graded on**
 
-- Proactively explain constraints and mistakes
-- Frame decisions with reasons
-- Avoid uncharitable interpretations
+- Model inherits label bias and noise
+- Data quality affects performance
+- Preprocessing is part of model design
 
 <details><summary>The lesson this came from</summary>
 
-Story craft in behavioral interviews is the deliberate selection, structuring, and framing of a real work experience to demonstrate a specific engineering or leadership signal. It combines a clear sequence—situation, the action you personally took, and the result—with details chosen to anticipate interviewer follow-ups. It is not inventing events or memorizing a monologue; it is preparing multiple true stories and adjusting their emphasis to the question and company values.
+Supervised learning trains a model from a dataset of paired examples, each containing input features and a known target label. The learning algorithm searches for a function that maps inputs to outputs by minimizing a loss between predictions and known targets. The two main tasks are regression, where the target is a continuous value, and classification, where the target is a discrete class. The trained model is evaluated on examples not used during training.
 
 ## Why interviewers ask this
 
-Interviewers use behavioral stories to infer how you will behave on their team, not just what you know. They are testing whether you can communicate a complex situation in a short answer, own your decisions, show impact, and fit the company's stated values. Weak story craft usually signals either lack of relevant experience or lack of self-awareness, regardless of technical strength.
+Interviewers use this topic to verify that you understand the core machine learning workflow rather than just API calls. They test whether you can choose an appropriate model and loss for a given target type, avoid overfitting, and evaluate results correctly under class imbalance. Follow-ups usually separate candidates who memorized definitions from those who can reason about generalization and metrics.
 
 ## The core idea
 
-A strong behavioral story is specific, personal, and narrow enough to explain in two minutes. The interviewer should be able to separate what you did from what the team did, so use 'I' for decisions and actions you owned. The event itself matters less than the reasoning you show: why you chose one option, what you learned, and how you adjusted. Prepare a story catalog mapped to common signal areas—conflict, disagreement, failure, leadership, ambiguous requirements—and to the company's values. Be defensive in framing: omit irrelevant details that invite uncharitable interpretations, and for unavoidable problems explain the rationale rather than hoping the interviewer will not ask. Do not fight the question; adapt the same true experience to the signal being probed.
+Supervised learning is an optimization problem: choose a function from a hypothesis space to minimize expected loss on unseen data. Because the true expected loss is unavailable, we approximate it with a training set and use a separate validation or test set to estimate generalization. Regression typically uses squared error loss for continuous targets; classification typically uses cross-entropy for discrete classes. The model matters only by its performance on new examples, not on training examples. Simpler models may underfit while complex models may overfit; regularization and validation manage this trade-off.
 
 ## Key points
 
-- A well-crafted answer names a specific situation, the action you personally took, and a result the interviewer can verify through follow-ups.
-- Story selection should match the signal in the question—leadership, conflict, failure, ambiguity—rather than defaulting to the largest project.
-- Preparing a catalog of true stories mapped to common signals and company values is more reliable than improvising each answer.
-- Defensive framing means proactively explaining constraints and mistakes as decisions with reasons rather than waiting for the interviewer to interpret them badly.
-- Saying 'I' for your own actions and 'we' only for team context preserves credibility and helps the interviewer assess you, not your team.
+- Supervised learning fits a function from labeled pairs (x, y) by minimizing a loss such as squared error for regression or cross-entropy for classification.
+- Classification predicts discrete labels; regression predicts continuous values; logistic regression outputs a probability and becomes a classifier only after thresholding.
+- Generalization is estimated on held-out data, not training data; training error alone overstates model quality.
+- Overfitting means low training error but much higher validation error; regularization, early stopping, and cross-validation reduce it.
+- For imbalanced classification, accuracy misleads; precision, recall, F1, and precision-recall AUC are preferred, while ROC-AUC can be optimistic because false positive rate is diluted by many true negatives.
 
 ## Your 60-second answer
 
-Story craft for behavioral interviews is the work of turning a real experience into a short, structured answer that shows what you personally did and why. I use a situation-action-result shape, but I change the emphasis depending on what the question is actually testing—conflict, leadership, ambiguity, or a mistake. For example, the same delayed project can be told as a story about aligning a stakeholder if the question is about disagreement, or as a story about changing process if the question is about learning from failure. The reason this matters is that the interviewer is evaluating my judgment and communication, not the event itself. The trade-off is polish versus authenticity: if the story is too scripted, I stop answering the actual follow-up and start performing.
+Supervised learning trains a model on labeled examples: each input has a known target. The model learns a function from inputs to outputs by minimizing a loss, such as mean squared error for regression or cross-entropy for classification. Classification predicts a discrete class—spam or not spam—while regression predicts a continuous value like price. The point is to generalize to unseen data, so we evaluate on a held-out set. Overfitting is when the model memorizes training data and performs poorly on new data; regularization and cross-validation help. A practical trade-off is bias versus variance: simple models may underfit, complex models may overfit. In imbalanced classification, accuracy can be misleading; use precision, recall, F1, and precision-recall AUC rather than relying on ROC-AUC for the minority class.
 
 ## If they dig deeper
 
-**How do you decide which story to tell when a question could fit several experiences?**
+**What is the difference between supervised and unsupervised learning?**
 
-I pick the story whose central action best matches the signal in the question, not the most impressive project. I keep short notes on my experiences mapped to conflict, leadership, failure, ambiguity, and impact, so I can choose quickly. Then I spend the first sentence setting up the part of the experience that answers that specific signal.
+Supervised learning uses labeled examples, so each input has a known target and the model learns to map inputs to outputs. Unsupervised learning has no labels and looks for structure such as clusters or low-dimensional representations. Clustering is unsupervised; spam detection with labeled emails is supervised.
 
-**What structure do you use when telling the story itself?**
+**How do you tell whether a supervised model is overfitting?**
 
-I use a situation-action-result structure, but I treat it as a logical order rather than a formula. I give just enough context to make the decision understandable, say what I personally did and why, then give a result with numbers or observable consequences. I also think about what follow-up question my ending invites and can extend the story backward or forward.
+Compare performance on training and validation sets. If training loss is much lower than validation loss, the model is memorizing training details. Cross-validation, regularization, reducing model capacity, or early stopping can close that gap.
 
-**How do you tell a story where the outcome was partly bad or you made a real mistake?**
+**Why is accuracy a poor metric for imbalanced classification, and what should you use instead?**
 
-I don't hide the mistake if the question is about a failure, because an unforced admission followed by what I changed is usually stronger than a defensive answer. I state the mistake briefly, explain what I misjudged at the time, describe the concrete fix or process change, and end with how I acted differently later. The key is to take individual ownership for the part I controlled rather than blaming the team or the circumstances.
+Accuracy counts correct predictions across all classes, so a model that always predicts the majority class can score high—for example, 99% accuracy when only 1% of examples are positive. Precision, recall, F1, and precision-recall AUC focus on the positive or minority class and are more informative.
 
-**How do you avoid sounding rehearsed when you have prepared the story in advance?**
+**How does logistic regression output a class if it is a regression model?**
 
-I prepare the key beats, the one decision I want to emphasize, and the numbers or facts, not word-for-word scripts. In the interview I speak in short sentences and adjust to the follow-up instead of delivering a memorized paragraph. If I notice myself performing, I stop and ask the interviewer whether that addressed their question.
+Logistic regression estimates P(y=1|x) using a linear combination passed through the sigmoid function. A decision threshold, often 0.5, assigns the positive class when the probability exceeds it. The threshold can be tuned to trade precision against recall based on misclassification costs.
 
-**A lot of your impact happened through a team. How do you tell that story without either claiming team credit or disappearing into 'we'?**
+**For a highly imbalanced binary classifier, why can ROC-AUC look optimistic while precision-recall AUC is more informative?**
 
-I separate team context from personal contribution at the start: 'The team owned X; I personally led Y.' I describe my own decisions, disagreements, and trade-offs in the first person, and only use 'we' for shared outcomes. If I designed and drove a process, I say so; if I only supported, I say exactly what support I gave. That lets the interviewer see individual judgment inside a collaborative result, which is what they are actually hiring for.
+ROC-AUC plots true positive rate versus false positive rate, and false positive rate divides false positives by all true negatives. When negatives dominate, even many false positives keep the false positive rate small, so ROC-AUC can stay high despite poor minority-class performance. Precision-recall AUC uses precision = TP/(TP+FP), which punishes every false positive relative to the small positive set, so it tracks the minority class more directly. For imbalance, PR-AUC is generally the more informative summary.
 
 ## Worked example
 
-A strong answer sounds like: 'In my last role, [the system I owned] started returning errors for a subset of requests after [a change I had shipped]. I first [immediate containment action], then traced the failure to [specific cause]. I fixed it by [your change], and error rates returned to baseline. The mistake I made was [a specific planning or review gap]. I now [process change you actually made].' This shape works because it opens with a concrete situation the interviewer can probe, uses 'I' only for decisions the speaker made, gives a checkable result, and converts the flaw into a reusable process change. It also creates a natural follow-up about the process change rather than leaving the interviewer to ask whether the candidate blamed someone.
+Consider a test set of 100 emails: 5 are spam (positive) and 95 are not. A model flags 3 emails as spam; 2 are actually spam and 1 is not. Accuracy is (2 true positives + 94 true negatives) / 100 = 96%, which looks strong. Precision is 2/(2+1) ≈ 0.67 and recall is 2/5 = 0.40, so the model misses 3 of every 5 spam emails. At this threshold the false positive rate is 1/95 ≈ 0.011 while the true positive rate is 0.40—a point well above the ROC diagonal. Lowering the threshold to catch more spam adds false positives; precision drops sharply because there are so few true positives, which precision-recall AUC captures more directly than ROC-AUC.
 
 ## Common traps
 
-- Reciting a memorized answer word-for-word and then freezing when a follow-up breaks from the script.
-- Using 'we' so consistently that the interviewer cannot identify which decisions were the candidate's.
-- Choosing the most technically impressive project instead of the experience that best demonstrates the question's signal.
-- Claiming no mistakes or failures, which reads as lack of self-awareness and ends the story before any learning is shown.
+- Calling logistic regression a classifier without noting it outputs probabilities and requires a threshold.
+- Evaluating a model on the same data used for training, which inflates performance.
+- Using accuracy alone on imbalanced data and concluding the model is strong.
+- Treating ROC-AUC as the default metric for imbalanced problems when precision-recall AUC is generally more informative for the minority class.
 
 </details>
 
@@ -181,6 +184,8 @@ A strong answer sounds like: 'In my last role, [the system I owned] started retu
 ## 3. Unsupervised Learning · flash · Easy
 
 *ai · gate confidence 0.85*
+
+<sub>to object to this card: `## ai-unsupervised-learning` then `match: Name the three main tasks of unsupervised learning.`</sub>
 
 **Question**
 
@@ -257,269 +262,175 @@ For a point in a compact cluster, suppose the mean distance to points in its own
 
 ---
 
-## 4. Regularization · output · Easy
-
-*ai · gate confidence 0.85*
-
-**Question**
-
-Given the Python code below, what is printed? The code simulates one L2 update and five L1 updates with λ=0.1, learning rate=0.01, and no data gradient.
-
-```python
-w2 = 0.005
-# One L2 update: multiply by (1 - lr * 2 * λ)
-w2 *= (1 - 0.01 * 2 * 0.1)
-print(round(w2, 5))
-
-w = 0.005
-# Five L1 updates: subtract lr * λ each step
-for _ in range(5):
-    w -= 0.01 * 0.1
-print(w)
-```
-
-**Reference answer**
-
-0.00499\n0.0
-
-**Graded on**
-
-- The L2 update multiplies the weight by 0.998, so 0.005 becomes 0.00499.
-- Each L1 update subtracts 0.001, so after five steps 0.005 becomes 0.0.
-- The first print rounds to five decimal places, showing 0.00499.
-- The second print shows exactly zero.
-
-<details><summary>The lesson this came from</summary>
-
-Regularization is any modification to a learning algorithm that reduces generalization error by constraining or perturbing the model rather than by fitting the training data better. In neural networks the common forms are L1 and L2 weight penalties, which add a function of the weights to the loss; dropout, which randomly disables units during training; and early stopping, which halts optimization before the training loss reaches its minimum. These changes shrink the effective hypothesis space or add noise so the model cannot memorize training examples.
-
-## Why interviewers ask this
-
-Interviewers use regularization to test whether you understand overfitting as a capacity problem and know the mechanism behind each technique, not just the names. They want to see you can choose a regularizer, explain training-versus-inference differences, and reason about sparsity and optimization. A candidate who knows L2 and weight decay diverge under Adam signals deeper optimization knowledge.
-
-## The core idea
-
-The core idea is to trade a little training fit for better validation performance. L1 adds the absolute value of each weight, and its constant-magnitude gradient can push irrelevant weights exactly to zero. L2 adds the squared weight, which shrinks all weights continuously and rarely reaches zero. Dropout forces redundant representations by randomly removing units and scaling the survivors during training. Early stopping keeps parameters closer to their initialization by limiting the number of optimization steps. In plain SGD, L2 is equivalent to weight decay, but under adaptive optimizers such as Adam the two differ, so AdamW applies decoupled weight decay separately.
-
-## Key points
-
-- L1 regularization adds λ times the sum of absolute weights to the loss; its constant-magnitude gradient can push many weights exactly to zero, producing sparse models.
-- L2 regularization adds λ times the sum of squared weights to the loss and shrinks all weights toward zero, but rarely to exactly zero.
-- For standard SGD, L2 regularization is equivalent to weight decay; in adaptive methods like Adam they diverge because L2 is scaled by the preconditioner, so AdamW decouples weight decay.
-- Dropout randomly sets units to zero with probability p during training and scales survivors by 1/(1-p); at inference the full network is used without dropout.
-- Early stopping halts training when validation loss stops improving, and weights from the lowest-validation-loss epoch are typically restored.
-
-## Your 60-second answer
-
-Regularization is a set of techniques for reducing overfitting by constraining model complexity. For neural networks, the main ones are L1, L2, dropout, and early stopping. L1 adds the absolute values of the weights to the loss; its constant gradient can drive irrelevant weights exactly to zero, producing a sparse model. L2 adds the squared weights, which shrinks all weights toward zero but rarely to zero. In standard SGD that L2 penalty is equivalent to weight decay, but under Adam they behave differently, which is why AdamW applies decoupled weight decay. Dropout randomly drops units during training and scales the survivors, then uses the full network at inference. Early stopping halts training when validation error stops improving. The trade-off is bias: too much regularization underfits, so the penalty strength, dropout probability, and patience must be tuned.
-
-## If they dig deeper
-
-**What is the difference between L1 and L2 regularization?**
-
-L1 adds a penalty proportional to the sum of absolute weight values, so its gradient has constant magnitude and can push some weights exactly to zero. L2 adds a penalty proportional to the sum of squared weights, so its gradient is proportional to the weight itself; it shrinks large weights more aggressively but usually never removes any weight completely.
-
-**Why does L1 regularization produce exact zeros while L2 does not?**
-
-For a small weight, L1 still applies a nonzero penalty gradient, so the optimizer can reduce the weight all the way to zero if that lowers the total objective. L2's penalty gradient vanishes as the weight approaches zero, so the optimizer sees less and less pressure to continue shrinking it exactly to zero.
-
-**How does dropout behave during training versus inference?**
-
-During training, dropout randomly sets each unit to zero with probability p and scales the remaining units by 1/(1-p), so the expected activation stays the same. At inference, dropout is disabled and the full network is used, which avoids adding noise to predictions and makes inference faster.
-
-**Is early stopping really a form of regularization?**
-
-Yes. By stopping optimization when validation loss stops improving, early stopping limits how far the parameters move from their initialization and from the high-capacity solutions that fit training noise. It does not add a penalty to the loss, but it still reduces variance on unseen data.
-
-**Why are L2 regularization and weight decay not equivalent in Adam?**
-
-In plain SGD, the L2 gradient penalty is scaled by the same learning rate as the weight decay step, so they are equivalent. In Adam, the L2 penalty is divided by the per-parameter adaptive preconditioner before being applied, so its effective strength varies per weight. Decoupled weight decay subtracts a constant fraction of the weight directly before the Adam update, producing uniform shrinkage; this distinction is the motivation for AdamW.
-
-## Worked example
-
-Consider two weights w1=4.0 and w2=0.005, with learning rate 0.01 and regularization λ=0.1, ignoring the data gradient for one step. Under L2, w2 is multiplied by (1 - 0.01 * 2 * 0.1) = 0.998 each step: it becomes 0.00499 and, even after many steps, approaches but never reaches zero. Under L1, w2 loses 0.01 * 0.1 = 0.001 per step, so after five steps it hits exactly zero. L1's constant penalty can zero small weights, while L2 shrinks large weights more aggressively relative to their magnitude but preserves them.
-
-## Common traps
-
-- Saying L2 regression forces weights to exactly zero; it only shrinks them toward zero.
-- Equating L2 regularization and weight decay without mentioning the optimizer; under Adam they diverge, and AdamW decouples them.
-- Leaving dropout enabled at inference or forgetting the 1/(1-p) scaling during training, which changes expected activations.
-- Tuning regularization by watching only training loss; the point is to improve validation performance, so training loss alone misleads.
-
-</details>
-
----
-
-## 5. Recommendation Systems · typed · Hard
-
-*ai · gate confidence 0.85*
-
-**Question**
-
-How would you design a video recommendation system?
-
-**Reference answer**
-
-First define the objective, such as predicted watch time or completion, and log user-video interaction data. Build candidate sources including collaborative embeddings, content similarity, trending, and previously watched series. A ranker scores the candidates with features like user genre affinities, item age, predicted watch time, and diversity constraints, then returns the top items. Evaluate offline with held-out interaction data and online with A/B tests on watch time and retention.
-
-**Graded on**
-
-- Define objective and log interaction data
-- Use hybrid candidate sources: collaborative embeddings, content similarity, trending, series
-- Ranker uses richer engagement and diversity features
-- Evaluate offline and online with A/B tests
-
-<details><summary>The lesson this came from</summary>
-
-A recommendation system predicts which items a user is most likely to engage with from a catalog, then ranks a small subset for display. The core approaches differ by signal: content-based filtering scores items by similarity between item attributes and a user profile built from the user's own history; collaborative filtering scores items using patterns across many users' interactions, such as user-user or item-item similarity; hybrid systems combine both. Production systems often split the work into candidate generation, which reduces millions of items to hundreds, and ranking, which orders those candidates with richer features.
-
-## Why interviewers ask this
-
-The interviewer is testing whether you can choose the right recommendation approach under data and cold-start constraints, and whether you can design a retrieval-plus-ranking pipeline that stays fast as the catalog grows. The question often appears for video feeds, product recommendations, or friend suggestions, where the real challenge is balancing relevance, novelty, and latency.
-
-## The core idea
-
-All recommenders are ranking systems: they reduce a large catalog to an ordered list. Content-based filtering uses item features and one user's own history, so it works for new items but depends on feature quality and can become narrow. Collaborative filtering learns from the interaction matrix across many users, so it needs little domain knowledge but suffers cold starts for new users and items. Hybrid recommenders combine both signals, which is what most production systems do. At scale, a two-stage design dominates: a cheap candidate generation stage retrieves a few hundred or thousand items, then a more expensive ranker scores only those candidates to produce the final top-n.
-
-## Key points
-
-- Content-based filtering scores items by similarity between item attributes and a user profile built from their own history; it avoids item cold start but requires domain knowledge and tends toward overspecialization.
-- Collaborative filtering learns from the interaction matrix across users and items using techniques such as user-user similarity, item-item similarity, or matrix factorization; it needs no item metadata but cannot handle brand-new users or items.
-- Hybrid recommenders combine content and collaborative signals, typically by feeding both into a single ranker or blending multiple candidate generation sources.
-- Large-scale production systems usually use two stages: candidate generation narrows millions of items to hundreds or thousands, then a ranking model with richer features orders the final recommendations.
-- Embeddings enable scalable nearest-neighbor retrieval by representing users and items in a shared vector space, but their quality depends on training data and the chosen objective.
-
-## Your 60-second answer
-
-A recommender system reduces a large item catalog to a small ordered list a user is most likely to engage with. The classic split is content-based, collaborative, and hybrid. Content-based scoring compares item attributes with a user profile built from that user's own past activity; it avoids cold start for new items but needs good features and can become narrow. Collaborative filtering uses the interaction matrix across many users and items, with user-user or item-item similarity, matrix factorization, or neural embeddings; it needs little domain knowledge, but new users and new items have no interaction history. Hybrid methods combine both, which is what most production systems do. At scale, you usually don't score every item: you run a candidate-generation stage to retrieve a few hundred items, then a ranker with richer features to produce the final top-n. The main trade-off is relevance versus cold-start coverage and latency.
-
-## If they dig deeper
-
-**What is the difference between content-based and collaborative filtering?**
-
-Content-based filtering scores items by comparing item attributes to a profile built from that user's own activity, so it can recommend a new item as soon as its metadata exists but requires good features. Collaborative filtering learns from the interaction matrix across users and items, so it needs no domain knowledge but cannot score a brand-new user or item until some interactions exist.
-
-**How do you handle cold start for new users and new items?**
-
-For new items, use content or metadata embeddings and hybrid scoring so they can still be retrieved without interaction history. For new users, fall back to popularity, trending, or explicit preference capture, and run exploration to collect early signals. Blend the fallback with learned models as data accumulates.
-
-**Why do production recommenders split candidate generation and ranking?**
-
-Because scoring millions of items with a rich model is too slow and expensive. Candidate generation cheaply reduces the catalog to a few hundred or thousand items using approximate nearest neighbor or rule-based sources; the ranker then applies expensive features and a more accurate model only to that small set. This also lets teams iterate on retrieval and ranking independently.
-
-**How would you design a video recommendation system?**
-
-Define the objective first, such as predicted watch time or completion, and log training data from user-video interactions. Build candidate sources: collaborative embeddings, content similarity, trending, and previously watched series. A ranker scores candidates with features like user genre affinities, item age, predicted watch time, and diversity constraints, then returns the top items. Evaluate offline with held-out interaction data and online with A/B tests on watch time and retention.
-
-**How do embedding-based collaborative filtering methods work and what are their main limitations?**
-
-They map users and items into a shared vector space, usually with a two-tower model or matrix factorization, and retrieve nearest neighbors by vector similarity. This makes retrieval scalable with approximate nearest neighbor indexes but the embeddings can suffer from cold start, popularity bias, feedback loops, and staleness; they also need periodic retraining to capture new items and changing behavior.
-
-## Worked example
-
-Suppose a catalog has 10 million videos. Candidate generation uses a two-tower model that embeds a user and each video into a 128-dimensional space. For a returning user, the system retrieves the 500 nearest video embeddings by approximate nearest neighbor under cosine similarity; this runs in milliseconds because the index pre-partitions the embedding space. The ranker then scores those 500 candidates with a gradient-boosted model using features like genre affinity, video age, predicted watch time, and a collaborative-filtering score. It orders by predicted probability of watching at least 70% of the video, multiplies by predicted watch-time weight, and the top 20 are shown. A brand-new video has no interaction history, so the collaborative embedding is unavailable; content embeddings from its tags and description let it still enter candidate generation and be ranked by metadata features.
-
-## Common traps
-
-- Saying collaborative filtering requires no domain knowledge and ignoring its cold-start problem and popularity bias.
-- Treating a two-stage recommender as one giant model that scores the full catalog; this misses why candidate generation exists.
-- Recommending by raw similarity only, without considering business constraints like freshness, diversity, or prohibited items.
-- Overfitting to clicks when the product goal is watch time, completion, or another engagement metric, so the objective does not match the real outcome.
-
-</details>
-
----
-
-## 6. Dealing with ambiguity · mcq · Easy
+## 4. Leadership · flash · Medium
 
 *behavioral · gate confidence 0.85*
 
+<sub>to object to this card: `## beh-leadership` then `match: In a behavioral interview about a difficult decision, what s`</sub>
+
 **Question**
 
-At the senior level, an ambiguous project story should typically involve leading work across what scope of people?
-
-**Options**
-
-- Your own task
-- Multiple people
-- Multiple teams
-- The entire company
+In a behavioral interview about a difficult decision, what should a senior candidate explicitly include to avoid sounding like an executor instead of a leader?
 
 **Reference answer**
 
-Multiple people
+The decision-making framework and trade-offs that produced the actions, rather than only narrating actions chronologically.
 
 **Graded on**
 
-- Senior-level ambiguity involves leading a project with multiple people.
-- Junior-level ambiguity is typically self-directed.
-- Staff-level ambiguity involves multiple teams.
-- Company-wide ambiguity is not typical for senior.
+- Name the decision-making framework used.
+- State the explicit trade-offs considered.
+- Avoid only listing actions in chronological order.
+- Reconstruct the reasoning behind choices.
 
 <details><summary>The lesson this came from</summary>
 
-Dealing with ambiguity is the ability to make progress on a task when goals, constraints, or success criteria are unclear. It involves identifying what is unknown, asking targeted questions, documenting assumptions, and iterating as new information arrives. Interviewers evaluate it through stories of underspecified work, where the candidate took ownership and drove alignment.
+In behavioral interviews, leadership is the ability to guide a team or group toward a shared outcome without relying on formal authority. It includes vision-setting, stakeholder influence, thought leadership, and critical-situation leadership. Strong answers describe the concrete mechanisms—communication cadence, decision frameworks, relationship building—rather than claiming a title or listing team size.
 
 ## Why interviewers ask this
 
-The interviewer is testing whether you can operate without a complete spec, since senior work is often assigned as a problem statement rather than a task list. They want evidence you can reduce ambiguity by gathering requirements, making decisions explicit, and bringing others along. At higher levels the scope changes: junior stories involve self-directed tasks, senior stories involve leading three or more people, staff stories involve multiple teams.
+Interviewers ask leadership questions to test whether a candidate can operate at the expected level of scope and ambiguity: can they influence across teams, think systematically, and keep a group effective under pressure? They are probing judgment, self-awareness, and communication, not checking whether the candidate held a manager title. Senior candidates are also watched for common failures like unstructured stories, actions without frameworks, and answers that bury the signal in detail.
 
 ## The core idea
 
-Ambiguity is reduced by turning hidden assumptions into explicit decisions. A strong candidate does not wait for clarity; they ask questions that resolve the highest-impact unknowns first, document what they assume, and revisit those assumptions when new data appears. The goal is not to eliminate uncertainty but to make enough of it concrete to move. Ownership means driving consensus, not just doing the work yourself. The scope of ambiguity you can handle grows with level: own task for junior, three-plus people for senior, two-plus teams for staff.
+Leadership in a behavioral answer means showing influence without authority: you changed what people did or believed by building credibility, communicating a clear direction, and managing relationships. Interviewers care less about your title than about the mechanisms you used—how you made a decision, how you brought others along, and how you maintained morale during uncertainty. Strong answers deliberately cover multiple dimensions of leadership: people, strategy, stakeholders, risk, and change management, not just a technical or product win. They also state the decision-making framework behind the actions, because listing actions alone makes a senior candidate sound like an executor.
 
 ## Key points
 
-- Junior-level stories typically involve taking ownership of an underspecified task and driving consensus among a few teammates.
-- Senior-level stories typically involve an ambiguous project requiring three or more people to work on.
-- Staff-level stories typically involve an ambiguous project requiring two or more teams to work on.
-- Ask questions that resolve the highest-impact unknowns before accepting assumptions.
-- Document assumptions and revisit them at checkpoints as new information arrives.
+- Product managers and senior engineers typically lead through vision, credibility, and relationships rather than direct authority.
+- Critical-situation leadership requires clear communication, decisive action, and deliberate attention to team morale while navigating uncertainty.
+- Thought leadership—publishing, speaking, or contributing original perspectives—builds personal and company credibility over time.
+- Senior behavioral answers are expected to cover multiple leadership dimensions: people, strategy, stakeholders, risk, and change management, not only technical or product outcomes.
+- A common senior failure is narrating actions without naming the decision-making framework that produced them, which makes the candidate sound like an executor.
 
 ## Your 60-second answer
 
-When I face ambiguity, I start by identifying what is actually unknown and which unknown, if resolved, would unblock the most work. I ask the stakeholder or manager targeted questions about goals, constraints, and success criteria, and I write down my assumptions so the team can correct them. For example, in an underspecified project, I proposed a minimum viable version, got agreement from the people affected, and then iterated as we learned more. The reason this works is that most ambiguity is not total; there are a few decisions that matter, and the rest can be deferred. The trade-off is that moving with explicit assumptions risks building the wrong thing, so I keep decisions reversible where possible and revisit them at checkpoints. Ownership means driving consensus, not just asking for clarity.
+Leadership in an interview means influence without formal authority: you moved a group toward a better outcome by setting direction, building credibility, and managing relationships. I'd answer with a specific situation where I had to align people who didn't report to me. I would open with the decision I needed to make and the framework I used, then describe how I communicated it and handled resistance or pressure. The trade-off is that influence without authority is slower; you have to earn trust first, so a strong answer also shows the upfront investment in listening and adjusting the plan. I would close with what actually changed—adoption, risk, morale, or delivery—so the interviewer sees scope, not just activity.
 
 ## If they dig deeper
 
-**How do you decide what to work on next when there is no clear priority?**
+**Tell me about a time you influenced a team without formal authority.**
 
-I list the open tasks, then score each by impact and risk. Impact is what user or business goal it moves; risk is what happens if it is wrong or late. I also check dependencies and whether a task will clarify other unknowns. Then I pick the highest leverage task and communicate the reasoning so others can correct it.
+A strong answer names the specific stakeholder or team, what they initially believed, the mechanism used to change their position—data, framing, relationships, or a pilot—and the observable result. It avoids saying 'I convinced them' and instead shows the steps that led to changed behavior.
 
-**Tell me about a time a project was underspecified and what you did.**
+**How do you handle a high-pressure crisis or significant disruption?**
 
-In one project, I was given a vague request to improve a service. I started by interviewing the main stakeholders to understand the actual pain and constraints. I wrote a one-page problem statement with assumptions and a proposed milestone, then got agreement. That let us start on the highest-confidence part while we resolved the rest.
+A strong answer describes clear communication cadence, prioritization of what not to do, preserving team morale, and a defined owner for decisions. It often includes a simple triage framework: stabilize, communicate, decide, and review afterward.
 
-**How would you drive consensus when stakeholders disagree on what 'done' means?**
+**How do you demonstrate thought leadership?**
 
-I would make the disagreement explicit by listing each stakeholder's success criteria and where they conflict. Then I would look for a minimal set of requirements everyone accepts and propose a decision rule, such as deferring disputed features behind a flag or giving priority to the user-facing outcome. If needed, escalate to the decision-maker with a clear trade-off table.
+A strong answer cites concrete artifacts—internal design docs, blog posts, talks, or open-source contributions—and ties them to a distinctive point of view that influenced a real decision. It focuses on changed thinking or adoption, not just visibility or publication count.
 
-**What do you do when you discover midway that an assumption you made was wrong?**
+**What was the most difficult leadership decision you made, and what framework did you use?**
 
-I treat assumptions as reversible decisions. When one is falsified, I go back to the checkpoint where it was made, communicate the change to stakeholders, and adjust scope or direction. The key is to fail small: schedule assumptions to be tested early, so the cost of changing is low.
+A strong answer names the explicit trade-offs, the decision criteria, who was consulted, and how the decision was communicated to stakeholders who disagreed. It avoids listing actions and instead reconstructs the reasoning.
 
-**How does your approach to ambiguity change at staff level, when you are coordinating multiple teams?**
+**Tell me about a time you led through change when the team was resistant.**
 
-At that level the ambiguity is often in ownership and interfaces, not just requirements. I define the problem boundary, identify which teams need to agree on contracts, and set up a lightweight decision log so cross-team assumptions are visible. I also delegate the parts that are unambiguous and spend my time on the unresolved interfaces. The hardest part is not solving the problem yourself; it is maintaining momentum when no one reports to you.
+A strong answer diagnoses the actual source of resistance—loss of autonomy, extra work, unclear benefit—then describes aligning incentives, sequencing a small reversible pilot, and creating visible early wins. It also shows how the candidate managed upward and adjusted the plan rather than pushing the original agenda unchanged.
 
 ## Worked example
 
-A strong answer sounds like: 'We were asked to make a checkout flow faster, with no target or constraints. I listed the unknowns: current latency, acceptable threshold, and whether we could change the payment provider. I measured p95 at 4 seconds and proposed a goal of under 2 seconds for the card flow. I documented that we would keep the existing provider initially and only revisit if batching calls was not enough. I took that proposal to the product lead and two backend engineers, got agreement, and broke the work into three pieces. We shipped the first piece, measured p95 at 2.8 seconds, and used that data to decide the next step.' The story shows identifying unknowns, attaching numbers, making assumptions explicit, and driving agreement.
+A strong answer sounds like: 'As a senior engineer, I saw that [specific cross-team problem] was causing repeated delays. I had no authority over the other teams, so I started by documenting the actual pain in [a short internal note] and framing the proposal around [what those teams cared about]. I met each lead individually, collected their objections, and changed the rollout order so the lowest-risk team could go first. I made the decision criteria explicit: if we hit [specific threshold], we would escalate or adjust scope. I communicated that plan in a weekly update and kept a visible risk list. When one lead resisted, I asked what they would need to feel safe proceeding, and we turned that into a smaller pilot. In the end I measured whether [the actual pain] changed, not just whether people said yes.'
 
 ## Common traps
 
-- Waiting for a complete spec instead of reducing ambiguity yourself, which signals you need hand-holding.
-- Asking broad questions like 'What do you want?' instead of targeted questions about goals, constraints, and trade-offs.
-- Picking a story where someone else resolved the ambiguity, so the interviewer cannot see your ownership.
-- Claiming you removed all ambiguity, when strong answers show how you managed irreducible uncertainty with checkpoints.
+- Confusing a management title with leadership, so the story relies on authority and reporting lines instead of influence and persuasion.
+- Listing actions chronologically without naming the decision framework or trade-offs, which makes a senior answer sound like project execution.
+- Telling the story from only one leadership dimension, such as technical design, and omitting people, stakeholder, risk, or change management aspects.
+- Being verbose and letting interviewer interruptions pull the story into rabbit holes, so the core signal about scope and judgment never lands.
 
 </details>
 
 ---
 
-## 7. CPU Scheduling · typed · Medium
+## 5. Handling feedback · typed · Easy
+
+*behavioral · gate confidence 0.85*
+
+<sub>to object to this card: `## beh-handling-feedback` then `match: When receiving feedback as a software engineer, what sequenc`</sub>
+
+**Question**
+
+When receiving feedback as a software engineer, what sequence of steps helps you handle it effectively?
+
+**Reference answer**
+
+Pause before responding to separate the substance from your emotional reaction, clarify by restating the feedback and asking for a concrete example if it is vague, then act or negotiate: either make the change or propose an alternative that addresses the same concern. Finally, close the loop by telling the person what changed or what decision was reached.
+
+**Graded on**
+
+- Pause before responding
+- Restate and clarify the feedback
+- Act or negotiate based on the underlying concern
+- Close the loop with the person who gave feedback
+
+<details><summary>The lesson this came from</summary>
+
+Handling feedback is the behavioral skill of receiving an evaluation of your work or behavior, understanding the underlying concern, deciding whether and how to change, and closing the loop with the person who gave it. In SDE work this happens in code review comments, design review discussions, and manager or peer conversations. It covers both technical feedback, such as a cache invalidation being wrong, and behavioral feedback, such as interrupting a junior engineer in a meeting. The mechanism that matters is not agreeing with everything, but making a deliberate choice after understanding the point.
+
+## Why interviewers ask this
+
+Interviewers use feedback questions to probe coachability and self-awareness. A developer who becomes defensive or cannot name a concrete change they made after feedback is a retention and velocity risk. The question also tests whether the candidate can disagree productively, which is what actually happens in design and code review.
+
+## The core idea
+
+Feedback is signal about a specific artifact or behavior, not a verdict on your worth. The reliable pattern is pause, clarify, act or negotiate, and close the loop. Pausing matters because the first instinct under criticism is to defend; if you answer in that state, you will argue instead of listening. Clarifying means restating the concern in your own words and asking for a concrete example when the feedback is vague. Acting or negotiating means you either make the change or explain the trade-off and propose an alternative that addresses the same concern. Closing the loop means telling the reviewer or manager what you changed and why, so the feedback has a recorded outcome.
+
+## Key points
+
+- Good feedback handling begins by separating the substance of feedback from the emotional reaction to being criticized.
+- A strong response restates the feedback to confirm understanding before defending or acting.
+- In code review, responding to feedback by explaining intent without addressing the concern is perceived as defensive.
+- Acting on feedback means closing the loop: implementing the change and telling the reviewer or manager what changed.
+- Behavioral feedback is often harder to assess than technical feedback and requires asking for specific examples.
+
+## Your 60-second answer
+
+When I get feedback, I focus on understanding the specific change being requested and the reason behind it before I respond. I pause long enough to separate the substance of the comment from my own reaction, and if the feedback is vague, I ask for a concrete example or the failure case the person is worried about. Then I act. If I agree, I make the change and close the loop by telling the reviewer or manager what I did; if I disagree, I explain the trade-off concretely and try to offer an alternative that resolves their underlying concern. The main risk I watch for is defensiveness: explaining why I wrote it that way without addressing their concern. That reads as resistance even when I think I am being helpful.
+
+## If they dig deeper
+
+**Tell me about a time you received feedback you disagreed with.**
+
+I start by separating the reviewer's underlying concern from the specific suggestion. I ask what failure they are trying to prevent, then explain my approach's trade-off and offer an alternative that addresses that failure. If we still disagree, I record the decision and move on rather than relitigating the point.
+
+**How do you get feedback when people are not giving it?**
+
+I ask narrow questions about a recent artifact, such as 'Which part of this design is hardest to operate?' instead of asking for general feedback. In one-on-ones I bring a specific situation and ask what the manager would have done differently. That produces actionable answers more reliably than a broad request.
+
+**What do you do after receiving feedback you know you will not act on?**
+
+I acknowledge the feedback and state clearly that I have decided not to apply it, with the reason and the trade-off I am accepting. If the concern is real but the suggested fix is wrong, I propose a different way to solve the same problem. I never silently ignore it, because that leaves the other person waiting and breaks trust.
+
+**How do you handle conflicting feedback from two senior engineers?**
+
+I put both suggestions against the actual constraint: correctness, maintainability, schedule, or a documented requirement. Then I ask each person what problem they are trying to prevent, which often shows the conflict is about priorities rather than facts. If it remains unresolved, I bring the decision to the owner or team lead with the trade-offs laid out.
+
+**Have you ever had to give feedback to someone more senior than you?**
+
+Yes, I frame it as an observation with a concrete impact, not a judgment about their ability. I say what I saw, what effect it had, and ask whether that was the intent. I do it privately and tie it to a shared goal, like unblocking an on-call issue.
+
+## Worked example
+
+A strong answer sounds like: 'In a previous role, I opened a pull request that added an in-memory cache to a read-heavy endpoint. A senior engineer commented that an admin update would leave the cache stale. My first reaction was that the admin path was rare, but I waited a few minutes before replying. I asked whether the concern was stale data for all users or only for the admin view. She said all users, because the public page used the same record. I changed the cache key to include a version number, added integration tests for the admin update path, and linked the new tests in the comment. She approved the change. I later used the same versioned-cache idea in another service.' That shows a pause, a clarifying question, a technical fix aimed at the real concern, and a closed loop with concrete evidence.
+
+## Common traps
+
+- Treating feedback as an attack on personal ability rather than a claim about an artifact or behavior.
+- Responding only by explaining intent instead of addressing the concern, which reads as defensive.
+- Accepting vague feedback without asking for a concrete example, then guessing what to change.
+- Silently ignoring feedback you disagree with instead of surfacing the disagreement and aligning on a decision.
+
+</details>
+
+---
+
+## 6. CPU Scheduling · typed · Medium
 
 *cs · gate confidence 0.85*
+
+<sub>to object to this card: `## cs-cpu-scheduling` then `match: What is the central tradeoff in CPU scheduling, and which cl`</sub>
 
 **Question**
 
@@ -597,419 +508,368 @@ Take three CPU-bound jobs arriving at time 0 with runtimes P1 = 24 ms, P2 = 3 ms
 
 ---
 
-## 8. Object-Oriented Programming Principles · flash · Easy
-
-*cs · gate confidence 0.85*
-
-**Question**
-
-What is polymorphism in Java primarily?
-
-**Reference answer**
-
-Polymorphism in Java is primarily dynamic dispatch: a call through a base type or interface invokes the overridden method of the actual object at runtime.
-
-**Graded on**
-
-- dynamic dispatch
-- overridden methods
-- actual object type
-
-<details><summary>The lesson this came from</summary>
-
-Object-oriented programming organizes code into classes that combine state (fields) and behaviour (methods). Encapsulation restricts direct access to state and exposes controlled operations; inheritance lets a subclass acquire and override superclass members; abstraction hides implementation behind interfaces or abstract classes; polymorphism lets one reference type invoke behaviour that is dispatched to the actual object's implementation.
-
-## Why interviewers ask this
-
-Interviewers use this to check whether you can do more than recite definitions: they want to see you map each principle to concrete Java mechanisms (private fields, getters, extends, @Override, interface vs abstract class) and discuss trade-offs such as tight coupling from inheritance or leaky abstractions. They also probe the difference between abstraction (what) and encapsulation (how), a common confusion.
-
-## The core idea
-
-The four principles work together. Encapsulation is the mechanism: fields are private, access is through methods that can validate and preserve invariants. Inheritance should model an is-a relationship and enable override points; composition is often safer for reuse. Polymorphism is the payoff: code written against a base type or interface works with any subtype, and Java dispatches overridden methods dynamically at runtime. Abstraction separates what callers depend on from how a class implements it; in Java, interfaces define pure contracts while abstract classes provide partial implementations. A strong answer names the Java feature behind each principle and states the trade-off.
-
-## Key points
-
-- In Java, encapsulation is enforced with access modifiers: private fields plus public/protected methods control how state changes.
-- Inheritance creates an is-a relationship; Java supports single class inheritance, but multiple interface implementation, avoiding the diamond problem for state.
-- Polymorphism in Java is primarily runtime (dynamic dispatch) through overridden methods, while overloaded methods are resolved at compile time.
-- Abstraction is achieved with abstract classes (partial implementation, can have constructors/state) and interfaces (a contract; since Java 8 interfaces can also have default and static methods).
-- Encapsulation hides how and protects data; abstraction hides implementation complexity and exposes what.
-
-## Your 60-second answer
-
-Object-oriented programming is a paradigm built on objects that combine data and methods. Its four core principles are encapsulation, inheritance, polymorphism, and abstraction. Encapsulation means hiding internal state behind a controlled interface; in Java, I make fields private and expose getters or setters that validate. Inheritance lets a subclass reuse and override superclass behavior, but I prefer composition when there is no true is-a relationship. Polymorphism lets code written against a base type or interface work with any subtype because Java dispatches overridden methods at runtime. Abstraction means depending on a contract, like an interface or abstract class, instead of a concrete implementation. The main trade-off is that inheritance creates coupling between parent and child, so I use it for stable, well-understood hierarchies and interfaces for flexibility.
-
-## If they dig deeper
-
-**How is encapsulation different from abstraction?**
-
-Encapsulation is a mechanism: it bundles fields with the methods that manipulate them and restricts direct access, typically with private fields and public mutators. Abstraction is a design outcome: it exposes only the essential behaviour through an interface or abstract class and hides implementation details. Encapsulation protects how state changes; abstraction hides what the caller does not need.
-
-**When would you use an abstract class instead of an interface in Java?**
-
-Use an abstract class when related subclasses should share instance state, constructors, or a partial implementation that cannot be expressed well in an interface. Use an interface when unrelated classes need to implement the same capability. Since Java 8 interfaces can have default and static methods with bodies, but they still cannot store per-instance state, shared state remains a reason for an abstract class.
-
-**What is the diamond problem and how does Java handle it?**
-
-The diamond problem arises when a class inherits from two superclasses that define the same method or field, so the compiler cannot decide which one to use. Java avoids it for classes by forbidding multiple class inheritance: a class can extend exactly one superclass. Multiple interface inheritance is allowed; if two interfaces provide default methods with the same signature, the implementing class must override the method and resolve the conflict. State ambiguity is avoided because interfaces cannot have instance fields, only static final constants.
-
-**Explain static versus dynamic polymorphism with an overload and an override.**
-
-Static polymorphism in Java is overloaded methods: signature includes name and parameter types, so the compiler chooses the method at compile time based on argument types. Dynamic polymorphism is overridden methods: the call is dispatched at runtime to the implementation of the actual object even when the reference type is a superclass or interface. For instance, print(Object o) has multiple overloads selected at compile time, while toString() on an Object reference invokes the subclass override at runtime.
-
-**How does the Liskov Substitution Principle constrain inheritance?**
-
-LSP requires that a subclass be usable in any context that expects a superclass without surprising behavior. Formally, an overriding method cannot strengthen preconditions (reject inputs the superclass accepts), weaken postconditions (return results weaker than the superclass promises), or violate invariants of the superclass. If a subclass would need to throw unexpected exceptions or change the meaning of a method, the hierarchy is not a true is-a relationship and composition should be preferred.
-
-## Worked example
-
-Take a BankAccount with a private double balance and a public deposit(double amount) that throws IllegalArgumentException if amount <= 0. Suppose a SavingsAccount extends BankAccount and overrides monthlyFee() to return 5.0, while a CheckingAccount overrides it to return 10.0. A method chargeFees(List<BankAccount> accounts) iterates and calls account.monthlyFee(); when the list contains both subtypes, the JVM invokes each object's own override. The balance field remains encapsulated because the only mutations go through deposit and withdraw, which validate amounts and prevent a negative balance. For example, withdraw(30) when balance is 100 leaves 70, while withdraw(150) is rejected. The caller sees a BankAccount contract, so it is abstracted from concrete fee calculations. This single invocation shows inheritance (shared balance handling), abstraction (caller depends on type), and dynamic polymorphism (same call different implementations).
-
-## Common traps
-
-- Treating abstraction and encapsulation as synonyms: abstraction is about hiding implementation complexity behind a contract; encapsulation is about restricting direct access to state.
-- Claiming Java supports multiple inheritance for classes because it allows multiple interfaces; classes extend one superclass, and default method conflicts still require explicit resolution.
-- Saying interfaces are always 100% abstract without noting that since Java 8 default and static methods can have bodies.
-- Reaching for inheritance as the default reuse mechanism; without an is-a relationship, inheritance couples subclasses to superclass internals and is usually worse than composition.
-
-</details>
-
----
-
-## 9. Sliding Window · typed · Medium
+## 7. Design · typed · Medium
 
 *dsa · gate confidence 0.85*
 
+<sub>to object to this card: `## design` then `match: What is your first step when designing a data structure for `</sub>
+
 **Question**
 
-What general property must a problem have for sliding window to be correct, and what limitation follows from that?
+What is your first step when designing a data structure for a list of required methods, and how do you choose the structures?
 
 **Reference answer**
 
-Sliding window requires a contiguous sequence and validity that is monotonic as the window expands or shrinks. It therefore does not apply to non-contiguous subsequences or validity conditions that can oscillate as more elements are added.
+List every method and its required complexity, choose a primary structure for the hot-path operation, then add an auxiliary structure only for outlier operations.
 
 **Graded on**
 
-- The window must be contiguous
-- Validity must change monotonically with expansion or shrinking
-- Non-contiguous or non-monotonic validity is out of scope
+- start from operations and complexities
+- primary structure for hot path
+- auxiliary structure for outlier
+- state worst-case and amortized costs
 
 <details><summary>The lesson this came from</summary>
 
-Sliding window maintains two boundaries over a contiguous sequence, typically a left and right pointer. The right pointer adds an element and updates incremental state; the left pointer removes an element when the window must shrink. For fixed-size windows, width stays k; for variable-size windows, the shrink rule depends on whether the problem seeks a longest valid window or a shortest valid window. It avoids rescanning subarrays and reduces many O(n^2) solutions to O(n).
+In DSA interviews, "Design" usually means data-structure design: implement a small stateful class such as a hit counter, logger rate limiter, snapshot array, allocator, or max stack with a fixed API. The solution is a composition of standard structures—arrays, hash maps, queues, iterators, and balanced trees—plus rules that keep every operation inside its time and space bounds. It is not distributed-system design; it is about class invariants, lazy eviction, duplicate handling, and amortized costs.
 
 ## Why interviewers ask this
 
-Interviewers ask sliding window problems to test whether you can recognize a contiguous subarray/substring constraint and maintain correct state as the window moves. Real questions such as Minimum Window Substring, Sliding Window Maximum, and Longest Substring Without Repeating Characters appear at companies including Lyft, Snap, Snowflake, Citadel, and Walmart Labs. The focus is on O(n) correctness, not brute force.
+Interviewers use these problems to test whether you can turn a list of method requirements into concrete data structures instead of reaching for a familiar class. Frequency data shows design tasks appearing at companies such as Databricks, Dropbox, Spotify, Meta, OpenAI, Snowflake, Coinbase, LinkedIn, and Apple, so interviewers expect clean trade-off reasoning and edge-case handling.
 
 ## The core idea
 
-Keep one pointer expanding and another pointer shrinking. For longest-valid-window problems, expand the right side while the constraint holds, and shrink the left only when it breaks. For minimum-valid-window problems, expand until the window first becomes valid, then shrink from the left while the window still satisfies the constraint, recording each valid minimum. Maintain aggregate data such as a sum, frequency map, or monotonic deque that can be updated in O(1) when the boundaries move. For Sliding Window Maximum, a monotonic deque stores indices in decreasing value, keeping the current maximum at the front; remove the front when it leaves the window and pop smaller values from the back before adding a new index.
+Start from the operation list and required complexities, not from a favorite data structure. Pick a primary structure for the hot-path operation, then add an auxiliary structure only for the outlier operation—an array plus hash map for getRandom, a queue with lazy pruning for sliding windows, a stack plus balanced BST and cached max for max stack. Keep invariants explicit: what is stored, when it is removed, and how duplicates are represented. For versioned or snapshot data, store per-index change history instead of copying the whole structure. The strongest answers state worst-case and amortized costs for each method, not just the design.
 
 ## Key points
 
-- Fixed-size windows keep exactly k elements and update an aggregate in O(1) per slide, for example sum = sum - arr[left] + arr[right].
-- For longest-valid-window problems, shrink the left pointer only when the current window violates the constraint; for minimum-valid-window problems, shrink left while the window remains valid.
-- Longest Substring Without Repeating Characters uses a hash map from character to last index and moves left to last_index + 1 only when last_index >= left.
-- Sliding Window Maximum uses a monotonic deque of indices in decreasing value; before pushing a new index, pop from the back while those values are <= the new value, and drop the front when it is outside the window.
-- A correct sliding window is O(n) even with an inner loop, because each index enters and leaves the window at most once.
+- Time-window designs like a hit counter or logger rate limiter store only the entries or per-bucket counts needed for the window and lazy-evict expired items, giving O(1) writes and often amortized O(1) reads.
+- A moving average from a stream uses a fixed-size circular array and a running sum, so update and query are both O(1).
+- For O(1) insert/delete/getRandom, keep a dynamic array plus a hash map from value to a set of indices, and on remove swap the selected element with the last element.
+- A flatten nested list iterator can avoid eager flattening by using an explicit stack of iterators, making next/hasNext O(1) amortized and using O(depth) extra space.
+- A max stack uses a doubly linked list for stack order, a balanced BST keyed by value, and a cached maximum; peekMax is O(1), while push/pop/popMax are O(log n).
 
 ## Your 60-second answer
 
-Sliding window is a two-pointer technique for finding an optimal contiguous subarray or substring in O(n). The right pointer expands the window, and the left pointer contracts it based on validity. For a longest valid window, expand while the constraint holds and shrink only when it breaks; for a minimum valid window, expand until the constraint is satisfied, then shrink while it remains satisfied. The key is incremental state: a running sum, frequency map, or monotonic deque, so moving a boundary costs constant time instead of rescanning the window. Fixed-size windows keep width k. For Sliding Window Maximum, a monotonic deque keeps indices in decreasing value, so the front is always the max for the current window. The trade-off is that sliding window only applies to contiguous subsequences with monotonic validity. If the array has negative values in a sum constraint, the standard two-pointer shrink rule can fail.
+A design question asks me to implement a small stateful class with a fixed API, so I start by listing every method and its required complexity, then choose a primary structure and augment it for any operation that does not fit. For a sliding-window counter I would keep timestamps in a queue and prune expired entries; for a moving average I would keep a circular array and a running sum; for getRandom I would pair an array with a hash map and swap with the last element; for a max stack I would combine a doubly linked list with a balanced BST and a cached max, so peekMax is O(1) and push/pop/popMax are O(log n). I also check duplicates, empty states, and concurrency. The trade-off is usually extra bookkeeping space or update cost in exchange for making the hot-path operation fast.
 
 ## If they dig deeper
 
-**How do you implement a fixed-size window, such as maximum sum of k consecutive elements?**
+**How do you reduce memory in a hit counter that receives thousands of hits per second?**
 
-Compute the sum of the first k elements. Then for each next index, add arr[right] and subtract arr[left] to maintain the sum in O(1), updating the answer after each slide.
+Bucket hits by second. Keep a circular array of 300 one-second buckets plus a running total; on getHits, drop buckets older than 300 seconds and return the total. Memory is bounded by the window, and both hit and getHits become O(1).
 
-**How does the hash map avoid counting a repeat that is outside the current window?**
+**Why does the swap-with-last trick fail for duplicates if you only store one index per value?**
 
-Store the last index where each character appeared. When the right character is seen again, check that stored index against left; only if last_index >= left does the repeat lie inside the window, so set left = last_index + 1. Otherwise the earlier occurrence is already excluded and left does not move.
+The same value can appear in multiple array slots, so a single index cannot update all affected positions when one occurrence is removed. Store a value to a set of indices; on remove pick any index from the set, swap the last element into it, update the swapped element's index in its set, and remove the chosen index. This keeps expected O(1) operations.
 
-**Why does Minimum Window Substring shrink while valid instead of shrinking only when invalid?**
+**How do you make a nested list iterator lazy instead of flattening in the constructor?**
 
-Because the goal is the shortest window. You first expand right until all required characters are present, then each time validity holds, you can try to move left forward and record the smaller candidate. Shrinking only when invalid would skip valid shorter windows.
+Keep an explicit stack of iterators over the nested structure. hasNext advances until the top points at an integer; next returns that integer. Work is distributed across calls, so next/hasNext are O(1) amortized per element and memory is O(depth) rather than O(total elements).
 
-**Why is a monotonic deque better than a max heap for Sliding Window Maximum?**
+**How do you implement a max stack with popMax and peekMax without scanning the stack?**
 
-A heap gives the maximum in O(1) but each insert and delete is O(log k), and lazy deletion of out-of-window elements adds state. A monotonic deque gives O(1) amortised per index because each index is pushed and popped at most once, total O(n).
+Use a doubly linked list for stack order and a balanced BST keyed by value to a list of nodes, plus a cached max. peekMax reads the cached max in O(1). push inserts into both structures; pop removes the head and its map entry; popMax removes the most recent node for the current maximum. Map updates keep push/pop/popMax at O(log n).
 
-**Can you use standard sliding window for longest subarray with sum <= k if the array contains negative numbers? Why or why not?**
+**How would you design a memory allocator to support allocate and free without O(n) scans?**
 
-No. The shrink rule relies on the sum being monotone as the window expands: with non-negative values, adding an element never decreases the sum, so an over-limit window can be fixed by shrinking. With negative numbers, adding a negative value can bring a window back under the limit, so an invalid prefix does not imply all larger windows are invalid. You need prefix sums and an ordered structure instead.
+Keep free blocks in an ordered structure—by size for allocation and by address for coalescing—rather than one unsorted list. On free, look up neighboring blocks and merge them into a single free segment to reduce fragmentation. This turns allocate into a logarithmic or constant-time search in the chosen free list, while coalescing keeps the free list useful over time.
 
 ## Worked example
 
-For longest substring without repeating characters, take s = 'abcabcbb' with 0-based indices: a at 0, b at 1, c at 2, a at 3, b at 4, c at 5, b at 6, b at 7. Start with left = 0, an empty last-seen map, and best = 0. Process each right index. At right=3 the character 'a' was last seen at index 0; since 0 >= left, left becomes 1. At right=4, 'b' was last seen at index 1; since 1 >= left, left becomes 2. At right=5, 'c' was last seen at index 2, so left becomes 3. At right=6, 'b' was last seen at index 4, so left becomes 5. At right=7 the character is 'b' and its recorded last index is 6; since 6 >= left, left becomes 7, leaving a window of only the final 'b'. The best length stays 3, recorded from windows such as indices 3-5, which contain 'abc'. The answer is 3.
+Design a hit counter for a 300-second window. Keep a double-ended queue of hit timestamps. hit(t) appends t. getHits(now) first removes from the front while the front timestamp is <= now - 300, then returns the queue size. If hits arrive at 1, 2, and 301, then getHits(302) has cutoff 2; it dequeues 1 and 2, leaves 301, and returns 1. The key is that each timestamp is dequeued at most once, so repeated getHits calls are amortized O(1) per returned hit.
 
 ## Common traps
 
-- Confusing the shrink rule between longest and minimum window problems, which reverses when the left pointer should move.
-- Updating the longest-substring map without checking last_index >= left, so an old duplicate outside the window causes an unnecessary shrink and a wrong answer.
-- Forgetting to pop the deque front when its index falls outside [left, right], letting a stale maximum from a previous window dominate the current one.
-- Applying standard sliding window to a sum constraint over an array with negative numbers, where shrinking an invalid window does not monotonically restore validity.
+- Picking a data structure before enumerating the API; this causes hidden O(n) operations such as getRandom after choosing only a hash set.
+- Storing one index per value in Insert Delete GetRandom; duplicate values need a value -> set of indices, or remove corrupts the mapping for other occurrences.
+- Claiming peekMax on a max stack is O(log n); with a cached maximum it is O(1), while push/pop/popMax are O(log n) because of the balanced BST.
+- Rescanning the entire window on every hit counter or logger call instead of lazy-evicting expired entries once, which changes amortized O(1) reads to O(n).
 
 </details>
 
 ---
 
-## 10. Collections Framework · typed · Medium
+## 8. Memory leaks · typed · Medium
 
 *java · gate confidence 0.85*
 
+<sub>to object to this card: `## java-memory-leaks` then `match: What is the key trade-off of garbage collection with respect`</sub>
+
 **Question**
 
-What is the core design principle of the Java Collections Framework, and why does it matter for algorithms?
+What is the key trade-off of garbage collection with respect to memory leaks?
 
 **Reference answer**
 
-The framework separates collection interfaces from concrete storage strategies, and utility algorithms operate on those interfaces. This lets the same sort, search, or wrapper method work across ArrayList, LinkedList, HashSet, and other implementations.
+The garbage collector prevents manual deallocation bugs but cannot infer that an object is no longer needed. If a strong reference path exists, the object is considered reachable and survives; managing reachability is the developer's responsibility.
 
 **Graded on**
 
-- Interfaces define behavior, implementations define storage
-- Algorithms operate on interfaces
-- Same algorithm works across implementations
+- GC gives memory safety
+- GC cannot detect intent
+- strong reachability means survival
 
 <details><summary>The lesson this came from</summary>
 
-The Java Collections Framework is a unified architecture in java.util for representing and manipulating groups of objects. It provides core interfaces—Collection with List, Set, Queue, and Deque, plus the separate Map interface—and concrete implementations such as ArrayList, LinkedList, HashSet, TreeSet, HashMap, and TreeMap. The framework also includes utility algorithms in the Collections class for sorting, searching, shuffling, and creating unmodifiable or synchronized views.
+In Java, a memory leak is the unintended retention of objects the application no longer needs because a strong reference path from a GC root keeps them alive. The garbage collector only reclaims objects that are unreachable from the root set, so these objects remain on the heap. Over time this can exhaust the Java heap or, for classloader leaks, Metaspace, and the JVM throws OutOfMemoryError.
 
 ## Why interviewers ask this
 
-Interviewers ask about collections to test whether you can choose the right data structure under constraints like ordering, duplicates, null handling, and concurrency, and whether you understand the contracts behind equality, hashing, and comparison. They also probe knowledge of common implementations and the Collections utility methods, because real code often fails on subtle data-structure choices.
+The interviewer is checking whether you understand that the garbage collector does not guarantee freedom from memory leaks, and whether you can reason about object reachability and GC roots. A strong answer names concrete leak patterns and diagnosis steps rather than just reciting a definition.
 
 ## The core idea
 
-The framework separates interfaces (what operations a collection supports) from implementations (how data is stored and accessed) and from algorithms (reusable methods in Collections). Deciding which collection to use is driven by the needs: List preserves insertion order and permits duplicates; Set rejects duplicates; Queue/Deque model FIFO, LIFO, or priority order; Map stores key-value pairs. Ordering and uniqueness are enforced through equals/hashCode for hash-based collections and through compareTo/Comparator for sorted collections. Complexity profiles differ: ArrayList gives O(1) indexed access but O(n) middle insertion; HashMap gives O(1) average lookup with no order; TreeMap gives O(log n) operations while keeping keys sorted. A strong candidate knows both the contract of each interface and the performance and null behavior of the main implementations.
+A Java memory leak is not lost memory; it is an object that the application no longer needs but that remains strongly reachable from at least one GC root. In HotSpot, GC roots include static fields of loaded classes, active thread stacks, and JNI global references, so any object reachable from them survives collection. The classic leak is an unbounded static collection; a more subtle one is a leaked classloader, where one retained instance or class keeps an entire custom classloader, all its classes, and all static data alive. That case affects both heap and Metaspace since Java 8.
 
 ## Key points
 
-- The Java Collections Framework includes the Collection hierarchy (List, Set, Queue, Deque) and the separate Map interface, with concrete classes like ArrayList, LinkedList, HashMap, TreeMap, HashSet, and TreeSet.
-- ArrayList provides O(1) random access and O(n) insertion/removal from the middle, while LinkedList provides O(1) insertion/removal at the ends and O(n) random access.
-- HashMap and HashSet offer O(1) average contains/get/put with a good hash function, but make no order guarantee; TreeMap and TreeSet are O(log n) for those operations and maintain sorted order.
-- Hash-based collections rely on correct equals() and hashCode(); TreeMap/TreeSet rely on Comparable or a supplied Comparator and reject null keys/elements under natural ordering.
-- Collections is a utility class with static methods like sort, binarySearch, reverse, shuffle, unmodifiable wrappers, and synchronized wrappers; it is distinct from the Collection interface.
+- A Java leak means objects are reachable but unused; the GC cannot free objects with a live strong reference path from a GC root.
+- Static fields, active thread stack references, JNI global references, and thread-locals under a thread pool are common roots that pin objects.
+- Classic causes: static collections/caches without eviction, unclosed resources, callbacks/listeners registered globally, inner classes holding outer references, and ThreadLocal misuse.
+- A classloader leak retains not only class metadata in Metaspace (since Java 8) but also the ClassLoader, Class objects, and all static fields in the Java heap.
+- Diagnosis uses heap dumps and histogram analysis (jmap/MAT/VisualVM) and GC logs; compare object counts by class across time to find growth.
 
 ## Your 60-second answer
 
-The Java Collections Framework is a set of interfaces, implementations, and algorithms in java.util for storing and manipulating groups of objects. The core interfaces are Collection with List, Set, Queue, and Deque, plus the separate Map interface. Concrete classes provide different trade-offs: ArrayList gives O(1) indexed access but O(n) middle insertion; LinkedList gives O(1) insertion at the ends but O(n) random access; HashMap gives O(1) average get/put with no order; TreeMap gives O(log n) operations while keeping keys sorted. Map stores key-value pairs and exposes keySet, values, and entrySet views. The Collections utility class provides algorithms like sort, binarySearch, reverse, and shuffle. So the choice depends on whether you need order, duplicates, fast lookup, sorted iteration, or null tolerance. The framework also offers unmodifiable and synchronized wrapper views through Collections.
+In Java, a memory leak is not memory that becomes unreachable; it is the opposite: objects the application no longer needs remain strongly reachable from a GC root, so the garbage collector cannot reclaim them. The classic example is a static HashMap that you keep adding request data to without removing entries. The static field is a GC root; the map is reachable from that field, and every entry pins its value in the heap. Over time the heap fills up and the JVM throws OutOfMemoryError. The trade-off is that the garbage collector gives you memory safety, but it cannot detect that you intended to discard an object; as long as a reference path exists, the object survives. Diagnosis usually means taking a heap dump and finding which classes and reference chains are growing.
 
 ## If they dig deeper
 
-**What is the difference between Collection and Collections?**
+**How is a Java memory leak different from a C or C++ memory leak?**
 
-Collection is the root interface in java.util for groups of elements and is extended by List, Set, and Queue; Collections is a utility class with static methods like sort, binarySearch, reverse, and unmodifiableList that operate on Collection instances.
+In C/C++ you can allocate memory and then lose the pointer, so the memory remains allocated but unreachable; that is a leak. In Java an object is only collectible when no strong reference path from a GC root exists, so a Java leak is the reverse: the object is still reachable, but the application never uses it again. The GC cannot distinguish 'still referenced' from 'still needed'.
 
-**When would you choose HashSet instead of TreeSet?**
+**What steps do you take when you suspect a memory leak in production?**
 
-Use HashSet when you need O(1) average add/remove/contains and do not care about iteration order; it permits one null element. Use TreeSet when you need elements kept sorted by natural order or a Comparator, and accept O(log n) operations; under natural ordering it rejects null.
+First observe GC logs and heap usage over time to confirm growth and see whether it is heap or Metaspace. Then capture a heap dump with jcmd or jmap and analyze it in Eclipse MAT or VisualVM, looking at the histogram and dominator tree for object counts that grow. Trace the GC root path for the largest retained objects, identify the unintended reference, and remove it with proper eviction, unregistration, or resource closing.
 
-**How do you make a collection read-only or thread-safe?**
+**Why does a static HashMap cause a memory leak?**
 
-For read-only, wrap with Collections.unmodifiableList, unmodifiableSet, or unmodifiableMap to get a view that throws UnsupportedOperationException on mutation. For thread safety, Collections.synchronized* wrappers synchronize each method, but compound operations still need external synchronization; java.util.concurrent collections like ConcurrentHashMap offer better concurrency.
+A static field on a loaded class is a GC root. The HashMap instance is reachable from that field, and every key and value in the map is strongly reachable through the entry array. If entries are never removed, the map grows without bound. The HashMap itself is not the root; the static reference on the class is the root that keeps it alive.
 
-**Why should keys in a HashMap be immutable?**
+**Explain how a classloader leak happens and whether it shows up as heap or Metaspace OutOfMemoryError.**
 
-If the key's hash code changes after insertion, the entry may no longer be found in its original bucket, so containsKey or get fails even though the object is present. Immutable keys like String and Integer preserve the bucket placement and are safe to use.
+A custom classloader and its loaded classes reference each other: each Class points to its defining ClassLoader, and the loader points to all its classes. If any instance or class from that loader remains reachable—such as a background thread, listener, or static field—the entire loader graph stays alive. Since Java 8, class metadata is stored in Metaspace, so repeated redeploys can exhaust Metaspace. But the ClassLoader object, Class objects, and all static field values live in the Java heap, so a classloader leak often exhausts the heap as well, not just Metaspace.
 
-**How does OpenJDK 8+ HashMap handle hash collisions and resizing?**
+**How can ThreadLocal values leak in a thread pool, and why is that leak harder to see?**
 
-It uses separate chaining: each bucket holds a linked list of nodes with equal hash. When a bucket's list reaches the treeification threshold (8 entries) and the table capacity is at least 64, that bin is converted to a balanced tree to keep worst-case operations O(log n) instead of O(n). When the number of entries exceeds load factor times capacity (default 0.75), the table is resized to roughly double capacity and existing entries are rehashed.
+Each thread stores its ThreadLocal values in a map owned by the thread. A thread pool keeps worker threads alive for the lifetime of the application, so values set by a task stay referenced by that worker's ThreadLocalMap until the task calls remove(). The thread itself is a GC root, so the values remain reachable even after the task completes. It is harder to see because the retained objects are associated with long-lived worker threads, not with a global static field, so heap dumps show many thread-owned entries rather than one obvious collection.
 
 ## Worked example
 
-Consider designing an LRU cache with fixed capacity. A standard design uses a HashMap<K, Node> for average O(1) lookup by key and a doubly linked list of Node objects to maintain recency order. On get(key), if the key is present, the cache unlinks its node and moves it to the head in O(1) because the node already holds references to previous and next. On put(key, value), a new node is added at the head; if the size exceeds capacity, the tail node is removed and its key deleted from the map. The map provides O(1) average access, and the list updates are constant-time pointer changes. If a TreeMap were used instead, lookup would be O(log n); if only an ArrayList were used, evicting the least recently used element would be O(n) because of shifting.
+A request handler caches every request body in a static `Map<Long, byte[]>`:
+
+```java
+static final Map<Long, byte[]> BODIES = new HashMap<>();
+void handle(long id, byte[] body) {
+    BODIES.put(id, body);
+}
+```
+
+After 500,000 requests, the map has 500,000 entries and none are removed. The GC root is not the HashMap instance; it is the static field `BODIES` on the loaded class. The reference chain is `BODIES -> HashMap -> entry array -> Node -> byte[]`. Because the chain is all strong references, every byte array remains reachable and cannot be collected. The retained bytes grow with traffic until the heap limit is reached and the JVM throws OutOfMemoryError. The fix is to remove the entry after processing or use a bounded cache with eviction.
 
 ## Common traps
 
-- Assuming Map extends Collection: Map is a separate interface in java.util, not a subinterface of Collection.
-- Using mutable objects as HashMap/HashSet keys and then modifying the fields used by equals() or hashCode(), which can make the element unfindable.
-- Expecting HashSet or HashMap iteration to be insertion-ordered or sorted; HashSet/HashMap have no order guarantee, and LinkedHashSet/LinkedHashMap/TreeSet/TreeMap are needed for those behaviors.
-- Using Collections.sort on a Set or assuming PriorityQueue's iterator returns elements in priority order; sort requires a List, and PriorityQueue iteration order is not the priority order.
+- Saying Java cannot leak because the garbage collector handles cleanup.
+- Calling the static collection itself a GC root: the static field on the loaded class is the root, and the collection is reachable from it.
+- Treating every OOM as a sign to increase heap size; unreachable retention will eventually fail again with a larger heap, and Metaspace or native memory may be the real limit.
+- Using System.gc() to fix leaks; it does not collect objects that are still strongly reachable.
 
 </details>
 
 ---
 
-## 11. Hotel Management System Design · flash · Easy
+## 9. Elevator System Design · mcq · Easy
 
 *lld · gate confidence 0.85*
 
+<sub>to object to this card: `## lld-elevator-system-design` then `match: In a low-level design for an elevator car, which state set e`</sub>
+
 **Question**
 
-What is the role of the CancellationPolicy interface in the reservation state machine?
+In a low-level design for an elevator car, which state set explicitly separates the car's direction of travel from whether the door is open, using mutually exclusive states?
+
+**Options**
+
+- Idle, MovingUp, MovingDown, DoorOpen
+- Idle, Moving, Stopped, DoorOpen
+- Up, Down, Waiting, Boarding, Unloading
+- Moving, Stopped, Off, Maintenance
 
 **Reference answer**
 
-It decouples cancellation rules, such as the 24-hour window, from the Reservation entity by providing a canCancel method that can be swapped without changing the state machine.
+Idle, MovingUp, MovingDown, DoorOpen
 
 **Graded on**
 
-- Decouples policy from entity
-- canCancel method
-- Allows different rules
+- Idle, MovingUp, and MovingDown are mutually exclusive motion states.
+- DoorOpen is separate from motion states, so a car cannot be moving and have the door open at the same time.
+- The decomposition includes idle so the car can wait when no pending requests exist.
+- Direction is encoded in the moving states, allowing hall requests to be matched by direction.
 
 <details><summary>The lesson this came from</summary>
 
-A hotel management system LLD models a hotel as a set of room types and physical rooms, each with status and inventory; reservations as stateful bookings that enforce check-in, check-out, and cancellation policies; and guest services as billable line items attached to a reservation's folio. The main mechanism is a Reservation aggregate that transitions between states, a RoomCatalog that answers availability by checking overlap against active reservations, and a Folio that accumulates room, food, amenity, and service charges until payment. Housekeeping tasks are logged against room status changes. This design separates configuration (rooms, rates), transactions (bookings, payments), and operational logs.
+Elevator system design models floors, hall and car requests, elevator cars with direction and state, and a controller that assigns and orders floor visits. Each car is a finite state machine (idle, moving up, moving down, door open), and a scheduler decides the next floor from pending requests. The design separates input handling from movement policy so scheduling can be swapped independently.
 
 ## Why interviewers ask this
 
-The interviewer is testing whether you can identify entities and invariants for a real stateful workflow: preventing double bookings, enforcing a 24-hour cancellation window, keeping an auditable bill, and handling multiple payment methods without coupling. It also reveals whether you model behavior over time (availability is a query over date ranges) instead of a static flag.
+This question tests object modeling, state machines, concurrency, and strategy selection under constraints. Interviewers watch whether the candidate separates request ingestion from car movement, avoids a god controller, and can justify a scheduling policy instead of just naming one.
 
 ## The core idea
 
-The Reservation is the central aggregate: it can be Confirmed, CheckedIn, CheckedOut, or Cancelled, and each transition checks a rule (e.g., cancel only if now is more than 24 hours before check-in). Room availability must be derived by querying non-cancelled reservations whose date ranges overlap the requested stay; a room_id plus status alone is insufficient because availability is time-dependent. All monetary charges belong to a Folio attached to a reservation; room service, food, amenities, and room rate line items are appended immutably so the bill can be audited. Payment is modeled behind a strategy interface so Cash, Check, and Card settle the same folio without branching on payment type. The booking operation must be atomic; checking availability then inserting as a separate step is a race. A housekeeping log is append-only and records room status transitions and task assignments.
+Treat each elevator car as an independent state machine; state changes must be explicit and atomic. Model a request as an immutable value: hall requests carry source floor and direction, car requests carry destination floor. Keep a Scheduler interface so FCFS, SCAN, LOOK, or SSTF can be selected without changing the controller. For a single car, LOOK usually dominates plain SCAN because it reverses at the last pending request instead of always traveling to terminal floors. For multiple elevators, separate assignment—which car should serve a new hall request—from each car's own movement policy; assignment minimizes estimated waiting time or distance, movement follows LOOK per car.
 
 ## Key points
 
-- A room is unavailable for a requested date range if any non-cancelled reservation's [checkIn, checkOut) interval overlaps it.
-- Cancellation returns a full refund only when it occurs more than 24 hours before the check-in date; otherwise the policy may charge a penalty or deny cancellation.
-- Reservation status should be an explicit state machine (e.g., Confirmed -> CheckedIn -> CheckedOut, with Cancelled possible before check-in), not inferred from dates.
-- Folio line items are immutable; refunds and discounts are recorded as counter-line items so the original charge history remains auditable.
-- Payment is polymorphic (credit card, check, cash) and acts against the folio, not against a room or reservation total field.
+- A car's states are mutually exclusive; a safe implementation guards transitions so a car cannot be moving and door-open at the same time.
+- Hall requests carry direction because a passenger can only board a car going that way; car requests carry only destination.
+- LOOK reverses at the farthest pending request in the current direction, while SCAN always travels to the physical end floors before reversing.
+- In single-elevator systems LOOK generally gives lower empty travel than SCAN; FCFS is simple but can cause severe zig-zag movement.
+- Multiple-elevator dispatch is a separate assignment layer that can use estimated wait time or distance, while each selected car still runs its own movement policy.
 
 ## Your 60-second answer
 
-I'd model this as four core groups: inventory, reservations, folios, and operations. A room belongs to a room type like standard or suite, and has a current status—available, occupied, dirty, or out of order. Availability isn't a boolean; it's computed by checking whether any confirmed or checked-in reservation overlaps the requested dates. The reservation is a state machine: confirmed to checked in to checked out, with cancellation allowed only before the policy deadline, in this spec more than 24 hours before check-in. All charges—room nights, food, amenities—are appended as line items to a folio attached to the reservation, so the bill stays auditable. Payment is a strategy for cash, card, or check that settles the folio. Housekeeping gets a task log when a room becomes dirty at checkout. The main trade-off is that deriving availability from date ranges is precise but requires careful transaction or constraint handling to avoid double bookings.
+I’d model the system with floors, requests, elevator cars, and a controller. Each car is a finite state machine: idle, moving up, moving down, and door open. Requests come from hall buttons with a floor and direction, or from car buttons with just a destination. I’d define a scheduler interface and use LOOK for a single elevator: the car keeps moving in one direction until there are no pending requests ahead, then reverses. That avoids unnecessary trips to terminal floors like SCAN. For multiple elevators, I’d separate assignment from movement: a dispatcher assigns each new hall request to the car with the lowest estimated wait or travel cost, then that car runs LOOK locally. The main trade-off is between simple predictable FCFS and better average wait time with direction-aware scheduling.
 
 ## If they dig deeper
 
-**What are the main classes or entities in this design?**
+**What are the main classes and interfaces you would create?**
 
-Hotel, RoomType, Room, Guest, Reservation, Folio, FolioLineItem, Payment, RoomServiceItem, Amenity, HousekeepingLog, and NotificationService. RoomType captures category and base rate; Guest holds contact and identity; Reservation links one or more rooms, a guest, dates, and a folio.
+I would create ElevatorCar, Floor, Request, Direction, ElevatorState, Door, Button, Scheduler, and Dispatcher/Controller. Scheduler is an interface with concrete FCFS, SCAN, LOOK, and possibly SSTF implementations so policies can be swapped without touching the controller.
 
-**How do you prevent two guests from booking the same room for overlapping dates?**
+**How do you model the elevator car's state transitions?**
 
-The booking operation must check availability and insert the reservation atomically. In a relational database, that means a transaction with an appropriate isolation level or a database constraint such as PostgreSQL's exclusion constraint on room_id with a date range; if a conflicting row already exists the insert fails. In a distributed system you would use a per-room lock or a consensus-based reservation service.
+The car has states Idle, MovingUp, MovingDown, and DoorOpen. On arrival at a scheduled floor, it transitions from moving to door-open only after stopping; a timer or sensor triggers closing, then the scheduler picks the next direction from pending requests. Invalid transitions, such as opening while moving, are rejected.
 
-**How do you represent the 24-hour cancellation policy so it can change later?**
+**Which scheduling algorithm would you use and why?**
 
-Define a CancellationPolicy interface with a method like canCancel(reservation, now). The default implementation returns true when now is more than 24 hours before the check-in timestamp. The Reservation holds a reference to the policy or a policy type, so another hotel can inject a 48-hour or non-refundable policy without changing the Reservation state machine.
+I would default to LOOK for a single elevator. It serves requests in the current direction up to the farthest pending request and then reverses, avoiding empty travel to terminal floors that plain SCAN incurs. FCFS is simpler but can bounce between distant floors and gives poor wait times.
 
-**How do you handle room rates that change seasonally without corrupting old bills?**
+**How do you handle concurrent requests so floor presses are not lost?**
 
-RoomType or Room has a list of RoomRate entries with effective from/to dates and an amount. When a reservation is made, the system resolves the applicable rate for each night and copies those amounts onto the folio as snapshot line items. Future rate changes do not affect existing reservations because the charges reference the snapshot, not the current rate table.
+Use a thread-safe request queue or synchronized per-elevator command list. Producers enqueue immutable requests and notify the dispatcher; the car thread processes its own state transitions. Per-car synchronization is enough because each car moves independently, while a shared pending collection must be safe for cross-car assignment.
 
-**How would you make check-in idempotent if a guest retries the same request after a network timeout?**
+**How would the design change for destination dispatch, where passengers enter their destination at the hall?**
 
-Generate an idempotency key with each reservation or check-in request and store it on the reservation. On receipt, first look up the key: if it already exists, return the existing result without changing state. Otherwise perform the state transition in a transaction that compares the current status before updating, so a concurrent duplicate sees the status as already checked in and becomes a no-op.
+The hall request becomes floor-to-destination instead of floor-plus-direction, and the dispatcher assigns a car before the passenger enters. This lets the system group passengers by destination or zone and reduce stops, but it removes the ability for a passenger to choose any car and requires reliable assignment feedback at the hall panel.
 
 ## Worked example
 
-A search for Room 101 for Oct 1 to Oct 2 fails because an existing reservation checks out Oct 2, overlapping the night of Oct 1. The system treats check-out as exclusive; the room is not offered for an Oct 2 check-in until housekeeping marks it available. For Room 102 at $100/night, an Oct 1-3 booking creates a Folio with two night charges totaling $200. If the guest orders breakfast for $15 and an amenity for $5, the folio total becomes $220. Payment by card settles the folio as a $220 payment, and the Reservation transitions to CheckedOut.
+Consider one elevator at floor 2 moving up, with an up hall request at 6 and a car destination at 9. LOOK builds an upward target list [6, 9]. It stops at 6, opens the door, then continues to 9. While the car is between 6 and 9, a down hall request arrives at floor 4. The request is stored but not inserted into the current upward pass because it is below the car and opposite direction. After serving 9, the car finds no pending requests above 9, reverses direction, and visits 4 on the way down. If the scheduler were SCAN, it would first go to the top floor before reversing, adding empty travel unless the building top coincides with 9.
 
 ## Common traps
 
-- Modeling room availability as a boolean field on Room; availability depends on dates and reservation status.
-- Storing only an outstanding balance as a mutable number on a reservation, so refunds and service charges cannot be audited.
-- Forgetting to make booking atomic and checking availability before inserting in a separate race-prone step.
-- Coupling payment details into the reservation or room instead of using a folio-level payment strategy.
+- Treating the door as a boolean isOpen; a real transition needs opening/open/closing states and a timer or sensor guard, otherwise safety interlocks cannot be modeled.
+- Making one controller that both assigns and moves elevators; without a separate policy interface, changing from FCFS to LOOK touches car logic.
+- Overlooking direction in hall requests; treating a hall request as just a floor makes it impossible to decide whether the car should stop when moving the opposite way.
+- Saying LOOK and SCAN are the same; SCAN travels to terminal floors, which is only beneficial if ends are likely request points or you need very predictable coverage.
 
 </details>
 
 ---
 
-## 12. Ride Sharing Service Design · typed · Medium
+## 10. Factory Method Pattern · flash · Easy
 
 *lld · gate confidence 0.85*
 
+<sub>to object to this card: `## lld-factory-method-pattern` then `match: What is the defining structure of the Factory Method pattern`</sub>
+
 **Question**
 
-How is pricing calculated in a ride-sharing service, and how is double charging prevented?
+What is the defining structure of the Factory Method pattern?
 
 **Reference answer**
 
-Before the ride, the pricing service returns a quoted estimate: base fare plus per-mile and per-minute rates adjusted by a surge multiplier. After completion, the final fare is recalculated from actual route distance and time, and the payment charge uses an idempotency key so retries do not double-bill the rider.
+An abstract creator class declares a factory method whose return type is a product interface or abstract class, and concrete creator subclasses override it to return different concrete products.
 
 **Graded on**
 
-- Quote includes base, per-mile, and per-minute rates
-- Surge multiplier is applied
-- Final fare is recalculated from actual distance and time
-- Idempotency key prevents duplicate charge
+- abstract creator class
+- factory method returns product abstraction
+- concrete creators override the method
 
 <details><summary>The lesson this came from</summary>
 
-A low-level design for a ride-sharing service models the core domain objects—Rider, Driver, Trip, Location, and Fare—and the interactions among them. It specifies a geospatial index for finding nearby available drivers, a time-boxed dispatch flow where a driver's acceptance commits the trip, and a trip state machine. It also defines pricing calculation and the concurrency controls needed for correct assignment and payment.
+Factory Method is a creational design pattern. It defines a method in a creator class that returns a product abstraction, and concrete creator subclasses override that method to instantiate and return a specific concrete product. The client depends only on the creator and product abstractions, so new product types can be added by introducing a new creator subclass without changing existing client code. In the classic GoF formulation, this is a 'virtual constructor' that defers instantiation to subclasses.
 
 ## Why interviewers ask this
 
-The interviewer is testing whether the candidate can decompose a multi-entity workflow into clean service boundaries and state transitions. They also want to see how the candidate handles concurrency, driver availability, and failure cases such as duplicate offers or timed-out dispatches. Strong answers show explicit state machines and atomic transitions rather than vague 'assign closest driver' logic.
+Interviewers use this to test whether you understand how to decouple object creation from use, keep code open for extension without modifying existing classes, and invert dependencies so high-level modules rely on abstractions rather than concrete types. A strong answer should distinguish Factory Method from Simple Factory and Abstract Factory and describe a concrete extension scenario.
 
 ## The core idea
 
-A ride request is matched by querying a geospatial index such as geohash cells or a grid for nearby drivers whose status is AVAILABLE. The system does not hard-assign the closest driver before acceptance; it sends a short-lived offer with a timeout, sometimes to one candidate at a time, and only the driver's acceptance transitions the driver from OFFER_PENDING to ON_TRIP and the trip to DRIVER_ASSIGNED. If an offer times out, the driver returns to AVAILABLE and the service tries the next candidate or expands the search radius. Pricing is estimated before the ride and finalized after completion using actual distance and time. Idempotency keys and conditional status updates guard against duplicate rides, double assignment, and double payment.
+The core mechanism is a method whose return type is an abstraction (interface or abstract class) but whose implementation is supplied by subclasses. Because the creator class calls its own factory method rather than a constructor, the selection of concrete product moves from compile-time code to runtime polymorphism. This gives client code a stable interface while allowing new product classes to be introduced alongside new creator subclasses. The trade-off is extra classes and indirection: each product family or variant typically requires its own creator subclass. Use it when the class cannot anticipate the class of objects it must create or when subclasses should specify objects.
 
 ## Key points
 
-- A geospatial index such as geohash or a grid partitions driver locations so nearby-driver queries do not scan the entire fleet.
-- Dispatch is offer-based: the system sends a time-boxed offer and marks the driver OFFER_PENDING; only the driver's acceptance commits the driver to ON_TRIP and the trip to DRIVER_ASSIGNED.
-- The trip state machine enforces allowed transitions such as SEARCHING to DRIVER_ASSIGNED to DRIVER_EN_ROUTE to PICKED_UP to COMPLETED, with cancellation possible at specific points.
-- Pricing uses a quoted fare estimate before the ride and recalculates the final fare from actual route distance and time, applying a surge multiplier when demand exceeds supply.
-- Idempotency keys and conditional status/version checks prevent duplicate ride requests, multiple drivers being committed to the same trip, and duplicate payment charges.
+- The defining structure is an abstract creator class with a factory method whose declared return type is a product interface or abstract class; concrete creators override it to return different concrete products.
+- It is not the same as a Simple Factory, which centralizes creation in one parameterized class without inheritance and is not one of the GoF patterns.
+- Factory Method supports the Open/Closed Principle because new product types can be introduced through new creator subclasses rather than by changing existing code.
+- Clients depend only on the abstract creator and product types, applying the Dependency Inversion Principle.
+- Android's ViewModelProvider.Factory decouples custom ViewModel construction by providing a factory interface, but its one-method signature with a Class parameter is a factory abstraction rather than the classic GoF creator hierarchy.
 
 ## Your 60-second answer
 
-A ride-sharing design centers on a trip state machine and a dispatch service. A rider creates a ride request with pickup, dropoff, and an idempotency key. The pricing service returns a fare estimate, then matching starts. The matching service queries a geospatial index—usually geohash cells—for nearby drivers whose status is AVAILABLE. It sends a time-boxed offer to one or a few candidate drivers, not a hard assignment. Only when a driver accepts does the system transition that driver from OFFER_PENDING to ON_TRIP and the trip to DRIVER_ASSIGNED. If the offer times out, the service tries the next candidate or expands the search radius. This avoids committing a driver before acceptance. The main trade-off is latency versus utilization: offering to one driver at a time minimizes duplicate acceptances but can be slow; broadcasting to several drivers fills rides faster but requires reconciling multiple accepts.
+Factory Method is a creational pattern where a creator class defines a method that returns an interface, and subclasses override that method to decide which concrete class to instantiate. This removes direct new calls from the code that uses the object, so you can add a new product type by adding a new creator subclass without touching existing client logic. It's often used when a class cannot predict which of several related classes it must create, such as a document framework that lets subclasses create different document types. The main trade-off is complexity: every new product usually requires a new creator subclass, which can bloat the class hierarchy. It's also distinct from a Simple Factory, which centralizes creation in one class without inheritance, and from Abstract Factory, which creates families of related objects.
 
 ## If they dig deeper
 
-**How do you find nearby drivers efficiently?**
+**What core problem does the Factory Method pattern solve?**
 
-Use a geospatial index such as geohash or a grid. The service encodes the pickup location to a cell, queries that cell and its neighboring cells for drivers, filters by status=AVAILABLE, and ranks by estimated pickup distance. If too few candidates are found, it expands to the next ring of cells.
+It removes the need for client code to name concrete product classes, so the client depends only on a product abstraction. New product variants can then be added by creating a new creator subclass without modifying existing client code, which preserves the Open/Closed Principle.
 
-**What happens if no driver accepts an offer?**
+**How is Factory Method different from Simple Factory and Abstract Factory?**
 
-After the offer timeout, the dispatch service marks the driver AVAILABLE again and tries the next candidate from the ranked list, or expands the search radius. If no driver accepts after a configured number of attempts, the request is cancelled or the rider is given a longer wait or a higher surge price.
+Simple Factory centralizes creation in one parameterized class and is not a GoF pattern, whereas Factory Method relies on inheritance so subclasses override a creation method. Abstract Factory uses composition: an abstract factory interface returns families of related products, implemented by concrete factories.
 
-**How do you prevent two different riders from being assigned the same driver?**
+**When would you use Factory Method instead of a plain constructor?**
 
-Driver records maintain a status and version. When dispatch sends an offer, it uses an atomic compare-and-set to move the driver from AVAILABLE to OFFER_PENDING, so a second concurrent dispatch cannot offer the same driver. On acceptance, the driver transitions from OFFER_PENDING to ON_TRIP; if the offer lease expired, the acceptance is rejected.
+Use it when the exact class to instantiate should be decided by a subclass, when creation requires variant-specific logic, or when the creator wants to run extra steps around creation such as caching, validation, or reuse without changing the client.
 
-**How is pricing calculated?**
+**How does Factory Method compare to Dependency Injection for managing dependencies?**
 
-Pricing is computed as a quote before the ride: base fare plus per-mile and per-minute rates adjusted by a dynamic surge multiplier. The final fare is recalculated after trip completion using actual distance and time. Payment uses an idempotent charge so retries do not double-bill the rider.
+Factory Method lets a class obtain its product by calling its own overridable method, keeping the creation knowledge inside the class hierarchy. Dependency Injection passes the dependency in from outside, which makes dependencies explicit, improves testability, and is often preferred when the caller or a container should select the implementation.
 
-**How do you make driver assignment and payment exactly-once when a node fails?**
+**What maintenance problems can appear with parallel creator and product hierarchies, and how can you reduce them?**
 
-Use idempotency and transactional state changes. Each ride request has an idempotency key with a unique constraint. Driver assignment is a compare-and-set on driver status and version; a crashed dispatcher relies on the offer lease timeout to release the driver. Payment charges use an idempotency key, and trip completion emits exactly one event via an outbox pattern so no duplicate completion or charge is processed.
+Parallel hierarchies can explode in number of classes and couple the creator and product families tightly, so changing one often requires updating many subclasses. You can reduce this by having fewer creators with parameterized creation, using configuration or registration instead of subclassing, or accepting the parallel hierarchy only where product types genuinely vary by creator type.
 
 ## Worked example
 
-A rider at (37.7749, -122.4194) requests a ride to (37.7847, -122.4094). Pricing quotes $18.50 using base $2.50 plus $1.80 per mile for 5.1 miles plus $0.35 per minute for 12 minutes, with a 1.3x surge. MatchingService computes geohash 9q8yy and scans its own cell plus eight neighbors, finding D1 0.4 miles away, D2 0.6 miles away, and D3 1.1 miles away. All are AVAILABLE. It sends a 15-second offer to D1 and marks D1 OFFER_PENDING. D1 does not accept; the lease expires and D1 returns to AVAILABLE. The service sends an offer to D2, who accepts at t+9 seconds. D2 transitions from OFFER_PENDING to ON_TRIP, and the trip moves from SEARCHING to DRIVER_ASSIGNED. After pickup and a 12.4-minute, 5.3-mile ride, the trip is COMPLETED and the final fare is recalculated to $18.90.
+Consider a document application. The abstract class Application declares protected abstract Document createDocument(). Its concrete newDocument() method calls createDocument(), then calls open() on the returned Document and adds it to a list of open documents. TextApplication implements createDocument() to return a TextDocument; SpreadsheetApplication returns a SpreadsheetDocument. Client code calls application.newDocument() and never refers to TextDocument or SpreadsheetDocument directly. Later, adding a PresentationApplication that returns PresentationDocument requires no edits to newDocument or existing subclasses. The choice of concrete product is deferred to the subclass and resolved at runtime.
 
 ## Common traps
 
-- Treating dispatch as an atomic assignment and marking the driver ON_TRIP before the driver accepts; this loses the acceptance window and makes timed-out offers impossible.
-- Using a naive 'select closest driver and assign' without checking status and version, which can double-book a driver who already accepted another trip.
-- Deriving driver status only from trip status instead of maintaining a separate driver availability state, causing stale or inconsistent views.
-- Computing the fare only at the end without quoting an estimate, or failing to make the final charge idempotent so retries double-charge the rider.
+- Calling any class that returns an object a Factory Method, even when there is no creator subclass and no overridden method — that is typically a Simple Factory or a helper method, not the GoF pattern.
+- Confusing Factory Method with Abstract Factory because both deal with object creation; Abstract Factory creates families of related products through composition, not by having subclasses override a single creation method.
+- Overusing the pattern by making a creator subclass for every product variant when a constructor parameter or registration would suffice, causing class explosion.
+- Declaring the factory method static, which prevents dynamic dispatch and therefore removes the polymorphism that is the pattern's core mechanism in languages like Java and C#.
 
 </details>
 
 ---
 
-## 13. DDL/DML/DCL/TCL · typed · Medium
+## 11. DDL/DML/DCL/TCL · flash · Easy
 
 *sql · gate confidence 0.85*
 
+<sub>to object to this card: `## sql-ddl-dml-dcl-tcl` then `match: What do the four SQL command families DDL, DML, DCL, and TCL`</sub>
+
 **Question**
 
-What privilege boundary separates DDL from DML, and why does it matter?
+What do the four SQL command families DDL, DML, DCL, and TCL classify?
 
 **Reference answer**
 
-DML requires table-level and sometimes column-level SELECT/INSERT/UPDATE/DELETE privileges on existing objects, while DDL requires broader object-creation rights such as CREATE on a schema or database. This separation lets application and reporting users modify rows without being able to change the schema.
+They classify SQL statements by what they affect: DDL acts on schema, DML on row data, DCL on privileges, and TCL on transaction scope.
 
 **Graded on**
 
-- DML uses table/column privileges
-- DDL requires schema/database creation rights
-- Separation supports least privilege
+- Classification is by effect, not syntax
+- DDL changes schema objects
+- DML changes row data
+- DCL controls access and TCL controls transaction boundaries
 
 <details><summary>The lesson this came from</summary>
 
@@ -1072,613 +932,614 @@ A PostgreSQL example shows both DDL rollback and the concurrent-index exception.
 
 ---
 
-## 14. Constraints · mcq · Easy
+## 12. ROW_NUMBER/RANK/DENSE_RANK · typed · Medium
 
 *sql · gate confidence 0.85*
 
+<sub>to object to this card: `## sql-row-number-rank-dense-rank` then `match: How can you express RANK() and DENSE_RANK() in terms of prec`</sub>
+
 **Question**
 
-Which of the following is a separate column requirement often grouped with SQL constraints, rather than one of the common declarative constraints?
-
-**Options**
-
-- PRIMARY KEY
-- FOREIGN KEY
-- CHECK
-- NOT NULL
+How can you express RANK() and DENSE_RANK() in terms of preceding rows or distinct values?
 
 **Reference answer**
 
-NOT NULL
+RANK() equals 1 plus the number of rows in the partition whose ORDER BY value is strictly less than the current row's value. DENSE_RANK() equals 1 plus the number of distinct ORDER BY values that are strictly less than the current row's value.
 
 **Graded on**
 
-- Common declarative SQL constraints include PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, and DEFAULT.
-- NOT NULL is a separate column requirement that is often discussed with constraints.
-- PRIMARY KEY, FOREIGN KEY, and CHECK are constraints enforced by the database on writes.
+- RANK = 1 + count of rows with strictly smaller ORDER BY value
+- DENSE_RANK = 1 + count of distinct smaller ORDER BY values
+- ties share the same count of preceding rows and distinct values
 
 <details><summary>The lesson this came from</summary>
 
-Constraints are declarative schema rules attached to columns or tables that the database engine enforces on every INSERT and UPDATE, rejecting any statement that would violate them. The common SQL constraints are PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, and DEFAULT, with NOT NULL as a separate column requirement. A PRIMARY KEY gives a unique non-null row identifier; a FOREIGN KEY maintains a relationship to a primary or unique key in another table. DEFAULT is not an integrity check that rejects data, but it supplies missing or explicitly requested default values.
+ROW_NUMBER(), RANK(), and DENSE_RANK() are SQL window functions that assign an integer to each row within a window defined by OVER. They differ only in how they treat rows whose ORDER BY keys are equal. ROW_NUMBER() always gives a unique sequential number, so tied rows receive arbitrary distinct numbers. RANK() gives tied rows the same value and leaves gaps: the next rank equals the current rank plus the number of tied rows. DENSE_RANK() also gives tied rows the same value, but the next rank is always the previous rank plus 1. PARTITION BY is optional and restarts numbering per partition; ORDER BY normally determines the ranking order, but engine behavior varies when it is omitted.
 
 ## Why interviewers ask this
 
-Interviewers ask about constraints to see whether you can use the database for data integrity instead of relying only on application code. They also probe your understanding of the difference between primary key, unique, foreign key, and not null, and edge cases like null handling, cascade actions, and write-time costs. The common 'difference between primary and foreign key' question is a quick filter for schema design fundamentals.
+Interviewers use these functions to test whether you understand window semantics beyond basic aggregates: partition scope, ordering, and tie handling. The decision among the three maps directly to requirements like one row per group, top N including ties with gaps, or top N distinct values with no gaps. A precise answer shows you know both the output shape and when nondeterminism appears.
 
 ## The core idea
 
-Constraints move data integrity into the database engine, making invalid states impossible regardless of which application path wrote the row. The main types enforce different rules: PRIMARY KEY provides one non-null unique row identifier; UNIQUE blocks duplicate values but allows nulls; FOREIGN KEY guarantees each non-null child value points to an existing parent; CHECK rejects rows where a predicate is false; DEFAULT fills values when omitted or when DEFAULT is specified explicitly. These checks run on every write and often require indexes, so they are both an integrity guarantee and a performance decision.
+All three ranking functions produce a number for each row in a window; the only real distinction is what happens when multiple rows tie on the ORDER BY expression. ROW_NUMBER simply enumerates rows, so every value is unique and tie order is arbitrary. RANK counts rows that are strictly ahead: a rank of r means r-1 rows precede this one, which creates gaps after groups of ties. DENSE_RANK counts distinct values ahead, so the next value after a tie is always one greater than the tie's rank. If PARTITION BY is present, each partition is ranked independently as if it were the whole table. Without ORDER BY, the functions either require an ORDER BY on some engines or rank all rows as a single peer group on others, so meaningful ranking always needs an explicit order.
 
 ## Key points
 
-- A PRIMARY KEY uniquely identifies each row, is implicitly NOT NULL, and is limited to one per table; it usually creates a unique index.
-- A FOREIGN KEY enforces referential integrity by requiring each non-NULL value to match a primary key or unique key in the referenced table; NULL is allowed unless the column is also NOT NULL.
-- A UNIQUE constraint prevents duplicate non-NULL values; PostgreSQL and MySQL allow multiple NULLs, while SQL Server's unfiltered unique constraint permits just one NULL.
-- CHECK rejects only rows where its expression evaluates to FALSE, so NULL results are allowed because `NULL > 0` is UNKNOWN.
-- DEFAULT supplies a value when a column is omitted from an INSERT column list or when INSERT/UPDATE explicitly specifies the DEFAULT keyword for that column; omitted columns in UPDATE are left unchanged.
+- ROW_NUMBER() returns a unique sequential integer for every row in its partition; tied rows get arbitrary distinct numbers unless extra ORDER BY columns break the tie.
+- RANK() assigns equal values to ties and skips: after two rows tied at rank 2, the next row receives rank 4.
+- DENSE_RANK() assigns equal values to ties but does not skip: after two rows tied at rank 2, the next row receives rank 3.
+- PARTITION BY restarts numbering at 1 for each partition; without it the entire result set is one partition.
+- ORDER BY is required or effectively required for meaningful ranking; PostgreSQL, MySQL, and SQLite allow ROW_NUMBER() OVER () as an arbitrary sequence and RANK/DENSE_RANK then return 1 for every row, while SQL Server requires ORDER BY.
 
 ## Your 60-second answer
 
-SQL constraints are declarative rules enforced by the database engine on every insert and update, so invalid data is rejected at the source rather than waiting for application checks. A primary key uniquely identifies each row, is implicitly not null, and there can be only one per table. A foreign key references a primary or unique key in another table, so each non-null child value must point to an existing parent row; null foreign keys are allowed unless not null is added. Unique constraints block duplicate non-null values, though null handling varies by engine. Check constraints reject rows where the expression is false, and defaults supply a value when a column is omitted or when DEFAULT is written explicitly. The benefit is guaranteed integrity across all code paths; the main cost is write-time checking and index maintenance, so the decision is about data-criticality versus throughput.
+ROW_NUMBER assigns a distinct sequential number to every row in the window; tied rows get arbitrary different numbers, so there are no gaps. RANK assigns the same rank to tied rows and then skips ahead: if two rows are tied at rank 2, the next row is rank 4. DENSE_RANK also gives tied rows the same rank, but it does not skip: after two rank-2 rows, the next row is rank 3. All three accept an optional PARTITION BY, which restarts numbering at 1 for each partition. Use ROW_NUMBER when you need exactly one row per group; use DENSE_RANK when you want top-N results with ties counted without gaps; use RANK when the gap itself is meaningful, but know that rank filters can skip values because rank counts rows, not distinct values.
 
 ## If they dig deeper
 
-**What is the difference between a primary key and a unique constraint?**
+**If three rows share the same salary, what ranks do RANK and DENSE_RANK assign to the next row?**
 
-A primary key uniquely identifies each row, cannot contain NULL, and is limited to one per table. A unique constraint also prevents duplicates but can be created multiple times per table and allows NULLs under most engines; both create unique indexes. A primary key is the table's standard row identifier, while unique constraints guard alternate keys like usernames or emails.
+If the tied rows are assigned rank r, RANK gives the next row r+3, because rank equals one plus the number of preceding rows. DENSE_RANK gives the next row r+1, because it counts preceding distinct values, not rows. ROW_NUMBER still assigns three distinct numbers, so its next row is r+3 if numbering was contiguous.
 
-**What happens when you delete or update a parent row referenced by a foreign key?**
+**Which function would you use to return exactly one highest-paid employee per department?**
 
-The declared referential action controls it. RESTRICT or NO ACTION blocks the operation if matching child rows exist; CASCADE deletes or updates the child rows automatically; SET NULL or SET DEFAULT assigns NULL or the column default to child rows. Engines differ in which actions they support, especially ON UPDATE, so verify the target database.
+Use ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) and filter for row number 1. This returns exactly one row per department even when several employees tie for the top salary; the tie is broken arbitrarily unless you add a unique column to the ORDER BY. RANK or DENSE_RANK would return all tied first rows.
 
-**Why might a CHECK constraint such as price > 0 still allow a row with a NULL price?**
+**When would RANK be preferable to DENSE_RANK?**
 
-SQL CHECK constraints are satisfied when the predicate evaluates to TRUE or UNKNOWN, and any comparison with NULL is UNKNOWN. So `NULL > 0` is unknown and the row is accepted. To reject NULL, add `price IS NOT NULL` or declare the column NOT NULL.
+Use RANK when the gap should encode how many rows are strictly ahead. For example, if two people tie for first place, the next person is third, not second. DENSE_RANK is better for distinct-value rankings, such as top 3 salary levels, where you want no skipped positions among distinct values.
 
-**When does DEFAULT apply on INSERT versus UPDATE, and what does the DEFAULT keyword do?**
+**Can you express RANK and DENSE_RANK as counts of preceding rows or values?**
 
-On INSERT, the default is used when the column is omitted from the column list or when the statement explicitly provides DEFAULT for that column. On UPDATE, omitting the column simply leaves its current value; the default applies only if the statement sets it to DEFAULT, as in `UPDATE t SET status = DEFAULT`. In all cases DEFAULT evaluates the column's default expression at statement time.
+Yes. RANK() = 1 + number of rows in the partition whose ORDER BY value is strictly less than the current row's value. DENSE_RANK() = 1 + number of distinct ORDER BY values that are strictly less than the current row's value. Ties have the same number of strictly preceding rows and values, so they receive the same rank.
 
-**What performance or concurrency costs do constraints introduce?**
+**What happens if the OVER clause has no ORDER BY, and is that allowed in all engines?**
 
-Every INSERT/UPDATE must validate CHECK and foreign key constraints; UNIQUE and PRIMARY KEY constraints maintain an index, adding write overhead. Foreign key checks may acquire shared locks on the referenced parent row, which can cause blocking or deadlocks under concurrent writes. Cascading deletes can also amplify a single parent delete into many child writes, so constraints must be chosen with both integrity and access patterns in mind.
+In PostgreSQL, MySQL, and SQLite, ROW_NUMBER() OVER () returns an arbitrary sequential number for the whole partition, while RANK() and DENSE_RANK() return 1 for every row because all rows form one peer group. SQL Server requires ORDER BY for these ranking functions. Without an ORDER BY, the ranking is not meaningful and the tie-breaking order is nondeterministic.
 
 ## Worked example
 
-In PostgreSQL, define `dept(id integer PRIMARY KEY)` and `emp(id integer PRIMARY KEY, dept_id integer REFERENCES dept(id) ON DELETE SET NULL, email text UNIQUE, salary numeric CHECK (salary > 0), status text DEFAULT 'pending' NOT NULL)`. Insert department 1, then `INSERT INTO emp(id, dept_id, email, salary) VALUES (10, 1, 'ana@example.com', 100)` succeeds with `status` becoming `pending` because the column was omitted. A second insert with `email = 'ana@example.com'` fails with a unique violation, even though its employee id is different. An insert with `dept_id = NULL` and `salary = NULL` can succeed: foreign keys allow NULL and the check passes because `NULL > 0` is UNKNOWN, not false. `UPDATE emp SET status = DEFAULT WHERE id = 10` explicitly applies the default to an existing row, and deleting department 1 sets emp 10's `dept_id` to NULL.
+For salaries 90000, 85000, 85000, 75000 ordered descending: ROW_NUMBER gives 1,2,3,4 because it simply enumerates rows, and the two 85000 rows receive different numbers in an engine-dependent order. RANK gives 1,2,2,4: both 85000 rows tie at rank 2, and the next rank is 4 because rank skips one place for the extra tied row. DENSE_RANK gives 1,2,2,3: the two 85000 rows still share rank 2, but the next distinct salary gets rank 3 because dense_rank advances by one distinct value rather than row count. If you add PARTITION BY department, the same sequence restarts at 1 within each department.
 
 ## Common traps
 
-- Saying a UNIQUE constraint rejects all NULLs; most engines allow multiple NULLs and SQL Server's unfiltered unique constraint allows one.
-- Assuming every omitted UPDATE column is reset to its DEFAULT; DEFAULT only applies on UPDATE when the statement sets the column to DEFAULT.
-- Believing CHECK constraints catch NULL values; CHECK passes on UNKNOWN, so NULLs can get past a simple comparison.
-- Treating a foreign key column as automatically NOT NULL; standard SQL allows NULL foreign keys unless the column itself is declared NOT NULL.
+- Assuming ROW_NUMBER breaks ties deterministically; without a unique column in ORDER BY, tied rows can be ordered arbitrarily and may change across runs or engines.
+- Including PARTITION BY when a global rank is desired, which silently restarts numbering inside each group and produces many rows with rank 1 instead of one top row.
+- Using RANK() where the requirement is 'top 3 salary levels' and filtering rank <= 3: two rows tied at rank 2 make the next distinct salary rank 4, so the third salary level is excluded; DENSE_RANK avoids this.
+- Stating that RANK and DENSE_RANK require PARTITION BY or that ORDER BY is never optional across all engines; actual behavior varies, and without ORDER BY ranking collapses to a single peer group where supported.
 
 </details>
 
 ---
 
-## 15. Design a notification system · typed · Hard
+## 13. Idempotency · flash · Easy
 
 *system_design · gate confidence 0.85*
 
+<sub>to object to this card: `## sd-idempotency` then `match: How long should idempotency keys be retained?`</sub>
+
 **Question**
 
-How do you handle machine failures in a notification worker system?
+How long should idempotency keys be retained?
 
 **Reference answer**
 
-Leave messages unacknowledged until the provider call and tracker update both succeed, so the broker redelivers them if a worker dies. After the maximum retry count, move the message to a dead-letter queue. Keep WebSocket session state in a shared store such as Redis so another node can resume, and use multi-region replicas for availability.
+Longer than the client's maximum retry window, including timeouts and backoff, but they can be deleted after that business-defined retention period.
 
 **Graded on**
 
-- ack only after provider call and tracker update
-- broker redelivery after worker death
-- dead-letter queue after max retries
-- shared session state for WebSocket resume
+- retain beyond max retry window
+- not forever
+- deleting too early recreates duplicate side effects
 
 <details><summary>The lesson this came from</summary>
 
-A notification system is an asynchronous ingest-and-fan-out pipeline. Product services publish typed events; a notification service enriches them with user preferences and templates, then enqueues them on a message broker. Channel workers consume notifications and call external providers—APNS for iOS push, FCM for Android, SMTP/SES for email, Twilio for SMS—or deliver in-app messages over persistent WebSocket connections. The system tracks delivery status, retries failures, batches per user, and deduplicates events so one business event does not become multiple user-visible notifications.
+Idempotency in API design is the property that multiple identical requests have the same effect as a single request. For naturally idempotent operations such as HTTP PUT and DELETE this is part of the method semantics. For non-idempotent POSTs such as payment or order creation, clients send a unique idempotency key, often a UUID in an Idempotency-Key header; the server stores the key with its processing state and response, then returns the stored response on duplicate requests instead of re-executing the work. Safe retries require persisting the key before any external side effect, but external calls cannot be part of that same database transaction.
 
 ## Why interviewers ask this
 
-The interviewer is testing whether you can design an asynchronous fan-out system that decouples noisy, bursty producers from slow third-party providers. They probe idempotency, retries, failure isolation, horizontal scaling of consumers, and user preference enforcement. Real follow-ups often escalate from provider choice to exactly-once semantics and machine failure recoverability.
+Interviewers use idempotency questions in payment, order, and messaging designs to test whether the candidate understands retries in distributed systems. The real risk is duplicate side effects: a timed-out request retried by a client or load balancer must not charge a card twice or create two accounts. They are checking whether you know that client retries alone are not enough and that the server needs an explicit key or deduplication mechanism.
 
 ## The core idea
 
-The durable message queue is the backbone: it absorbs traffic spikes, allows independent scaling per channel, and preserves messages when workers die. Mobile push is delegated to APNS and FCM because only platform-controlled services can wake or reach installed apps reliably; your server is a client to those providers. Idempotency cannot be assumed from a single DB write after the provider call—if the worker crashes after the provider accepts but before tracking success, a retry can duplicate unless you collapse or dedupe on the device. Batching and per-user preference checks are product requirements, not optimizations; they reduce provider throttling and notification fatigue. Multi-region routing and dead-letter queues keep the system available and auditable under failure.
+Retries are unavoidable in any network; the system must make repetition harmless. The mechanism is to assign the client's intent a unique key before any side effect runs, store that key with the request state and final response, and return the stored response when the key repeats. Local database consistency and external side effects have different boundaries: you cannot hold a transaction open across a payment gateway call, so you persist a processing state first, commit, call the external system, then record success or failure in a later transaction. This ordering avoids both double charges and long-lived transactions. For at-least-once delivery systems, the same principle appears as deduplicating messages by an event or message ID.
 
 ## Key points
 
-- APNS and FCM are the two dominant mobile push providers; APNS is required for iOS notifications and FCM for Android.
-- A message broker/queue such as Kafka, RabbitMQ, or SQS sits between producers and channel workers to absorb bursts and isolate third-party latency.
-- A globally unique notification id or idempotency key is required; exactly-once delivery to APNS/FCM is not guaranteed, so design at-least-once with collapse keys or client-side dedupe.
-- For online users, in-app notifications should use a persistent WebSocket connection to the notification service; offline users fall back to APNS/FCM push.
-- Channel workers must respect per-provider rate limits, retry with exponential backoff and jitter, and move poison messages to a dead-letter queue after a maximum attempt count.
+- HTTP GET, PUT, and DELETE are idempotent by method semantics; POST is not automatically idempotent but can be made idempotent for a specific operation with an idempotency key.
+- An idempotency key is a client-generated unique value, usually a UUID, sent in an Idempotency-Key header; Stripe and PayPal recommend UUIDs for this purpose.
+- The server must persist the key and enough state/response before performing the side effect, and duplicates return the stored response without re-executing the work.
+- External side effects such as charging a card cannot participate in a local database transaction; commit a processing record first, call the external gateway, then update the final status in a separate transaction.
+- At-least-once message delivery requires handler idempotency by deduplicating message IDs or making the operation itself idempotent.
 
 ## Your 60-second answer
 
-A notification system is an async fan-out pipeline. Business services publish events to a message queue; a notification service consumes them, applies user preferences and templates, and routes each notification to one or more channel workers—mobile push via APNS or FCM, email via SMTP or SES, SMS via a provider like Twilio, and in-app via WebSockets when the user is online. The queue decouples traffic spikes from slow third parties and lets you scale each channel independently. The hardest part is idempotency: a provider can accept a push and then your worker can crash before recording success, so a retry would send a second notification. You mitigate that with a unique notification id, collapse keys on the provider, client-side deduping, and at-least-once delivery. For online users, WebSockets are faster and cheaper than a push round trip; offline users fall back to APNS or FCM. The trade-off: batching reduces provider throttling and user fatigue but adds delivery latency.
+Idempotency means a client can safely retry the same call and the server ends up in the same state and returns the same result as if the call ran once. For non-idempotent operations like payment or order creation, the standard approach is an idempotency key. The client generates a UUID and sends it in an Idempotency-Key header. The server stores that key before doing the work. If it sees the same key again, it returns the stored response instead of executing the operation a second time. The subtle part is how you order the work when there is an external side effect. You cannot hold a database transaction open while calling a payment gateway; that ties up connections and risks timeouts. Instead, insert a row with status processing, commit, call the gateway, and then update the row to success or failure in a separate transaction. That prevents double charges while keeping the database available.
 
 ## If they dig deeper
 
-**Which channels would you support and how do you integrate them?**
+**Which HTTP methods are idempotent and how does that differ from safety?**
 
-In-app via WebSocket for online users, mobile push via FCM for Android and APNS for iOS, email through SMTP/SES/SendGrid, SMS through Twilio or similar. Each channel gets its own adapter because auth, payload format, retry and rate limit behavior differ; the notification core stays provider-agnostic.
+GET, PUT, and DELETE are idempotent: repeated identical requests produce the same result. GET and HEAD are also safe, meaning no side effects, while PUT and DELETE are idempotent but not safe because they change state. POST is not idempotent by default because it usually creates a new resource each time.
 
-**How do you handle a large burst of notifications?**
+**How would you implement idempotent payment retries end to end?**
 
-Producers publish to a durable queue so bursts do not call providers synchronously. Channel workers are horizontally scalable and consume at their own pace. For mobile push, group per-user events and send a collapsed notification instead of one per event. The provider-facing adapter uses connection pools, bounded queues, and per-provider rate limiting with exponential backoff; poison messages go to a dead-letter queue.
+The client generates a UUID and sends it as Idempotency-Key. The server uses a unique constraint on the key in a dedicated table and first inserts a row with status processing, then commits. It calls the payment gateway; on success it stores charge_id and status success. A duplicate request with the same key sees the existing row and returns the stored response without calling the gateway again.
 
-**How do you ensure the same notification is not sent twice?**
+**What happens if two requests with the same key arrive at the same time?**
 
-Exactly-once is not available from APNS/FCM as a server guarantee, so use at-least-once with idempotency. Assign a unique notification_id at ingest; before calling provider, record it as in progress with a unique constraint; on success mark sent. If the worker dies after provider success but before the update, the retry sees in progress and may duplicate; use collapse keys or client-side dedupe so a duplicate payload replaces the previous one on the device.
+The server inserts both in a table with a unique constraint on the key; one insert wins, the other violates the constraint. The losing request then reads the existing row. If the row is still processing, it can return a 409 or processing status or poll; if it is success or failure, it returns the stored result. The unique constraint is the atomic guard.
 
-**How do you handle machine failures?**
+**When should idempotency keys expire?**
 
-Queue messages are durable and remain until acknowledged. Workers acknowledge only after provider call and tracker update. If a worker dies, the broker redelivers to another worker; after max retries it goes to a dead-letter queue. Push connections should be pooled and reconnected; WebSocket servers maintain session state in Redis or similar so another node can resume. Multi-region deployment with replicas prevents single-region outage.
+They should live longer than the client's maximum retry window, including timeout and backoff, but not forever. After the business-defined retention window, old keys can be deleted to reclaim storage, because retries beyond that window are treated as new intent. Expiring too early recreates the duplicate side effect.
 
-**How do you handle global users and data residency?**
+**How do you handle idempotency in an at-least-once message consumer that can crash midway?**
 
-Use regional clusters for ingest, queue, and channel workers; route users to the nearest cluster. Store device tokens and contact data in the user's home region for latency and privacy; templates and preferences are globally replicated. APNS/FCM endpoints are global but providers apply per-app rate limits per region; track quotas per region. For SMS/email, choose providers local to the recipient to improve delivery and comply with local regulations.
+Store the event ID in the database with a unique constraint, and process the event and record its ID in a transaction where all local effects are transactional. For external side effects, use an outbox pattern: write the event ID and outgoing message in one transaction, then send from the outbox; a redelivered event will be ignored because its ID already exists.
 
 ## Worked example
 
-User A likes User B's post, generating a `like_created` event with `notification_id = n_123`. The notification service fetches B's preferences: push on for likes and do-not-disturb off. It enriches the event with a template 'A liked your post' and publishes it to the `push` queue. A push worker consumes it, checks B's online status: B is offline, so it calls FCM with `collapse_key = post_456`, meaning repeated likes on the same post collapse into one notification on the device. FCM returns `provider_id = fcm_789`. The worker then writes a tracker row `(n_123, outbox, fcm_789, sent)`. If that worker crashes after FCM accepted but before the tracker write, the message is redelivered; the retry does not find `fcm_789` and calls FCM again. Because the request uses the same `collapse_key = post_456`, FCM replaces the first notification on the device, so the user still sees only one alert for that post.
+A client sends POST /v1/payments with header Idempotency-Key: 0f8fad5b and an amount of $49.00. The server begins a transaction, inserts a row in idempotency_keys with key 0f8fad5b, status processing, and request payload, and commits that transaction before any external action. It then calls the payment gateway. Suppose the gateway returns success with charge_id ch_123; the server opens a second transaction, updates the row to status success and stores the response with charge_id ch_123, and commits. The client's connection times out before it receives the 200, so it retries with the same key. The server finds the existing row in status success and returns the stored response. No second gateway call is made, so the card is charged once.
 
 ## Common traps
 
-- Claiming that a queue plus a DB 'sent' flag gives exactly-once delivery to external providers; a crash between provider success and the flag write still produces a duplicate.
-- Sending notifications synchronously from the business service; one slow SMS or SMTP call then affects user-facing latency and backpressures the application.
-- Ignoring provider rate limits and per-user batching; bursts trigger throttling, dropped messages, and users turning off notifications.
-- Treating device tokens as stable; tokens rotate, and failure responses must trigger token removal or refresh to avoid repeatedly pushing dead devices.
+- Wrapping the external payment gateway call in the same database transaction as the idempotency-key insert and final update, which holds locks and connections open across a network call.
+- Assuming the client will not retry if it does not receive a response; timeouts happen after the server has committed the side effect, so server-side deduplication is required.
+- Using business fields such as email or order amount as the idempotency key; that conflates intent with payload and can incorrectly reject legitimate independent requests.
+- Returning success from the gateway call without persisting the response; if the client retries after a crash, the server cannot know whether the prior call succeeded and may charge again.
 
 </details>
 
 ---
 
-## 16. Consistent hashing · mcq · Medium
+## 14. Database sharding · typed · Medium
 
 *system_design · gate confidence 0.85*
 
+<sub>to object to this card: `## sd-database-sharding` then `match: How do you choose a sharding key?`</sub>
+
 **Question**
 
-Which of the following distributed storage systems does NOT use a consistent hash ring for data placement?
-
-**Options**
-
-- Apache Cassandra
-- Amazon Dynamo as described in the original paper
-- Amazon DynamoDB
-- Riak
+How do you choose a sharding key?
 
 **Reference answer**
 
-Amazon DynamoDB
+Choose a high-cardinality key that spreads writes evenly and matches the dominant query pattern so most reads and writes hit exactly one shard; avoid low-cardinality keys such as country or status.
 
 **Graded on**
 
-- Amazon DynamoDB routes requests through a partition management service and maps hash ranges to nodes via a partition-to-node table.
-- Apache Cassandra and the original Amazon Dynamo paper use consistent-hash token rings.
-- Riak uses consistent hashing with virtual nodes.
+- high cardinality
+- matches dominant access pattern
+- most operations single-shard
+- avoid low-cardinality keys
 
 <details><summary>The lesson this came from</summary>
 
-Consistent hashing maps each key and each storage node to a position on the same hash ring. A key is assigned to the first node encountered clockwise from the key's position, wrapping around as needed. When a node is added or removed, only keys between that node and its predecessor change owners, instead of invalidating every mapping. It is a partitioning technique used to reduce data movement in distributed caches, sharded stores, and some replication schemes.
+Sharding is horizontal partitioning: the rows of a logical database are split into disjoint subsets called shards, and each shard runs on its own database server or cluster. A sharding key determines which row goes to which shard; all shards together contain the entire dataset. It scales writes and storage by adding machines, unlike vertical scaling which adds CPU or RAM to one box. Each shard is independent, so joins and transactions that span shards become distributed operations.
 
 ## Why interviewers ask this
 
-Interviewers use this question to test whether a candidate can reason about data distribution under scale and node churn. They want to see you move beyond static modulo hashing, explain the remapping cost, and handle load imbalance with virtual nodes. It also reveals whether you know which real systems actually use the technique.
+Interviewers use sharding questions to see whether you can move from a single database to many without hand-waving. They test choosing a sharding key that matches access patterns, avoiding hot shards, and handling cross-shard queries. In system design prompts like a job scheduler or A/B test backend, scaling the data layer is where candidates either get concrete or stay vague.
 
 ## The core idea
 
-The key insight is to remove the dependence on a global node count. By placing nodes and keys on a ring and assigning each key to its clockwise successor, a node change only disturbs the local arc between the new or removed node and the previous node. Under uniform hashing that arc holds about k/n of all keys, so resizing costs drop from 'almost every key' to a small fraction. This property makes scaling and failure recovery more predictable. Basic ring-based hashing can still be skewed, so systems add virtual nodes, giving each physical node many positions on the ring. Consistent hashing is not a complete balancing solution; it must be combined with replication and node-health logic.
+Sharding is a late-stage scaling tool: first exhaust indexing, caching, read replicas, and vertical scaling, then shard when one node cannot hold the write load or data volume. The sharding key decides almost everything: a good key spreads writes evenly and lets most queries hit exactly one shard; a bad key creates a hot shard or forces scatter-gather queries. Hash-based sharding distributes uniformly but destroys range locality; range-based sharding preserves locality but risks hotspots; directory-based sharding lets you map keys manually. Cross-shard joins, transactions, and constraints are hard, so schemas are designed so most access is single-shard. Adding shards later is expensive, so resharding must be planned from day one.
 
 ## Key points
 
-- Consistent hashing hashes nodes and keys onto the same ring; a key is stored on the first node clockwise from its hash position.
-- Adding or removing one node remaps only the keys in the affected arc, roughly k/n keys under uniform hashing, rather than all keys as in hash(key) % N.
-- Virtual nodes map each physical node to multiple ring positions to reduce hot spots and smooth load distribution.
-- Apache Cassandra and the original Amazon Dynamo paper use consistent hashing with token rings; Amazon DynamoDB does not—it maps partition key ranges through a partition-to-node table.
-- Replication in a ring is typically placed on the next N distinct nodes clockwise, so losing adjacent nodes can affect multiple replicas.
+- Sharding partitions rows across separate database servers, while replication copies the same rows to multiple servers; they are often combined so each shard has replicas.
+- Range-based sharding keeps ordered data together and allows efficient range scans on the sharding key, but risks hot shards when ranges are unbalanced.
+- Hash-based sharding spreads keys uniformly and gives O(1) point lookups, but range queries across the key must fan out to all shards.
+- Directory-based sharding routes through a lookup table, which allows flexible rebalancing at the cost of an extra lookup and a metadata store to maintain.
+- Cross-shard joins and distributed transactions are expensive, so schemas are typically denormalized or partitioned so most access is single-shard.
 
 ## Your 60-second answer
 
-Consistent hashing is a partitioning strategy that hashes both keys and servers onto the same ring. A key is assigned to the first server you meet moving clockwise from the key's hash position. The reason it matters is that with basic modulo hashing, hash(key) % N remaps almost every key when N changes. Consistent hashing only remaps the keys in the arc between the server that was added or removed and its predecessor, roughly k/n keys for n servers and k total keys. That makes resizing and node failures much cheaper. The trade-off is that one position per server can lead to very uneven load, so real systems add virtual nodes, where each physical server owns many ring positions. Cassandra and the original Amazon Dynamo paper use this ring model; DynamoDB itself uses a different partition management scheme.
+Sharding means splitting one logical database into multiple physical database servers, where each server holds a disjoint subset of the rows. A row is placed on a shard based on a sharding key—for example a user ID—so a query for a single user hits exactly one shard. You shard because one server eventually cannot hold the data or absorb the write throughput, and adding more servers is the only way to keep scaling. The cost is that anything spanning shards gets harder: joins, transactions, and aggregate queries either must be avoided in the schema or executed as scatter-gather operations across shards. The key decision is choosing a sharding key that spreads writes evenly and matches the most frequent access pattern; a bad key creates a hot shard and brings back the exact bottleneck you were trying to remove.
 
 ## If they dig deeper
 
-**Why does simple modulo hashing break when the number of servers changes?**
+**What is the difference between sharding and replication?**
 
-Because serverIndex = hash(key) % N depends on N. When N changes, the index for nearly every key changes, causing a mass migration or cache miss storm. Modulo hashing is only reasonable when the server pool is fixed.
+Replication copies the same data to multiple nodes, usually for read scale and failover; writes still go to a primary. Sharding partitions different rows across nodes so each node stores only part of the data. In practice they are combined: each shard often has one or more replicas for availability.
 
-**How do virtual nodes reduce hot spots?**
+**How do you choose a sharding key?**
 
-Each physical node is hashed to many positions on the ring, so it owns a larger number of smaller arcs. As the number of virtual nodes grows, keys spread more evenly across physical nodes; the cost is extra metadata and slightly more management complexity.
+Pick a key with high cardinality so data spreads evenly, and one that matches the dominant query pattern so most reads and writes hit a single shard. For multi-tenant apps, tenant ID is common; for user-centric apps, user ID. Avoid low-cardinality keys like country or status, which cause uneven shards.
 
-**How does replication work on a consistent hash ring?**
+**What are range-based, hash-based, and directory-based sharding, and when would you use each?**
 
-A key is written to the node it maps to and to the next R-1 distinct nodes clockwise, where R is the replication factor. If the owner fails, a successor can serve reads. But because replicas are adjacent on the ring, simultaneous loss of neighbouring nodes can reduce availability for that key.
+Range-based uses contiguous key intervals, which is good when you need ordered scans or time-range queries but can create hotspots if writes concentrate at one end. Hash-based applies a hash function and modulo to get a shard, which spreads data evenly but loses range locality, so range queries fan out to all shards. Directory-based looks up the key-to-shard mapping in a separate metadata service, giving you flexibility to move data manually at the cost of an extra hop and a lookup system to maintain.
 
-**Which real systems use consistent hashing and which do not?**
+**How do you handle a query that needs data from multiple shards?**
 
-Apache Cassandra uses a consistent hashing token ring with virtual nodes. The original Amazon Dynamo paper also describes a consistent-hash ring. Amazon DynamoDB, despite the shared name, does not use consistent hashing; it uses a partition management service that maps primary key hash ranges to storage nodes via a partition-to-node table.
+First, design the schema to avoid it: denormalize related data into the same shard, or colocate by a shared key. If unavoidable, do scatter-gather: send the query to all relevant shards in parallel and merge the results in the application or proxy. Cross-shard joins and distributed transactions are generally avoided because they require protocols like two-phase commit or sagas and can severely hurt latency.
 
-**How would you handle a very skewed key distribution or a few large nodes?**
+**How do you rebalance or add a shard without downtime?**
 
-Virtual nodes help with random skew but cannot fix keys that are intrinsically hot, such as a celebrity user's posts. For those, you need to split hot keys, cache them, or replicate them more. Some systems use consistent hashing with bounded loads, where each node has a capacity and overloaded nodes shed keys to less loaded successors.
+A common approach is to use consistent hashing with many virtual shards per physical node, so adding a node moves only a fraction of keys instead of rehashing everyone. For range or directory sharding, you can split a range or update the directory while copying data in the background, then switch reads and writes once the new shard is in sync. Live migration generally requires dual reads/writes or checking replication lag, and the hardest part is preserving consistency during the cutover.
 
 ## Worked example
 
-Take a 100-position ring. Three servers hash to S0=20, S1=50, S2=80. A key with hash 30 belongs to S1, because clockwise from 30 the first server is 50; key 70 belongs to S2 and key 90 wraps to S0. Now add S3 at position 40. Only keys in the arc (20, 40] change owners, so key 30 moves from S1 to S3; key 45 remains on S1; key 70 remains on S2. With 10 keys spread uniformly, about 2 keys remap instead of nearly all keys if the modulo modulus changed. This shows how resizing stays local.
+Take a users table with sharding key user_id and four shards. With hash-based sharding, the router computes user_id % 4: user 1001 goes to shard 1, 1002 to shard 2, and so on. A lookup by user_id is a single point query: compute the hash, connect to one shard, done. A query for all users who signed up in January has no user_id predicate, so the query layer must run it on all four shards and merge results. If the table instead used range-based sharding on created_at, the January query could hit only the shard containing that date range, but every new signup would hammer the newest range. This contrast is why key choice follows access patterns.
 
 ## Common traps
 
-- Claiming Amazon DynamoDB uses consistent hashing: production DynamoDB routes requests through a partition management service and hash-range-to-node mapping, not a hash ring.
-- Treating the k/n remapping figure as guaranteed for any dataset; it is an expected value only when the hash distributes keys uniformly across the ring.
-- Using one ring point per physical node and expecting balanced load; with few nodes the arcs are large and uneven, so virtual nodes are needed.
-- Placing all replicas on strictly adjacent ring nodes without rack/topology awareness; two adjacent node failures can then remove multiple replicas of the same key.
+- Sharding too early, before indexing, caching, read replicas, or vertical scaling are exhausted, adds distributed-systems complexity without need.
+- Choosing a low-cardinality sharding key, such as status or country, so a few shards receive most writes and become hotspots.
+- Assuming sharding alone provides high availability; a shard is still a single point of failure unless each shard has replicas.
+- Designing queries that join across shards as if the database were still one node, then discovering at scale that latency and consistency are unmanageable.
 
 </details>
 
 ---
 
-## 17. Design case studies · flash · Easy
-
-*system_design · gate confidence 0.85*
-
-**Question**
-
-What mechanism is appropriate for counting current active page viewers?
-
-**Reference answer**
-
-Use a cache of user IDs with a sliding 5-minute window and accept an approximate count.
-
-**Graded on**
-
-- use a cache
-- store user IDs
-- sliding 5-minute window
-- approximate count is acceptable
-
-<details><summary>The lesson this came from</summary>
-
-A design case study is an interview format where you are given a vague product or infrastructure request (e.g., 'design a credit card processing system', 'show users viewing a page', 'design a database control plane') and must produce an end-to-end architecture. The answer starts with clarifying scope and non-functional requirements, then moves through API contracts, data model, core components, and scaling/consistency trade-offs. Strong answers explicitly separate critical-path synchronous work from asynchronous work and state which parts can tolerate approximate data.
-
-## Why interviewers ask this
-
-Interviewers use these open-ended scenarios to test whether you can reduce ambiguity by asking about level (such as whether you are building on Stripe or card networks), then reason about correctness, failure handling, and scale. The companies in real loops—Stripe, Booking.com, Netflix—are probing for structured decomposition and for avoiding mistakes like double-processing payments or over-engineering an approximate counter.
-
-## The core idea
-
-The core skill is scoping: ask what level you are building at, what consistency is required, and what the read/write pattern is before drawing boxes. For payments, correctness hinges on idempotency—the application generates and stores an idempotency key before calling any provider, and the store must be sharded by a composite key such as (merchant_id, idempotency_key) so the uniqueness check is local. Currency conversion must be computed and locked before or during authorization, not deferred. For metrics like current viewers, strong consistency is unnecessary; a cache with user IDs and a sliding time window yields an approximate but useful count. For a control plane, separate metadata operations (provisioning, scaling, auth, monitoring) from the data path so control-plane load does not affect query performance.
-
-## Key points
-
-- Clarify the implementation level first—for payments ask whether you are integrating with Stripe or building on card networks, because the rest of the design changes fundamentally.
-- In payment systems, the client application must generate, store, and deduplicate idempotency keys even when using Stripe; the provider does not remove this responsibility.
-- Shard the idempotency store by a composite of merchant_id and idempotency_key so the uniqueness check is local to one shard, not by merchant_id alone.
-- For multi-currency payments, lock the conversion rate and calculate the exact charge amount before or during authorization; only multi-currency settlement is asynchronous.
-- For approximate counts like active page viewers, use a cache of user IDs with a sliding 5-minute window and accept temporary inconsistency across regions.
-
-## Your 60-second answer
-
-When I get a design case study, I first clarify the level and scope, because the answer changes completely depending on whether we are integrating with an existing provider or building the primitive ourselves. Then I separate the critical path from everything asynchronous. For a payment system, I would ask if we are using Stripe or going to card networks, then design the API and data model around an idempotency key that the application generates and stores before calling the provider. That key must be sharded by a composite of merchant ID and idempotency key so retries are caught locally. For currency, I lock the rate before authorization, not after. For something like current viewers, I would accept an approximate count using a time-windowed cache with user IDs, because strong consistency is not worth the cost. The trade-off is consistency versus availability and latency; I choose the weakest guarantee that still meets requirements.
-
-## If they dig deeper
-
-**To clarify: what level are we implementing? For example, are we using Stripe or building on card networks?**
-
-I would ask whether we are a merchant on top of a payment provider or a processor connected to card networks. The design changes from API orchestration, webhook handling, and a local ledger to acquiring, issuer messaging, and settlement.
-
-**How will you handle the case where the payment is successful? How will you mark the payment as completed?**
-
-After authorization, the provider sends a webhook or we poll for the final state. We update our ledger from pending to captured only upon a confirmed provider event, and the event handler is idempotent so a duplicate webhook does not double-apply.
-
-**How do you ensure a payment doesn't get processed twice?**
-
-The application generates a unique idempotency key per payment intent and stores it with the request state before calling the provider. Incoming retries and provider webhooks are deduplicated against this key, and the idempotency store is sharded by a composite of merchant_id and idempotency_key so the uniqueness check is local to one shard.
-
-**How do you handle global payments and currency conversion?**
-
-The conversion rate is locked and applied before or during authorization so the exact charge amount presented to the issuer is correct. Only multi-currency settlement and FX settlement happen asynchronously after authorization.
-
-**How do you handle a burst of payments?**
-
-I decouple synchronous authorization from asynchronous settlement and ledger updates with queues, horizontally scale the stateless API tier, and partition the ledger and idempotency store by the composite key. Edge throttling and queue backpressure absorb bursts without overloading downstream acquirers.
-
-## Worked example
-
-A client sends POST /payments with header Idempotency-Key: 7f8c2a and body {merchant_id: 42, amount: 99.99, currency: USD}. The API server computes the composite shard key (42, '7f8c2a') and checks the idempotency table on that shard. If no row exists, it inserts a row with status PENDING and calls the payment provider; if a row already exists, it returns the stored status without calling the provider. When the provider's authorization webhook arrives, the handler updates the row from PENDING to CAPTURED only if the current status is PENDING, so a duplicate webhook is ignored. A client retry with the same key hits the same shard, sees CAPTURED, and returns the original result instead of charging again.
-
-## Common traps
-
-- Delegating idempotency to a payment provider: Stripe requires the application to generate, track, and deduplicate idempotency keys; using Stripe does not remove that responsibility.
-- Sharding the idempotency store by merchant_id alone, then expecting a uniqueness check on idempotency_key to be local: without the merchant_id in the query/key, the check becomes a scatter-gather across all shards.
-- Delaying currency conversion until after authorization: the exact charge amount must be known and locked before or at authorization; only settlement is asynchronous.
-- Overengineering consistency for approximate metrics like current page viewers: using user IDs with a sliding window in a cache is enough; persistent storage across regions is unnecessary.
-
-</details>
-
----
-
-## 18. Prediction Service · mcq · Medium
+## 15. Supervised Fine-Tuning of LLM · mcq · Easy
 
 *ai · gate confidence 0.9*
 
+<sub>to object to this card: `## ai-supervised-fine-tuning-of-llm` then `match: Which rank range is typical for LoRA adapters in supervised `</sub>
+
 **Question**
 
-Which technique does NOT reduce inference compute for an existing model?
+Which rank range is typical for LoRA adapters in supervised fine-tuning?
 
 **Options**
 
-- Quantization
-- Pruning
-- Operator fusion
-- Knowledge distillation
+- 1–2
+- 8–16
+- 64–128
+- 256–512
 
 **Reference answer**
 
-Knowledge distillation
+8–16
 
 **Graded on**
 
-- Quantization, pruning, and operator fusion reduce compute of the existing model
-- Knowledge distillation replaces the model with a smaller student
-- Distillation is not an inference optimization for the same model
+- LoRA rank typically 8–16
+- Alpha around twice the rank
+- Target attention projection matrices
 
 <details><summary>The lesson this came from</summary>
 
-A prediction service is the deployed system that applies a trained model to new inputs and returns predictions to callers. It includes request validation, feature assembly and preprocessing, model invocation, postprocessing, and often candidate retrieval and ranking. The service may be online (per-request, low latency) or batch (precomputed and stored), and it must be designed around throughput, tail latency, cost, and model-update safety.
+Supervised fine-tuning (SFT) is a post-training stage in which a pre-trained large language model is trained further on a labeled dataset of prompt-response demonstrations. The objective is the usual causal language-modeling loss, typically computed only on the response tokens so the model learns to produce the target answer for each prompt. It changes behavior such as instruction following, formatting, tone, tool-calling, or domain-specific procedures, rather than serving primarily as a mechanism for adding new facts.
 
 ## Why interviewers ask this
 
-The interviewer is testing whether the candidate can move from a trained model in a notebook to a production serving design. They look for concrete latency-reduction levers, an understanding of the difference between replacing a model and optimizing inference for an existing model, and the ability to reason about candidate retrieval versus ranking.
+Interviewers are testing whether you know when to apply SFT instead of prompting, RAG, or preference optimization, and whether you can run it under real data and compute constraints. They look for practical dataset construction, hyperparameter choices, and an understanding of failure modes like catastrophic forgetting.
 
 ## The core idea
 
-A production prediction service is a pipeline, not just model.predict. When cutting latency without changing the model, profile the path and target specific stages: cache repeated requests, prefetch features, batch model calls, quantize or prune model compute, and move work offline. For large item corpora, the standard pattern is a two-stage funnel: an inexpensive candidate-generation stage (rules, ANN, or filters) reduces millions of candidates to hundreds or thousands, then a heavier ranking model scores only those candidates. Latency gains must be measured by tail percentiles against an explicit SLO, because average latency hides timeouts.
+Pre-training gives a model broad next-token prediction ability, not reliable instruction-following. SFT converts that ability into a specific output policy by increasing the probability of demonstrated responses for their prompts. Because the model imitates the dataset, the quality, coverage, and consistency of the demonstrations determine the resulting behavior. In many post-training pipelines, SFT comes first to teach basic instruction following and formatting, after which preference methods such as DPO or RLHF can refine ranking. On limited hardware, parameter-efficient fine-tuning with adapters such as LoRA reduces memory and the risk of destroying general abilities.
 
 ## Key points
 
-- Online prediction serves each request with a low-latency SLO, while batch prediction precomputes predictions for later retrieval and trades freshness for throughput.
-- A two-stage funnel combines cheap candidate generation with expensive ranking so the expensive model never scores the entire corpus.
-- Quantization, pruning, and operation fusion can reduce inference compute for an existing model, but knowledge distillation replaces the model with a smaller student.
-- Request batching improves throughput on GPU or SIMD hardware, but can increase tail latency unless batch size and timeout are bounded.
-- A large ANN index is not automatically millisecond-fast: a 100M high-dimensional HNSW index may require hundreds of gigabytes of RAM and tens to over a hundred milliseconds per node unless sharded, quantized, or cached with a relaxed recall target.
+- SFT continues training a pre-trained LLM on prompt-response pairs with a next-token loss, often masking prompt tokens to compute loss only on the response.
+- SFT changes behavior, style, and instruction following rather than adding up-to-date facts; dynamic external knowledge is usually better served by RAG.
+- Full fine-tuning updates every parameter and is memory-intensive and prone to catastrophic forgetting, while LoRA/QLoRA freeze the base and train small adapters.
+- Dataset quality dominates SFT results: demonstrations must be diverse, consistent, and include negative or refusal examples if the model must abstain.
+- Core hyperparameters include learning rate, number of epochs, batch size, and for LoRA the rank, alpha, and target modules.
 
 ## Your 60-second answer
 
-A prediction service is the serving layer that exposes a trained model to production traffic, including request parsing, feature assembly, model inference, postprocessing, and often candidate retrieval plus ranking. If I need to reduce latency, I start by profiling where time actually goes: feature store calls, serialization, model compute, and candidate search usually dominate. Without replacing the model, I can cache repeated requests, prefetch features, batch model inference, and apply quantization or pruning where accuracy loss is acceptable. For large-scale search or recommendations, I would use a two-stage funnel: cheap candidate generation narrows the corpus, then a heavier model ranks only the candidates. I would also define p95 or p99 latency SLOs and monitor tail latency rather than just average response time.
+Supervised fine-tuning is a second training stage where a pre-trained language model is trained on curated prompt-response pairs to change how it behaves. The reason it is needed is that pre-training only gives the model next-token prediction; it does not reliably produce a desired format, tone, or instruction-following policy. I would choose SFT when the target behavior is stable and I can demonstrate it with labeled examples, and when prompting or retrieval cannot enforce it consistently. The main trade-off is cost versus control: full fine-tuning updates all weights and can damage general abilities, while parameter-efficient methods such as LoRA train only adapters, which is cheaper but may leave less room to learn a very different task. Dataset quality matters more than raw size because the model will imitate whatever patterns are in the examples.
 
 ## If they dig deeper
 
-**What is the difference between batch and online prediction, and when would you use each?**
+**When would you choose supervised fine-tuning over prompt engineering or RAG?**
 
-Online prediction computes results as requests arrive, so it must meet a tight latency SLO and is used for interactive product surfaces. Batch prediction precomputes and stores predictions on a schedule, which gives high throughput and lower cost when freshness can be minutes or hours old, such as nightly recommendations or catalog enrichment.
+SFT is the better choice when the desired behavior is stable and can be shown with examples, and prompting alone does not reliably enforce format, tone, tool-calling, or instruction following. RAG is for accessing external or frequently changing facts; SFT is for changing model behavior on a static task. In real systems they often stack: SFT for style and call format, RAG for retrieval.
 
-**How would you cut inference latency without changing the model?**
+**How do you create a fine-tuning dataset for a Q&A assistant?**
 
-I would profile request traces to find the bottleneck, then cache identical or similar requests, reduce feature-store round trips with batching or prefetch, use request batching for GPU saturation, quantize weights and activations to lower precision, prune inactive connections, fuse operators, and tune the serving runtime. Distillation is not in this list because it replaces the model with a smaller student.
+Collect prompt-response pairs that match the production distribution. Each response must be exactly what you want the model to output, including consistent formatting and refusal behavior. Include paraphrases, edge cases, and negative examples where the model should say it lacks information. Structure records as message lists and mask prompt tokens during training so only response tokens contribute to the loss.
 
-**How does candidate generation and ranking help in a large-scale recommendation or search system?**
+**What hyperparameters do you set for LoRA fine-tuning, and why?**
 
-Candidate generation uses cheap rules, coarse indexes, or ANN to reduce a huge corpus to a few hundred or thousand items. Ranking then applies a heavier model and richer features only to that shortlist. This keeps response time and cost sane without forcing the expensive model to score millions of items per request.
+I choose a low rank, typically 8 to 16, with alpha around twice the rank, and target the attention projection matrices. A small learning rate, often in the range of 1e-5 to 2e-4 for adapters, and only a few epochs help avoid overfitting and instability. I use the largest batch size that fits memory with gradient accumulation and monitor a held-out validation set for early stopping.
 
-**Where does approximate nearest neighbor search become a bottleneck, and how do you manage it?**
+**What is catastrophic forgetting in LLM fine-tuning?**
 
-For large high-dimensional vector sets, a single-node HNSW index can require hundreds of gigabytes of RAM and tens to over a hundred milliseconds because graph traversal is random access. To manage it, shard vectors across nodes, quantize the vectors with product or scalar quantization, cache frequent query results, lower efSearch where recall permits, or use a smaller candidate shortlist; but you must state these conditions rather than claiming millisecond retrieval universally.
+Catastrophic forgetting is the loss of general capabilities that occurs when a model is trained further on a narrow distribution. Full fine-tuning on a small specialized dataset can overwrite weights that supported broad language or reasoning skills. Mitigations include parameter-efficient adapters with a frozen base, mixing general data into the fine-tuning set, low learning rates, and early stopping.
 
-**How do you safely deploy and update a prediction service without degrading users?**
+**How do you make a fine-tuned model answer only when there is enough context?**
 
-Start with offline evaluation on held-out data, then shadow the new model on live traffic without returning its responses, then canary to a small percentage with automated rollback triggers, and A/B test against the current model. Monitor business metrics plus latency and prediction distributions, and check for feature or label drift before rollback.
+Add demonstrations where the model declines to answer or asks a clarifying question when the provided context lacks the needed facts. State the grounding rule explicitly in the system prompt and include such cases in evaluation. SFT alone is not a reliable abstention mechanism; pair it with retrieval confidence scores or a separate critique step that checks whether the answer is supported by the evidence.
 
 ## Worked example
 
-A video search request spends 15 ms encoding the text query, 70 ms retrieving 500 candidate video IDs from a sharded 50M-vector ANN index, 20 ms batch-fetching features, 30 ms scoring those candidates, and 5 ms applying diversity rules. The total is 140 ms, but a slow ANN shard can push latency past 200 ms. Instead of changing the ranker, the service caches frequent query embeddings and candidate lists, quantizes the ANN vectors to reduce memory access, and falls back to a precomputed popular-candidate list when ANN latency exceeds a 90 ms cutoff. This keeps the same ranking model and removes the slow ANN lookup from the critical path for cached or fallback requests.
+Suppose a base model is asked: "How do I reset my password?" and it gives a long generic explanation with several follow-up questions. An SFT record for a support assistant would be a message list with a system instruction such as "Answer only using the supplied knowledge base. If the answer is not present, say you do not know", the user prompt, and the desired assistant response: "Go to Settings > Security > Reset password. A link will be sent to your registered email." During training, the causal language-modeling loss is computed only on the assistant response tokens; the system and user tokens are masked. With LoRA on a 7B model using rank 16 and alpha 32, only adapter weights are updated. Over many such pairs, the model learns to produce direct procedural answers and to abstain when the knowledge base lacks the answer.
 
 ## Common traps
 
-- Talking about model inference as if it were the whole service; feature fetching, serialization, network, and postprocessing often dominate latency.
-- Recommending knowledge distillation as a way to speed up the existing model; distillation gives you a different, smaller student model.
-- Claiming a large HNSW index returns thousands of candidates in low single-digit milliseconds without specifying sharding, quantization, recall target, and hardware.
-- Quoting average latency instead of p95/p99; average hides the timeouts caused by slow ANN shards, garbage collection pauses, or cold caches.
+- Treating SFT as a way to inject up-to-date facts instead of teaching behavior and format.
+- Ignoring prompt loss masking, which makes the model train on tokens it should not need to reproduce.
+- Assuming full fine-tuning is always best; with small data or limited hardware, LoRA/QLoRA is often more practical.
+- Using inconsistent or low-quality demonstrations, then blaming the optimizer when the model imitates those flaws.
 
 </details>
 
 ---
 
-## 19. Math & Geometry · flash · Medium
+## 16. Deadlocks · flash · Easy
 
-*dsa · gate confidence 0.9*
+*cs · gate confidence 0.9*
+
+<sub>to object to this card: `## cs-deadlocks` then `match: Name two common recovery actions after a deadlock is detecte`</sub>
 
 **Question**
 
-How can Set Matrix Zeroes run in O(1) extra space?
+Name two common recovery actions after a deadlock is detected.
 
 **Reference answer**
 
-Record whether the first row and column originally contain zero, then use those cells as flags to zero the rest of the matrix.
+Terminate one or more processes and preempt resources, often with rollback to a checkpoint.
 
 **Graded on**
 
-- Save original zero state of first row and column
-- Use first row and column as flags
-- O(1) extra space
+- process termination
+- resource preemption
+- rollback to checkpoint
 
 <details><summary>The lesson this came from</summary>
 
-Math & geometry in DSA interviews means algorithmic problems where the hard part is a numerical or spatial relationship rather than a generic data-structure search. Typical tasks include walking a 2D array in spiral order, rotating a matrix in place, zeroing rows and columns, converting between numeral systems, detecting cycles in integer sequences, and computing powers. Most solutions depend on one algebraic identity or index invariant, such as transpose-plus-reverse for rotation or Floyd's cycle detection for digit-sum sequences.
+A deadlock is a state where two or more processes are permanently blocked because each holds a resource and waits for another resource held by another process in the set. Deadlock requires four conditions to hold simultaneously: mutual exclusion, hold and wait, no preemption, and circular wait. Handling strategies include prevention (breaking a condition statically), avoidance (making dynamic safe-state decisions such as Banker's algorithm), and detection and recovery (allowing deadlocks, detecting cycles, then terminating or preempting).
 
 ## Why interviewers ask this
 
-Interviewers use these problems as 20-30 minute screens because they expose index arithmetic, edge handling, and whether a candidate finds the one simplifying observation or defaults to brute force. Frequency data shows they are asked at a wide range: banks and trading firms like Capital One, Citigroup, SIG, Jump Trading, and Two Sigma, and product companies like Meta, Bloomberg, and LinkedIn. The signal is problem-solving maturity under tight constraints, not advanced mathematics.
+The interviewer is testing whether the candidate understands the Coffman conditions and can reason about real system trade-offs between prevention, avoidance, and detection. It also probes knowledge of classic algorithms like Banker's algorithm and the ability to apply wait-for graph cycle detection.
 
 ## The core idea
 
-These problems are not a single pattern; they reward reducing the operation to a small set of arithmetic or index updates. For matrices, keep explicit boundary variables and update them after each row or column pass. For numbers, use digit extraction and modular arithmetic to process from one end and avoid overflow. For iterative sequences such as Happy Number, recognize that deterministic functions on a finite state space either reach a target or enter a cycle, so two pointers can detect the cycle in constant space. For powers, exponentiation by squaring turns the exponent into binary powers. The recurring discipline is: find the invariant before coding.
+Deadlock is a permanent blocking among processes that each hold some resources and wait for others. All four Coffman conditions are necessary; eliminating any one prevents deadlock. Avoidance is more dynamic: Banker's algorithm uses each process's declared maximum needs to grant a request only if the resulting state is safe, meaning some sequence of completions exists. Detection allows deadlocks to occur and then breaks them by finding a cycle in a wait-for graph or resource allocation graph. The fundamental trade-off is between restricting concurrency upfront and paying detection and recovery overhead later.
 
 ## Key points
 
-- Spiral Matrix uses four boundary variables; after walking one side, shrink that boundary and keep going until top > bottom or left > right, giving O(mn) time and O(1) space.
-- Rotate Image clockwise 90° in place equals transpose across the main diagonal followed by reversing each row; O(n²) time, O(1) extra space, and counterclockwise reverses columns instead.
-- Set Matrix Zeroes can run in O(1) extra space by recording whether the first row and column originally contain zero, then using them as flags for the rest of the matrix.
-- Happy Number uses the sum of squares of digits; the sequence either reaches 1 or enters a cycle, so Floyd's two-pointer detection avoids a hash set.
-- Pow(x,n) uses exponentiation by squaring in O(log n); for negative n, compute with 1/x and negate n only after guarding the 32-bit minimum value.
+- Deadlock requires four Coffman conditions: mutual exclusion, hold and wait, no preemption, and circular wait; eliminating any one prevents deadlock.
+- In a resource allocation graph, a cycle guarantees deadlock only when every resource in the cycle has a single instance; with multiple instances, a cycle is necessary but not sufficient.
+- Banker's algorithm is a deadlock avoidance method that grants a request only if the resulting state is safe, requiring each process to declare its maximum resource needs in advance.
+- Deadlock detection for systems with only single-instance resources reduces to finding a cycle in a wait-for graph; for multiple instances, detection checks whether all processes in the cycle can finish using current requests.
+- Recovery options are terminating processes (all or selective victims) and resource preemption, usually combined with rollback to a checkpoint.
 
 ## Your 60-second answer
 
-Math and geometry problems are solved by finding the mathematical invariant that lets you avoid brute-force simulation. For matrices, index arithmetic and transformations such as transpose-then-reverse make rotation O(n²) in-place; for numbers, digit extraction and modular arithmetic let you check a palindrome, convert a Roman numeral, or detect a Happy Number cycle without storing the whole number. The interviewer is testing whether you can reduce the operation to a few arithmetic updates and boundary checks, not just simulate the process. The trade-off is between low extra memory and readable boundary logic; off-by-one errors in indices are the usual failure. I start by stating the invariant for boundaries or numeric state, test it on a 3x3 matrix or a two-digit number, then code.
+A deadlock occurs when a set of processes each holds a resource and waits for another resource held by a member of the set, so none can make progress. Four conditions must hold simultaneously: mutual exclusion, hold and wait, no preemption, and circular wait. Deadlock can be handled by prevention, which statically guarantees at least one condition never holds, or avoidance, which makes dynamic decisions—Banker's algorithm grants a request only if the resulting state is safe given each process's declared maximum needs. Alternatively, you can allow deadlocks, detect them via a wait-for graph cycle, and recover by terminating processes or preempting resources. The trade-off is that prevention and avoidance restrict concurrency and may require advance knowledge, while detection has runtime overhead and imposes recovery cost; many practical systems combine detection with timeouts.
 
 ## If they dig deeper
 
-**How do you traverse a non-square matrix in spiral order?**
+**What are the four necessary conditions for deadlock to occur?**
 
-Use top = 0, bottom = m-1, left = 0, right = n-1. After each side, shrink that boundary; after top and bottom rows, check top <= bottom; after left and right columns, check left <= right. Repeat until boundaries cross. This handles all m × n shapes.
+Mutual exclusion, hold and wait, no preemption, and circular wait. Each must hold simultaneously; preventing any one of them eliminates the possibility of deadlock.
 
-**Why does transpose-then-reverse rotate an image 90 degrees, and what reverses it?**
+**What is the difference between deadlock prevention and avoidance?**
 
-Transpose maps (i,j) to (j,i); reversing each row maps (j,i) to (j, n-1-i). The composition is (i,j) -> (j, n-1-i), exactly a clockwise rotation. To undo, reverse rows then transpose; for counterclockwise, transpose then reverse columns.
+Prevention statically guarantees that at least one Coffman condition never holds, often by requiring all resources at once or imposing resource ordering. Avoidance is dynamic: it allows the conditions but checks each request against a safe-state criterion before granting it, as in Banker's algorithm.
 
-**How does Floyd's cycle detection decide Happy Number?**
+**How does the Banker's algorithm decide whether to grant a resource request?**
 
-Advance slow by one sum-of-squares step and fast by two. If fast reaches 1, return true. If slow equals fast before reaching 1, the deterministic sequence has entered a cycle that never hits 1, so return false. This uses O(1) space instead of storing every seen value.
+It provisionally allocates the request, recomputes each process's remaining need, and then tries to find a sequence in which every process can finish with the remaining available resources. If such a safe sequence exists, the request is granted; otherwise it is denied and the system stays in the previous safe state.
 
-**What is exponentiation by squaring and its complexity?**
+**What are the practical limitations of Banker's algorithm in real operating systems?**
 
-Write n in binary; x^n is the product of x^(2^i) for each set bit i. Maintain result = 1 and current_power = x; while n > 0, if n is odd, multiply result by current_power; then square current_power and right-shift n. Loop count equals the bit length of n, so O(log n) multiplications.
-
-**How would you count axis-aligned squares for a query point in Detect Squares?**
-
-Maintain a map from x-coordinate to a map from y-coordinate to point count. For the query point (qx,qy), iterate each existing point with x = qx and y' ≠ qy; side length d = |y' - qy|. The other two corners are (qx±d, qy) and (qx±d, y') for each sign, so add count(qx+d, qy)*count(qx+d, y') plus the same for qx-d. Sum over all such points.
+It requires each process to declare its maximum resource needs in advance, assumes a fixed number of processes and resource types, and performing a safe-state check on every request is expensive. As a result, general-purpose operating systems rarely use it; databases more often rely on deadlock detection plus victim rollback.
 
 ## Worked example
 
-Take a 3×3 matrix [[1,2,3],[4,5,6],[7,8,9]] and rotate it 90° clockwise in place. First transpose across the main diagonal: rows become columns, giving [[1,4,7],[2,5,8],[3,6,9]]. Then reverse each row: [7,4,1], [8,5,2], [9,6,3]. Check the corners of the original: 1 moves to the top-right, 3 to the bottom-right, 9 to the bottom-left, and 7 to the top-left. That matches clockwise rotation. No extra matrix is used, so the space is O(1).
+Suppose a system has four units of each of three resource types A, B, C. Initially available = [2,2,2]. Processes: P0 allocated [1,1,1] max [3,3,3]; P1 allocated [1,1,1] max [2,2,2]; P2 allocated [0,0,0] max [2,2,2]. Need = max - allocation: P0 [2,2,2], P1 [1,1,1], P2 [2,2,2]. Current available [2,2,2] is safe because P1 finishes first (need [1,1,1] <= available), releasing [1,1,1] to make [3,3,3], then P2 finishes, then P0. If P0 requests [1,1,1], the Banker's algorithm temporarily grants it: P0 allocation becomes [2,2,2], need [1,1,1], available drops to [1,1,1]. The new state is still safe (P1, then P2, then P0), so the request is granted.
 
 ## Common traps
 
-- Off-by-one in Spiral Matrix: not checking boundary conditions after each side causes duplicate or missing elements in the last row or column.
-- Set Matrix Zeroes: using the first row and column as flags before saving their original zero state destroys the information needed to zero them later.
-- Negating the minimum 32-bit integer in a language like Java or C++ overflows when n = -2147483648; cast to long or handle that case before doing n = -n.
-- Assuming every sequence in Happy Number either hits 1 immediately or never cycles; non-happy sequences always enter a cycle, so cycle detection is required, not optional.
+- Confusing avoidance with prevention: prevention breaks a statically defined condition, while avoidance uses a dynamic safe-state test on each request.
+- Claiming any cycle in a resource allocation graph means deadlock; with multiple instances of resource types, a cycle can be resolved if an outside process releases a resource.
+- Forgetting that Banker's algorithm requires advance knowledge of each process's maximum needs and a fixed number of processes; it is not a general runtime deadlock detector.
+- Assuming an unsafe state always means deadlock has occurred; an unsafe state only means a deadlock could occur if subsequent requests are mishandled.
 
 </details>
 
 ---
 
-## 20. Backtracking · mcq · Easy
+## 17. Matrix / Grid · flash · Easy
 
 *dsa · gate confidence 0.9*
 
+<sub>to object to this card: `## matrix-grid` then `match: For an R x C grid, what are the four-direction neighbors of `</sub>
+
 **Question**
 
-What three things do you need to define when designing a backtracking search?
+For an R x C grid, what are the four-direction neighbors of cell (i,j), and when is a neighbor valid?
+
+**Reference answer**
+
+The four neighbors are (i-1,j), (i+1,j), (i,j-1), and (i,j+1); a neighbor (r,c) is valid when 0 <= r < R and 0 <= c < C.
+
+**Graded on**
+
+- List the four row/column offsets
+- Check row bounds
+- Check column bounds
+
+<details><summary>The lesson this came from</summary>
+
+In DSA, a matrix/grid problem is a two-dimensional array of cells indexed by row and column, where each cell can hold a value, obstacle, or state. A cell is the graph node and movement directions define adjacency, usually four or eight neighbors. The core work is boundary-checked iteration, BFS/DFS, in-place marking, diagonal index math, or dynamic programming when transitions are acyclic.
+
+## Why interviewers ask this
+
+Interviewers assign medium grid problems such as Diagonal Traverse, Number of Distinct Islands, and Rotating the Box—asked by companies including Meta, Uber, Snap, and TikTok—because they reveal whether you handle boundaries, index transformations, and graph/DP selection under pressure. A strong answer separates the traversal primitive from the higher-level state machine; many candidates crash on edge cells or pick a cyclic DP recurrence.
+
+## The core idea
+
+A grid is a lattice graph: rows and columns give coordinates, and almost every problem starts with generating valid neighbors without going out of bounds. From there, choose the algorithm by the goal: BFS for shortest unweighted paths, DFS for connected components and flood fill, and Dijkstra when cell costs are non-negative but not uniform. DP over the grid is only safe when movement is restricted so the dependency graph becomes a DAG, usually right/down movement. Diagonal, rotation, and reshape problems are index transformations: cells on an anti-diagonal share row+col, while cells on a main diagonal share row-col.
+
+## Key points
+
+- On an R x C grid, 4-direction neighbors of (i,j) are (i-1,j), (i+1,j), (i,j-1), (i,j+1), and each must satisfy 0 <= row < R and 0 <= col < C.
+- BFS and DFS both visit a grid in O(R*C) time and O(R*C) worst-case space; recursive DFS risks call-stack overflow on very large grids, so an explicit stack or BFS avoids that risk without reducing asymptotic memory.
+- DP with a recurrence based on left/top neighbors is valid only when movement is restricted to right and down; with four-direction movement, cyclic dependencies require BFS for unit costs or Dijkstra for non-negative weighted costs.
+- Diagonal traversals rely on constant row+col for anti-diagonals or row-col for main diagonals, so sorting by that key or iterating that sum solves diagonal matrix problems.
+- Many grid problems can be solved in-place by marking visited cells with a sentinel value, but this mutates the input and is invalid if the original grid must be preserved.
+
+## Your 60-second answer
+
+For a matrix or grid question I model the grid as a graph: each cell is a node, and its valid neighbors are the in-bounds four-direction moves. I always write a helper that checks boundaries before generating neighbors, because most bugs in these problems come from out-of-bounds access. Then I choose the algorithm by the goal: DFS for connected components and flood fill, BFS when I need shortest path with uniform cell costs, and Dijkstra if entering a cell has varying non-negative cost. If movement is restricted to right and down, the dependency graph is a DAG, so DP in row-major order with a left/top recurrence is enough. The main trade-off is recursive DFS is concise but can overflow the call stack on a large grid, while BFS or an explicit-stack iterative DFS uses heap memory.
+
+## If they dig deeper
+
+**How do you generate valid neighbors for a cell?**
+
+Iterate over the four direction offsets, compute (r+dr, c+dc), and only accept the neighbor when 0 <= r+dr < R and 0 <= c+dc < C. For eight-direction movement add the four diagonal offsets with the same bounds check.
+
+**When would you choose BFS over DFS in a grid?**
+
+Use BFS when the problem asks for shortest path in an unweighted grid or minimum number of steps, because BFS explores in nondecreasing distance. DFS is fine for exploring connected components or flood fill, but it does not guarantee shortest paths and recursion may overflow on large grids.
+
+**Why doesn't the standard left/top DP work when movement is allowed in all four directions?**
+
+Because dp[i][j] can depend on dp[i+1][j] and dp[i][j+1] as well as earlier cells, creating cyclic dependencies in the recurrence. With those cycles you cannot process cells in simple row-major order; you need BFS for uniform costs or Dijkstra for non-negative weighted costs.
+
+**How would you count the number of distinct islands rather than just connected components?**
+
+After finding each island with DFS or BFS, record a canonical form such as the sorted relative coordinates from a fixed starting cell, or a path signature of directions taken during traversal. Insert each canonical form into a hash set; the set size is the number of distinct islands. If rotations or reflections count as identical, normalize the shape before hashing.
+
+**How do you solve a minimum-cost grid path with non-negative cell costs and four-direction movement?**
+
+Run Dijkstra's algorithm from the source. The priority queue stores (current_cost, row, col), and when you pop a cell, relax its four neighbors with cost = current_cost + neighbor_cost. This runs in O(R*C log(R*C)) and avoids the cycles that break DP.
+
+## Worked example
+
+Count paths from (0,0) to (2,2) in a 3x3 grid with movement only right and down, and an obstacle at (1,1). Initialize dp[0][0] = 1. The first row and first column are all 1 until an obstacle appears: dp[0][1] = 1, dp[0][2] = 1, dp[1][0] = 1, dp[2][0] = 1. At the obstacle dp[1][1] = 0. Fill row-major: dp[1][2] = dp[0][2] + dp[1][1] = 1 + 0 = 1. dp[2][1] = dp[1][1] + dp[2][0] = 0 + 1 = 1. Finally dp[2][2] = dp[1][2] + dp[2][1] = 1 + 1 = 2. The two valid paths are RRDD and DDRR, both bypassing the center obstacle.
+
+## Common traps
+
+- Without checking both row and column bounds, a neighbor like (row-1, col) can access a negative index that is valid in Python but points to the wrong row, causing silent logic errors.
+- Applying a left/top DP recurrence to a grid that allows up or left moves, which creates cycles and double counts.
+- Using recursive DFS on a grid large enough to exceed the call stack, causing a crash instead of switching to an explicit stack or BFS.
+- Treating visited cells as optional by reusing cell values as markers, then losing the distinction between original and visited cells when the same value appears elsewhere.
+
+</details>
+
+---
+
+## 18. Intervals · mcq · Hard
+
+*dsa · gate confidence 0.9*
+
+<sub>to object to this card: `## intervals` then `match: For half-open intervals [start, end), what condition should `</sub>
+
+**Question**
+
+For half-open intervals [start, end), what condition should be used to decide whether to merge the next interval with the current merged interval during a sweep?
 
 **Options**
 
-- The choices at each step, a validity check, and a termination condition
-- The recursion depth, a pruning function, and sorted input
-- A greedy choice, a memo table, and a target sum
-- An include branch, an exclude branch, and an undo operation
+- next_start <= current_end
+- next_start < current_end
+- next_start < current_start
+- next_end > current_start
 
 **Reference answer**
 
-The choices at each step, a validity check, and a termination condition
+next_start < current_end
 
 **Graded on**
 
-- Possible choices at each step
-- Validity check for the current partial state
-- Termination condition
+- Half-open intervals require strict inequality
+- Touching intervals should not merge
+- Overlap condition is a < d and c < b
 
 <details><summary>The lesson this came from</summary>
 
-Backtracking is a controlled exhaustive search over an implicit tree of partial solutions. At each step it makes a choice, recurses deeper, then undoes that choice when the branch is exhausted or pruned. It uses problem-specific validity checks to stop exploring a branch early; without pruning it degenerates into brute force. Common targets are all valid configurations: permutations, subsets, combinations, and constraint-satisfaction puzzles.
+Interval problems represent ranges as [start, end] and manipulate sets of such ranges. The standard technique sorts intervals by start or end, then performs a linear sweep to merge overlaps, count active intervals, or find gaps. Overlap for closed intervals [a,b] and [c,d] holds when a <= d and c <= b. Harder variants answer queries by sorting queries and intervals together and maintaining a min-heap keyed by interval end or size.
 
 ## Why interviewers ask this
 
-Interviewers ask Word Search, Combination Sum, Subsets, Permutations, N-Queens, and Sudoku Solver at companies including Amazon, Meta, Uber, Bloomberg, Snap, and LinkedIn to see whether a candidate can convert a constraints problem into a recursive search and prune it under time pressure. The signal is not mainly finishing the code; it is whether the candidate maintains and restores state, avoids duplicate configurations, and explains the exponential worst case honestly.
+Interviewers ask Merge Intervals, Meeting Rooms II, and interval query variants at companies like Meta, Netflix, Grammarly, and MongoDB to test whether you can reduce O(n^2) pairwise overlap checks to an O(n log n) or O((n+m) log(n+m)) sweep. They also probe whether you can handle active-set logic with heaps and boundary edge cases under pressure.
 
 ## The core idea
 
-Backtracking is DFS over a tree of partial candidates. At a node, verify the current partial candidate against the problem's constraints; if it cannot lead to a solution, prune that subtree. Otherwise, extend the candidate by one choice and recurse. After returning, undo the last change so sibling branches see the same state. The essential difference from ordinary brute force is early pruning. Most variations are different choice sets, costs, and validity predicates.
+Sorting is what makes overlap checks cheap. Once intervals are sorted by start, any interval that can merge with the current result must be adjacent to it, so one comparison with the last end suffices. For concurrent-overlap problems such as Meeting Rooms II, sort start and end times separately or maintain a min-heap of ends; a start increases the active count, an end decreases it, and the maximum active count is the answer. Query variants add another dimension: sort the queries, then sweep intervals by start and keep a min-heap over candidates by the metric being asked for, discarding intervals whose right end falls before the current query. The time complexity includes all heap operations: with n intervals and m queries, O(n log n + m log m + m log n), which is usually expressed as O((n+m) log(n+m)).
 
 ## Key points
 
-- Backtracking explores a search tree with recursive calls and undoes each candidate after returning, so sibling branches see the unchanged state.
-- Pruning occurs when a partial candidate violates a constraint or cannot reach the target, and it is what separates backtracking from plain exhaustive brute force.
-- The recursive call often carries a start index or remaining target so the same combination is not generated in multiple orders.
-- For distinct elements, generating all permutations is O(n*n!) and generating all subsets is O(n*2^n) in typical output-sensitive analyses.
-- Duplicate elements require sorting and skipping duplicates at the same recursion level, or a used/visited marker, to avoid duplicate output groups.
+- For closed intervals [a,b] and [c,d], overlap iff a <= d and c <= b; correct equality handling decides whether touching intervals merge.
+- Merge Intervals sorts by start and merges by comparing each interval's start to the last merged interval's end, giving O(n log n) time and O(n) space for output.
+- Meeting Rooms II can use sorted start and end arrays and sweep: increment on start, decrement on end, and track the maximum active count in O(n log n) time and O(n) space.
+- Point-query interval problems usually sort queries as well, sweep intervals by start, and use a min-heap keyed by interval size or end to answer each query in O(log n).
+- Total query-variant time is O(n log n + m log m + m log n), not just sort-dominated; heap pushes and pops across m queries can be O((n+m) log n).
 
 ## Your 60-second answer
 
-Backtracking is a recursive search strategy that builds a solution one choice at a time, and when a partial choice cannot work, it abandons that branch and undoes the last decision. The reason it is used for problems like permutations, subsets, combination sums, and N-Queens is that these require enumerating all valid configurations, and backtracking explores only the branches that are still viable. You define three things: the set of possible choices at each step, a validity check for the current partial state, and a termination condition. The main trade-off is exponential worst-case time, because the solution space itself is often exponential; pruning reduces the number of calls and branches but does not remove the worst-case bound. So the job is to design the strongest prune rule without skipping a valid answer.
+When I get an interval problem, I first sort by start time. For Merge Intervals, I sort, then keep a result list; if the next interval starts before or at the current end, I extend the current end, otherwise I push a new interval. For a maximum-overlap problem like Meeting Rooms II, I sort the start times and end times separately and sweep: start means one more room, end means one fewer, and the max active count is the answer. For query-based interval problems, I sort both queries and intervals, sweep by query order, and keep a min-heap keyed by the property the query asks for, discarding intervals whose right end is already behind the current query. Total time is O((n+m) log(n+m)) including heap operations, not O(n log n) alone when there are many queries; the trade-off is O(n+m) extra space.
 
 ## If they dig deeper
 
-**How would you generate all subsets of an array without duplicates?**
+**For closed intervals, when do two intervals overlap, and when are they merely adjacent?**
 
-Use include/exclude recursion with an index. At each index, either add the current element and recurse, or skip it and recurse. Once the index reaches the array length, copy the current list into the result. Undo the add before the skip branch so the two branches start with the same list.
+Two closed intervals [a,b] and [c,d] overlap iff a <= d and c <= b. They are adjacent in discrete terms if b + 1 == c or d + 1 == a; they are overlapping only when both inequalities are true, so touching endpoints with equality overlap.
 
-**How do you handle duplicate values in problems like Subsets II or Combination Sum II?**
+**Why does sorting by start make Merge Intervals linear apart from the sort itself?**
 
-Sort the input first. In a loop over choices at each recursion level, skip an element when it is equal to the element just tried at the same level, unless it is the first candidate at this level. This prevents duplicate branches that would start with the same value at the same depth while still allowing valid repeated choices if the problem permits them.
+After sorting by start, any interval that can overlap the interval currently being merged must start no later than the current interval's end. Because all later intervals have starts at least as large, only the immediate next interval needs to be checked against the current end; once a start exceeds that end, no further interval can overlap.
 
-**When would you choose backtracking instead of dynamic programming or greedy?**
+**How would you solve Meeting Rooms II without a heap, and where would a heap version differ?**
 
-Backtracking is for enumerating all valid configurations or any valid solution in a constraint space where order matters and there is no local best choice. Dynamic programming needs overlapping subproblems and optimal substructure, usually for counting or optimizing without returning configurations. Greedy is only safe when locally optimal choices are globally optimal, which is not true for most search and puzzle problems.
+Sort start times and end times separately, then sweep with two pointers: increment rooms at a start, decrement at an end, and keep the maximum. A heap version instead pushes each meeting end, pops all ends <= current start, and takes the max heap size; both are O(n log n), but the heap explicitly retains current meeting end times in order.
 
-**What is the time complexity of the N-Queens backtracking solution?**
+**What changes when intervals are half-open, such as [start,end), or when endpoints can be equal and touching should not merge?**
 
-A standard row-by-row placement with column/diagonal conflict checks has an O(N!) upper bound on the number of placements before pruning, so the backtracking search is exponential in N. Early pruning removes many partial placements but does not make it polynomial.
+The overlap condition becomes a < d and c < b for half-open intervals, because no point is shared at the closed endpoint. In a merge implementation you would use nextStart < currentEnd instead of <= to avoid merging touching ranges, and in event sweeps you decide the tie order for same-time start and end events to match the intended interval semantics.
 
-**Can backtracking be combined with memoization, and why does it not always help?**
+**In Minimum Interval to Include Each Query, why sort by interval start and keep a heap by interval size rather than sorting intervals by size alone?**
 
-Yes, when the same state can be reached through different paths and the remaining subproblem is identical from that state, memoization can cache results. But many backtracking problems encode path-specific state such as the current ordering, used set, or board position, so the number of distinct states is nearly as large as the search space. Memoization then adds memory without reducing the branching meaningfully.
+Sorting intervals by size alone is not enough because a very small interval may end before the current query and be invalid. The correct sweep sorts queries and intervals by left endpoint; for each query, push all intervals whose left <= query into a min-heap keyed by size, pop intervals whose right < query, and the heap top is the smallest valid interval for that query. The full complexity including sorting intervals and queries plus heap pushes/pops is O(n log n + m log m + n log n), safely O((n+m) log(n+m)).
 
 ## Worked example
 
-Generate all subsets of [1,2,3] with include/exclude recursion. Start with path [] at index 0. Include 1: path becomes [1], recurse to index 1. Include 2: path becomes [1,2], recurse to index 2. Include 3: path becomes [1,2,3]; output it, then remove 3 to restore [1,2]. Exclude 3: path is [1,2]; output it. Return, remove 2 to restore [1]. Exclude 2: path [1], recurse to index 2, then similarly produce [1,3] and [1]. Return to index 0, remove 1 to restore [] before the exclude-1 branch, which produces [2], [2,3], [3], and []. Each output is copied into the result rather than storing the mutable path reference.
+Take intervals [[1,3],[2,6],[8,10],[15,18]]. Sorting by start keeps them in this order. Initialize merged with [1,3]. The next interval [2,6] starts at 2, which is <= current end 3, so extend end to max(3,6)=6. [8,10] starts at 8, which is > 6, so push it as a new interval. [15,18] starts at 15, which is > 10, so push it too. The result is [[1,6],[8,10],[15,18]]; each boundary check needed only one comparison with the last interval's end.
 
 ## Common traps
 
-- Forgetting to undo a choice after returning from recursion, so later sibling branches see corrupted state.
-- Pruning too aggressively or applying duplicate-skip logic without sorting, which either misses valid branches or still emits duplicate answers.
-- Storing references to mutable partial candidates in the result instead of copying them.
-- Calling any recursive traversal 'backtracking' when it does not maintain and restore a candidate solution.
+- Using nested pairwise comparisons to check every interval against every other, producing O(n^2) time instead of sorting and scanning.
+- Forgetting that sort cost and heap cost both matter in query variants; stating O(n log n) while m queries each cause heap pushes/pops misses O(m log n).
+- Getting the overlap condition wrong at equality: using < versus <= or mixing closed and half-open endpoints can either merge touching intervals incorrectly or leave overlaps unmerged.
+- Treating Meeting Rooms II like Merge Intervals by sorting by start and comparing adjacent intervals; an early-starting long interval can overlap many later intervals, so you need endpoint sweep or a heap.
 
 </details>
 
 ---
 
-## 21. HashMap internals · mcq · Medium
+## 19. HashMap internals · output · Medium
 
 *java · gate confidence 0.9*
 
+<sub>to object to this card: `## java-hashmap-internals` then `match: What is the exact output of the following Java code? ```java`</sub>
+
 **Question**
 
-Which statement best describes the time complexity of get in a Java 8 HashMap?
+What is the exact output of the following Java code?
 
-**Options**
-
-- O(1) in the worst case
-- O(1) average and O(log n) worst case
-- O(n) worst case in all cases
-- O(log n) average and O(1) worst case
+```java
+Map<String,Integer> map = new HashMap<>();
+map.put("Aa", 1);
+map.put("BB", 2);
+System.out.println("Aa".hashCode());
+System.out.println("BB".hashCode());
+System.out.println(map.size());
+```
 
 **Reference answer**
 
-O(1) average and O(log n) worst case
+2112
+2112
+2
 
 **Graded on**
 
-- average lookup is O(1)
-- treeified buckets give O(log n) worst-case traversal
-- O(1) worst case is a common trap
+- "Aa" and "BB" both have hash code 2112
+- the two keys collide into the same bucket
+- HashMap still stores both distinct keys, so size is 2
 
 <details><summary>The lesson this came from</summary>
 
@@ -1741,331 +1602,532 @@ Take a HashMap with default capacity 16 and put the keys "Aa" and "BB". Both str
 
 ---
 
-## 22. Generics · flash · Medium
-
-*java · gate confidence 0.9*
-
-**Question**
-
-After erasure, what methods exist in a class that implements `Comparable<String>`?
-
-**Reference answer**
-
-The class has its declared `compareTo(String)` method plus a synthetic bridge method `compareTo(Object)` added by the compiler.
-
-**Graded on**
-
-- compareTo(String) remains
-- compiler adds compareTo(Object) bridge
-
-<details><summary>The lesson this came from</summary>
-
-Java generics let a class, interface, or method be written once with type parameters such as `T`; the compiler enforces that only compatible reference types are used and inserts casts at call sites. Wildcards (`?`, `? extends T`, `? super T`) express unknown type arguments where a generic type is used, especially in method parameters. Java implements generics by erasure: after compilation, type variables are replaced by their leftmost bound (or `Object`), and the compiler generates casts and bridge methods as needed. As a result, generic type arguments are generally not known at runtime for objects.
-
-## Why interviewers ask this
-
-Interviewers use generics to test whether you understand compile-time safety versus runtime representation, and whether you can apply variance correctly. Many candidates know `List<String>` is not a `List<Object>` but cannot articulate why or choose between `extends` and `super`. It also exposes practical Java issues: raw types, unchecked casts, and erasure limitations.
-
-## The core idea
-
-The central idea is that Java generics are a compile-time abstraction. `List<String>` and `List<Integer>` are both just `List` at runtime; the compiler uses the generic arguments to reject bad `add` calls and remove manual casts. Generic types are invariant by default: even though `String` is an `Object`, `List<String>` is not a `List<Object>`, because treating it as one would permit inserting an `Integer`. Wildcards add use-site variance: `? extends T` lets you read from a producer and returns a `T` view, while `? super T` lets you write into a consumer but only guarantees `Object` on read. Erasure keeps compatibility with pre-Java-5 raw bytecode and creates bridge methods to support polymorphic overrides.
-
-## Key points
-
-- Java 5 introduced generics; unbounded type parameters erase to `Object`, bounded ones to their first bound.
-- Java generic types are invariant: `List<String>` is not a `List<Object>`, unlike covariant arrays.
-- Apply PECS: `? extends T` for producers you read from, `? super T` for consumers you write to.
-- Erasure forbids `new T[10]`, `instanceof List<String>`, and methods overloaded only by generic argument.
-- For `Comparable<String>`, the real `compareTo(String)` method stays; a synthetic bridge `compareTo(Object)` is added.
-
-## Your 60-second answer
-
-Java generics let you write a class, interface, or method once and use it with many reference types while the compiler checks the types. A type parameter like `T` is a placeholder; when you write `List<String>`, the compiler treats that list as accepting only strings and returning strings without explicit casts. Wildcards handle unknown types: `? extends T` is for reading from a producer, and `? super T` is for writing to a consumer. At runtime, generics are erased—the JVM sees the raw `List`, type parameters are replaced by their bounds, and the compiler inserts casts and bridge methods. The trade-off is that generic type arguments are not fully available at runtime, so you cannot create an array like `new T[10]` or test `instanceof List<String>`; safety is a compile-time guarantee, not a runtime one.
-
-## If they dig deeper
-
-**What is wrong with using raw types like `List` if the code compiles?**
-
-Raw types are allowed only for backward compatibility with pre-Java-5 code. They turn off generic checks, so you can add mixed types and later get a `ClassCastException` at a cast site. They also produce unchecked warnings; a parameterized `List<String>` makes the compiler catch the mistake instead.
-
-**Why is `List<String>` not a subtype of `List<Object>` even though `String` is a subtype of `Object`?**
-
-Because generics are invariant. If `List<String>` were assignable to `List<Object>`, you could add an `Integer` through the `List<Object>` reference to a collection whose real element type is `String`, causing heap pollution. The compiler rejects the assignment to preserve type safety.
-
-**When do you use `? extends T` versus `? super T`?**
-
-Use `? extends T` when the generic object is a producer: you only read items and they can be treated as `T` or a supertype. Use `? super T` when it is a consumer: you only write items of type `T` or subtypes, and reading returns `Object` unless you cast. This is the PECS rule—Producer Extends, Consumer Super.
-
-**What does type erasure actually erase, and what remains at runtime?**
-
-The compiler replaces unbounded type parameters with `Object`, and bounded parameters with their first bound, so `class Box<T>` becomes a raw `Box` with an `Object` field. It inserts casts where code uses the type parameter and may generate bridge methods. The runtime does not know whether a particular `ArrayList` was declared as `ArrayList<String>` or `ArrayList<Integer>`; both share the same class object, though class-file signature metadata can describe declarations.
-
-**How do bridge methods preserve polymorphism under erasure, for example in a class that implements `Comparable<String>`?**
-
-The class's declared `compareTo(String)` is not changed to `compareTo(Object)`. Erasure of `Comparable<T>` makes the interface method `compareTo(Object)`, so the compiler generates an additional synthetic `compareTo(Object)` in the implementing class. That bridge method casts its `Object` argument to `String` and delegates to the real `compareTo(String)`. This keeps the class implementing the raw interface and preserves polymorphic dispatch when callers have a `Comparable` reference.
-
-## Worked example
-
-Consider a generic `Box<T>` with `private T value`, `void set(T value)`, and `T get()`. Writing `Box<String> s = new Box<>(); s.set("hi"); String x = s.get();` compiles with no cast in the source, but after erasure the field is `Object`, `set` takes `Object`, and `get` returns `Object`; the compiler inserts `(String) s.get()` at the call site. Now take `List<? extends Number> nums = new ArrayList<Integer>();`. `Number n = nums.get(0)` is allowed because every element is at least a `Number`, but `nums.add(1)` fails to compile: the list might really be a `List<Double>`, so adding an `Integer` would violate its actual element type. Conversely, `List<? super Integer> ints = new ArrayList<Number>();` accepts `ints.add(1)` because any supertype of `Integer` can hold an `Integer`, but `Integer i = ints.get(0)` does not compile because the compiler cannot guarantee the returned value is `Integer`—it could be any `Object`.
-
-## Common traps
-
-- Using raw types to silence generics errors; this disables compile-time checks and defers failures to runtime `ClassCastException`s.
-- Treating `List<String>` as a `List<Object>` because `String` extends `Object`; Java generic types are invariant.
-- Trying `new T[10]`, `instanceof List<String>`, or overloading methods that differ only by a generic argument—these fail because type arguments are erased.
-- Claiming `compareTo(String)` in a class implementing `Comparable<String>` is erased to `compareTo(Object)`; the concrete method stays and a synthetic bridge is added.
-
-</details>
-
----
-
-## 23. Pub/Sub System Design · mcq · Medium
+## 20. Movie Ticket Booking System Design · typed · Hard
 
 *lld · gate confidence 0.9*
 
+<sub>to object to this card: `## lld-movie-ticket-booking-system-design` then `match: How does the system handle pricing if a seat type's price ch`</sub>
+
 **Question**
 
-In a single-process in-memory pub/sub system with one producer enqueuing FIFO and one consumer draining FIFO, what ordering is guaranteed?
-
-**Options**
-
-- Total order across all topics
-- Per-topic per-subscriber order only
-- Global order across all subscribers
-- No ordering guarantee at all
+How does the system handle pricing if a seat type's price changes after a user locks seats but before they pay?
 
 **Reference answer**
 
-Per-topic per-subscriber order only
+The reservation stores the unit price at lock time, so the quoted price remains stable even if the theater changes pricing before payment completes. This prevents surprise charges and disputes.
 
 **Graded on**
 
-- Single FIFO queue
-- One producer and one consumer
-- Ordering is per topic per subscriber
+- Price snapshot at lock time.
+- Reservation stores unit price.
+- Quoted price does not change after lock.
+- Avoids price-change disputes.
 
 <details><summary>The lesson this came from</summary>
 
-A publish-subscribe system is a messaging pattern where publishers emit messages to named topics and subscribers receive only messages for topics they have registered interest in. A broker or topic object sits between the two groups, owning the routing table and delivery queues, so publishers and subscribers are not directly coupled. Multiple subscribers to the same topic each receive an independent copy of the message, and delivery is usually asynchronous through per-subscriber work queues.
+A low-level design exercise for a movie ticket booking service. It models cities, cinemas, halls, movies, shows, seats, bookings, and payments. The system must keep seat availability per show, prevent two users from reserving the same seat, and only confirm the booking after payment succeeds.
 
 ## Why interviewers ask this
 
-The interviewer is testing whether you can translate a messaging pattern into a small object-oriented design with clear responsibilities and thread safety. They are also probing how you handle slow consumers, failure, ordering, and delivery guarantees, because those are the actual complexity in any real pub/sub implementation.
+Interviewers probe class modeling, state transitions for bookings, and concurrency control. They want to see whether you can map requirements to entities and enforce invariants under parallel requests.
 
 ## The core idea
 
-The core mechanism is a Topic object that owns a thread-safe subscriber registry and a per-subscriber delivery queue. On publish, the Topic enqueues the message into each current subscriber's queue and returns quickly; a per-subscriber worker drains its queue and calls the subscriber's callback on that worker thread. Decoupling is achieved because the Topic exposes only subscribe/unsubscribe/publish, while publishers and subscribers never reference each other. Concurrency control belongs at the registry and queue boundaries, not in a global broker lock. Backpressure and delivery guarantees are then choices about the queue policy: block, drop, or retry.
+The central object is a show, which joins a movie, a hall, and a start time; seats belong to the hall, but their availability is tracked per show. Bookings move through a state machine: reserved (locked), payment pending, confirmed, and cancelled, with a timer releasing unpaid holds. Concurrency is handled by locking individual seat rows or using conditional status updates, so a seat can be taken only when it is currently free. Payment is an external step; the booking is confirmed only after a successful payment, and failure or timeout releases the seats.
 
 ## Key points
 
-- Use a broker map keyed by topic name; each Topic keeps a thread-safe subscriber registry and one queue per subscriber, never one shared queue.
-- A subscriber's worker thread drains its queue and invokes the callback, so one slow or throwing subscriber cannot block another subscriber or the publisher.
-- Ordering is only guaranteed per topic per subscriber when a single producer enqueues in FIFO order and a single consumer drains FIFO; concurrent producers or multiple queues remove total order.
-- Delivery guarantees must be explicit: an in-memory design can choose block, drop, or retry, while exactly-once processing requires idempotent consumers or message-ID deduplication, plus durable offsets if the process can restart.
-- Thread safety uses a concurrent map, copy-on-write or synchronized subscriber-list snapshots, and bounded blocking queues with put/take or offer/timeout.
+- Each show is identified by a movie, hall, and start time; a hall can have only one show at a time.
+- Seats are physical entities of a hall, and availability is tracked per show, so the same seat can be booked for different showtimes.
+- The booking flow creates a short-lived reservation that locks selected seats for a few minutes while payment happens; expiration releases them.
+- Use a conditional update or row lock so a seat transitions from FREE to LOCKED only if it is currently FREE, preventing double-booking.
+- Payment is recorded against a reservation; a booking becomes confirmed only after payment success, and failed or expired payments cancel the reservation.
 
 ## Your 60-second answer
 
-A pub/sub system has producers publish to topics and consumers subscribe to topics, with a broker in between so neither side knows about the other. In an object-oriented design I'd define Topic, Publisher, Subscriber, and Broker. The broker keeps a map from topic name to Topic. Each Topic holds a thread-safe collection of subscribers and a bounded queue per subscriber. publish appends the message to every subscriber's queue; each subscriber has a worker that pulls messages and invokes its callback. This gives decoupling, fan-out, and independent delivery. The main trade-off is backpressure: if a subscriber is slow and its queue fills, the broker must block the publisher, drop messages, or disconnect that subscriber. I'd specify at-least-once with retries or at-most-once with drops for the in-memory version; exactly-once requires deduplication or idempotent consumers.
+A movie ticket booking system has cities, cinemas, halls, shows, seats, bookings, and payments. I would model a show as movie plus hall plus start time, and track seat availability per show. When a user picks seats, the server creates a short reservation that locks those seats so other users see them as blocked. Payment then runs against that reservation; on success the booking is confirmed and the seats stay booked, and on failure or timeout the lock expires and the seats become available again. The main trade-off is lock duration: a long hold reduces the chance that a paying user loses their seat, but it can leave seats blocked by abandoned checkouts, so you need a TTL and a cleanup job.
 
 ## If they dig deeper
 
-**How do you make the broker thread-safe when publishers and subscribers run on different threads?**
+**What are the main classes and their relationships?**
 
-I use a concurrent map for the topic registry, copy-on-write or synchronized snapshots for each topic's subscriber list, and a bounded blocking queue per subscriber. publish iterates a snapshot and enqueues with offer or put; each subscriber worker uses take to drain its own queue. This avoids synchronizing the entire publish path.
+Cinema has many halls; hall has many seats and can host many shows over time, one at a time. Movie has many shows. A show belongs to one movie and one hall, with a start time. A booking references one show and many seat IDs; a payment references one booking. Seat availability is stored in a per-show seat table or entity keyed by showId and seatId.
 
-**What happens when a subscriber is slow or throws an exception?**
+**How do you prevent two users from booking the same seat?**
 
-If the subscriber is slow, its bounded queue fills. The broker has to apply backpressure: block the publisher, drop the oldest or newest message, or disconnect the subscriber. If the callback throws, the broker catches the exception and either retries, sends to a dead-letter location, or logs and skips, ensuring other subscribers are not affected.
+Use a conditional update such as UPDATE show_seat SET status='LOCKED', lock_until=? WHERE show_id=? AND seat_id=? AND status='FREE'. If zero rows are affected, the seat is already taken. In a single-node in-memory model, you can synchronize on a key made of showId and seatId, but the database conditional update works across replicas.
 
-**How do you preserve message ordering?**
+**What happens when a user never completes payment?**
 
-Within one topic and one subscriber, a single FIFO queue gives per-topic order if one producer thread enqueues and one consumer thread dequeues. Multiple concurrent publishers to the same topic can reorder messages, so you would use a per-topic lock, a single writer thread, or assign sequence numbers. Ordering across topics or across different subscribers does not exist in this design.
+A scheduled job finds LOCKED seats whose lock_until is before the current time and sets them back to FREE, but only where status is LOCKED. This prevents an expired hold from being confirmed later. The user may retry, but they must re-select seats because the reservation is gone.
 
-**How would you extend this design to multiple broker instances or durable persistence?**
+**How does pricing work with different seat types?**
 
-I would partition topics across broker instances and replicate an append-only log for each partition, similar to Kafka's model. Subscribers become consumer groups with stored offsets. A failed consumer restarts from its last committed offset, giving at-least-once delivery, while a durable log prevents message loss when a broker dies.
+Seats have a type such as regular, premium, or recliner. Pricing is per show and per seat type, so premium seats cost more for the same show. The reservation stores the unit price at lock time to keep the quoted price stable even if the theater changes pricing before payment.
 
-**Can you guarantee exactly-once delivery in this system?**
+**What if a show is cancelled after seats are booked?**
 
-Exactly-once delivery is not a real broker guarantee across process failures; what is achievable is effectively-once processing. You need idempotent subscribers or message-ID deduplication, plus coordination between consuming a message and committing its side effects, often through a transactional outbox. In a single-process in-memory design you can dedupe by message ID per subscriber, but across restarts or network partitions you cannot guarantee exactly-once without distributed transaction coordination.
+Mark the show as CANCELLED first, then cancel all bookings for that show, refund successful payments idempotently, and notify users. Seat rows are released to FREE for historical consistency, but no new bookings can be created because the show is cancelled.
 
 ## Worked example
 
-Suppose Topic orders has subscribers A and B, each with a bounded queue of capacity 10. Publisher thread calls broker.publish("orders", OrderEvent(42)). Broker resolves orders, snapshots [A, B], then calls queue.offer(event, 50ms) on each. A's queue has room so the event is enqueued; B's queue is full, so offer times out and the broker can either log-and-drop for B or apply a retry policy. A's worker takes the event and calls A.onMessage(OrderEvent(42)); B misses that copy if it was dropped. If the code used blocking put instead of offer, the publisher would wait when B's queue fills, creating backpressure that also delays A. This shows why per-subscriber queues plus a chosen queue policy are the real design decisions.
+Assume show S1 in hall H1 with three rows and four seats per row. User A requests seats B2 and B3. The server starts a transaction and runs conditional updates on the per-show seat rows for S1, B2 and S1, B3; both move from FREE to LOCKED with lock_until set to now plus five minutes. At the same moment User B requests B3; his conditional update matches zero rows because B3 is already LOCKED, so B sees the seat as unavailable. User A completes payment, the payment service returns success, and the system creates booking 58, changing those two seat rows from LOCKED to BOOKED. If A's payment had failed or the five minutes had elapsed, a cleanup job would set the rows back to FREE only if their lock_until was in the past.
 
 ## Common traps
 
-- Routing messages through a single shared queue causes one slow subscriber to stall every other subscriber; each subscriber needs its own queue.
-- Assuming exactly-once delivery just because messages are sent once; without idempotent consumers or deduplication, retries after failure produce duplicates.
-- Calling subscriber callbacks synchronously inside publish() couples publisher latency and failure to the slowest subscriber and can deadlock if a callback publishes or unsubscribes.
-- Synchronizing the whole broker on publish serializes independent topics and reduces throughput; lock only the topic registry or per-topic structures.
+- Storing seat availability as a boolean on the Seat entity instead of per show, which leads to false conflicts across different showtimes.
+- Locking an entire hall or show during seat selection, which serializes all users even when they pick different seats.
+- Marking a booking as confirmed before payment succeeds; then you must handle refunds for unpaid checkouts and the audit trail becomes messy.
+- Displaying LOCKED seats the same as BOOKED to users, so they cannot tell a temporary hold from a sold seat.
 
 </details>
 
 ---
 
-## 24. CHAR vs VARCHAR · flash · Easy
+## 21. Unique ID generation · output · Easy
 
-*sql · gate confidence 0.9*
+*system_design · gate confidence 0.9*
+
+<sub>to object to this card: `## sd-unique-id-generation` then `match: What is printed by this code? ```python BASE62 = '0123456789`</sub>
 
 **Question**
 
-What does VARCHAR(n) store compared with CHAR(n)?
+What is printed by this code?
+```python
+BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+def base62_encode(n):
+    if n == 0:
+        return BASE62[0]
+    chars = []
+    while n > 0:
+        n, r = divmod(n, 62)
+        chars.append(BASE62[r])
+    return ''.join(reversed(chars))
+print(base62_encode(1000000))
+```
 
 **Reference answer**
 
-VARCHAR(n) stores up to n characters but only the actual data plus length metadata; it does not pad shorter values.
+4C92
 
 **Graded on**
 
-- Stores actual data only
-- Adds length metadata
-- No padding
+- base62 conversion uses 0-9, A-Z, a-z
+- 1000000 maps to 4C92
+- output contains no '+' or '/'
 
 <details><summary>The lesson this came from</summary>
 
-CHAR(n) declares a fixed-length character column: inputs shorter than n are right-padded with spaces in SQL Server, PostgreSQL, and MySQL, so each value occupies the declared width. VARCHAR(n) declares a variable-length column that stores up to n characters and keeps only the actual data plus length metadata. Exact limits differ by engine: SQL Server caps ordinary CHAR and VARCHAR at 8,000 bytes and offers VARCHAR(MAX) up to 2 GB; PostgreSQL and MySQL also treat n as a character count and enforce row-size limits.
+Unique ID generation is the process of creating identifiers that are unique across a system without requiring every request to check a central source of truth. Common mechanisms are 128-bit UUIDs produced locally, Snowflake's 64-bit time-ordered IDs split into timestamp, worker ID, and sequence fields, and ticket servers that hand out monotonically increasing values or ranges from a central counter. The central design tension is choosing how much coordination to accept in exchange for ordering, compactness, and failure tolerance.
 
 ## Why interviewers ask this
 
-This question tests whether you choose data types based on the data shape rather than habit, and whether you understand padding, comparison semantics, and engine limits. A strong answer separates logical schema from physical storage and update tradeoffs.
+Interviewers use this topic to test whether you can avoid collisions and central bottlenecks in distributed services. It appears in common designs like URL shorteners and distributed tracing, where IDs become primary keys or trace identifiers. A strong answer compares generation strategies by ordering, index locality, failure modes, and size.
 
 ## The core idea
 
-Use CHAR only for values that are genuinely fixed-width, such as ISO country codes; it makes row width predictable but can waste space. Use VARCHAR for variable text because it stores fewer bytes for short strings and preserves trailing spaces. The physical tradeoff is that VARCHAR saves space but requires variable-length handling, while CHAR can reduce page density because rows are wider. In PostgreSQL, both types receive the same MVCC treatment: an UPDATE creates a new tuple version unless HOT can avoid a new index entry, which happens only when no indexed column changes and the new version fits on the same page.
+Globally unique IDs in a distributed system require either a source of local uniqueness or an out-of-band coordination mechanism. Snowflake partitions the ID space so each worker can generate IDs independently: the classic Twitter layout uses 1 sign bit, 41 timestamp bits, 10 worker ID bits, and 12 sequence bits, giving roughly time-ordered 64-bit values. UUIDs use 128 bits and need no coordination, but random UUIDv4 values are not sequential, which can degrade B-tree index performance by scattering inserts. Ticket servers and DB auto-increment give centrally ordered numeric IDs when issued one at a time, but the central allocation point becomes a bottleneck; batching ranges reduces round trips at the cost of perfect generation-time ordering. The right choice depends on whether you need compact sortable numeric IDs, whether you can tolerate a central dependency, and how you handle clock rollback or worker ID assignment.
 
 ## Key points
 
-- CHAR(n) right-pads shorter values with spaces to the declared width in SQL Server, PostgreSQL, and MySQL; in MySQL those trailing spaces are stripped on retrieval unless PAD_CHAR_TO_FULL_LENGTH is set.
-- VARCHAR(n) stores up to n characters but only the actual data plus overhead; on SQL Server ordinary VARCHAR adds 2 bytes per row for its length, so short values use less space than CHAR(n).
-- SQL Server caps regular CHAR/VARCHAR at 8,000 bytes; VARCHAR(MAX) can store up to 2 GB, with values larger than 8,000 bytes stored off-row as LOB data.
-- PostgreSQL does not make VARCHAR cheaper to update in the MVCC sense: every UPDATE creates a new tuple version; HOT can avoid adding new index entries only when no indexed column changes and the new tuple fits on the same page.
-- The declared n is a byte count in SQL Server CHAR/VARCHAR but a character count in PostgreSQL and MySQL; check the character set and collation when estimating physical size.
+- A standard UUID is 128 bits; UUIDv4 is generated from random bits and UUIDv7 adds a time-ordered prefix, but neither guarantees uniqueness—it only makes accidental collisions extremely unlikely.
+- Twitter Snowflake's classic 64-bit layout is 1 unused sign bit, 41 timestamp bits, 10 worker ID bits, and 12 bits for the per-millisecond sequence.
+- Snowflake remains unique only if every worker ID is unique and the system never reuses the same timestamp for the same worker, so implementations must handle clock rollback.
+- A central ticket server or database auto-increment produces centrally ordered numeric IDs but becomes a bottleneck and single point of failure unless ranges are preallocated to callers.
+- For URL shorteners, generating a 64-bit ID and base62-encoding it avoids URL-unsafe characters; hashing the original URL instead requires collision handling and uniqueness checks in storage.
 
 ## Your 60-second answer
 
-CHAR(n) is fixed-length: a CHAR(10) column always uses the full ten-character width and pads shorter values with spaces. VARCHAR(n) is variable-length; it stores only the characters you insert plus a small length prefix, so 'alice' in VARCHAR(100) uses five characters of data, not one hundred. Use CHAR only for truly fixed-width data like ISO country codes; use VARCHAR for names and descriptions. The main tradeoff is that VARCHAR saves space for short strings, which can fit more rows per page, but adds variable-length handling. Know your engine: SQL Server limits ordinary CHAR and VARCHAR to 8,000 bytes, and PostgreSQL gives both types the same MVCC update behavior—HOT can avoid index bloat only when no indexed column changes and the new tuple stays on the same page.
+For globally unique IDs I look at three mechanisms. UUIDs are 128-bit and can be generated locally, but random UUIDv4 values are not sequential and cause poor index locality. Snowflake gives me 64-bit IDs that sort roughly by time; the classic Twitter layout is one sign bit, 41 timestamp bits, a ten-bit worker ID, and a twelve-bit sequence. It works without a network call as long as worker IDs are unique and the system handles clock rollback by waiting or using a monotonic clock. A ticket server using database auto-increment or range allocation gives centrally allocated numeric IDs, but it is a central dependency. For a URL shortener, I typically generate a Snowflake-style ID and base62 encode it to a short code; if someone proposed hashing the URL, I would store the mapping and resolve collisions by retrying or using a unique constraint.
 
 ## If they dig deeper
 
-**What happens to trailing spaces in CHAR versus VARCHAR?**
+**How do you generate a unique short ID for a URL shortener?**
 
-SQL Server stores CHAR padded to n, so DATALENGTH includes trailing spaces; VARCHAR stores the exact text and preserves trailing spaces. MySQL strips trailing spaces from CHAR on retrieval by default, while PostgreSQL treats them as insignificant in comparisons. VARCHAR generally preserves trailing spaces in all three.
+I would generate a 64-bit Snowflake-style ID or take an allocated range from a ticket server and base62-encode the numeric ID. If I hash the original URL, I need to handle collisions by checking a unique indexed short code and retrying with salt or length change.
 
-**When can VARCHAR use more space than CHAR?**
+**How do you avoid ID collisions across many servers?**
 
-A VARCHAR value at or near the declared maximum may be slightly larger because of the length prefix. For example, a full 8,000-byte VARCHAR(8000) uses 8,002 bytes in SQL Server, while CHAR(8000) uses 8,000. If most values are full-width, CHAR avoids that overhead; otherwise VARCHAR usually wins because short values use less space.
+Each server gets a unique worker ID from a coordination service or static config, and the per-millisecond sequence avoids collisions on one worker. With a ticket server, each instance gets a disjoint range, so no two instances issue the same value.
 
-**How does PostgreSQL handle UPDATEs to CHAR or VARCHAR columns?**
+**What happens if a Snowflake node's clock moves backward?**
 
-Both types get the same MVCC behavior. Every UPDATE writes a new tuple version, so the old version remains until VACUUM regardless of column type or whether the length changed. If no indexed column changes and the new tuple fits on the same page, PostgreSQL can use a Heap-Only Tuple and avoid new index entries.
+The node can wait until its clock catches up with the last timestamp it used, or use a monotonic time source. Without that, the same timestamp plus worker ID plus sequence can repeat and create duplicate IDs.
 
-**What are SQL Server's limits for CHAR and VARCHAR, and how does VARCHAR(MAX) work?**
+**How do you keep generating IDs if the central ticket server is down?**
 
-Regular CHAR(n) and VARCHAR(n) are limited to n = 8,000 bytes. VARCHAR(MAX) raises the payload limit to 2 GB; values larger than 8,000 bytes are stored as off-row LOB data with a pointer in the row. That makes MAX useful for large text but changes I/O behavior and some operations.
+You cannot hand out new ranges once the central ticket server is unavailable, unless callers have preallocated enough local range to ride out the outage. That is the main reason some designs prefer local generation like Snowflake for availability.
 
-**If a table stores 10-character values in either CHAR(100) or VARCHAR(100), which one typically scans faster?**
+**How do trace IDs differ from short URL IDs, and what priority changes?**
 
-Usually VARCHAR, because shorter rows mean more rows per 8 KB page and therefore fewer page reads. CHAR(100) forces a fixed 100-byte data area per value, reducing page density. If values actually approach 100 bytes, the difference shrinks, but the dominant cost is usually pages scanned.
+Trace IDs usually need to be unique but not necessarily sequential or compact; they often use 128-bit random values, and they must propagate across services with parent/span IDs. For tracing, probabilistic uniqueness and low overhead matter more than index locality, while URL IDs want short, dense, base62-encodable values.
 
 ## Worked example
 
-In SQL Server, `CREATE TABLE Demo (Code CHAR(10), Username VARCHAR(100)); INSERT Demo VALUES ('ABC', 'alice');` returns `DATALENGTH(Code) = 10` because 'ABC' is blank-padded, and `DATALENGTH(Username) = 5` because only five bytes are stored. SQL Server adds two length bytes per ordinary VARCHAR row, so the username uses 7 payload bytes versus 10 for CHAR(10), a 3-byte saving per row. In PostgreSQL, an equivalent `UPDATE ... SET Username = 'alice.smith'` writes a new tuple version regardless of type; if no indexed column changes and the new tuple fits on the same page, HOT avoids creating new index entries.
+Suppose a ticket server allocates ranges by atomically incrementing a high-water mark in a database. Server A requests 1,000 IDs and receives 1000000–1000999, then server B receives 1001000–1001999. Each server generates from its own range without further network calls until it runs out, so collisions are impossible as long as ranges never overlap. Server A takes numeric ID 1000000 and base62-encodes it with the alphabet 0-9, A-Z, a-z; the result is '4C92'. The mapping between that code and the original URL is stored with a unique index, which rejects any duplicate code if a bug ever caused one. If the service used Snowflake instead, two IDs generated in the same millisecond on the same worker would differ only in the 12-bit sequence field.
 
 ## Common traps
 
-- Saying VARCHAR is always smaller than CHAR; when values are consistently at or near the declared length, VARCHAR's length bytes can make it slightly larger.
-- Assuming n means characters everywhere; in SQL Server CHAR/VARCHAR n is a byte limit, while PostgreSQL and MySQL use character counts.
-- Ignoring trailing-space semantics during comparisons or unique constraints: CHAR padding makes 'ABC' and 'ABC ' compare equal in many engines, while VARCHAR preserves the difference.
-- Applying a general 'fixed length is faster' rule without measuring page density and workload; a wide CHAR row can reduce rows per page and slow scans.
+- Saying UUIDs guarantee uniqueness: they make collisions probabilistically negligible but cannot guarantee it, and weak randomness or implementation bugs raise the risk.
+- Ignoring Snowflake clock rollback: if a node's wall clock moves backward, it can reuse a timestamp and produce duplicate IDs unless it waits or uses a monotonic clock.
+- Using database auto-increment as a global ID service without batching: every ID generation becomes a network or database round trip, creating a central bottleneck.
+- Generating short codes with base64 instead of base62: base64 includes '+' and '/', which need URL encoding and break clean short URLs.
 
 </details>
 
 ---
 
-## 25. Locking Mechanisms · mcq · Easy
+## 22. Memory Allocation · mcq · Hard
 
-*cs · gate confidence 0.95*
+*cs · gate confidence 0.92*
+
+<sub>to object to this card: `## cs-memory-allocation` then `match: What is the consequence of calling free on the original poin`</sub>
 
 **Question**
 
-Which storage engine uses table-level locking by default?
+What is the consequence of calling free on the original pointer after a successful realloc?
 
 **Options**
 
-- InnoDB
-- MyISAM
-- PostgreSQL
-- SQL Server
+- Always safe because realloc may not move the block
+- Undefined behavior; may cause a double free if the block was moved
+- Safe only if realloc returned the same pointer
+- Safe because the original pointer is automatically updated
 
 **Reference answer**
 
-MyISAM
+Undefined behavior; may cause a double free if the block was moved
 
 **Graded on**
 
-- MyISAM uses table-level locking
-- InnoDB uses row-level locking
-- PostgreSQL uses row-level locks with MVCC
-- SQL Server uses row-level with lock escalation
+- realloc invalidates original pointer
+- double free if block moved
 
 <details><summary>The lesson this came from</summary>
 
-A lock is a mechanism that serializes access to shared state. In a database, pessimistic locking acquires a lock on a row or table before a transaction reads or writes, and holds it until commit or rollback; optimistic locking holds no transaction-long lock, instead validating at commit with a version, timestamp, or a compare-and-set primitive such as Redis WATCH. Row-level and table-level locks differ in the granularity of the protected resource, and many engines layer intent locks on the table to track lower-level row locks.
+Dynamic memory allocation reserves blocks on the heap at runtime from a region managed by an allocator. In C, malloc, calloc, and realloc request blocks and free returns them; in managed runtimes, a garbage collector reclaims unreachable heap objects automatically. The allocator tracks free blocks in a free list and selects blocks using strategies such as first fit, best fit, or worst fit. Because blocks are allocated and freed in any order, the heap can become fragmented into unusable holes.
 
 ## Why interviewers ask this
 
-Interviewers ask about locking to test whether you can reason about concurrency, data races, deadlocks, isolation, and throughput tradeoffs. They want to see that you know when to choose optimistic versus pessimistic locking and at what granularity, and that you understand what happens when multiple transactions touch the same data.
+The interviewer wants to know whether you understand what happens under malloc and free: how the allocator tracks free memory, why fragmentation occurs, and how leaks, double frees, and use-after-free arise. Strong candidates also connect these ideas to system design choices such as memory pools and compacting collectors.
 
 ## The core idea
 
-Locks trade concurrency for correctness. Pessimistic locking prevents conflicts by blocking early; optimistic locking assumes conflicts are rare and detects them at commit time. Granularity determines how much concurrency is lost: row-level locks let different transactions modify different rows concurrently, while table-level locks serialize all writers to the table. Most production row stores combine MVCC for lock-free reads with row-level write locks and intent locks to coordinate table-level operations. Choosing a strategy depends on contention, transaction length, and retry cost.
+Heap allocation is a request to an allocator that carves blocks out of a larger memory region and later recycles them. The allocator needs to know which parts are free and which are in use; a typical design keeps a free list of available blocks and splits, coalesces, or merges them as allocations occur. Allocation policy matters because it determines speed and fragmentation: first fit is usually fast but leaves many small holes; best fit leaves the smallest remainder but can be slower and create tiny slivers; worst fit preserves large blocks but can exhaust them. External fragmentation means enough total free memory exists but no single contiguous block is large enough for a request, while internal fragmentation is wasted space inside an allocated block, often from rounding up or metadata overhead. In C, the programmer is responsible for matching every allocation with exactly one free and for never using memory after freeing it; realloc invalidates the original pointer even when the block does not move. Managed languages like Java use a garbage collector to identify and free unreachable objects, eliminating manual free but adding pauses and overhead.
 
 ## Key points
 
-- Pessimistic locking acquires a lock before reading or writing and holds it until the transaction ends, typically via SELECT ... FOR UPDATE in PostgreSQL or InnoDB.
-- Optimistic locking uses a version, timestamp, or CAS check at commit time and retries on conflict rather than blocking; Redis WATCH implements this for transactions.
-- Row-level locks protect individual rows and allow higher concurrency, while table-level locks protect the whole relation and reduce concurrency but also lock overhead.
-- InnoDB uses row-level locking by default, MyISAM uses table-level locking, and PostgreSQL supports row-level locks plus MVCC so ordinary reads do not block on writers.
-- Intent locks at the table level, such as IS and IX, let a table-lock request check a single table lock instead of scanning all row locks.
+- In C, malloc returns uninitialized memory, calloc zero-initializes it, and realloc may move a block; every successful allocation must eventually be freed exactly once, with only the returned realloc pointer valid.
+- A free list stores available heap blocks, and first-fit chooses the first adequate block, best-fit chooses the smallest adequate block, and worst-fit chooses the largest adequate block.
+- External fragmentation is free memory split into non-contiguous holes, causing allocation failures even when total free bytes exceed the request; internal fragmentation is wasted space inside an allocated block due to rounding or metadata.
+- Coalescing merges adjacent free blocks to create larger blocks, reducing external fragmentation; compaction moves allocated blocks to eliminate holes but requires updating all pointers and is usually only practical in managed or relocatable heaps.
+- Freeing a pointer not returned by an allocation, double-freeing, or using memory after free is undefined behavior in C; after a successful realloc, the original pointer is invalid and may not be freed or dereferenced.
 
 ## Your 60-second answer
 
-Pessimistic locking acquires a lock before touching the data, usually with something like SELECT ... FOR UPDATE, and holds it until the transaction commits or rolls back. Optimistic locking does not hold a transaction-long lock; it validates at commit time using a version number, timestamp, or compare-and-swap, and the transaction retries if another writer changed the row. Row-level locks only block other accesses to the same row, so different transactions can update different rows concurrently, while table-level locks serialize all writers on the entire table, reducing concurrency but also lock overhead. Engines differ: InnoDB and PostgreSQL use row-level write locks with MVCC for non-blocking reads, while MyISAM locks the whole table. Choose optimistic when conflicts are rare and retries are cheap; choose pessimistic when contention is high or the critical section is long.
+Dynamic memory allocation reserves space on the heap at runtime, while the stack is for automatic local variables. In C, malloc and calloc request a block, free returns it, and realloc may resize or move it. The allocator maintains a free list and picks a block using first fit, best fit, or worst fit. Because blocks are freed in any order, the heap can fragment: external fragmentation is free memory split into holes too small for a request, and internal fragmentation is wasted space inside a block. Allocators reduce this by coalescing adjacent free blocks. The core trade-off is speed versus memory efficiency: first fit is usually fast but leaves more small holes; best fit minimizes leftover but is slower. The contract is strict: every allocation must be freed exactly once, and after a successful realloc only the returned pointer is valid.
 
 ## If they dig deeper
 
-**What is the difference between a shared lock and an exclusive lock?**
+**What is the difference between stack and heap allocation?**
 
-A shared (S) lock allows other transactions to acquire shared locks on the same resource, but blocks exclusive locks. An exclusive (X) lock blocks both shared and exclusive locks by others. Some engines add an update (U) lock to prevent deadlocks when a transaction intends to upgrade a read to a write.
+The stack is a LIFO region per thread where local variables and return addresses live; allocation is just moving the stack pointer, so it is fast and freed automatically on function return. The heap is a larger shared region for objects whose size is unknown at compile time or whose lifetime extends beyond the current call; allocation requires a runtime allocator, and in C the programmer must free it manually.
 
-**When would you use optimistic locking instead of pessimistic locking?**
+**What causes external fragmentation, and how does an allocator reduce it?**
 
-Optimistic locking works well under low contention, short transactions, and applications where retrying the whole transaction is cheap, such as a user editing a form. Pessimistic locking is better when conflicts are frequent, transactions are long, or retrying is expensive, because waiting once on a lock can cost less than repeated rollbacks.
+External fragmentation arises when free memory is split into many non-contiguous holes interleaved with allocated blocks, so a large request can fail even though total free memory is sufficient. Allocators reduce it by coalescing adjacent free blocks when memory is freed, using strategies like best-fit to keep large blocks intact, and sometimes by compacting allocated blocks together—though compaction requires updating all pointers and is uncommon in unmanaged languages.
 
-**What are intent locks and why are they needed?**
+**How does realloc behave, and why can't you keep the old pointer?**
 
-Intent locks are table-level locks in modes like IS and IX that signal a transaction intends to take shared or exclusive locks on rows. A request for a table-level exclusive lock can check the table's intent locks instead of scanning all row locks, making multiple-granularity locking efficient and safe.
+realloc attempts to resize a previously allocated block, possibly in place if adjacent space is free; if not, it allocates a new block, copies the old contents, and frees the old block. After a successful realloc, the original pointer value is invalid regardless of whether the block moved or was resized in place; using or freeing it is undefined behavior and may be a double-free if the block moved. Only the returned pointer is valid and must eventually be freed once.
 
-**What is two-phase locking and how does it relate to deadlocks?**
+**Compare first fit, best fit, and worst fit allocation strategies.**
 
-Two-phase locking (2PL) requires each transaction to have a growing phase where it only acquires locks and a shrinking phase where it only releases locks. Once it releases any lock it cannot acquire new ones. This guarantees conflict serializability but can lead to deadlocks because transactions may hold some locks while waiting for others, forming a cycle.
+First fit picks the first free block large enough, which is fast but tends to leave many small holes near the beginning and may increase fragmentation. Best fit scans the whole free list and picks the smallest block that fits, wasting the least space but leaving very small unusable fragments and requiring a full scan, so it can be slower. Worst fit picks the largest block, leaving a big remainder for future requests but can quickly deplete large contiguous blocks and cause failures for large allocations. Modern allocators often use segregated size classes rather than a single linear strategy to balance speed and fragmentation.
 
-**How does MVCC interact with row-level locking in engines like PostgreSQL or InnoDB?**
+**How would you design malloc and free for a fixed-size memory pool?**
 
-MVCC keeps multiple row versions so ordinary readers see a consistent snapshot without acquiring row locks, which means writers do not block readers. Write operations still take row-level locks to resolve write conflicts, and SELECT ... FOR UPDATE or SELECT ... FOR SHARE acquires explicit row locks when the application needs current, locked data. This combination keeps reads lock-free while serializing writes on the same row.
+Preallocate a contiguous memory region and divide it into equal blocks of the requested size, maintaining a free list of unallocated blocks. Allocation pops an index or pointer from the free list in O(1), and free pushes it back, optionally using a bitmask or canary to detect double frees. Because all blocks are the same size, there is no external fragmentation and no splitting or coalescing; you need to handle thread safety and alignment. This works when the application has a bounded number of fixed-size objects, such as network buffers or connection state.
 
 ## Worked example
 
-Suppose two transactions update the same bank account row with id=1, balance=1000, version=5. Under pessimistic locking, Transaction A executes SELECT balance, version FROM accounts WHERE id=1 FOR UPDATE and gets the row lock; Transaction B tries the same select and blocks until A commits. A sets balance=900, version=6, and commits; B then reads the new version and proceeds. Under optimistic locking, both A and B read balance=1000, version=5 without any lock. A updates balance=900 and version=6 WHERE id=1 AND version=5; B then attempts balance=1100, version=6 WHERE id=1 AND version=5, but zero rows are affected because A already changed the version. B must reload the row, see version=6, reapply its business logic, and retry or report a conflict.
+Suppose a simple heap of 1 KB starts as one free block and an allocator places three calls sequentially: malloc(200), malloc(100), and malloc(150) return addresses 0, 200, and 300. The remaining free block is 574 bytes at address 450. If the program frees the 100-byte block, the free list now has a 100-byte hole at address 200 between two allocated blocks and the 574-byte tail at 450. A subsequent malloc(600) fails, even though total free memory is 674 bytes, because no contiguous free block is 600 bytes; that is external fragmentation. If the program also frees the 200-byte block, the allocator can coalesce the adjacent 200-byte and 100-byte free blocks into a 300-byte block, but the largest contiguous free block remains 574 bytes, so a 600-byte request still fails. Only after freeing the 150-byte block and coalescing everything would the allocator have a single 1024-byte block and be able to satisfy the request. This sequence shows why allocators coalesce on free and why they sometimes split larger blocks to retain usable holes.
 
 ## Common traps
 
-- Confusing row-level security (RLS) with row-level locking: RLS filters which rows a user can see, while row locks control concurrent modification.
-- Saying optimistic locking never blocks: it avoids a transaction-long lock, but the final UPDATE still takes a brief row lock under the covers.
-- Assuming SELECT ... FOR UPDATE is a table lock: in row-storage engines it locks only the selected rows, sometimes with gap locks under InnoDB repeatable read.
-- Ignoring lock escalation: SQL Server can escalate many row locks to one table lock under memory pressure, so a row-level strategy may become table-level.
+- Freeing the original pointer after a successful realloc is undefined behavior even if the block was resized in place; only the returned pointer is valid and must be freed.
+- Assigning realloc's return value directly to the original pointer without checking for NULL leaks the original block when realloc fails, because the old block remains allocated.
+- Assuming that enough total free memory guarantees malloc success is wrong: external fragmentation can cause failure when free blocks are too small and non-adjacent.
+- Reading memory returned by malloc without first writing to it yields indeterminate values, because malloc does not initialize the allocated block.
+
+</details>
+
+---
+
+## 23. SQL · output · Medium
+
+*ai · gate confidence 0.95*
+
+<sub>to object to this card: `## ai-sql` then `match: Given the tables: customers(id, name): (10, 'Ada'), (20, 'Bo`</sub>
+
+**Question**
+
+Given the tables:
+customers(id, name): (10, 'Ada'), (20, 'Bob'), (30, 'Cara')
+orders(id, customer_id, amount): (1, 10, 100), (2, 20, 50)
+
+What is the exact output of:
+```sql
+SELECT customers.name, orders.amount
+FROM customers
+LEFT JOIN orders ON customers.id = orders.customer_id
+ORDER BY customers.id;
+```
+Assume each row prints as `name amount`, with NULL shown as `NULL`.
+
+**Reference answer**
+
+Ada 100
+Bob 50
+Cara NULL
+
+**Graded on**
+
+- Ada matches order 100
+- Bob matches order 50
+- Cara has no match, so amount is NULL
+
+<details><summary>The lesson this came from</summary>
+
+SQL is a declarative language for querying and modifying data in relational databases. The core DML statements are SELECT for retrieval and INSERT, UPDATE, and DELETE for mutation. JOIN clauses combine rows from two or more tables based on a related column. Transactions control when writes become permanent and when other sessions can see them.
+
+## Why interviewers ask this
+
+Interviewers test whether you can translate a business question into set-based SQL rather than row-by-row logic. They also probe semantics that cause silent wrong results: join cardinality, NULL comparisons, inclusive ranges, and transaction isolation behavior across engines.
+
+## The core idea
+
+SQL expresses operations over sets of rows, so a query describes the result, not the algorithm. Filtering happens in WHERE, grouping in GROUP BY, and ordering in ORDER BY. Joins match rows by key values; an inner join keeps only matches, while outer joins preserve unmatched rows from one or both sides by filling missing columns with NULL. Writes such as INSERT, UPDATE, and DELETE are transactional, but visibility of uncommitted writes depends on the isolation level: READ UNCOMMITTED permits dirty reads in MySQL and SQL Server, whereas PostgreSQL treats that level as READ COMMITTED.
+
+## Key points
+
+- SELECT lists columns and WHERE filters rows; without ORDER BY, result order is not guaranteed.
+- BETWEEN is inclusive, so WHERE price BETWEEN 10 AND 100 includes both 10 and 100, while IN matches a discrete list.
+- INNER JOIN returns only rows with matching keys in both tables; LEFT, RIGHT, and FULL OUTER JOIN preserve unmatched rows from one or both sides and fill missing columns with NULL.
+- INSERT, UPDATE, and DELETE are transactional in PostgreSQL, MySQL InnoDB, and SQL Server; under READ UNCOMMITTED, MySQL and SQL Server may expose uncommitted changes as dirty reads, while PostgreSQL maps that level to READ COMMITTED.
+- NULL is unknown, so '= NULL' is never true; use IS NULL, and note that joins do not match NULL keys.
+
+## Your 60-second answer
+
+SQL is a declarative language for querying and modifying relational data. You describe the rows you want, not the access path. SELECT reads rows and can filter with WHERE, aggregate with GROUP BY, and combine tables with JOINs. An inner join keeps only rows with matching keys; left and right joins preserve unmatched rows from one side and fill the other side with NULL. BETWEEN is inclusive, so BETWEEN 10 and 100 includes both endpoints, while IN matches a discrete list. INSERT, UPDATE, and DELETE are transactional and not permanent until commit, but visibility of uncommitted writes depends on isolation level: MySQL and SQL Server allow dirty reads under READ UNCOMMITTED, while PostgreSQL treats that level as READ COMMITTED. The main trade-off is that set-based SQL requires care with duplicates, NULLs, and join cardinality to avoid silently wrong results.
+
+## If they dig deeper
+
+**What is the difference between WHERE and HAVING?**
+
+WHERE filters individual rows before grouping and aggregation. HAVING filters groups after GROUP BY, so it can reference aggregate functions like COUNT(*) or SUM(amount). A predicate on non-aggregated columns can go in either, but WHERE is usually more efficient because fewer rows reach grouping.
+
+**How do BETWEEN and IN differ, and are the endpoints in BETWEEN included?**
+
+BETWEEN is inclusive: WHERE price BETWEEN 10 AND 100 includes 10 and 100. It applies to ordered ranges such as numbers, dates, and strings. IN matches a value against a discrete list and is often used for categorical values, though it works for any type. BETWEEN is not safe for floating-point boundaries where equality is unstable.
+
+**How do NULLs behave in comparisons and joins?**
+
+NULL represents unknown, so col = NULL is never true; use IS NULL or IS NOT NULL. Aggregates skip NULL inputs except COUNT(*). In joins, NULL keys never match, so rows with NULL join keys are excluded from inner joins and appear as unmatched in outer joins.
+
+**Under which isolation levels can other sessions see uncommitted writes, and how do MySQL, PostgreSQL, and SQL Server differ?**
+
+READ UNCOMMITTED permits dirty reads: a session can see another session's uncommitted INSERT, UPDATE, or DELETE. MySQL and SQL Server implement this behavior. PostgreSQL accepts READ UNCOMMITTED syntactically but treats it as READ COMMITTED, so dirty reads do not occur. MySQL InnoDB defaults to REPEATABLE READ, while PostgreSQL defaults to READ COMMITTED.
+
+**A LEFT JOIN returns more rows than the left table. What should you check first?**
+
+Check whether the join key is unique in the right table. If multiple right-side rows share the same key, each match duplicates the left row. Also confirm you joined on the intended key and that the left table actually has duplicates. Run SELECT key, COUNT(*) FROM right_table GROUP BY key HAVING COUNT(*) > 1 to find the offending keys, then either deduplicate the right side or accept the one-to-many cardinality explicitly.
+
+## Worked example
+
+Two tables: orders(id, customer_id, amount) with rows (1, 10, 100), (2, 20, 50); customers(id, name) with (10, 'Ada'), (20, 'Bob'), (30, 'Cara'). SELECT customers.name, orders.amount FROM customers LEFT JOIN orders ON customers.id = orders.customer_id ORDER BY customers.id; returns three rows: Ada 100, Bob 50, Cara NULL. The id 10 matches the first order and id 20 matches the second; Cara has no matching order, so LEFT JOIN preserves her with NULL amount. If customers had two rows with id 10, each would match the same order and produce two rows. A filter WHERE price BETWEEN 10 AND 100 includes 10 and 100 exactly.
+
+## Common traps
+
+- Assuming SQL result order is deterministic without an ORDER BY clause.
+- Using `= NULL` instead of `IS NULL` when checking for null values.
+- Assuming a LEFT JOIN cannot increase row count when the right table has duplicate join keys.
+- Claiming uncommitted writes are never visible, without qualifying the isolation level and engine.
+
+</details>
+
+---
+
+## 24. Lambda expressions · mcq · Hard
+
+*java · gate confidence 0.95*
+
+<sub>to object to this card: `## java-lambda-expressions` then `match: A lambda is passed to an overloaded method where two overloa`</sub>
+
+**Question**
+
+A lambda is passed to an overloaded method where two overloads accept different functional interfaces, and the lambda body is compatible with both. What is the result?
+
+**Options**
+
+- The first overload is chosen
+- The most specific overload is chosen
+- The call fails to compile as ambiguous
+- The call compiles and infers a shared return type
+
+**Reference answer**
+
+The call fails to compile as ambiguous
+
+**Graded on**
+
+- Overload resolution cannot distinguish between the target types
+- Explicit cast or typed variable resolves the ambiguity
+
+<details><summary>The lesson this came from</summary>
+
+A lambda expression in Java 8 and later is a concise anonymous function that can be used wherever a functional interface (an interface with exactly one abstract method) is expected. It consists of a parameter list, the arrow token ->, and a body that is either a single expression or a statement block. The compiler infers the target functional interface type from the surrounding context, so a lambda is not a new kind of object but a shorthand implementation of that interface's single method.
+
+## Why interviewers ask this
+
+Interviewers use lambda questions to check whether you actually understand functional interfaces, target typing, and variable capture rather than just remembering syntax. They often ask you to rewrite a comparator, Runnable, or listener with a lambda, then probe how it differs from an anonymous class. The follow-ups reveal whether you can reason about scoping and type inference, not just produce code.
+
+## The core idea
+
+A lambda expression is syntax over an instance of a functional interface; it does not introduce a new function type but implements the interface's one abstract method. The compiler infers parameter types and the target type from the assignment, method argument, or cast context. A lambda body may be an expression, whose value is returned implicitly when the interface method returns a value, or a block with an explicit return. Lambdas capture effectively final local variables, while instance fields and static variables remain mutable. Unlike an anonymous inner class, this inside a lambda refers to the enclosing instance, and lambdas cannot access the functional interface's default methods through their own implicit receiver.
+
+## Key points
+
+- A Java lambda requires a functional interface: exactly one abstract method, with default, static, and Object methods not counting toward that limit.
+- Local variables captured by a lambda must be effectively final, but instance fields and static variables may be mutated.
+- The body can be a single expression (implicitly returned for a non-void method) or a block that uses an explicit return statement.
+- Lambdas differ from anonymous classes: this inside a lambda refers to the enclosing instance rather than the lambda object.
+- Parameter types can be omitted, and parentheses around a single untyped parameter can also be omitted.
+
+## Your 60-second answer
+
+A lambda expression is a concise way to implement a functional interface, which is an interface with exactly one abstract method. For example, instead of writing an anonymous Comparator class, you can write Comparator<String> byLength = (a, b) -> Integer.compare(a.length(), b.length());. The compiler treats the lambda as an instance of that interface and infers parameter types from the target context. Lambdas can capture effectively final local variables and instance fields, and unlike anonymous classes, this refers to the enclosing object, not the lambda. The main trade-off is that lambdas only work with single-method interfaces, so richer callbacks still require an anonymous or named class.
+
+## If they dig deeper
+
+**What is a functional interface, and what does @FunctionalInterface do?**
+
+A functional interface has exactly one abstract method. The @FunctionalInterface annotation is not required but causes a compile-time error if you try to add a second abstract method, similar to @Override. Default and static methods are allowed with the annotation since they are not abstract.
+
+**What variables can a lambda expression access from its surrounding scope?**
+
+A lambda can read local variables that are effectively final, meaning they are never reassigned after initialization, even if not declared final. It can also read and write instance fields and static variables. The lambda cannot call default methods of the functional interface it is implementing because it has no implicit this referring to the lambda instance.
+
+**How does this behave differently in a lambda compared to an anonymous inner class?**
+
+In an anonymous inner class, this refers to the anonymous class instance itself. In a lambda, this is lexically scoped and refers to the enclosing object where the lambda is written. As a result, a lambda cannot define its own instance fields or use this to call the functional interface's default methods.
+
+**Can a lambda that implements a void method use an expression body?**
+
+Only if the expression is a statement expression, such as a method invocation or assignment. An arbitrary non-void expression like () -> 42 is not compatible with a void functional interface because the body would not be a valid statement expression. For a block body implementing a void method, no return statement is needed.
+
+**How does target typing work when a lambda is passed to an overloaded method?**
+
+The compiler uses the parameter type of the chosen method as the target functional interface. If multiple overloads have argument types that are different functional interfaces and the lambda body is compatible with more than one of them, the call is ambiguous and fails to compile. Explicitly casting the lambda or assigning it to a typed variable resolves the ambiguity.
+
+## Worked example
+
+Consider a list of strings: List<String> names = Arrays.asList("Ada", "Bob", "Charlie");. To sort it by length, you can write Collections.sort(names, (a, b) -> Integer.compare(a.length(), b.length()));. The target type is Comparator<String>, so the compiler infers that a and b are String parameters. If you then use a stream, int minLength = 3; List<String> longNames = names.stream().filter(s -> s.length() >= minLength).collect(Collectors.toList());, the lambda inside filter captures minLength. Since minLength is never reassigned, it is effectively final, and the code compiles. After the sort, names is ordered by string length, with equal-length entries retaining their relative order because the sort algorithm is stable.
+
+## Common traps
+
+- Assuming a lambda can implement any interface; it only works with functional interfaces that have exactly one abstract method.
+- Trying to reassign a local variable captured by a lambda after the lambda is created; the variable must be effectively final.
+- Expecting this inside a lambda to refer to the lambda object itself, like it does in an anonymous inner class.
+- Using a block body without an explicit return when the functional interface method returns a non-void value.
+
+</details>
+
+---
+
+## 25. CASE expression · mcq · Hard
+
+*sql · gate confidence 0.95*
+
+<sub>to object to this card: `## sql-case-expression` then `match: Does the SQL standard guarantee that untaken CASE branches a`</sub>
+
+**Question**
+
+Does the SQL standard guarantee that untaken CASE branches are never evaluated?
+
+**Options**
+
+- Yes, all SQL engines skip untaken branches
+- No, the standard does not provide a uniform guarantee across engines
+- Yes, but only when an ELSE clause is present
+- No, but only for simple CASE
+
+**Reference answer**
+
+No, the standard does not provide a uniform guarantee across engines
+
+**Graded on**
+
+- The standard defines which branch's result is returned, not whether untaken expressions are evaluated
+- Many engines short-circuit in practice
+- Relying on short-circuiting to avoid errors is risky
+
+<details><summary>The lesson this came from</summary>
+
+SQL CASE is an expression that applies if/else logic to row values and returns a scalar result. The simple form compares one expression against a set of values for equality, while the searched form evaluates each WHEN as an independent boolean condition. It is part of the SQL standard and supported by PostgreSQL, MySQL, SQL Server, Oracle, and SQLite; SQL Server's IIF is a proprietary two-branch shorthand added in SQL Server 2012. CASE can be used anywhere a value expression is allowed, including SELECT, WHERE, ORDER BY, GROUP BY, HAVING, and UPDATE assignments.
+
+## Why interviewers ask this
+
+Interviewers test whether you treat CASE as an expression rather than imperative branching, whether you know both forms and can choose the right one, and whether you can combine it with aggregation to reshape data, such as pivoting rows to columns. Follow-up questions usually probe NULL behavior, ordering of overlapping WHEN branches, and compatibility of result types.
+
+## The core idea
+
+CASE attaches a conditional computation to each row and produces a value, so it fits inside a SQL query wherever a column expression fits. The searched form is the general mechanism: it walks WHEN predicates in written order and returns the THEN value for the first predicate that is true. The simple form is syntactic sugar for comparing one input to each candidate with equality. This makes CASE the standard tool for derived categories, custom sort orders, conditional filtering, and especially conditional aggregation, where an aggregate function only counts or sums rows that satisfy the CASE condition. The key mental model is first true branch wins; if none win and there is no ELSE, the result is NULL.
+
+## Key points
+
+- CASE is a scalar expression, not a control-flow statement, so it returns one value per row and can appear wherever expressions are allowed.
+- Simple CASE compares one expression to values using equality; searched CASE evaluates independent boolean conditions in order and returns the first true branch.
+- WHEN clauses are evaluated in written order, so overlapping conditions must be ordered most specific first.
+- If no WHEN matches and no ELSE is present, CASE returns NULL.
+- CASE enables conditional aggregation such as SUM(CASE WHEN ... THEN 1 ELSE 0 END) and row-to-column pivoting with MAX(CASE WHEN ... END) plus GROUP BY.
+
+## Your 60-second answer
+
+CASE is SQL's conditional expression: it evaluates conditions row by row and returns a value, which is why you can use it in SELECT, WHERE, ORDER BY, and inside aggregates. There are two forms. Simple CASE compares one expression against a list of values using equality. Searched CASE evaluates each WHEN as a separate boolean condition and returns the first matching THEN. If no condition matches and there's no ELSE, the result is NULL. A common use is conditional aggregation, like SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) to count only active rows. The main trade-off is readability versus performance: CASE is very flexible for derived columns and pivoting, but putting complex CASE logic in many queries can make them harder to maintain, and the database still evaluates the expression per row.
+
+## If they dig deeper
+
+**What is the difference between simple and searched CASE?**
+
+Simple CASE compares one expression to a set of values using equality. Searched CASE treats each WHEN as an independent boolean predicate, so it can use ranges, inequalities, AND/OR, and IS NULL. Simple CASE is essentially shorthand for repeated equality comparisons.
+
+**What happens when no WHEN matches and there is no ELSE?**
+
+The CASE expression returns NULL. That is a common source of unexpected results in averages or comparisons; if you need a fallback, add an explicit ELSE.
+
+**How do you use CASE to pivot rows into columns without PIVOT?**
+
+Group by the row key and wrap an aggregate around a CASE expression. For example, SELECT StudentName, MAX(CASE WHEN Subject = 'Math' THEN Score END) AS Math ... GROUP BY StudentName. The CASE returns the value for the target column and NULL otherwise; MAX or SUM collapses the grouped rows into one row.
+
+**How does simple CASE interact with NULL?**
+
+Simple CASE uses equality comparison, and NULL = anything is unknown, not true. So a WHEN NULL branch will not match a NULL input; use searched CASE with IS NULL or handle NULL with COALESCE first.
+
+**Does SQL guarantee short-circuit evaluation of CASE branches?**
+
+The SQL standard defines which branch's result is returned based on the first true condition, but it does not provide a uniform guarantee across engines that untaken expressions are never evaluated. Many engines short-circuit in practice, but relying on it to avoid division by zero or other errors in untaken branches is risky; restructure the expression to be safe instead.
+
+## Worked example
+
+Given a table orders(order_id, status, amount), conditional aggregation can produce one summary row with counts and totals per status. The query SELECT SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count, SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) AS refunded_total FROM orders; evaluates each row. If the table contains (1, 'paid', 50), (2, 'refunded', 20), and (3, 'paid', 30), the first CASE adds 1 to paid_count for rows 1 and 3, while the second CASE adds amount only for row 2. The final result is paid_count = 2 and refunded_total = 20.
+
+## Common traps
+
+- Treating CASE as a procedural if statement rather than an expression that must return a value for each row.
+- Forgetting that no ELSE means NULL, which can silently propagate through aggregates or comparisons.
+- Using simple CASE for range or inequality conditions; simple CASE only performs equality comparisons.
+- Relying on short-circuit evaluation to prevent errors like division by zero in untaken branches.
 
 </details>
 
@@ -2075,69 +2137,162 @@ Suppose two transactions update the same bank account row with id=1, balance=100
 
 Judge whether it was right. Each was thrown away.
 
-- **ai-generative-model-evaluation** (flash): Which retrieval metrics are commonly used to evaluate the fetching step in RAG systems?
-  - Gate said: wrong_format: Flash cards require a single crisp sentence, but this asks for an open-ended enumeration of metrics.
+- **beh-teamwork** (flash): In behavioral interviews, what does the STAR acronym stand for?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): Why do interviewers ask teamwork questions instead of only focusing on individual technical skill?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (flash): What is psychological safety in a team?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): A candidate describes a project almost entirely with 'we did this' and 'we delivered that.' Why does this weaken their teamwork answer?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (mcq): Which of the following is the strongest way to describe handling a disagreement with a teammate?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): How should you handle a teammate who is not pulling their weight?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): Why is real collaboration slower in the short term but faster over the life of a project?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): What should a good story show when you sacrificed your own preferred approach for the team?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (typed): A candidate says: 'We launched the feature; we worked weekends; we resolved the bugs.' What is missing from this teamwork story, and how should they fix it?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **beh-teamwork** (mcq): In a teamwork story, which of the following is a more credible behavioral signal than a broad claim about communication skills?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **java-equals-and-hashcode-contract** (typed): What rules must an equals implementation itself obey?
+  - Gate said: wrong_format: The honest answer is an enumeration of five specific contract properties (reflexive, symmetric, transitive, consistent, non-nullity).
+
+- **java-heap-vs-stack** (flash): What exactly is stored in a Java stack frame?
+  - Gate said: wrong_format: The complete contents of a Java stack frame require listing multiple components (local variables, operand stack, frame data/reference to runtime constant pool), which does not fit a single crisp sentence.
+
+- **lld-atm-system-design** (flash): During a normal ATM session, at what points is the customer's card returned or released by the machine?
+  - Gate said: wrong_format: Listing multiple points during a session requires an enumeration rather than one crisp flashcard sentence.
+
+- **lld-restaurant-management-system-design** (flash): In an object-oriented restaurant management system, a Branch object is composed of which two main domain components?
+  - Gate said: not answerable: Points to a specific proprietary or textbook design class model without standard universal domain components.
+
+- **sd-indexes** (flash): What is the default index structure in most relational engines, and why is it broadly useful?
+  - Gate said: wrong_format: Answering both what the default structure is and explaining why it is broadly useful cannot be done in a single crisp sentence.
+
+- **simulation** (flash): What is the simulation pattern in DSA?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): Why do interviewers use simulation problems to screen candidates?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): Why is mutating a Game of Life board in place while scanning incorrect?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): How do you implement gravity in a Candy Crush-style board simulation after cells are removed?
+  - Gate said: its lesson was written without a source and has been held back
+
+- **simulation** (typed): What is the worst-case time complexity of a naive Candy Crush simulation that rescans the whole board after each removal round, and why?
+  - Gate said: its lesson was written without a source and has been held back
+
+## Cards the gate caught and the rewrite fixed
+
+These are the questions as first written. The gate objected, a rewrite pass replaced each one, and the replacement passed - so these are not in the app. They are here because the gate is on trial too: if its objections below look wrong, it is throwing away good work, and if they look right, it is earning its cost.
+
+- **ai-data-structures-and-algorithms** (flash): Why does a binary heap retrieve the minimum or maximum in O(1), while inserting or extracting that element takes O(log n)?
+  - Gate said: wrong_format: Answering both parts fully requires more than a single crisp sentence.
+
+- **ai-data-structures-and-algorithms** (flash): What is the expected time complexity of hash map get and put operations, and what assumptions are needed for that bound?
+  - Gate said: wrong_format: Explaining both the expected complexity and the underlying assumptions takes more than one crisp sentence.
+
+- **ai-embedding-models** (flash): Which similarity measures are typically used to compare embedding vectors?
+  - Gate said: wrong_format: Asking for multiple similarity measures typically requires a list rather than a single crisp sentence.
+
+- **ai-metrics-offline-and-online** (flash): Which offline metrics are more informative than accuracy for imbalanced classification?
+  - Gate said: wrong_format: Asking to list multiple metrics is unconstrained and fits poorly into a one-sentence flash card.
+
+- **ai-prediction-service** (mcq): Which technique does NOT reduce inference compute for an existing model?
+  - Gate said: not answerable: All listed techniques (quantization, pruning, operator fusion, knowledge distillation) can reduce inference compute for a model.
 
 - **ai-probability-and-statistics** (flash): State the three axioms that any probability measure must satisfy.
-  - Gate said: wrong_format: Listing all three Kolmogorov axioms cannot be crisply answered in one flash sentence.
+  - Gate said: wrong_format: Stating three distinct mathematical axioms cannot fit into a single crisp sentence.
 
 - **ai-python** (mcq): Python's list and tuple are ordered sequences, while dict and set are hash-based containers. Which pair of properties primarily explains why a tuple can be a dictionary key but a list cannot, and why dict/set membership is average O(1) while list membership is O(n)?
-  - Gate said: ambiguous: The question asks for a pair of properties explaining both traits, but the options conflate immutability/hashability and underlying data structures, making multiple options partially correct or debatable.
+  - Gate said: a competent answer disagrees with the marked option
 
-- **ai-software-engineering** (flash): When structuring an ML training codebase, what is the recommended core discipline for separating testable logic from orchestration?
-  - Gate said: ambiguous: There is no single universally standardized phrase or pattern for this discipline, making an exact one-sentence flashcard answer overly ambiguous.
+- **ai-recommendation-systems** (typed): How would you design a video recommendation system?
+  - Gate said: wrong_format: An end-to-end system design question cannot be answered in 1-3 sentences.
+
+- **ai-sql** (flash): What are the core DML statements in SQL for retrieving and modifying data?
+  - Gate said: wrong_format: Asking for an enumeration of multiple core DML statements does not fit a single-sentence flash card format.
 
 - **ai-training-and-optimization** (flash): Name two alternative update rules beyond vanilla gradient descent that alter how the raw gradient is applied.
-  - Gate said: wrong_format: Flash cards should not ask to enumerate multiple items.
-
-- **arrays-hashing** (flash): What is the main transformation that replaces an O(n^2) nested array scan with an O(n) solution?
-  - Gate said: ambiguous: There is no single 'main transformation' that reduces O(n^2) nested scans to O(n) (e.g., hash lookups, two pointers, prefix sums).
-
-- **arrays-hashing** (output): What is the exact output of the following code?
-```python
-def two_sum(nums, target):
-    seen = {}
-    for i, v in enumerate(nums):
-        if target - v in seen:
-            return [seen[target - v], i]
-        seen[v] = i
-
-print(two_sum([2, 7, 11, 15], 9))
-```
-  - Gate said: wrong_format: Format 'output' is not one of the allowed card formats (flash, typed, mcq).
+  - Gate said: not answerable: The question asks to name any two alternatives out of many possibilities, making grading unpredictable.
 
 - **beh-company-and-motivation** (mcq): In a behavioral interview, which impact signal is most appropriate for a senior engineer describing a proudest project?
   - Gate said: a competent answer disagrees with the marked option
 
-- **beh-delivering-results** (typed): In the middle of a delivery, a load test fails or a deadline slips. What is the strongest response, and how do you decide among cutting scope, adding resources, or moving the date?
-  - Gate said: wrong_format: This two-part, multi-faceted scenario question requires a detailed multi-paragraph response exceeding the typed format limits.
+- **beh-dealing-with-ambiguity** (typed): What is the core idea behind reducing ambiguity on a task?
+  - Gate said: a human reviewer objected: What is the core idea behind reducing ambiguity on a task?
 
-- **beh-failure-and-learning** (typed): What pattern can signal that you are about to repeat a past mistake?
-  - Gate said: ambiguous: The question is overly vague and open-ended without a clear target concept.
+- **beh-dealing-with-ambiguity** (mcq): At the senior level, an ambiguous project story should typically involve leading work across what scope of people?
+  - Gate said: a human reviewer objected: At the senior level, an ambiguous project story should typically involve leading
+
+- **beh-delivering-results** (typed): In the middle of a delivery, a load test fails or a deadline slips. What is the strongest response, and how do you decide among cutting scope, adding resources, or moving the date?
+  - Gate said: wrong_format: The compound question requires multiple detailed considerations that cannot be adequately answered in one to three sentences.
 
 - **beh-failure-and-learning** (flash): What four elements make a complete failure answer?
-  - Gate said: wrong_format: Asking to list four specific elements requires an exact framework the candidate cannot guess.
+  - Gate said: not answerable: Asking to list four specific elements refers to a specific unseen framework and does not fit a one-sentence flash format.
+
+- **beh-failure-and-learning** (typed): What pattern can signal that you are about to repeat a past mistake?
+  - Gate said: not answerable: The question is too vague and likely refers to a specific framework or heuristic from the source material that cannot be deduced.
 
 - **beh-growth-mindset** (flash): When answering a behavioral interview question about growth mindset, what four elements should the story include to demonstrate that the change stuck?
-  - Gate said: wrong_format: Flash cards expect one crisp sentence, but this asks to enumerate four specific elements from a specific framework.
+  - Gate said: not answerable: Asking for an exact list of four specific elements from an unseen framework cannot be answered or graded reliably in a one-sentence flash format.
 
 - **beh-handling-feedback** (flash): When receiving feedback as a software engineer, what sequence of steps helps you handle it effectively?
-  - Gate said: wrong_format: Describing a full sequence of steps requires multiple sentences or a paragraph, exceeding flash format constraints.
+  - Gate said: wrong_format: Describing a sequence of steps requires multiple sentences or a multi-part explanation that exceeds a single crisp flash sentence.
+
+- **beh-leadership** (flash): In behavioral interviews, what does leadership mean independent of formal authority?
+  - Gate said: a human reviewer objected: In behavioral interviews, what does leadership mean independent of formal author
+
+- **beh-leadership** (mcq): Which set of behaviors best describes effective leadership during a high-pressure crisis or significant disruption?
+  - Gate said: a human reviewer objected: Which set of behaviors best describes effective leadership during a high-pressur
+
+- **beh-leadership** (flash): What is the real measure of thought leadership in an interview answer?
+  - Gate said: not answerable: The question is too vague and subjective with no single standard definition of the 'real measure' of thought leadership.
+
+- **beh-leadership** (flash): What common senior failure makes a candidate sound like an executor instead of a leader?
+  - Gate said: not answerable: The question points to a specific unspecified failure mode from a curriculum rather than a universally unique answer.
 
 - **beh-leadership** (mcq): A senior candidate is preparing a behavioral story about leadership. Which set of dimensions should the story cover to avoid sounding like a single-dimensional executor?
-  - Gate said: ambiguous: Both option 1 and option 4 are valid frameworks for holistic leadership, making the correct choice subjective and ambiguous without a specific source framework.
+  - Gate said: not answerable: Multiple option lists are arbitrary frameworks that could defensibly be considered valid dimensions of leadership without an external syllabus.
 
 - **beh-ownership** (mcq): In behavioral interviews, ownership stories often scale with seniority: junior changes affect the candidate's own focus area, senior changes require coordinating several people (often three or more) on a team, and staff changes require multiple teams across the organization. According to this framework, which story best demonstrates senior-level ownership?
   - Gate said: refers to unseen material: 'According to this'
 
-- **beh-ownership** (mcq): Which preparation technique is specifically recommended for finding weak spots in ownership stories before an interview?
-  - Gate said: needs_context: Refers to a 'specifically recommended' technique from source text without general consensus.
-
-- **beh-star-method** (flash): What is the main trade-off of using STAR in a behavioral interview?
-  - Gate said: ambiguous: STAR is a framework without a standard, universally agreed upon 'main trade-off'.
-
 - **beh-story-craft** (mcq): Which opening best separates team context from your personal contribution in a behavioral story?
   - Gate said: a competent answer disagrees with the marked option
+
+- **beh-story-craft** (typed): What is defensive framing in story craft, and why is it useful?
+  - Gate said: not answerable: 'Defensive framing' is specialized jargon specific to an unseen source text rather than standard interview prep terminology.
+
+- **cs-file-systems** (flash): What is a hard link, and why can it not cross filesystems?
+  - Gate said: wrong_format: Answering both what a hard link is and why it cannot cross filesystems requires more than one crisp sentence.
+
+- **cs-locking-mechanisms** (mcq): Which storage engine uses table-level locking by default?
+  - Gate said: a human reviewer objected: Which storage engine uses table-level locking by default?
+
+- **cs-locking-mechanisms** (typed): What are intent locks and why are they needed?
+  - Gate said: a human reviewer objected: What are intent locks and why are they needed?
+
+- **cs-osi-model** (flash): Name the seven OSI layers from bottom to top.
+  - Gate said: wrong_format: Enumerating a seven-item ordered list does not fit a single-sentence flash card format.
+
+- **cs-transaction-isolation-levels** (flash): List the four SQL standard transaction isolation levels from weakest to strongest.
+  - Gate said: wrong_format: Asking to list multiple items does not fit the one-sentence flash format.
 
 - **java-checked-vs-unchecked-exceptions** (output): Consider this Java method:
 
@@ -2149,28 +2304,278 @@ String firstLine() {
 ```
 
 What does javac report when compiling it?
-  - Gate said: wrong_format: Compiler error messages vary by JDK version and cannot be graded via exact match in output format.
+  - Gate said: wrong_format: The exact compiler error message has multiple variations/lines and cannot be graded via exact string match.
 
 - **java-collections-framework** (flash): In the Java Collections Framework, which interfaces extend Collection, and where does Map fit?
-  - Gate said: wrong_format: Asking to list which interfaces extend Collection requires enumeration and is too long for a crisp one-sentence flashcard.
+  - Gate said: wrong_format: Answering all interfaces extending Collection plus Map's position cannot be crisply answered in a single sentence.
 
-- **java-equals-and-hashcode-contract** (typed): How should equals and hashCode be implemented for a value class with several fields?
-  - Gate said: ambiguous: The question is too broad and open-ended about general implementation guidance.
+- **java-collections-framework** (flash): How does PriorityQueue order its elements, and what are its add and poll costs?
+  - Gate said: wrong_format: Asking for ordering mechanism plus multiple asymptotic complexities exceeds a single crisp flashcard sentence.
 
-- **java-equals-and-hashcode-contract** (typed): What rules must an equals implementation itself obey?
-  - Gate said: wrong_format: Answering requires enumerating the five specific contract properties (reflexive, symmetric, transitive, consistent, non-null).
+- **java-collections-framework** (flash): What iteration order guarantees do HashSet, LinkedHashSet, and TreeSet provide?
+  - Gate said: wrong_format: Explaining the order guarantees for three distinct set implementations exceeds a single crisp sentence.
 
-- **lld-restaurant-management-system-design** (flash): In an object-oriented restaurant management system, a Branch object is composed of which two main domain components?
-  - Gate said: ambiguous: Arbitrary schema design: different object-oriented designs decompose a Branch differently (e.g., Kitchen, Tables, Menu).
+- **java-equals-and-hashcode-contract** (mcq): Which statement about equal objects and hash collisions is correct?
+  - Gate said: a human reviewer objected: Which statement about equal objects and hash collisions is correct?
+
+- **java-generics** (flash): After erasure, what methods exist in a class that implements `Comparable<String>`?
+  - Gate said: not answerable: The class may declare arbitrary other methods, and describing bridge methods exceeds a single crisp sentence.
+
+- **java-hashmap-internals** (mcq): During a get, what identifies the intended key inside a bucket?
+  - Gate said: a human reviewer objected: During a get, what identifies the intended key inside a bucket?
+
+- **java-hashset-vs-treeset** (output): What is printed when the following Java code runs?
+TreeSet<Integer> ts = new TreeSet<>();
+ts.add(3);
+ts.add(1);
+ts.add(2);
+System.out.println(ts);
+  - Gate said: malformed: an output card must show the snippet it is asking about
+
+- **java-heap-vs-stack** (mcq): Which JVM flag mainly controls the size of a thread's stack?
+  - Gate said: wrong_format: The options list descriptions rather than actual JVM flags, making the question poorly formed.
+
+- **java-streams-api** (output): What is the output of the following code?
+
+```java
+Stream.of(1, 2, 3, 4, 5)
+    .filter(n -> n % 2 == 0)
+    .map(n -> n * n)
+    .collect(Collectors.toList())
+```
+  - Gate said: not answerable: The snippet evaluates an expression rather than printing anything, so there is no standard output.
+
+- **java-strings** (output): What is the exact output of this Java code?
+
+String s = "hello";
+s.toUpperCase();
+System.out.println(s);
+  - Gate said: malformed: an output card must show the snippet it is asking about
+
+- **lld-atm-system-design** (flash): What is the main trade-off of debit-first versus authorize-then-settle in ATM withdrawal?
+  - Gate said: wrong_format: Explaining the trade-off between two transaction flow paradigms requires more than a single crisp sentence.
+
+- **lld-elevator-system-design** (mcq): Which set of states correctly models an elevator car as a finite state machine in an object-oriented elevator control system?
+  - Gate said: not answerable: There is no single universally correct state modeling; multiple state decompositions (such as combining moving with direction or separating them) are defensible.
+
+- **lld-interfaces** (flash): What is a traditional interface not allowed to define in Java or C#?
+  - Gate said: not answerable: Too open-ended and ambiguous with multiple valid answers (instance state/fields, method implementations, constructors, etc.).
+
+- **lld-parking-lot-design** (flash): What are the typical parking spot types modeled in a parking garage?
+  - Gate said: wrong_format: Enumerating a list of spot types does not fit a single-sentence flash card.
+
+- **lld-ride-sharing-service-design** (typed): What happens in the dispatch flow when a driver does not accept an offer before the timeout expires?
+  - Gate said: a human reviewer objected: What happens in the dispatch flow when a driver does not accept an offer before 
+
+- **lld-ride-sharing-service-design** (flash): Why should driver availability be a separate state rather than being derived only from trip status?
+  - Gate said: a human reviewer objected: Why should driver availability be a separate state rather than being derived onl
+
+- **lld-uml-sequence-diagram** (flash): What is a UML sequence diagram, and what do the vertical and horizontal axes represent?
+  - Gate said: wrong_format: Asking for definition plus both axes typically requires multiple sentences or clauses beyond a single crisp sentence.
+
+- **prefix-sum** (typed): Using a prefix-sum map initialized with {0: -1}, find the length of the longest zero-sum subarray in [2, -1, -1, 3, -3].
+  - Gate said: wrong_format: The question asks for a single numeric result or calculation rather than free prose explanation.
 
 - **sd-caching** (mcq): In the worked example, a product page is fetched 5,000 times per second and the database sustains 800 reads per second. After the Redis cache is warm with a 30-second TTL, how many database reads per second does that single product key cause?
-  - Gate said: needs_context: Refers to a specific "worked example" that the candidate cannot see.
+  - Gate said: not answerable: References an unseen 'worked example'.
+
+- **sd-consistent-hashing** (typed): Why are virtual nodes added to a consistent hash ring?
+  - Gate said: a human reviewer objected: Why are virtual nodes added to a consistent hash ring?
+
+- **sd-consistent-hashing** (typed): How is replication placed on a consistent hash ring?
+  - Gate said: a human reviewer objected: How is replication placed on a consistent hash ring?
+
+- **sd-design-a-chat-system** (typed): In a real-time chat system, what are the two primary subsystems of the architecture, and why are they separated?
+  - Gate said: not answerable: Asking for 'the two primary subsystems' without context expects specific terminology from an unseen text.
+
+- **sd-design-a-notification-system** (typed): When would you use a persistent WebSocket connection for in-app notifications instead of APNS/FCM push?
+  - Gate said: a human reviewer objected: When would you use a persistent WebSocket connection for in-app notifications in
+
+- **sd-design-a-notification-system** (typed): How do you handle machine failures in a notification worker system?
+  - Gate said: a human reviewer objected: How do you handle machine failures in a notification worker system?
+
+- **sd-design-case-studies** (flash): What mechanism is appropriate for counting current active page viewers?
+  - Gate said: not answerable: There are many valid mechanisms (Redis HyperLogLog, sliding window bucket counters, sorted sets) with no single correct answer.
+
+- **sd-design-case-studies** (mcq): How should you shard an idempotency store so that uniqueness checks on idempotency keys are local?
+  - Gate said: a competent answer disagrees with the marked option
+
+- **sd-design-case-studies** (typed): Two concurrent requests with the same Idempotency-Key and merchant_id arrive at the payment API. What ensures only one provider call is made?
+  - Gate said: a human reviewer objected: Two concurrent requests with the same Idempotency-Key and merchant_id arrive at 
+
+- **sd-design-case-studies** (typed): How do you mark a payment as completed and prevent a duplicate webhook from double-applying the update?
+  - Gate said: a human reviewer objected: How do you mark a payment as completed and prevent a duplicate webhook from doub
+
+- **sd-jwt** (typed): When a server verifies a JWT, what should it check?
+  - Gate said: a human reviewer objected: When a server verifies a JWT, what should it check?
+
+- **sd-jwt** (mcq): Where should a JWT be stored to prevent JavaScript on the page from reading it?
+  - Gate said: a human reviewer objected: Where should a JWT be stored to prevent JavaScript on the page from reading it?
+
+- **sd-microservices** (typed): How should a ranking and personalization component be integrated into a microservices system?
+  - Gate said: not answerable: The question is too vague and lacks system context, allowing for dozens of mutually distinct correct integration patterns.
+
+- **sd-object-storage** (flash): Name the three major managed object storage services.
+  - Gate said: wrong_format: Flash cards require a single crisp sentence, not a list of named entities which is open to varying company selections.
+
+- **sd-object-storage** (mcq): In Amazon S3 multipart upload, what is the minimum part size for every part except the last one?
+  - Gate said: wrong_format: AWS documentation defines the minimum part size as 5 MB, making both '5 MiB' and '5 MB' ambiguously close or technically disputable.
+
+- **sd-rate-limiting** (flash): What HTTP status and response headers should a rate limiter use when a caller exceeds its limit?
+  - Gate said: wrong_format: Asking for the HTTP status and multiple response headers requires listing items rather than a single crisp sentence.
+
+- **sd-rest-api** (flash): Which HTTP methods are idempotent in REST, and which one is not?
+  - Gate said: wrong_format: Enumerating multiple idempotent and non-idempotent HTTP methods exceeds a single crisp sentence.
 
 - **sd-service-discovery** (flash): Name common service registry implementations used for service discovery.
-  - Gate said: wrong_format: Asking to name/enumerate examples is an open list poorly suited to a one-sentence flash card.
+  - Gate said: not answerable: Asking to list multiple implementations is an open-ended enumeration poorly suited for a single-sentence flash card.
+
+- **sd-sql-vs-nosql** (flash): What are the four common NoSQL database models?
+  - Gate said: wrong_format: The answer requires enumerating four distinct items rather than a single crisp sentence.
+
+- **sd-unique-id-generation** (flash): What is the classic Twitter Snowflake 64-bit ID layout?
+  - Gate said: wrong_format: Listing the exact bit allocation across four fields requires a structured or multi-part answer that does not fit a single crisp flash sentence.
+
+- **sql-aggregate-functions** (mcq): In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table employees has id INTEGER PRIMARY KEY, dept_id INTEGER, name TEXT. Which query is valid?
+  - Gate said: a human reviewer objected: In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table employees has id INTEGER 
 
 - **sql-aggregate-functions** (typed): What are two important consequences of using SQL aggregate functions for reporting?
-  - Gate said: ambiguous: Asking for 'two important consequences' without context is highly open to interpretation and could refer to NULL handling, performance, loss of row detail, grouping rules, etc.
+  - Gate said: not answerable: The question is completely unconstrained and asks for an arbitrary list of two consequences.
+
+- **sql-aggregate-functions** (typed): Given a sales table with rows ('North', 100), ('North', NULL), ('South', 50), ('South', 150), what rows and column values are returned by this query?
+```sql
+SELECT region, COUNT(*), COUNT(amount), SUM(amount), AVG(amount)
+FROM sales
+GROUP BY region
+ORDER BY region;
+```
+  - Gate said: wrong_format: Asking for exact multi-column tabular result sets does not fit prose typed grading.
+
+- **sql-case-expression** (output): Given the table and query below, what is the exact output?
+```sql
+CREATE TABLE orders(order_id INT, status TEXT, amount INT);
+INSERT INTO orders VALUES (1, 'paid', 50), (2, 'refunded', 20), (3, 'paid', 30);
+
+SELECT
+  SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count,
+  SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) AS refunded_total
+FROM orders;
+```
+  - Gate said: not gradable: SQL tabular output has no single obvious string representation or delimiter format.
+
+- **sql-char-vs-varchar** (flash): What does VARCHAR(n) store compared with CHAR(n)?
+  - Gate said: a human reviewer objected: What does VARCHAR(n) store compared with CHAR(n)?
+
+- **sql-constraints** (mcq): Which of the following is a separate column requirement often grouped with SQL constraints, rather than one of the common declarative constraints?
+  - Gate said: not answerable: NOT NULL is standardly defined as a declarative constraint in SQL, making the question ambiguous and poorly defined.
+
+- **sql-constraints** (typed): What happens when you delete or update a parent row referenced by a foreign key, and which referential actions can you declare?
+  - Gate said: wrong_format: Asking to list which referential actions can be declared requires an open-ended enumeration.
+
+- **sql-constraints** (typed): What is the difference between a PRIMARY KEY and a FOREIGN KEY?
+  - Gate said: a human reviewer objected: What is the difference between a PRIMARY KEY and a FOREIGN KEY?
+
+- **sql-ddl-dml-dcl-tcl** (mcq): In SQL Server, after ROLLBACK TRANSACTION savepoint_name, what is the state of the outer transaction?
+  - Gate said: a human reviewer objected: In SQL Server, after ROLLBACK TRANSACTION savepoint_name, what is the state of t
+
+- **sql-ddl-dml-dcl-tcl** (flash): In SQL, which command family includes CREATE, ALTER, DROP, and TRUNCATE?
+  - Gate said: a human reviewer objected: In SQL, which command family includes CREATE, ALTER, DROP, and TRUNCATE?
+
+- **sql-group-by-and-having** (output): What is the exact output of this SQL query (do not include a row-count footer)?
+```sql
+CREATE TABLE t (team TEXT, salary INT);
+INSERT INTO t VALUES ('red', 100), ('red', 200), ('blue', 50);
+SELECT team FROM t GROUP BY team HAVING COUNT(*) > 1 ORDER BY team;
+```
+  - Gate said: not gradable: SQL query output lacks a standardized plain-text format across clients and engines (e.g. headers, delimiters).
+
+- **sql-inner-vs-outer-join** (typed): What is a practical trade-off of using `LEFT JOIN` instead of `INNER JOIN` when you need all customers?
+  - Gate said: not answerable: If you need all customers, an INNER JOIN does not satisfy the requirement, making the trade-off premise confusing or undefined.
+
+- **sql-inner-vs-outer-join** (output): What is the exact output of this SQL query? Rows are shown as tab-separated values, ordered by `d.dept_name`.
+
+```sql
+WITH employees AS (
+  SELECT 1 AS id, 'Alice' AS name, 10 AS dept_id
+  UNION ALL SELECT 2, 'Bob', NULL
+  UNION ALL SELECT 3, 'Carol', 20
+),
+departments AS (
+  SELECT 10 AS id, 'HR' AS dept_name
+  UNION ALL SELECT 20, 'Finance'
+  UNION ALL SELECT 30, 'Legal'
+)
+SELECT e.name, d.dept_name
+FROM employees e
+RIGHT JOIN departments d ON e.dept_id = d.id
+ORDER BY d.dept_name;
+```
+  - Gate said: not gradable: Exact representation of NULL in tabular output varies (e.g. NULL vs empty string vs None).
+
+- **sql-null-handling** (output): What is the output of the following query?
+
+Assume `employees` contains:
+- Alice: phone = NULL, bonus = NULL
+- Bob: phone = '555-0100', bonus = 100
+- Carol: phone = '555-0101', bonus = 200
+
+```sql
+SELECT COUNT(*), COUNT(phone), AVG(bonus)
+FROM employees;
+```
+  - Gate said: wrong_format: SQL query results have no standard textual formatting for column delimiters or tabular representation to allow exact-match grading.
+
+- **sql-recursive-ctes** (output): What is the exact output of this query?
+
+```sql
+WITH Numbers(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM Numbers WHERE n < 3
+)
+SELECT * FROM Numbers;
+```
+  - Gate said: not gradable: Tabular SQL query results lack a standard single text representation for exact-match grading.
+
+- **sql-recursive-ctes** (flash): What are the three structural parts of a recursive CTE?
+  - Gate said: wrong_format: Asking for three structural parts requires enumerating multiple components rather than a single crisp statement.
+
+- **sql-row-number-rank-dense-rank** (typed): What happens if you use RANK() or DENSE_RANK() with an empty OVER clause, and is that allowed on all engines?
+  - Gate said: not answerable: Engine-specific support for RANK() without an ORDER BY clause varies and is ambiguous without a specified SQL dialect or standard reference.
+
+- **sql-running-totals-and-moving-averages** (flash): Write the window expression for a running total over rows ordered by sale_date.
+  - Gate said: not answerable: The column to sum is unspecified, and there are multiple valid syntax variations for the window specification.
+
+- **sql-subqueries** (output): What is the exact output of this query?
+
+```sql
+CREATE TABLE employees(id INT, name TEXT, dept_id INT, salary INT);
+INSERT INTO employees VALUES
+  (1, 'Alice', 10, 100),
+  (2, 'Bob', 10, 150),
+  (3, 'Chloe', 20, 120);
+
+SELECT name
+FROM employees e
+WHERE salary > (SELECT AVG(salary)
+                FROM employees d
+                WHERE d.dept_id = e.dept_id);
+```
+  - Gate said: not gradable: SQL output formatting (header, borders, row delimiters) lacks a single standard plain-text representation for exact match.
+
+- **sql-union-vs-union-all** (output): Given:
+- orders_a rows: (1, 'East'), (2, 'West'), (2, 'West')
+- orders_b rows: (2, 'West'), (3, 'North')
+
+What is the output of this query?
+
+```sql
+SELECT order_id, region FROM orders_a
+UNION
+SELECT order_id, region FROM orders_b
+ORDER BY order_id;
+```
+  - Gate said: not gradable: SQL tabular output lacks a single standardized plain-text format for exact matching.
 
 - **sql-window-functions** (output): What is the output of the following SQL? Assume the employees table contains rows (name, salary): ('Ann', 80), ('Bob', 70), ('Cal', 70).
 
@@ -2179,4 +2584,4 @@ SELECT name, RANK() OVER (ORDER BY salary DESC) AS rnk
 FROM employees
 ORDER BY rnk, name;
 ```
-  - Gate said: ambiguous: The exact textual format expected for the SQL result set (e.g., delimiters, headers) is unspecified for an exact-match output card.
+  - Gate said: wrong_format: SQL tabular output has no single obvious text formatting or delimiter for exact-match grading.

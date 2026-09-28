@@ -1,8 +1,8 @@
 # Topics roadmap.sh has that 90x does not
 
-**119 worth reading.** Of 1934 candidates, 1057 are gaps 90x genuinely does not cover, and 119 of those scored 0.7 or higher for "a real SDE loop will go here". The other 938 are gaps the sorter itself rated unlikely to come up; they are below the line.
+**94 worth reading.** Of 1931 candidates, 962 are gaps 90x genuinely does not cover, and 94 of those scored 0.7 or higher for "a real SDE loop will go here". The other 868 are gaps the sorter itself rated unlikely to come up; they are below the line.
 
-428 candidates were already covered under another name and 447 were headings rather than topics; 2 were the same topic listed twice.
+478 candidates were already covered under another name and 422 were headings rather than topics; 69 were the same topic listed twice.
 
 **Deleting a line is the whole review.** Anything you keep gets a lesson written for it, at roughly $0.04 each - and 90x is 274 curated topics, which is the thing worth protecting. The score is a suggestion, not a decision.
 
@@ -10,25 +10,25 @@
 
 ### ai
 
-- **Prompt Injection Attacks** (0.8) - Specific LLM security vulnerability commonly discussed in interviews.
 - **RAG vs Fine-tuning** (0.8) - Commonly asked when deciding how to add knowledge to an LLM system.
 - **Chain rule of derivation** (0.8) - Core calculus needed for backpropagation; often assessed.
 - **Derivatives, Partial Derivatives** (0.8) - Calculus foundations are frequently tested in ML engineering interviews.
 - **Matrix & Matrix Operations** (0.8) - Linear algebra fundamentals are central to ML interviews.
+- **Prompt Injection Attacks** (0.8) - Specific LLM security vulnerability commonly discussed in interviews. - already named in 2 lessons (ai-generative-ai-llms, ai-prompt-engineering)
 - **Bias and Fairness** (0.8) - Commonly asked in ML design and ethics discussions.
 - **Fine-Tuning vs Prompt Engg.** (0.8) - The tradeoff between fine-tuning and prompting is a common LLM interview question.
 - **Gradient, Jacobian, Hessian** (0.8) - Multivariate calculus is commonly tested for ML roles.
 - **Scalars, Vectors, Tensors** (0.8) - Basic linear algebra objects are foundational for ML.
 - **Conducting adversarial testing** (0.7) - Important for LLM safety evaluation.
-- **Linear Regression** (0.7) - Core supervised regression algorithm.
-- **Logistic Regression** (0.7) - Core classification algorithm.
-- **Prompt Injection** (0.7) - LLM security issue increasingly asked in AI engineer interviews.
+- **Linear Regression** (0.7) - Core supervised regression algorithm. - already named in 1 lesson (ai-bias-variance-tradeoff)
+- **Logistic Regression** (0.7) - Core classification algorithm. - already named in 2 lessons (ai-ranking, ai-supervised-learning)
+- **Prompt Injection** (0.7) - LLM security issue increasingly asked in AI engineer interviews. - already named in 2 lessons (ai-generative-ai-llms, ai-prompt-engineering)
 - **Singular Value Decomposition** (0.7) - Key linear algebra concept sometimes asked in ML theory interviews.
 
 ### behavioral
 
 - **Production issues management** (0.9) - Managing production issues is a core SDE behavioral topic.
-- **Code Review Best Practices** (0.8) - Code review questions are common in SDE interviews.
+- **Code Review Best Practices** (0.8) - Code review questions are common in SDE interviews. - already named in 6 lessons (beh-company-and-motivation, beh-failure-and-learning and 4 more)
 - **Critical situation leadership** (0.8) - Interviewers often ask how you lead during a crisis.
 - **Stakeholder management** (0.8) - Directly tested via influence and expectation-management questions.
 - **Stress management** (0.8) - Handling stress is a frequent interview question.
@@ -42,125 +42,100 @@
 
 - **Breadth First Search** (1.0) - Core graph algorithm frequently asked in coding interviews.
 - **Depth First Search** (1.0) - Core graph algorithm frequently asked in coding interviews.
-- **Big O** (0.9) - Fundamental algorithm analysis topic asked in interviews.
-- **Binary Search Tree** (0.9) - Core data structure frequently asked in coding interviews.
-- **Binary Tree** (0.9) - Core data structure frequently asked in coding interviews.
-- **Array** (0.9) - Fundamental data structure asked in most coding interviews.
-- **Asymptotic Notation** (0.9) - Core algorithm analysis topic, very common in interviews.
-- **Dijkstra's Algorithm** (0.9) - Shortest path algorithm commonly tested.
-- **Directed Graph** (0.9) - Core graph variant frequently asked in coding interviews.
-- **Hash Table** (0.9) - Core data structure heavily used in interviews.
-- **Heap** (0.9) - Core data structure heavily used in interviews.
-- **Horizontal vs Vertical Scaling** (0.9) - Core system design interview topic.
-- **Indexes** (0.9) - Database indexing is a core SQL and performance interview topic.
-- **Linked List** (0.9) - Core data structure frequently used in coding problems.
+- **Array** (0.9) - Fundamental data structure asked in most coding interviews. - already named in 44 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 42 more)
+- **Big O** (0.9) - Fundamental algorithm analysis topic asked in interviews. - already named in 1 lesson (ai-data-structures-and-algorithms)
+- **Binary Search Tree** (0.9) - Core data structure frequently asked in coding interviews. - already named in 4 lessons (ai-data-structures-and-algorithms, heap-priority-queue and 2 more)
+- **Binary Tree** (0.9) - Core data structure frequently asked in coding interviews. - already named in 3 lessons (heap-priority-queue, segment-tree-fenwick and 1 more)
+- **Directed Graph** (0.9) - Core graph variant frequently asked in coding interviews. - already named in 3 lessons (advanced-graphs, graphs and 1 more)
+- **Hash Table** (0.9) - Core data structure heavily used in interviews. - already named in 7 lessons (ai-python, arrays-hashing and 5 more)
+- **Heap** (0.9) - Core data structure heavily used in interviews. - already named in 30 lessons (advanced-graphs, ai-data-structures-and-algorithms and 28 more)
+- **Horizontal vs Vertical Scaling** (0.9) - Core system design interview topic. - already named in 2 lessons (sd-database-sharding, sd-horizontal-scaling)
 - **Merge Sort** (0.9) - Core sorting algorithm often asked in coding interviews.
 - **Prim's Algorithm** (0.9) - Core graph algorithm commonly asked for minimum spanning tree.
-- **Queue** (0.9) - Core data structure heavily used in interviews.
+- **Queue** (0.9) - Core data structure heavily used in interviews. - already named in 46 lessons (ai-data-structures-and-algorithms, beh-teamwork and 44 more)
 - **Quick Sort** (0.9) - Frequently asked sorting algorithm in coding interviews.
-- **Stack** (0.9) - Core data structure heavily used in interviews.
-- **Tree** (0.9) - Core data structure heavily used in interviews.
-- **Undirected Graph** (0.9) - Core graph variant frequently asked in coding interviews.
+- **Transactions** (0.9) - Transactions are core to SQL interviews, covering isolation, atomicity, and concurrency. - already named in 36 lessons (ai-scaling-monitoring-and-updates, ai-sql and 34 more)
+- **Undirected Graph** (0.9) - Core graph variant frequently asked in coding interviews. - already named in 2 lessons (advanced-graphs, graphs)
 - **Full Binary Tree** (0.8) - Specific tree type occasionally asked in coding interviews.
-- **SQL vs NoSQL Databases** (0.8) - Common interview question comparing database paradigms.
-- **Tries** (0.8) - Tries are a common data structure in coding interviews.
-- **Adjacency List** (0.8) - Graph representation fundamental to graph algorithm questions.
-- **Adjacency Matrix** (0.8) - Graph representation fundamental to graph algorithms.
-- **Binary Search** (0.8) - Core algorithm interview topic.
-- **CAP Theorem** (0.8) - Frequently discussed in system design interviews.
+- **Adjacency List** (0.8) - Graph representation fundamental to graph algorithm questions. - already named in 1 lesson (graphs)
+- **Adjacency Matrix** (0.8) - Graph representation fundamental to graph algorithms. - already named in 2 lessons (advanced-graphs, graphs)
+- **Asymptotic Notation** (0.8) - Interviewers often ask to explain asymptotic notation. - already named in 3 lessons (ai-transformer-llm-internals, java-arraylist-vs-linkedlist and 1 more)
 - **GoF Design Patterns** (0.8) - Design patterns are common in object-oriented design interviews.
-- **In-Order Traversal** (0.8) - Common tree traversal used in coding interviews.
 - **Knapsack Problem** (0.8) - Frequent dynamic programming interview problem.
 - **Knuth-Morris Pratt** (0.8) - Classic string matching algorithm often tested in coding interviews.
-- **Load Balancer** (0.8) - Load balancing is a common system design interview topic.
-- **Load Balancing** (0.8) - Common system design interview topic.
+- **Load Balancer** (0.8) - Load balancing is a common system design interview topic. - already named in 13 lessons (ai-ml-system-design, sd-api-gateway and 11 more)
 - **Pre-Order Traversal** (0.8) - Common tree traversal used in coding interviews.
-- **Queues** (0.8) - Fundamental data structure frequently used and asked in coding interviews.
-- **REST** (0.8) - REST API design is a staple of backend interviews.
-- **Sharding** (0.8) - Database sharding is frequently discussed in scaling interviews.
+- **REST** (0.8) - REST API design is a staple of backend interviews. - already named in 13 lessons (beh-dealing-with-ambiguity, cs-http-https and 11 more)
+- **SQL vs NoSQL Databases** (0.8) - Common architecture interview question comparing relational and non-relational tradeoffs. - already named in 1 lesson (sd-sql-vs-nosql)
+- **Sharding** (0.8) - Database sharding is frequently discussed in scaling interviews. - already named in 12 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 10 more)
 - **String Search & Manipulations** (0.8) - String algorithms and manipulations are common in coding interviews.
+- **Substring Search** (0.8) - String matching is a frequent interview coding problem. - already named in 1 lesson (string)
 - **TCP/IP Stack** (0.8) - Layered networking model distinct from OSI, often asked.
-- **Balanced Search Trees** (0.8) - Balanced search trees are a standard data structures interview topic.
-- **Substring Search** (0.8) - String matching is a frequent interview coding problem.
+- **Balanced Search Trees** (0.8) - Balanced search trees are a standard data structures interview topic. - already named in 1 lesson (ai-data-structures-and-algorithms)
 - **AVL Trees** (0.7) - Common data structure interview topic.
-- **BASE** (0.7) - NoSQL consistency model frequently asked.
+- **BASE** (0.7) - NoSQL consistency model frequently asked. - already named in 38 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 36 more)
 - **Big-Theta** (0.7) - Asymptotic notation is fundamental for algorithm analysis.
-- **Bitwise Operators** (0.7) - Bitwise operations are common in coding interviews, especially for low-level roles.
-- **Caching** (0.7) - Application-level caching is a common interview and system design topic.
+- **Bitwise Operators** (0.7) - Bitwise operations are common in coding interviews, especially for low-level roles. - already named in 1 lesson (bit-manipulation)
 - **Heap Sort** (0.7) - Fundamental sorting algorithm.
+- **Huffman Coding** (0.7) - Greedy compression algorithm commonly asked in coding interviews. - already named in 1 lesson (greedy)
 - **Insertion Sort** (0.7) - Fundamental sorting algorithm.
-- **Linear Search** (0.7) - Fundamental search algorithm.
 - **Post Order Traversal** (0.7) - Common tree traversal question.
-- **Replication** (0.7) - Database replication is a key distributed systems interview topic.
 - **Robin-Karp** (0.7) - String matching algorithm occasionally asked in coding interviews.
 - **Search Pattern in Text** (0.7) - String matching algorithms are commonly asked in coding interviews.
 - **Selection Sort** (0.7) - Fundamental sorting algorithm.
 - **Soft Links / Hard Links** (0.7) - Commonly asked filesystem concept about inodes and links.
-- **Spanning Tree** (0.7) - Graph concept occasionally asked in algorithm interviews.
+- **Spanning Tree** (0.7) - Graph concept occasionally asked in algorithm interviews. - already named in 2 lessons (advanced-graphs, greedy)
 
 ### dsa
 
-- **Big-O Notation** (0.9) - Big-O is the most common complexity notation asked in interviews.
 - **Time vs Space Complexity** (0.9) - Core interview topic not covered by any existing lesson.
 - **Algorithmic Complexity** (0.8) - Time and space complexity analysis is directly tested in SDE interviews.
-- **Recursion** (0.8) - Fundamental technique used across trees, DP, and backtracking lessons.
-- **Asymptotic Notation** (0.8) - Interviewers often ask to explain asymptotic notation.
-- **Indexing** (0.8) - Indexing strategy is directly asked in database and data structure discussions.
-- **Merge Sort** (0.8) - Commonly asked sorting algorithm; not covered by existing topics.
-- **Quick Sort** (0.8) - Commonly asked sorting algorithm.
-- **Queues** (0.7) - Queue operations and use cases are commonly tested in DSA interviews.
+- **Indexing** (0.8) - Indexing strategy is directly asked in database and data structure discussions. - already named in 12 lessons (2-d-dynamic-programming, ai-rag-and-production-systems and 10 more)
+- **Recursion** (0.8) - Fundamental technique used across trees, DP, and backtracking lessons. - already named in 11 lessons (ai-data-structures-and-algorithms, backtracking and 9 more)
 
 ### java
 
 - **Pass by Value / Pass by Reference** (0.9) - Common interview question about Java's parameter passing semantics.
-- **Array vs ArrayList** (0.8) - Frequently asked to compare arrays and collections.
 - **Spring IOC** (0.8) - Inversion of Control is fundamental to Spring.
-- **Transactions** (0.8) - ACID and Spring transaction management are frequently asked.
-- **Dependency Injection** (0.8) - Core design pattern often discussed in Java/Spring interviews.
+- **Array vs ArrayList** (0.8) - Frequently asked to compare arrays and collections. - already named in 6 lessons (java-arraylist-vs-linkedlist, java-fail-fast-vs-fail-safe-iterators and 4 more)
 - **Spring MVC** (0.8) - MVC framework is central to Java web interviews.
 - **Virtual Threads** (0.8) - Modern concurrency feature increasingly asked in Java interviews.
-- **Arrays** (0.7) - Core data structure, common in coding interviews.
-- **Authorization** (0.7) - Authentication vs authorization is a common security question.
+- **Authorization** (0.7) - Authentication vs authorization is a common security question. - already named in 7 lessons (cs-http-https, lld-atm-system-design and 5 more)
 - **JWT Authentication** (0.7) - JWT is a widely used token mechanism.
 - **OAuth2** (0.7) - OAuth2 flows are common in API security discussions.
 - **Spring AOP** (0.7) - Aspect-oriented programming is a common Spring topic.
 
 ### lld
 
-- **Composition over Inheritance** (0.8) - Commonly discussed OOP design principle.
+- **Composition over Inheritance** (0.8) - Commonly discussed OOP design principle. - already named in 5 lessons (java-inheritance-vs-composition, lld-composition and 3 more)
 - **Repositories** (0.7) - Repository pattern is common in LLD for data access.
 
 ### sql
 
-- **ACID** (0.9) - ACID properties are fundamental and frequently asked in SQL interviews.
-- **Transaction Isolation Levels** (0.9) - Common interview topic for ACID and concurrency anomalies.
-- **Transactions** (0.9) - Transactions are core to SQL interviews, covering isolation, atomicity, and concurrency.
-- **SQL vs NoSQL Databases** (0.8) - Common architecture interview question comparing relational and non-relational tradeoffs.
+- **ACID** (0.9) - ACID properties are fundamental and frequently asked in SQL interviews. - already named in 7 lessons (cs-acid-properties, sd-acid-vs-base and 5 more)
 - **Schema Design Patterns / Anti-patterns** (0.8) - Schema design and normalization are commonly asked in database design interviews.
-- **B-Tree** (0.7) - B-tree index internals and trade-offs are common in SQL interviews.
-- **MVCC** (0.7) - Database internals question about concurrency and transaction isolation.
+- **MVCC** (0.7) - Database internals question about concurrency and transaction isolation. - already named in 4 lessons (cs-locking-mechanisms, cs-transaction-isolation-levels and 2 more)
 - **Sharding Patterns** (0.7) - Sharding is a common scalability topic in system design interviews.
-- **Write-ahead Log** (0.7) - Write-ahead logging is asked when discussing durability and recovery.
 
 ### system_design
 
 - **Webhooks vs Polling** (0.8) - Common integration pattern asked when discussing real-time updates.
 - **Error Handling / Retries** (0.7) - Critical reliability topic in distributed systems.
-- **HTTP Versions** (0.7) - Differences between HTTP/1.1, HTTP/2, and HTTP/3 are sometimes asked for performance.
+- **HTTP Versions** (0.7) - Differences between HTTP/1.1, HTTP/2, and HTTP/3 are sometimes asked for performance. - already named in 1 lesson (cs-http-https)
 - **Leader Election** (0.7) - A key distributed systems concept sometimes directly asked.
 - **Serverless Concepts** (0.7) - Serverless architecture tradeoffs are frequently asked in system design.
 - **Understand TCP / IP** (0.7) - Core networking knowledge often probed in system design interviews.
 
 ---
 
-## Below the line (938)
+## Below the line (868)
 
 The sorter called each of these a real gap and then rated an interview unlikely to reach it - mostly tooling and operations engineers use without being asked to explain. Here in case it was wrong about one.
 
 ### ai
 
 - **Sampling Parameters** (0.7) - LLM sampling parameters like temperature and top-p are frequently discussed in interviews.
-- **Context Engineering** (0.6) - Emerging applied LLM topic that interviewers increasingly ask about.
+- **Context Engineering** (0.6) - Emerging applied LLM topic that interviewers increasingly ask about. - already named in 1 lesson (ai-prompt-engineering)
 - **Context vs Prompt Eng.** (0.6) - Comparison between context engineering and prompting is increasingly relevant.
 - **Determinants, inverse of Matrix** (0.6) - Linear algebra fundamentals are commonly tested in AI/ML interviews.
 - **Eigenvalues, Diagonalization** (0.6) - Core linear algebra concepts often asked in AI/ML fundamentals rounds.
@@ -171,22 +146,22 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Image Segmentation** (0.5) - Specific CV task not explicitly covered by CNN topics.
 - **K-Nearest Neighbors (KNN)** (0.5) - Instance-based classification/regression algorithm.
 - **Prompt Tuning** (0.5) - Parameter-efficient adaptation technique sometimes asked in advanced LLM roles.
-- **Reinforcement Learning** (0.5) - Training agents via rewards; separate ML area not covered.
+- **Reinforcement Learning** (0.5) - Training agents via rewards; separate ML area not covered. - already named in 1 lesson (ai-machine-learning-fundamentals)
 - **Self-supervised Learning** (0.5) - Pretraining technique crucial for transformers and LLMs.
-- **Semantic Search** (0.5) - Similarity search over embeddings for retrieval.
-- **Structured Outputs** (0.5) - Constraining LLM outputs to schemas is a common practical AI interview topic.
+- **Semantic Search** (0.5) - Similarity search over embeddings for retrieval. - already named in 1 lesson (ai-embedding-models)
+- **Structured Outputs** (0.5) - Constraining LLM outputs to schemas is a common practical AI interview topic. - already named in 1 lesson (ai-agents-and-agentic-systems)
 - **Support Vector Machines** (0.5) - Maximum-margin classifier.
 - **Video Understanding** (0.5) - Specific multimodal task not covered.
 - **Context Evaluation** (0.5) - Evaluating retrieved context is a specific RAG concern that may come up in AI engineer interviews.
 - **Autoencoders** (0.4) - Specific deep learning architecture, occasionally asked.
+- **Clustering** (0.4) - Database clustering is a real architecture topic for scaling interviews. - already named in 7 lessons (ai-machine-learning-fundamentals, ai-supervised-learning and 5 more)
 - **Context Security** (0.4) - Security around RAG/context systems is relevant but not a common SDE interview topic.
 - **Generative Adversarial Networks** (0.4) - Specific generative model often asked in ML interviews and absent here.
 - **Input Format** (0.4) - Formatting LLM inputs is practical but often covered briefly in prompt engineering.
 - **Max Tokens** (0.4) - Basic LLM API parameter that may be asked in practical LLM rounds.
 - **Polynomial Regression** (0.4) - Nonlinear regression via polynomial features.
 - **Repetition Penalties** (0.4) - This specific LLM parameter occasionally comes up in applied LLM interviews.
-- **SHAP** (0.4) - Uses Shapley values to explain model outputs; commonly asked in ML interviews.
-- **Semi-supervised Learning** (0.4) - Learning from both labeled and unlabeled data; not covered.
+- **SHAP** (0.4) - Uses Shapley values to explain model outputs; commonly asked in ML interviews. - already named in 23 lessons (ai-bias-variance-tradeoff, ai-convolutional-neural-networks and 21 more)
 - **Experiment Tracking** (0.3) - MLOps tooling is occasionally discussed but rarely a deep interview focus.
 - **MCP** (0.3) - Model Context Protocol is an emerging integration standard occasionally asked in AI engineering interviews.
 - **Stop Sequences** (0.3) - LLM API parameter with modest direct interview relevance.
@@ -194,17 +169,14 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Actor-Critic Methods** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
 - **Audio Processing** (0.3) - Specialized modality, rarely asked in general SDE interviews.
 - **Deep-Q Networks** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
-- **LIME** (0.3) - Explains individual model predictions with local interpretable approximations.
+- **Kubernetes** (0.3) - Container orchestration relevant to infra but secondary in interviews. - already named in 2 lessons (ai-rag-and-production-systems, sd-horizontal-scaling)
 - **Policy Gradient** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
 - **Q-Learning** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
 - **Self-Hosted Models** (0.3) - Covers deploying open-source LLMs on own infrastructure.
 - **Speech-to-Text** (0.3) - Automatic speech recognition is relevant for voice-interaction products and can be asked in ML/AI interviews.
 - **What is Reinforcement Learning?** (0.3) - Distinct ML area not currently listed, though less common in SDE loops.
 - **AI Red Teaming** (0.2) - Red teaming is specialized safety work, occasionally relevant for LLM roles.
-- **CI/CD** (0.2) - CI/CD concepts are occasionally discussed in production engineering interviews.
-- **Containerization** (0.2) - Docker and container basics are common knowledge but rarely an interview deep-dive.
 - **Explainable AI** (0.2) - Interpretability is occasionally discussed in ML system design, but rarely in SDE loops.
-- **Git** (0.2) - Version control basics are expected but not usually deep interview material.
 - **Pandas** (0.2) - Data manipulation library; sometimes relevant for AI/ML coding but rarely a direct interview topic.
 - **Regression Testing** (0.2) - Software testing practice not explicitly covered by the listed Software Engineering topic.
 - **Text-to-Speech** (0.2) - Speech synthesis is a specialized area that may come up in voice-related roles but is not a common general SDE topic.
@@ -213,7 +185,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Bash** (0.2) - Command-line skill; occasionally checked but rarely a deep interview topic.
 - **CML** (0.2) - Continuous ML tooling has low direct interview relevance.
 - **Content Moderation APIs** (0.2) - API usage, low interview relevance.
-- **Data Formats** (0.2) - Data serialization formats are practical but not usually an interview topic.
+- **Data Formats** (0.2) - Data serialization formats are practical but not usually an interview topic. - already named in 1 lesson (lld-adapter-pattern)
 - **Data Lakes & Warehouses** (0.2) - Data storage architecture is occasionally discussed in ML system design.
 - **Data Lineage** (0.2) - Data lineage is important in production ML but rarely asked in SDE interviews.
 - **DeepEval** (0.2) - LLM evaluation tool, low interview relevance.
@@ -227,27 +199,25 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Go** (0.2) - General-purpose language; relevance depends on the role.
 - **Helicone** (0.2) - LLM observability tool, low interview relevance.
 - **Jenkins** (0.2) - CI/CD tools are not a common interview focus for AI/ML roles.
-- **Kafka** (0.2) - Streaming platform sometimes relevant for ML systems.
-- **Kubernetes** (0.2) - Orchestration platform details are rarely asked in AI interview loops.
+- **Kafka** (0.2) - Streaming platform sometimes relevant for ML systems. - already named in 4 lessons (lld-pub-sub-system-design, sd-design-a-notification-system and 2 more)
 - **LLM Observability** (0.2) - LLM monitoring and tracing is production tooling, not a core SDE interview topic.
 - **LangSmith** (0.2) - LLM observability tool, low interview relevance.
 - **Langchain** (0.2) - Tooling detail rarely asked to explain.
 - **Langfuse** (0.2) - LLM observability tool, low interview relevance.
 - **Lemmatization** (0.2) - Basic NLP preprocessing, low interview focus.
 - **Model Context Protocol (MCP)** (0.2) - Emerging agent tooling protocol; rarely a deep SDE interview topic.
-- **Numpy** (0.2) - Python library for numerical computing; usually not an interview topic outside data-specific roles.
+- **Numpy** (0.2) - Python library for numerical computing; usually not an interview topic outside data-specific roles. - already named in 1 lesson (ai-python)
 - **OpenAI Response API** (0.2) - Vendor API for structured model responses.
 - **OpenAI-compatible APIs** (0.2) - Integration tooling, not a core interview concept.
 - **Presence Penalty** (0.2) - LLM API parameter rarely asked directly in SDE interviews.
-- **PyTorch** (0.2) - Widely used framework but rarely a direct interview topic beyond basic familiarity.
-- **RAGAS** (0.2) - RAG evaluation tool, low interview relevance.
+- **PyTorch** (0.2) - Widely used framework but rarely a direct interview topic beyond basic familiarity. - already named in 4 lessons (ai-neural-network-design, ai-python and 2 more)
+- **RAGAS** (0.2) - RAG evaluation tool, low interview relevance. - already named in 1 lesson (ai-generative-model-evaluation)
 - **Spark** (0.2) - Big data processing tool sometimes relevant for ML pipelines.
 - **Stemming** (0.2) - Basic NLP preprocessing, low interview focus.
 - **Version Control Systems** (0.2) - Git basics are expected but rarely a deep interview topic.
 - **DVC** (0.1) - Data versioning tool; niche and rarely asked directly.
 - **Graphs & Charts** (0.1) - Data visualization is rarely a focus in AI/ML SDE interviews.
 - **Hugging Face** (0.1) - Library familiarity is useful but not a typical interview deep-dive.
-- **Infrastructure as Code** (0.1) - IaC is operational tooling rarely asked in SDE interviews.
 - **Llama Index** (0.1) - Specific RAG framework, not commonly an interview topic.
 - **MCP Client** (0.1) - Emerging protocol detail, rarely a core interview focus.
 - **MCP Host** (0.1) - Emerging protocol detail, rarely a core interview focus.
@@ -258,17 +228,20 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Using SDKs Directly** (0.1) - Implementation choice, not a conceptual topic.
 - **Airflow** (0.1) - Workflow orchestration tool rarely asked in SDE loops.
 - **Ansible** (0.1) - Configuration management tooling rarely asked to explain in SDE interviews.
+- **Atlan** (0.1) - Data governance/catalog tool; operational.
 - **Building an MCP Client** (0.1) - Tooling-specific, rarely asked in interviews.
 - **Building an MCP Server** (0.1) - Tooling-specific, rarely asked in interviews.
 - **Chroma** (0.1) - Specific vector database tool.
 - **Claude Agent SDK** (0.1) - Vendor-specific tooling.
 - **Claude Messages API** (0.1) - Anthropic API for conversational models.
+- **Cohere** (0.1) - Vendor-specific API; not a generalizable interview topic.
+- **Conditionals** (0.1) - Control flow is too basic for most SDE interviews. - already named in 14 lessons (ai-bias-variance-tradeoff, lld-movie-ticket-booking-system-design and 12 more)
 - **Flink** (0.1) - Stream processing tool rarely asked.
 - **Gemini** (0.1) - Specific LLM product; interviews typically test general LLM understanding, not a particular model's details.
 - **Gemini Embedding** (0.1) - Vendor-specific embedding model/API.
 - **Google ADK** (0.1) - Vendor-specific tooling.
 - **Google Gemini APi** (0.1) - Provider-specific LLM API, rarely a direct interview topic.
-- **Grafana** (0.1) - Visualization tool rarely asked to explain.
+- **Grafana** (0.1) - Monitoring tool rarely asked about directly in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **Haystack** (0.1) - Specific framework, low interview relevance.
 - **Hugging Face Hub** (0.1) - Model/dataset sharing platform; tool-specific.
 - **Hugging Face Inference SDK** (0.1) - Specific tooling, rarely asked to explain in depth.
@@ -279,15 +252,16 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **KubeFlow** (0.1) - MLOps platform tool rarely asked.
 - **LM Studio** (0.1) - Tool for running local LLMs; rarely asked in SDE interviews.
 - **LanceDB** (0.1) - Specific vector database tool.
+- **Loops** (0.1) - Loop constructs are rarely asked directly. - already named in 57 lessons (1-d-dynamic-programming, ai-agents-and-agentic-systems and 55 more)
 - **MLFlow** (0.1) - Specific MLOps tool rarely explained in SDE interviews.
 - **Models on Hugging Face** (0.1) - Platform-specific repository, not an interview topic.
 - **MongoDB Atlas** (0.1) - Managed database service, not an interview theory topic.
 - **Open AI Embeddings API** (0.1) - Specific vendor API, low interview relevance.
-- **OpenAI** (0.1) - Vendor-specific API; not a general interview topic.
+- **OpenAI** (0.1) - Vendor-specific API; not a general interview topic. - already named in 1 lesson (design)
 - **OpenAI AgentKit & Agent SDK** (0.1) - Vendor-specific agent tooling.
 - **OpenRouter** (0.1) - LLM API routing tooling; not a core SDE interview topic.
 - **Pinecone** (0.1) - Specific vector database tool.
-- **Prometheus** (0.1) - Monitoring tool rarely asked to explain.
+- **Prometheus** (0.1) - Monitoring tool rarely asked about in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **PyTorch Mobile** (0.1) - Edge deployment with PyTorch; rarely asked in SDE interviews.
 - **Qdrant** (0.1) - Specific vector database tool.
 - **RAGFlow** (0.1) - Specific tool, low interview relevance.
@@ -297,11 +271,9 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Transformers.js** (0.1) - Running transformers in JS; tool-specific.
 - **Vertex AI Agent Builder** (0.1) - Vendor-specific tooling.
 - **Weaviate** (0.1) - Specific vector database tool.
-- **Atlan** (0.1) - Data governance/catalog tool; operational.
 - **CSV** (0.1) - Basic data format rarely a standalone interview topic.
 - **Claude Code** (0.1) - This is a specific AI coding tool; interviewers rarely ask to explain the tool itself, only underlying agent concepts.
 - **Codex** (0.1) - Specific code-generation model/tool; not a common conceptual interview topic beyond general LLM/agent knowledge.
-- **Cohere** (0.1) - Vendor-specific API; not a generalizable interview topic.
 - **DALL-E API** (0.1) - Specific image generation API; general generative model concepts are more likely to be asked.
 - **DataHub** (0.1) - Data catalog tool; operational, rarely asked.
 - **Jetson** (0.1) - NVIDIA edge AI hardware; niche for interviews.
@@ -312,35 +284,35 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **TFLite** (0.1) - Edge deployment tool rarely asked.
 - **Whisper API** (0.1) - Specific speech-to-text API; ASR concepts are more relevant than this particular product.
 - **modus** (0.1) - Specific tool/model; not a core interview topic.
-- **Cursor** (0.0) - AI-powered IDE is a productivity tool, not typically discussed as an interview topic.
 - **Devin** (0.0) - Autonomous coding agent product; interviews focus on agent concepts, not the specific tool.
 - **LangChain for Multimodal Apps** (0.0) - Specific framework extension for multimodal apps; framework usage is low interview relevance compared to underlying concepts.
 - **LlamaIndex for Multimodal Apps** (0.0) - Specific framework feature with low conceptual interview relevance, similar to LangChain.
 - **NanoBanana API** (0.0) - Niche image generation model/API, not a common interview topic.
 - **Replit** (0.0) - Online IDE with AI features is tooling with little interview relevance.
+- **Cursor** (0.0) - AI-powered IDE is a productivity tool, not typically discussed as an interview topic. - already named in 4 lessons (java-jdbc, sd-monitoring-and-observability and 2 more)
 - **Excel** (0.0) - Not an interview topic for SDE roles.
 
 ### behavioral
 
 - **Bias Recognition / Mitigation** (0.6) - Increasingly asked about bias in decisions and interactions.
-- **Company Culture** (0.6) - Common behavioral question about culture fit and values.
+- **Company Culture** (0.6) - Common behavioral question about culture fit and values. - already named in 1 lesson (beh-questions-to-ask-the-interviewer)
 - **Cross-department collaboration** (0.6) - Common behavioral question about working with other teams.
 - **Emotional Intelligence** (0.6) - EQ underpins many behavioral answers but may be asked directly.
 - **Feedback Delivery** (0.6) - Giving feedback is a common behavioral scenario.
 - **Impact assessment** (0.6) - Candidates need to quantify and articulate impact in behavioral stories.
 - **Mentoring Programs** (0.6) - Mentoring is a common behavioral topic for senior engineers.
-- **Process changes** (0.6) - Process improvement is a frequent behavioral topic.
+- **Process changes** (0.6) - Process improvement is a frequent behavioral topic. - already named in 4 lessons (beh-failure-and-learning, beh-questions-to-ask-the-interviewer and 2 more)
 - **Resistance management** (0.6) - Handling pushback is a common behavioral probe.
 - **Risk Management** (0.6) - Asked about identifying and mitigating risks.
-- **Testing Strategies** (0.6) - Common interview question about testing approaches and trade-offs.
+- **Testing Strategies** (0.6) - Common interview question about testing approaches and trade-offs. - already named in 78 lessons (ai-a-b-testing, ai-ensemble-methods and 76 more)
 - **War Room Management** (0.6) - Incident response is a common behavioral topic.
 - **Architectural Decision-Making** (0.5) - Design interviews implicitly evaluate architectural decisions.
 - **Blameless Post-mortems** (0.5) - Asked about blameless culture and incident reviews.
 - **Burnout prevention** (0.5) - Asked about managing stress and preventing burnout.
-- **Change management** (0.5) - Asked about adapting to or driving change.
+- **Change management** (0.5) - Asked about adapting to or driving change. - already named in 1 lesson (beh-leadership)
 - **Communication planning** (0.5) - Communication strategy during change is sometimes evaluated.
 - **Contingency planning** (0.5) - Similar to risk management, asked about backup plans.
-- **Delegation** (0.5) - Senior SDE interviews may ask how you delegate tasks.
+- **Delegation** (0.5) - Senior SDE interviews may ask how you delegate tasks. - already named in 6 lessons (cs-dns, java-jvm-architecture and 4 more)
 - **Inclusive environment creation** (0.5) - Increasingly asked about inclusion and diversity.
 - **Knowledge sharing practices** (0.5) - Asked about promoting knowledge sharing.
 - **Mentoring and Coaching** (0.5) - Mentoring junior engineers is a common behavioral topic.
@@ -360,7 +332,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Learning culture development** (0.4) - Asked about fostering learning in team.
 - **Politics navigation** (0.4) - Sometimes asked about navigating organizational politics.
 - **Project Tracking** (0.4) - Asked about how you track project progress and status.
-- **Resource Allocation** (0.4) - Allocating resources can come up in prioritization or project management questions.
+- **Resource Allocation** (0.4) - Allocating resources can come up in prioritization or project management questions. - already named in 1 lesson (cs-deadlocks)
 - **Role transitions** (0.4) - Occasionally asked about adapting to new roles.
 - **Team Motivation** (0.4) - Motivating peers or junior engineers can come up in senior interviews.
 - **Team mergers** (0.4) - Less common but possible scenario for teamwork and change questions.
@@ -378,7 +350,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Technical Documentation** (0.3) - Documentation practices are sometimes asked about in teamwork questions.
 - **Technical Risk Assessment** (0.3) - Risk trade-offs come up in system design discussions.
 - **Work-life balance during crises** (0.3) - Occasionally asked about maintaining balance.
-- **API strategy** (0.2) - Strategic API decisions may arise but are uncommon.
+- **API strategy** (0.2) - Strategic API decisions may arise but are uncommon. - already named in 56 lessons (ai-data-collection-and-preparation, ai-deep-learning and 54 more)
 - **Career Development Planning** (0.2) - Career planning questions are more relevant for managers.
 - **Cost Optimization** (0.2) - Occasionally asked about cost consciousness.
 - **Development / Release Workflow** (0.2) - Release process questions occasionally arise but are not deep.
@@ -387,7 +359,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Legacy System Retirement** (0.2) - Occasionally discussed in architecture or maintenance contexts.
 - **Recognition programs** (0.2) - Low relevance; specific management practice.
 - **Social connections** (0.2) - Low relevance; team building specifics.
-- **Sprint Planning** (0.2) - Rarely asked directly in SDE behavioral interviews.
+- **Sprint Planning** (0.2) - Rarely asked directly in SDE behavioral interviews. - already named in 1 lesson (beh-prioritization)
 - **System Monitoring & Performance** (0.2) - Operational topic sometimes touched in system design or incident discussions.
 - **Team Structure and Design** (0.2) - Team design questions are rare outside EM interviews.
 - **Team Traditions and Rituals** (0.2) - Low relevance; specific cultural practice.
@@ -415,51 +387,48 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 
 ### cs
 
-- **Huffman Coding** (0.7) - Greedy compression algorithm commonly asked in coding interviews.
-- **Balanced Tree** (0.6) - Balanced vs unbalanced trees affect data structure performance; often asked.
+- **Balanced Tree** (0.6) - Balanced vs unbalanced trees affect data structure performance; often asked. - already named in 5 lessons (arrays-hashing, design and 3 more)
 - **Big Omega** (0.6) - Asymptotic lower bound notation used in algorithm analysis.
 - **Boyer-Moore** (0.6) - String matching algorithm sometimes asked in coding interviews.
-- **CDN** (0.6) - Content delivery networks are common in system design discussions.
 - **CPU Interrupts** (0.6) - Interrupt handling is a core OS concept often probed in systems interviews.
 - **Caching Server** (0.6) - Caching servers like Redis are common in system design interviews.
-- **Complexity Classes** (0.6) - Complexity classes like P and NP come up in algorithm-focused interviews.
-- **Dependency Injection** (0.6) - Design pattern frequently discussed in OOP and system design interviews.
-- **Exponential** (0.6) - Exponential complexity is central to NP-hardness and algorithm limits.
+- **Complexity Classes** (0.6) - Complexity classes like P and NP come up in algorithm-focused interviews. - already named in 1 lesson (java-arraylist-vs-linkedlist)
+- **Dependency Injection** (0.6) - Design pattern frequently discussed in OOP and system design interviews. - already named in 7 lessons (lld-abstract-factory-pattern, lld-abstraction and 5 more)
+- **Exponential** (0.6) - Exponential complexity is central to NP-hardness and algorithm limits. - already named in 7 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 5 more)
+- **GraphQL** (0.6) - GraphQL is occasionally discussed as an API alternative in design interviews. - already named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
 - **Hashing / Encryption / Encoding** (0.6) - The differences between these are commonly asked in security interviews.
 - **Killing Processes** (0.6) - Process control via signals, common in Linux interviews.
-- **Kruskal's Algorithm** (0.6) - Graph MST algorithm commonly asked in algorithm interviews.
-- **Polynomial** (0.6) - Polynomial complexity class central to P vs NP discussions.
+- **Polynomial** (0.6) - Polynomial complexity class central to P vs NP discussions. - already named in 4 lessons (ai-bias-variance-tradeoff, ai-data-structures-and-algorithms and 2 more)
 - **Process Signals** (0.6) - Core OS concept, often asked in systems interviews.
-- **Reverse Proxy** (0.6) - Common system design interview topic.
+- **Reverse Proxy** (0.6) - Common system design interview topic. - already named in 1 lesson (sd-api-gateway)
+- **Service Mesh** (0.6) - Service-to-service communication infrastructure often asked with microservices. - already named in 1 lesson (sd-service-discovery)
 - **Web Sockets** (0.6) - WebSockets are commonly asked for real-time communication.
 - **Brute Force Search** (0.6) - Common approach to solving algorithm problems.
 - **Ford-Fulkerson Algorithm** (0.6) - Max-flow algorithm sometimes asked in algorithm interviews.
 - **NP Complete** (0.6) - NP-completeness is a standard topic in algorithms courses and interviews.
 - **Rabin-Karp Algorithm** (0.6) - String matching algorithm sometimes asked but less common than KMP.
-- **B-Tree** (0.5) - B-Trees are important for database indexing and sometimes asked.
 - **Background / Foreground Processes** (0.5) - Common shell/process control concept.
 - **Bellman Ford's Algorithm** (0.5) - Graph shortest path algorithm occasionally asked.
 - **Character Encodings** (0.5) - Character encodings like Unicode and UTF-8 are sometimes discussed in backend interviews.
-- **Complete Binary Tree** (0.5) - A specific tree type that may be asked to define or use in heap discussions.
+- **Complete Binary Tree** (0.5) - A specific tree type that may be asked to define or use in heap discussions. - already named in 1 lesson (heap-priority-queue)
 - **Concurrency in Multiple Cores** (0.5) - Multicore concurrency is a relevant advanced OS topic.
 - **Containerization** (0.5) - Containerization concepts are increasingly discussed in backend and DevOps-oriented interviews.
 - **Entity-Relationship Model** (0.5) - ER modeling asked in database design discussions.
 - **Finding Hamiltonian Paths** (0.5) - Backtracking graph problem occasionally asked in interviews.
-- **Firewall** (0.5) - Network security component often discussed in system design.
+- **Firewall** (0.5) - Network security component often discussed in system design. - already named in 2 lessons (cs-osi-model, sd-websockets)
 - **Floating Point Math** (0.5) - Floating point representation and rounding are asked in systems and trading interviews.
 - **Forward Proxy** (0.5) - Common system design interview topic.
 - **Git** (0.5) - Version control basics sometimes discussed in interviews.
-- **GraphQL** (0.5) - GraphQL is a relevant API technology often explored.
 - **Hashing Algorithms** (0.5) - Specific hashing algorithms are sometimes asked for data integrity and security.
 - **How CPU Executes Programs** (0.5) - CPU execution cycle is a fundamental CS topic sometimes asked.
 - **IP Routing** (0.5) - Core networking concept sometimes asked.
-- **Linear** (0.5) - Linear time complexity is a core algorithm analysis concept.
+- **Linear** (0.5) - Linear time complexity is a core algorithm analysis concept. - already named in 21 lessons (1-d-dynamic-programming, advanced-graphs and 19 more)
 - **Listing / Finding Processes** (0.5) - Process management commands often part of Linux interviews.
-- **Long Polling** (0.5) - Long polling is a common technique for real-time updates.
+- **Long Polling** (0.5) - Long polling is a common technique for real-time updates. - already named in 3 lessons (sd-message-queues, sd-publish-subscribe and 1 more)
 - **Maze Solving Problem** (0.5) - Backtracking/search problem occasionally used in interviews.
-- **PACELC** (0.5) - Extension of CAP often asked in distributed systems discussions.
+- **PACELC** (0.5) - Extension of CAP often asked in distributed systems discussions. - already named in 2 lessons (sd-cap-theorem, sd-sql-vs-nosql)
 - **Process Forking** (0.5) - OS concept occasionally asked in systems interviews.
-- **Proxy** (0.5) - Proxy servers are a practical networking and system design topic.
+- **Proxy** (0.5) - Proxy servers are a practical networking and system design topic. - already named in 14 lessons (ai-generative-model-evaluation, ai-metrics-offline-and-online and 12 more)
 - **Public Key Cryptography** (0.5) - Public key cryptography is a core security concept often explored.
 - **Red / Black Trees** (0.5) - Commonly asked advanced tree structure in data structure interviews.
 - **SOPs** (0.5) - Same-Origin Policy is a web security fundamental often asked in front-end/security interviews.
@@ -467,17 +436,13 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Solving N Queen Problem** (0.5) - Classic backtracking problem sometimes used in interviews.
 - **Tail Recursion** (0.5) - Recursion optimization concept, often asked in functional/algorithm interviews.
 - **Unbalanced Tree** (0.5) - Unbalanced tree characteristics matter for BST worst-case analysis.
-- **gRPC** (0.5) - gRPC is a modern RPC framework asked in backend interviews.
 - **Endianess** (0.5) - Endianness can be asked in systems and low-level programming interviews.
 - **A* Algorithm** (0.4) - Pathfinding algorithm occasionally asked.
-- **Blue-Green Deployments** (0.4) - Deployment strategy sometimes discussed in DevOps and system design interviews.
 - **Bubble Sort** (0.4) - Basic sorting algorithm, occasionally asked.
 - **Canary Deployments** (0.4) - Deployment strategy sometimes discussed in system design and DevOps interviews.
-- **Clustering** (0.4) - Database clustering is a real architecture topic for scaling interviews.
 - **Container Orchestration** (0.4) - Container orchestration concepts appear in system design and DevOps-related discussions.
-- **DDL** (0.4) - SQL command categories are common knowledge checks.
-- **DML** (0.4) - SQL command categories are common knowledge checks.
-- **Database Federation** (0.4) - Federation is a scaling pattern sometimes discussed.
+- **DDL** (0.4) - SQL command categories are common knowledge checks. - already named in 3 lessons (java-jdbc, sql-ddl-dml-dcl-tcl and 1 more)
+- **DML** (0.4) - SQL command categories are common knowledge checks. - already named in 5 lessons (ai-sql, java-jdbc and 3 more)
 - **Docker and OCI** (0.4) - Containerization basics are increasingly asked in backend interviews.
 - **FTP / SFTP** (0.4) - Legacy but sometimes asked for file transfer protocols.
 - **File Permissions** (0.4) - Unix file permissions can be relevant for debugging and system questions.
@@ -486,12 +451,10 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **OWASP Top 10** (0.4) - OWASP Top 10 is a standard security checklist sometimes referenced.
 - **Registers and RAM** (0.4) - Memory hierarchy basics are sometimes covered in hardware/OS interviews.
 - **Rolling Updates / Rollbacks** (0.4) - Deployment strategy occasionally discussed in system design interviews.
-- **SSE** (0.4) - Server-Sent Events are a less common but relevant real-time topic.
+- **SSE** (0.4) - Server-Sent Events are a less common but relevant real-time topic. - already named in 3 lessons (sd-monitoring-and-observability, sd-publish-subscribe and 1 more)
 - **Short Polling** (0.4) - Short polling is a basic polling technique sometimes compared.
 - **Skip Lists** (0.4) - Skip lists are an alternative data structure sometimes asked.
-- **TCP/IP Model** (0.4) - Networking model distinct from OSI and sometimes asked.
 - **Uptime and Load** (0.4) - System performance metrics, sometimes asked to explain load average.
-- **Views** (0.4) - Database views are a specific feature sometimes explored.
 - **DHCP** (0.3) - Network protocol commonly asked in networking interviews.
 - **Ethernet & arp/rarp** (0.3) - Link layer protocols sometimes asked in networking interviews.
 - **Shell Programming** (0.3) - Shell scripting is a useful skill but rarely the focus of SDE interview questions.
@@ -499,63 +462,55 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **What are Containers?** (0.3) - Containerization concept sometimes discussed in infra-aware loops.
 - **2 3 4 Trees** (0.3) - Specific balanced tree structure occasionally asked in advanced DS interviews.
 - **2 3 Search Trees** (0.3) - Specific balanced tree structure occasionally asked in advanced DS interviews.
-- **Apache** (0.3) - Common web server, sometimes asked in web infrastructure contexts.
+- **Apache** (0.3) - Common web server, sometimes asked in web infrastructure contexts. - already named in 2 lessons (sd-consistent-hashing, sd-message-queues)
 - **Autoscaling** (0.3) - System design topic, sometimes discussed.
 - **Basics of Docker** (0.3) - Basic container concepts occasionally probed, but mostly operational.
 - **Big Endian** (0.3) - Byte order concept sometimes asked in systems interviews.
-- **Class Diagrams** (0.3) - UML class diagrams occasionally used in design discussions.
+- **Class Diagrams** (0.3) - UML class diagrams occasionally used in design discussions. - already named in 6 lessons (lld-aggregation, lld-association and 4 more)
 - **Co-NP** (0.3) - Complexity class occasionally comes up in theory-focused interviews.
 - **Container Security** (0.3) - Container-specific security is operational and only occasionally comes up in SDE interviews.
 - **Container and Pod Security** (0.3) - Security practices for containers/pods, relevant to DevOps but less common in core SDE interviews.
-- **DCL** (0.3) - SQL control language category occasionally asked.
-- **DQL** (0.3) - SQL query language category occasionally asked.
+- **DCL** (0.3) - SQL control language category occasionally asked. - already named in 1 lesson (sql-ddl-dml-dcl-tcl)
+- **DQL** (0.3) - SQL query language category occasionally asked. - already named in 1 lesson (sql-ddl-dml-dcl-tcl)
 - **Deploying Containers** (0.3) - Deploying containers is an operational skill that may be touched on in DevOps-focused roles.
 - **Dockerfiles** (0.3) - Dockerfile instructions; common in DevOps but not core SDE.
 - **Horizontal Pod Autoscaler (HPA)** (0.3) - Kubernetes autoscaling, relevant for K8s-heavy roles.
-- **Inodes** (0.3) - Unix file system concept, sometimes asked.
+- **Inodes** (0.3) - Unix file system concept, sometimes asked. - already named in 1 lesson (cs-file-systems)
 - **K-ary / M-ary Tree** (0.3) - Tree variant sometimes asked in data structure discussions.
-- **Kubernetes** (0.3) - Container orchestration relevant to infra but secondary in interviews.
 - **Little Endian** (0.3) - Byte order concept sometimes asked in systems interviews.
-- **Namespaces** (0.3) - Linux namespaces underpin containers and may be asked in systems interviews.
+- **Namespaces** (0.3) - Linux namespaces underpin containers and may be asked in systems interviews. - already named in 3 lessons (cs-inter-process-communication, java-jvm-architecture and 1 more)
 - **Nginx** (0.3) - Common reverse proxy/web server, sometimes asked about configuration.
 - **P = NP** (0.3) - Famous open problem sometimes asked as general CS knowledge.
 - **Process Priorities** (0.3) - OS scheduling concept, sometimes asked.
 - **Role Based Access Control (RBAC)** (0.3) - Authorization concept relevant to system design.
-- **Service Mesh** (0.3) - Service mesh concepts are occasionally asked in microservices-focused interviews.
 - **Small O** (0.3) - Little-o notation less common but part of asymptotic analysis.
 - **Small Omega** (0.3) - Asymptotic notation is relevant, but small omega is less commonly asked than Big O.
-- **Stored Procedures** (0.3) - Database stored procedures are a specific feature sometimes covered.
 - **Taints and Tolerations** (0.3) - Kubernetes scheduling concept, niche outside k8s.
 - **Topology Spread Constraints** (0.3) - Kubernetes scheduling feature, niche.
 - **Vertical Pod Autoscaler (VPA)** (0.3) - Kubernetes autoscaling, niche.
-- **Volumes** (0.3) - Storage concept in containers/Kubernetes, moderate interview relevance.
+- **Volumes** (0.3) - Storage concept in containers/Kubernetes, moderate interview relevance. - already named in 15 lessons (ai-ml-system-design, beh-why-this-company and 13 more)
 - **Bare Metal vs VMs vs Containers** (0.2) - Infrastructure comparison relevant to some system design discussions.
 - **Image Security** (0.2) - Container image security practices; DevOps-focused.
-- **Metrics** (0.2) - Observability concept; occasionally relevant in system design but not deep.
 - **Secret Management** (0.2) - Secret management is operational and only occasionally raised in security-focused interviews.
 - **Travelling Salesman Problem** (0.2) - NP-hard problem rarely the focus of coding interviews.
-- **Unicode** (0.2) - Character encoding fundamentals sometimes asked.
 - **AWS ECS / Fargate** (0.2) - AWS compute service rarely an interview focus.
 - **AWS Lambda** (0.2) - Serverless compute, occasionally asked.
 - **Artifact Management** (0.2) - Artifact management is tooling-specific and rarely asked in SDE interviews.
 - **Assigning Quotas to Namespaces** (0.2) - Kubernetes resource quotas; niche for SDE interviews.
 - **Authentication Logs** (0.2) - Security monitoring detail, rarely a core SDE topic.
 - **Azure Functions** (0.2) - Serverless platform service occasionally relevant to architecture discussions.
-- **Bash** (0.2) - Basic shell scripting is expected but rarely a deep interview focus.
 - **Bind Mounts** (0.2) - Docker storage topic rarely central to SDE interviews.
 - **Boot Loaders** (0.2) - OS boot process occasionally asked in systems interviews.
 - **Booting Linux** (0.2) - Linux boot process is occasionally asked for platform or systems roles.
 - **Building Container Images** (0.2) - Operational Docker skill, rarely asked directly.
 - **CI / CD Integration** (0.2) - DevOps practice, occasionally discussed.
 - **CSI Drivers** (0.2) - Kubernetes storage plugin concept, niche in interviews.
-- **Consul** (0.2) - Service discovery tooling rarely an interview focus.
 - **Container Runtime** (0.2) - Container internals occasionally asked in DevOps-oriented backend roles.
 - **Continuous Integration** (0.2) - CI concepts occasionally discussed.
-- **Deployments** (0.2) - Kubernetes deployment objects may be asked in backend interviews.
-- **Docker** (0.2) - Containerization tooling occasionally referenced but not deeply tested.
+- **Deployments** (0.2) - Kubernetes deployment objects may be asked in backend interviews. - already named in 18 lessons (ai-metrics-offline-and-online, ai-ml-system-design and 16 more)
 - **Efficient Layer Caching** (0.2) - Docker layer caching best practice; tooling-specific.
 - **Environment Variables** (0.2) - Configuration via env vars is common and sometimes discussed.
-- **Envoy** (0.2) - Proxy technology occasionally mentioned in system design.
+- **Envoy** (0.2) - Proxy technology occasionally mentioned in system design. - already named in 2 lessons (sd-grpc, sd-layer-4-vs-layer-7-load-balancing)
 - **Ephemeral Container Filesystem** (0.2) - Container storage concept rarely asked in SDE interviews.
 - **External Access to Services** (0.2) - Container networking topic rarely central to SDE loops.
 - **Factorial** (0.2) - Simple recursion example, rarely asked as a standalone topic.
@@ -569,6 +524,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **K-D Trees** (0.2) - Specialized data structure rarely asked outside specific domains.
 - **Longest Path Problem** (0.2) - NP-hard problem rarely asked in coding interviews.
 - **Managing Permissions** (0.2) - Linux permissions, occasionally asked.
+- **Metrics** (0.2) - Observability concept; occasionally relevant in system design but not deep. - already named in 31 lessons (ai-a-b-testing, ai-candidate-generation and 29 more)
 - **NP** (0.2) - Complexity class concept occasionally tested in theoretical CS interviews.
 - **Networking & Pod-to-Pod Communication** (0.2) - Kubernetes networking topic rarely central to SDE loops.
 - **Null Object Pattern** (0.2) - Less common design pattern occasionally discussed in OOP interviews.
@@ -578,34 +534,32 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Package Repositories** (0.2) - Package management concept occasionally relevant to developer tooling.
 - **Pods** (0.2) - Kubernetes basics may come up in backend roles but not core SDE.
 - **Running Containers** (0.2) - Operational Docker task, occasionally referenced.
-- **SMTP** (0.2) - Email protocol, rarely asked.
+- **SMTP** (0.2) - Email protocol, rarely asked. - already named in 2 lessons (cs-osi-model, sd-design-a-notification-system)
 - **Setting Resource Requests and Limits** (0.2) - Kubernetes resource management; tooling-specific and rarely asked in SDE interviews.
 - **Shell Scripting** (0.2) - Scripting ability is useful but not a common interview deep-dive.
 - **Super User** (0.2) - Linux root/sudo concept; occasionally relevant for troubleshooting.
 - **Tomcat** (0.2) - Java application server, relevant only for specific stacks.
-- **Traces** (0.2) - Distributed tracing concept; relevant to observability but less common in SDE interviews.
+- **Traces** (0.2) - Distributed tracing concept; relevant to observability but less common in SDE interviews. - already named in 15 lessons (ai-prediction-service, beh-story-craft and 13 more)
 - **Type Object Pattern** (0.2) - Niche design pattern occasionally discussed in OOP interviews.
+- **Unicode** (0.2) - Character encoding fundamentals sometimes asked. - already named in 5 lessons (java-strings, sql-data-types and 3 more)
 - **Union Filesystems** (0.2) - Container storage concept relevant to Docker internals.
 - **Users and Groups** (0.2) - Linux user management, occasionally asked.
 - **Volume Mounts** (0.2) - Docker storage topic rarely central to SDE interviews.
 - **cgroups** (0.2) - Linux control groups occasionally surface in container-related discussions.
 - **docker compose** (0.2) - Tooling for multi-container Docker apps; rarely a direct interview topic.
 - **docker run** (0.2) - Docker command; tooling rarely asked in depth.
-- **Activity Diagrams** (0.1) - UML activity diagrams rarely used in SDE interviews.
+- **Activity Diagrams** (0.1) - UML activity diagrams rarely used in SDE interviews. - already named in 2 lessons (lld-uml-class-diagram, lld-uml-use-case-diagram)
 - **Custom Resource Definitions (CRDs)** (0.1) - Kubernetes extension mechanism niche for most SDE interviews.
 - **Linkerd** (0.1) - Service mesh tooling rarely asked in interviews.
 - **OpenTelemetry** (0.1) - Observability framework rarely an interview focus.
-- **Redirects** (0.1) - Shell redirection rarely tested in SDE loops.
 - **ReplicaSets** (0.1) - Kubernetes controller concept occasionally asked in DevOps-oriented roles.
-- **Sequence Diagrams** (0.1) - UML sequence diagrams occasionally used in design discussions.
 - **Statemachine Diagrams** (0.1) - UML state machine diagrams rarely used in SDE interviews.
 - **Usecase Diagrams** (0.1) - UML use case diagrams rarely used in SDE interviews.
 - **grep** (0.1) - Unix text search command; useful but rarely an interview focus.
-- **pipe** (0.1) - Shell pipe concept rarely tested in SDE loops.
 - **stdout / stdin / stderr** (0.1) - Standard streams are basic but may be probed in OS/systems questions.
 - **ulimits** (0.1) - Linux resource limit concept occasionally asked in backend/OS interviews.
 - **Netfilter** (0.1) - Linux firewall framework occasionally asked in systems interviews.
-- **ASCII** (0.1) - Basic encoding, usually covered alongside Unicode but rarely standalone.
+- **ASCII** (0.1) - Basic encoding, usually covered alongside Unicode but rarely standalone. - already named in 1 lesson (string)
 - **Adding Disks** (0.1) - Disk management task rarely asked in SDE interviews.
 - **Adding and Managing Worker Nodes** (0.1) - Cluster administration task rarely asked in SDE interviews.
 - **Archiving and Compressing** (0.1) - tar/gzip usage; tooling rarely asked.
@@ -616,8 +570,10 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Cloud Smith** (0.1) - Artifact repository tool rarely an interview topic.
 - **Cluster Autoscaling** (0.1) - Kubernetes operations, rarely an interview topic.
 - **Command Path** (0.1) - PATH resolution is a basic OS concept sometimes covered.
+- **Consul** (0.1) - Service discovery infrastructure rarely asked about. - already named in 1 lesson (sd-service-discovery)
 - **Container Registries** (0.1) - Operational tooling, low interview relevance.
 - **Creating Custom Controllers** (0.1) - Kubernetes extension, rarely asked.
+- **Datadog** (0.1) - Specific monitoring tool rarely asked. - already named in 2 lessons (1-d-dynamic-programming, tries)
 - **Debuggers** (0.1) - Tooling rarely asked conceptually.
 - **Directory Hierarchy Overview** (0.1) - Linux file system layout is occasionally asked in OS fundamentals.
 - **Docker CLI** (0.1) - Tool-specific commands, rarely an interview focus.
@@ -626,20 +582,17 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Dockerhub** (0.1) - Container registry; not an interview topic.
 - **Domain Keys** (0.1) - Email authentication method rarely asked in SDE interviews.
 - **Dynatrace** (0.1) - Observability tool rarely asked in interviews.
-- **Evictions** (0.1) - Kubernetes pod eviction, rarely asked.
+- **Evictions** (0.1) - Kubernetes pod eviction, rarely asked. - already named in 10 lessons (ai-agents-and-agentic-systems, cs-page-replacement-algorithms and 8 more)
 - **Finding & Installing Packages** (0.1) - Operational package management task rarely asked in SDE interviews.
 - **FluxCD** (0.1) - GitOps tooling rarely asked in interviews.
-- **GitHub** (0.1) - Code hosting platform; not a conceptual interview topic.
-- **GitLab** (0.1) - DevOps platform; not a core SDE interview topic.
 - **GitOps** (0.1) - Deployment methodology, rarely asked.
-- **Grafana** (0.1) - Monitoring tool rarely asked about directly in SDE interviews.
 - **Graylog** (0.1) - Specific log management tool rarely asked about directly in SDE interviews.
 - **Helm Charts** (0.1) - Kubernetes package manager, rarely asked.
 - **Hot Reloading** (0.1) - Development tooling, rarely asked.
-- **Jaeger** (0.1) - Tracing tool rarely asked to explain in interviews.
+- **Jaeger** (0.1) - Tracing tool rarely asked to explain in interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **LVM** (0.1) - Storage management tooling rarely asked in SDE interviews.
 - **LXC** (0.1) - Container runtime technology; niche for SDE interviews.
-- **Mounts** (0.1) - Linux filesystem operation rarely asked in SDE interviews.
+- **Linear Search** (0.1) - Trivial algorithm rarely asked directly; not covered separately. - already named in 1 lesson (java-concurrenthashmap)
 - **Multi-Cluster Management** (0.1) - Niche Kubernetes administration concept rarely asked in SDE interviews.
 - **New Relic** (0.1) - Observability tool rarely asked in interviews.
 - **Nexus** (0.1) - Artifact repository tooling rarely asked in SDE interviews.
@@ -649,28 +602,33 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Pod Priorities** (0.1) - Kubernetes feature, rarely asked.
 - **Process Monitoring** (0.1) - Tools like ps/top are useful but rarely a deep interview topic.
 - **RHEL / Derivatives** (0.1) - Specific Linux distro family rarely central to SDE interviews.
+- **Redirects** (0.1) - Shell redirection rarely tested in SDE loops. - already named in 6 lessons (cs-dns, cs-http-https and 4 more)
 - **SPF** (0.1) - Email authentication method rarely asked in SDE interviews.
-- **SSH** (0.1) - Remote access tool sometimes assumed but rarely probed.
+- **SSH** (0.1) - Remote access tool sometimes assumed but rarely probed. - already named in 2 lessons (cs-tcp-vs-udp, sd-monitoring-and-observability)
+- **Salt** (0.1) - Configuration management tool not an interview topic. - already named in 1 lesson (sd-unique-id-generation)
+- **Sequence Diagrams** (0.1) - UML sequence diagrams occasionally used in design discussions. - already named in 2 lessons (lld-uml-sequence-diagram, lld-uml-use-case-diagram)
 - **Service Management (systemd)** (0.1) - systemd service management is rarely asked in product-company SDE interviews.
 - **Setting up Kubernetes** (0.1) - Operational setup task, rarely asked in SDE interviews.
-- **Snap** (0.1) - Package manager tool rarely asked in SDE interviews.
+- **Snap** (0.1) - Package manager tool rarely asked in SDE interviews. - already named in 3 lessons (backtracking, matrix-grid and 1 more)
 - **Starting / Stopping Services** (0.1) - Operational task rarely asked to explain in SDE interviews.
 - **StatefulSets** (0.1) - Stateful workloads in Kubernetes occasionally discussed.
-- **Terraform** (0.1) - Infrastructure as code tool rarely asked about directly in SDE interviews.
 - **Users / Groups Permissions** (0.1) - File permissions occasionally surface in Linux-related questions.
 - **Using 3rd Party Container Images** (0.1) - Operational task, rarely an interview topic.
 - **Using Secrets for Sensitive Data** (0.1) - Secret management in Kubernetes may come up in some backend roles.
 - **VCS Hosting** (0.1) - Platform-specific tooling, rarely a SDE interview topic.
 - **White / Grey Listing** (0.1) - Email/security list concept, rarely asked.
 - **Zabbix** (0.1) - Monitoring tool rarely asked to explain in interviews.
-- **awk** (0.1) - Unix text processing tool; low interview relevance.
-- **head** (0.1) - Unix command rarely asked beyond basic usage.
-- **join** (0.1) - Unix command rarely asked beyond basic usage.
+- **cut** (0.1) - Text processing command rarely asked directly. - already named in 11 lessons (2-d-dynamic-programming, advanced-graphs and 9 more)
+- **expand** (0.1) - Unix command for converting tabs to spaces; rarely asked in SDE interviews. - already named in 16 lessons (1-d-dynamic-programming, ai-bias-variance-tradeoff and 14 more)
+- **head** (0.1) - Unix command rarely asked beyond basic usage. - already named in 18 lessons (ai-deep-learning, ai-hypothesis-testing and 16 more)
 - **netstat** (0.1) - Network diagnostic command rarely the focus of interview questions.
 - **nl** (0.1) - Unix command rarely asked beyond basic usage.
-- **ping** (0.1) - Network diagnostic command rarely the focus of interview questions.
-- **split** (0.1) - Unix command rarely asked beyond basic usage.
-- **tail** (0.1) - Unix command rarely asked beyond basic usage.
+- **paste** (0.1) - Text processing command rarely asked directly. - already named in 2 lessons (sd-caching, sd-design-a-pastebin)
+- **ping** (0.1) - Network diagnostic command rarely the focus of interview questions. - already named in 2 lessons (beh-prioritization, sd-websockets)
+- **pipe** (0.1) - Shell pipe concept rarely tested in SDE loops. - already named in 3 lessons (cs-inter-process-communication, cs-processes-vs-threads and 1 more)
+- **sort** (0.1) - Sorting command is a tool rarely a focus. - already named in 48 lessons (1-d-dynamic-programming, advanced-graphs and 46 more)
+- **split** (0.1) - Unix command rarely asked beyond basic usage. - already named in 69 lessons (2-d-dynamic-programming, ai-agents-and-agentic-systems and 67 more)
+- **tail** (0.1) - Unix command rarely asked beyond basic usage. - already named in 13 lessons (ai-data-structures-and-algorithms, ai-prediction-service and 11 more)
 - **tee** (0.1) - Unix command rarely asked beyond basic usage.
 - **traceroute** (0.1) - Network diagnostic command rarely the focus of interview questions.
 - **uniq** (0.1) - Unix command for filtering duplicate lines; low interview relevance.
@@ -683,19 +641,15 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Copying and Renaming** (0.1) - cp/mv commands; too basic and rarely asked.
 - **Custom Schedulers and Extenders** (0.1) - Kubernetes customization, rarely asked.
 - **DMARC** (0.1) - Email authentication, rarely asked.
-- **Datadog** (0.1) - Specific monitoring tool rarely asked.
 - **Docker Swarm** (0.1) - Niche orchestration tool rarely asked.
 - **ESO** (0.1) - External Secrets Operator is niche Kubernetes tooling.
-- **GitHub Actions** (0.1) - CI/CD tooling rarely tested in depth in SDE interviews.
 - **GitLab CI** (0.1) - CI/CD tooling rarely tested in depth in SDE interviews.
 - **Injecting Pod Config with ConfigMaps** (0.1) - Specific Kubernetes task rarely asked in SDE loops.
 - **Installing a Local Cluster** (0.1) - Operational task rarely asked in SDE interviews.
 - **Installing the Control Plane** (0.1) - Kubernetes installation, rarely asked.
-- **Jenkins** (0.1) - CI/CD tooling rarely tested in depth in SDE interviews.
 - **NetBSD** (0.1) - Niche OS distribution rarely relevant to SDE interviews.
 - **Octopus Deploy** (0.1) - Deployment tool rarely tested in SDE interviews.
 - **Power Shell** (0.1) - Windows-specific shell rarely asked outside Windows shops.
-- **Prometheus** (0.1) - Specific monitoring tool rarely asked.
 - **Pulumi** (0.1) - Infrastructure as code tool rarely asked about directly.
 - **Sealed Secrets** (0.1) - Kubernetes secrets tool rarely asked about directly.
 - **Services Running** (0.1) - Operational check rarely asked in SDE interviews.
@@ -703,94 +657,72 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **The Knight's Tour Problem** (0.1) - Specific backtracking puzzle rarely asked directly.
 - **Vault** (0.1) - Secrets management tool rarely asked about directly.
 - **Vim / Nano / Emacs** (0.1) - Text editor tooling rarely asked in SDE interviews.
-- **cut** (0.1) - Text processing command rarely asked directly.
-- **expand** (0.1) - Unix command for converting tabs to spaces; rarely asked in SDE interviews.
-- **paste** (0.1) - Text processing command rarely asked directly.
-- **sort** (0.1) - Sorting command is a tool rarely a focus.
 - **tr** (0.1) - Text processing command rarely asked directly.
 - **unexpand** (0.1) - Unix command for converting spaces to tabs; very low interview relevance.
 - **GCP Functions** (0.0) - Vendor-specific serverless product with limited interview coverage.
 - **Vim** (0.0) - Text editor tool rarely relevant to interviews.
 - **AWS CDK** (0.0) - Infrastructure as code tool rarely asked to explain.
-- **Ansible** (0.0) - Configuration management tool rarely asked to explain.
-- **Chef** (0.0) - Configuration management tool rarely asked to explain.
 - **CloudFormation** (0.0) - Infrastructure as code tool rarely asked to explain.
 - **Elastic Stack** (0.0) - Logging and search tools rarely asked to explain.
 - **Heroku** (0.0) - Platform-as-a-service tool rarely asked to explain.
 - **Loki** (0.0) - Log aggregation tool rarely asked to explain.
-- **Nano** (0.0) - Text editor tool rarely relevant to interviews.
-- **Puppet** (0.0) - Configuration management tool rarely asked to explain.
-- **Salt** (0.0) - Configuration management tool rarely asked to explain.
-- **Splunk** (0.0) - Log management tool rarely asked to explain.
 - **Buildkite** (0.0) - CI/CD tool rarely asked to explain.
-- **Conditionals** (0.0) - Basic programming construct, not an interview topic.
 - **Install / Remove / Upgrade Packages** (0.0) - Sysadmin package operations, not interview concepts.
 - **Listing Installed Packages** (0.0) - Package management command, not conceptual interview material.
-- **Loops** (0.0) - Basic programming construct, not an interview topic.
 - **Papertrail** (0.0) - Logging service tooling rarely asked.
 - **Railway** (0.0) - Platform-as-a-service tool rarely asked to explain.
-- **Variables** (0.0) - Basic programming construct, not an interview topic.
-- **Literals** (0.0) - Basic syntax concept, not discussed in SDE interviews.
+- **Literals** (0.0) - Basic syntax concept, not discussed in SDE interviews. - already named in 4 lessons (java-string-pool, java-strings and 2 more)
+- **Splunk** (0.0) - Log management tool rarely asked to explain. - already named in 1 lesson (1-d-dynamic-programming)
+- **Variables** (0.0) - Basic programming construct, not an interview topic. - already named in 40 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 38 more)
+- **awk** (0.0) - Text processing tool, not SQL interviews.
 
 ### dsa
 
-- **Kth Element** (0.6) - Frequent interview problem class with heap and quickselect solutions.
+- **Kth Element** (0.6) - Frequent interview problem class with heap and quickselect solutions. - already named in 1 lesson (linked-list)
 - **Divide and Conquer** (0.6) - Common paradigm underpinning merge sort and quickselect, often expected in interviews.
-- **Heap Sort** (0.5) - Sorting algorithm using heap; occasionally asked.
 - **B/B+ Trees** (0.5) - Specific database index structures occasionally asked in database internals interviews.
 - **Cyclic Sort** (0.4) - Specific pattern for range-based array problems, appears in some loops.
-- **AVL Trees** (0.3) - Self-balancing BST occasionally asked; not in basic Trees.
-- **B-Trees** (0.3) - Used in databases; occasionally discussed in interviews.
-- **Big-θ Notation** (0.3) - Less commonly asked than Big-O but still a specific notation.
-- **Insertion Sort** (0.3) - Sometimes asked to explain or implement.
-- **Skip List** (0.3) - Rarely asked but appears in some system design and Redis internals discussions.
+- **Big-θ Notation** (0.3) - Less commonly asked than Big-O but still a specific notation. - already named in 5 lessons (ai-data-structures-and-algorithms, beh-why-this-company and 3 more)
 - **Suffix Trees and Arrays** (0.3) - Advanced string data structures; occasionally asked.
 - **Randomised Algorithms** (0.2) - Niche paradigm occasionally referenced for randomized quicksort or hash analysis.
 - **2-3 Trees** (0.2) - Rarely asked; specific balanced tree variant.
-- **Big-Ω Notation** (0.2) - Big-Omega is occasionally asked alongside Big-O.
-- **Bubble Sort** (0.2) - Basic sorting algorithm sometimes asked for explanation.
-- **Selection Sort** (0.2) - Basic sorting algorithm rarely asked.
-- **ISAM** (0.1) - Legacy indexing method, almost never asked in modern SDE interviews.
-- **Linear Search** (0.1) - Trivial algorithm rarely asked directly; not covered separately.
 - **Pseudo Code** (0.1) - Pseudocode is rarely the focus of SDE interviews, which expect actual code.
 
 ### java
 
-- **Hibernate** (0.6) - Popular ORM, often asked in Java enterprise interviews.
+- **Hibernate** (0.6) - Popular ORM, often asked in Java enterprise interviews. - already named in 2 lessons (java-jdbc, sd-n-1-query-problem)
 - **Spring Bean Scope** (0.6) - Bean scopes are a standard Spring question.
-- **Annotations** (0.5) - Built-in and custom annotations are sometimes discussed.
-- **Authentication** (0.5) - Security concepts appear in backend interviews.
-- **Data Types** (0.5) - Primitive vs reference types common in Java basics.
+- **Annotations** (0.5) - Built-in and custom annotations are sometimes discussed. - already named in 4 lessons (ai-data-collection-and-preparation, java-java-8-features and 2 more)
+- **Authentication** (0.5) - Security concepts appear in backend interviews. - already named in 9 lessons (cs-http-https, cs-tcp-3-way-handshake and 7 more)
 - **Entity Lifecycle** (0.5) - JPA entity states are asked in backend roles.
-- **Enums** (0.5) - Java enums and their methods are sometimes asked.
+- **Enums** (0.5) - Java enums and their methods are sometimes asked. - already named in 5 lessons (ai-agents-and-agentic-systems, java-thread-lifecycle and 3 more)
 - **Functional Composition** (0.5) - Functional programming technique occasionally asked with lambdas.
 - **JUnit** (0.5) - Common testing framework; sometimes asked about unit testing practices.
 - **Spring Data JPA** (0.5) - Repositories and query methods common in Java backend interviews.
 - **Spring Data MongoDB** (0.5) - Spring Data repositories may be discussed.
 - **Spring Security** (0.5) - Common in Java backend interviews for authentication/authorization.
-- **Static Keyword** (0.5) - Static members and blocks are common Java questions.
+- **Static Keyword** (0.5) - Static members and blocks are common Java questions. - already named in 1 lesson (java-default-and-static-interface-methods)
 - **Autoconfiguration** (0.4) - Spring Boot core concept often asked.
-- **Date and Time** (0.4) - java.time API can appear in coding or concept questions.
+- **Date and Time** (0.4) - java.time API can appear in coding or concept questions. - already named in 1 lesson (sql-data-types)
 - **File Operations** (0.4) - Reading/writing files is common but not deep.
 - **Final Keyword** (0.4) - Final variables, methods, and classes may come up.
-- **I/O Operations** (0.4) - Java IO/NIO basics may be asked.
 - **Nested Classes** (0.4) - Inner and anonymous classes appear occasionally.
-- **Relationships** (0.4) - Aggregation vs composition may be asked in OOP.
+- **Relationships** (0.4) - Aggregation vs composition may be asked in OOP. - already named in 41 lessons (ai-deep-learning, ai-embedding-models and 39 more)
 - **Servlet** (0.4) - Foundational Java web technology, still asked in some enterprise interviews.
 - **Spring Boot Starters** (0.4) - Framework-specific configuration topic.
 - **Spring Cloud Circuit Breaker** (0.4) - Resilience patterns are moderately common.
 - **Spring Cloud Open Feign** (0.4) - Declarative REST clients are tooling-specific.
 - **Spring Data JDBC** (0.4) - Spring Data module; sometimes asked in Spring-specific roles but less core.
-- **Type Casting** (0.4) - Casting rules and ClassCastException sometimes come up.
+- **Type Casting** (0.4) - Casting rules and ClassCastException sometimes come up. - already named in 1 lesson (java-lambda-expressions)
 - **Mock MVC** (0.3) - Spring MVC testing tool, occasionally asked for web layer testing.
 - **Mocking > Mockito** (0.3) - Mockito is common for unit testing, and interviewers may probe mocking concepts.
 - **Actuators** (0.3) - Monitoring endpoints rarely deep-dived.
 - **Cloud Config** (0.3) - Spring Cloud Config is specific tooling.
 - **Embedded Server** (0.3) - Rarely asked beyond basic awareness.
 - **JPA Test** (0.3) - Niche testing topic; rarely core interview focus.
-- **Object Lifecycle** (0.3) - Initialization and finalization are less common.
-- **Packages** (0.3) - Fundamental language feature occasionally asked about access modifiers and package structure.
-- **Record** (0.3) - Java records are newer and less frequently asked.
+- **Object Lifecycle** (0.3) - Initialization and finalization are less common. - already named in 1 lesson (java-serialization)
+- **Packages** (0.3) - Fundamental language feature occasionally asked about access modifiers and package structure. - already named in 7 lessons (ai-vector-databases, beh-company-and-motivation and 5 more)
+- **Record** (0.3) - Java records are newer and less frequently asked. - already named in 59 lessons (ai-python, ai-supervised-fine-tuning-of-llm and 57 more)
 - **Regular Expressions** (0.3) - Occasionally tested in coding exercises.
 - **Spring Cloud Gateway** (0.3) - API gateway tooling is less likely in core interviews.
 - **Why use Spring?** (0.3) - Conceptual question but part of Spring ecosystem.
@@ -805,8 +737,8 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **JSP Files** (0.2) - Legacy view technology; rarely asked in modern interviews.
 - **Math Operations** (0.2) - Math class rarely asked beyond basic knowledge.
 - **Maven** (0.2) - Build tooling rarely asked in core coding interviews.
-- **Method Chaining** (0.2) - Fluent interfaces are occasionally discussed.
-- **Modules** (0.2) - JPMS rarely covered in interviews.
+- **Method Chaining** (0.2) - Fluent interfaces are occasionally discussed. - already named in 1 lesson (lld-builder-pattern)
+- **Modules** (0.2) - JPMS rarely covered in interviews. - already named in 9 lessons (ai-neural-network-design, ai-software-engineering and 7 more)
 - **Play Framework** (0.2) - Less common framework; rarely asked.
 - **Quarkus** (0.2) - Niche framework; rarely asked in general SDE interviews.
 - **REST Assured** (0.2) - API testing tool; rarely core interview focus.
@@ -817,9 +749,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Logback** (0.1) - Logging configuration rarely asked.
 - **Micrometer** (0.1) - Operational tooling rarely asked in core SDE interviews.
 - **SLF4J** (0.1) - SLF4J is a logging facade; questions about logging are usually shallow.
-- **Conditionals** (0.1) - Control flow is too basic for most SDE interviews.
 - **Javadoc** (0.1) - Documentation tooling rarely asked in interviews.
-- **Loops** (0.1) - Loop constructs are rarely asked directly.
 - **TestNG** (0.1) - TestNG is a testing tool not commonly a focus unless the role requires it.
 - **JMeter** (0.1) - Performance testing tools are outside typical SDE interview scope.
 - **TinyLog** (0.0) - TinyLog is a niche logging library unlikely to be asked about.
@@ -830,46 +760,43 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Model-View Controller** (0.6) - MVC is a widely used architectural pattern.
 - **Value Objects** (0.6) - Value objects are a core DDD concept relevant to LLD.
 - **Commands / Queries** (0.6) - CQRS pattern often discussed with event-driven systems.
-- **Event-Driven** (0.6) - Event-driven architecture is common in modern system design.
 - **Message Queues / Streams** (0.6) - Messaging patterns are common in distributed system design.
+- **Boundaries** (0.5) - Architectural boundaries are a common system design topic. - already named in 36 lessons (ai-a-b-testing, ai-agents-and-agentic-systems and 34 more)
 - **Command query separation** (0.5) - Command query separation is a known design principle sometimes asked in OOD interviews.
 - **DRY** (0.5) - DRY is a fundamental design principle often asked in interviews.
-- **Event Sourcing** (0.5) - Event sourcing is increasingly common in data-intensive systems.
-- **Law of Demeter** (0.5) - Law of Demeter is a common OOP design question about reducing coupling.
-- **Layered** (0.5) - Layered architecture is a standard design pattern.
-- **Mappers** (0.5) - Data mapping is common in application design.
-- **Microservices** (0.5) - Microservices architecture is common in system design discussions.
-- **Tell, don't ask** (0.5) - Tell, don't ask is a common OOP design heuristic.
-- **Boundaries** (0.5) - Architectural boundaries are a common system design topic.
+- **Law of Demeter** (0.5) - Law of Demeter is a common OOP design question about reducing coupling. - already named in 1 lesson (lld-encapsulation)
+- **Mappers** (0.5) - Data mapping is common in application design. - already named in 1 lesson (sd-n-1-query-problem)
 - **Encapsulate what varies** (0.5) - Design principle behind several patterns, not explicitly covered.
-- **Domain Models** (0.4) - Domain modeling can come up in OOD interviews, especially with DDD-aligned roles.
+- **Domain Models** (0.4) - Domain modeling can come up in OOD interviews, especially with DDD-aligned roles. - already named in 1 lesson (sd-n-1-query-problem)
 - **Keep it simple and refactor often** (0.4) - Simplicity and refactoring are often discussed in design interviews.
-- **Monolithic** (0.4) - Monolith vs microservices tradeoffs are common.
+- **Monolithic** (0.4) - Monolith vs microservices tradeoffs are common. - already named in 1 lesson (sd-database-federation)
 - **Organize code by actor it belongs to** (0.4) - Package organization and modularity can be discussed in design interviews.
-- **Pure functions** (0.4) - Pure functions are a common question when discussing testability and side effects.
+- **Pure functions** (0.4) - Pure functions are a common question when discussing testability and side effects. - already named in 1 lesson (ai-software-engineering)
 - **Usecases** (0.4) - Use case concept relevant to requirements and clean architecture.
-- **Anemic Models** (0.3) - Domain modeling anti-pattern occasionally referenced.
-- **CQRS** (0.3) - Specific architectural pattern sometimes discussed in design interviews but not core LLD.
 - **Client-Server** (0.3) - Foundational architecture style, occasionally discussed.
 - **Serverless Architecture** (0.3) - Serverless is common in system design but less in LLD.
 - **Transaction Script** (0.3) - Domain logic pattern, occasionally discussed.
+- **Anemic Models** (0.3) - Domain modeling anti-pattern occasionally referenced. - already named in 1 lesson (lld-encapsulation)
 - **Component-Based** (0.3) - Component-based architecture style, moderate interview relevance.
 - **Domain Language** (0.3) - Ubiquitous language concept, less common in LLD interviews.
 - **Keep framework code distant** (0.3) - Relevant for maintainability and architecture but rarely asked directly in interviews.
 - **Keep methods / classes / files small** (0.3) - Occasionally discussed as part of clean code and maintainability.
 - **Meaningful names over comments** (0.3) - Naming and comments may be discussed in code quality questions, but not a standalone design topic.
 - **Microkernel** (0.3) - Architectural pattern occasionally discussed.
-- **ORMs** (0.3) - Tooling concept occasionally asked about (e.g., N+1, lazy loading) but low LLD interview frequency.
-- **Policy vs Detail** (0.3) - Clean architecture principle, less common.
-- **SOA** (0.3) - Service-oriented architecture is less common than microservices.
+- **ORMs** (0.3) - Tooling concept occasionally asked about (e.g., N+1, lazy loading) but low LLD interview frequency. - already named in 4 lessons (java-jdbc, lld-abstraction and 2 more)
+- **Policy vs Detail** (0.3) - Clean architecture principle, less common. - already named in 3 lessons (beh-company-specific-questions, lld-hotel-management-system-design and 1 more)
+- **SOA** (0.3) - Service-oriented architecture is less common than microservices. - already named in 1 lesson (cs-dns)
+- **SOLID** (0.3) - Object-oriented design principles mostly asked in coding interviews, not system design. - already named in 4 lessons (lld-aggregation, lld-solid-principles and 2 more)
 - **Tests should be fast and independent** (0.3) - Testing practices are sometimes discussed, but this specific guideline is not a common design interview topic.
 - **YAGNI** (0.3) - Design principle occasionally discussed but not core to LLD.
 - **Blackboard Pattern** (0.2) - Architectural pattern rarely asked in interviews.
 - **Identity Maps** (0.2) - ORM pattern rarely asked in LLD.
 - **Peer-to-Peer** (0.2) - Decentralized architecture rarely asked in LLD.
 - **Avoid passing nulls, booleans** (0.2) - Discussed sometimes in clean code/refactoring, but not a core interview topic.
-- **Be consistent** (0.2) - Rarely asked directly; more of a code review practice than an interview topic.
+- **Be consistent** (0.2) - Rarely asked directly; more of a code review practice than an interview topic. - already named in 4 lessons (binary-search, java-hashmap-internals and 2 more)
+- **Functional Programming** (0.2) - Programming paradigm not commonly a system design interview topic. - already named in 1 lesson (java-java-8-features)
 - **Hollywood Principle** (0.2) - Inversion-of-control principle rarely asked directly.
+- **Layered** (0.2) - Layered architecture is a basic pattern, rarely a deep interview topic. - already named in 1 lesson (sd-object-storage)
 - **Minimize cyclomatic complexity** (0.2) - Rarely asked directly; mostly a code quality metric.
 - **Structured Programming** (0.2) - Rarely asked directly; foundational but seldom an interview focus.
 - **Indentation and Code Style** (0.1) - Rarely asked in SDE design interviews; more about code formatting.
@@ -883,40 +810,41 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Data Partitioning** (0.5) - Partitioning strategies are moderately likely in database design discussions.
 - **Lock Management** (0.5) - Locking and isolation levels can come up in backend or database interviews.
 - **OLAP** (0.5) - OLAP and analytical workloads are moderately common in design discussions.
+- **PostgreSQL vs NoSQL Databases** (0.5) - Occasionally asked in system design discussions when justifying database choice. - already named in 1 lesson (sd-sql-vs-nosql)
 - **Pivot / Unpivot Operations** (0.5) - Interviewers may ask how to transform rows to columns in SQL.
-- **PostgreSQL vs NoSQL Databases** (0.5) - Occasionally asked in system design discussions when justifying database choice.
 - **PostgreSQL vs Other RDBMS** (0.5) - Sometimes asked to compare specific relational databases.
-- **Dynamic SQL** (0.4) - Dynamic SQL construction and its risks can come up in backend interviews.
-- **Lateral Join** (0.4) - Lateral joins are a specific SQL feature occasionally asked in advanced SQL interviews.
+- **Dynamic SQL** (0.4) - Dynamic SQL construction and its risks can come up in backend interviews. - already named in 2 lessons (sql-sql-injection-prevention, sql-stored-procedures)
+- **Lateral Join** (0.4) - Lateral joins are a specific SQL feature occasionally asked in advanced SQL interviews. - already named in 1 lesson (sd-n-1-query-problem)
 - **Logical Replication** (0.4) - Replication concepts can come up in backend interviews.
-- **OLTP** (0.4) - OLTP concept is sometimes discussed in context of database workloads.
-- **Operators** (0.4) - SQL operators are fundamental but rarely asked about in isolation.
+- **OLTP** (0.4) - OLTP concept is sometimes discussed in context of database workloads. - already named in 1 lesson (sd-database-federation)
+- **Operators** (0.4) - SQL operators are fundamental but rarely asked about in isolation. - already named in 19 lessons (ai-prediction-service, bit-manipulation and 17 more)
 - **Bulk Loading / Processing Data** (0.3) - Efficiently loading large datasets is sometimes discussed, though less common for SDE loops.
-- **Hash** (0.3) - Hash index use cases and limitations are occasionally asked.
-- **Roles** (0.3) - Database roles and privileges are sometimes discussed in access-control questions.
+- **Hash** (0.3) - Hash index use cases and limitations are occasionally asked. - already named in 62 lessons (ai-data-structures-and-algorithms, ai-feature-engineering and 60 more)
+- **Roles** (0.3) - Database roles and privileges are sometimes discussed in access-control questions. - already named in 26 lessons (ai-convolutional-neural-networks, ai-hypothesis-testing and 24 more)
 - **Streaming Replication** (0.3) - PostgreSQL streaming replication is specific and rarely central.
-- **Row-Level Security** (0.2) - Row-level security is occasionally relevant in multi-tenant design discussions.
 - **Checkpoints / Background Writer** (0.2) - Postgres internals occasionally come up but mostly operational.
-- **Domains** (0.2) - PostgreSQL-specific feature rarely asked in general SDE interviews.
-- **Replication** (0.2) - Replication is a specific topic sometimes discussed in system design contexts.
+- **Domains** (0.2) - PostgreSQL-specific feature rarely asked in general SDE interviews. - already named in 30 lessons (ai-data-collection-and-preparation, ai-embedding-models and 28 more)
 - **Using Logical Replication** (0.2) - Logical replication is sometimes relevant in data sync discussions.
 - **Default Privileges** (0.1) - PostgreSQL-specific privilege defaults; sometimes asked in DBA-oriented interviews.
 - **PL/pgSQL** (0.1) - PL/pgSQL specifics are rarely asked; stored procedure concepts are covered separately.
 - **Processes & Memory Architecture** (0.1) - PostgreSQL internal architecture is rarely asked outside DBA roles.
 - **Authentication Models** (0.1) - Authentication models are operational and not usually an SDE interview topic.
+- **BRIN** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles.
 - **Backup Validation Procedures** (0.1) - Backup validation is operational, occasionally mentioned in reliability questions.
 - **Buffer Management** (0.1) - PostgreSQL buffer management is internal and rarely asked.
-- **CEILING** (0.1) - Rarely asked in isolation; basic scalar numeric function.
+- **CEILING** (0.1) - Rarely asked in isolation; basic scalar numeric function. - already named in 2 lessons (java-hashset-vs-treeset, sd-horizontal-scaling)
 - **Connect using `psql`** (0.1) - Tooling for connecting to PostgreSQL, rarely asked directly in SDE interviews.
 - **DATEADD** (0.1) - Date function rarely asked standalone.
 - **DATEPART** (0.1) - Date function rarely asked standalone.
+- **Etcd** (0.1) - Distributed key-value store infrastructure rarely asked about. - already named in 4 lessons (sd-cap-theorem, sd-consistency-models and 2 more)
 - **GIN** (0.1) - Generalized inverted index relevant for full-text and JSON, occasionally asked.
+- **GiST** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles. - already named in 1 lesson (sd-design-a-ride-sharing-service)
+- **HAProxy** (0.1) - Load balancing infrastructure rarely asked about in SDE interviews. - already named in 1 lesson (sd-layer-4-vs-layer-7-load-balancing)
 - **HTAP** (0.1) - HTAP is a niche architecture rarely asked.
 - **Import / Export Using `COPY`** (0.1) - Data import/export tooling; rarely an SDE interview focus.
 - **Installation and Setup** (0.1) - Operational setup is rarely part of SDE interview loops.
-- **LOWER** (0.1) - Basic string function rarely asked standalone.
+- **LOWER** (0.1) - Basic string function rarely asked standalone. - already named in 49 lessons (ai-a-b-testing, ai-bias-variance-tradeoff and 47 more)
 - **Migration Related Tools** (0.1) - Database migration tooling is operational and rarely a core interview topic.
-- **Package Managers** (0.1) - Package tooling, not SQL interview material.
 - **Patroni** (0.1) - Specific PostgreSQL HA tool rarely asked in SDE interviews.
 - **Per-User, Per-Database Setting** (0.1) - Configuration settings are rarely a focus of SDE interviews.
 - **PgBouncer** (0.1) - Connection pooling tool sometimes relevant but rarely asked.
@@ -924,34 +852,24 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **SSL Settings** (0.1) - Transport encryption settings are operational, rarely asked in SDE interviews.
 - **Storage Parameters** (0.1) - Storage parameters are operational details, not common in interviews.
 - **System Catalog** (0.1) - System catalogs are PostgreSQL-specific and rarely asked.
-- **UPPER** (0.1) - Basic string function rarely asked standalone.
+- **UPPER** (0.1) - Basic string function rarely asked standalone. - already named in 4 lessons (backtracking, cs-osi-model and 2 more)
 - **Using Docker** (0.1) - Tooling for running databases, rarely asked as interview topic.
 - **Using `systemd`** (0.1) - Linux service management tooling, not SQL interview material.
 - **Vacuum Processing** (0.1) - Vacuum/autovacuum is operational and seldom covered in SDE interviews.
-- **Vacuums** (0.1) - PostgreSQL maintenance operation; not commonly asked in SDE interviews.
+- **Vacuums** (0.1) - PostgreSQL maintenance operation; not commonly asked in SDE interviews. - already named in 1 lesson (sql-char-vs-varchar)
 - **pg_basebackup** (0.1) - Base backup utility, rarely asked directly.
 - **pg_dump** (0.1) - Backup utility, rarely asked directly.
 - **pg_hba.conf** (0.1) - Postgres client authentication config is operational, not typical interview content.
 - **pg_restore** (0.1) - Restore utility, rarely asked directly.
-- **Ansible** (0.1) - Configuration management tool not an interview topic.
-- **BRIN** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles.
 - **Chef** (0.1) - Configuration management tool not an interview topic.
-- **Consul** (0.1) - Service discovery infrastructure rarely asked about.
-- **Etcd** (0.1) - Distributed key-value store infrastructure rarely asked about.
-- **GiST** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles.
-- **HAProxy** (0.1) - Load balancing infrastructure rarely asked about in SDE interviews.
-- **Helm** (0.1) - Kubernetes package manager not an interview topic.
 - **KeepAlived** (0.1) - High availability infrastructure rarely asked about.
 - **PgQ** (0.1) - PgQ is a niche PostgreSQL queueing tool rarely asked in interviews.
 - **PostgreSQL Anonymizer** (0.1) - Specialized extension, not typical SDE interview content.
-- **Prometheus** (0.1) - Monitoring tool rarely asked about in SDE interviews.
 - **Puppet** (0.1) - Configuration management tool not an interview topic.
 - **SELinux** (0.1) - System-level security module, not SQL interview material.
-- **Salt** (0.1) - Configuration management tool not an interview topic.
 - **Using `pg_ctl`** (0.1) - Server control tooling; not a typical SQL interview topic.
 - **Using `pg_upgrade`** (0.1) - Version upgrade tooling, operational.
 - **WAL-G** (0.1) - Backup tooling, operational rather than interview.
-- **Zabbix** (0.1) - Monitoring tool rarely asked about in SDE interviews.
 - **barman** (0.1) - Backup tooling, operational rather than interview.
 - **check_pgactivity** (0.1) - PostgreSQL monitoring tool rarely asked about.
 - **check_pgbackrest** (0.1) - PostgreSQL backup monitoring tool rarely asked about.
@@ -967,129 +885,118 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **PEV2** (0.0) - EXPLAIN visualizer tool, not an interview topic.
 - **SP-GiST** (0.0) - Niche index type rarely relevant.
 - **explain.dalibo.com** (0.0) - EXPLAIN visualizer tool, not an interview topic.
-- **Tensor** (0.0) - Obscure tool, not an interview topic.
 - **iotop** (0.0) - I/O monitoring tool, not SQL interview material.
 - **perf-tools** (0.0) - Linux performance tooling is not SQL-specific and rarely asked.
 - **sysstat** (0.0) - System performance tools, not SQL interview material.
-- **top** (0.0) - System monitoring command, not an interview topic.
 - **Core Dumps** (0.0) - Debugging crash dumps is operational and rarely asked in SQL interviews.
 - **Golden Signals** (0.0) - Monitoring framework, not SQL interview material.
-- **RED** (0.0) - Observability method, not SQL-specific and rarely asked.
+- **RED** (0.0) - Observability method, not SQL-specific and rarely asked. - already named in 5 lessons (ai-generative-model-evaluation, beh-questions-to-ask-the-interviewer and 3 more)
 - **Reviewing Patches** (0.0) - Open-source contribution process, not asked in interviews.
-- **USE** (0.0) - Observability method, not SQL-specific and rarely asked.
+- **Tensor** (0.0) - Obscure tool, not an interview topic. - already named in 4 lessons (ai-convolutional-neural-networks, ai-neural-network-design and 2 more)
+- **USE** (0.0) - Observability method, not SQL-specific and rarely asked. - already named in 262 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 260 more)
 - **Writing Patches** (0.0) - Open-source contribution process, not asked in interviews.
-- **awk** (0.0) - Text processing tool, not SQL interviews.
 - **ebpf** (0.0) - Kernel tracing technology, not SQL interview material.
 - **gdb** (0.0) - Debugger tool, not SQL interview material.
-- **grep** (0.0) - Text search tool, not SQL interviews.
 - **pgBadger** (0.0) - Log analysis tool, not an interview topic.
 - **pgCluu** (0.0) - PostgreSQL monitoring tool, not an interview topic.
 - **pgcenter** (0.0) - PostgreSQL monitoring tool, not an interview topic.
 - **sed** (0.0) - Stream editor, not SQL interviews.
 - **strace** (0.0) - System call tracer, not SQL interview material.
+- **top** (0.0) - System monitoring command, not an interview topic. - already named in 42 lessons (ai-agents-and-agentic-systems, ai-candidate-generation and 40 more)
 
 ### system_design
 
 - **BFF Pattern** (0.6) - Specific API architecture pattern for client-specific backends.
-- **Bulkhead** (0.6) - Isolation pattern often discussed alongside circuit breakers.
+- **Bulkhead** (0.6) - Isolation pattern often discussed alongside circuit breakers. - already named in 1 lesson (sd-circuit-breaker)
 - **Database Caching** (0.6) - Database-level caching is a distinct performance topic.
-- **Domain Name System** (0.6) - Fundamental system design concept directly asked about resolution, records, and TTL.
+- **Domain Name System** (0.6) - Fundamental system design concept directly asked about resolution, records, and TTL. - already named in 1 lesson (cs-dns)
 - **Event Driven Architecture** (0.6) - Common architectural pattern in distributed systems.
-- **GraphQL** (0.6) - GraphQL is occasionally discussed as an API alternative in design interviews.
-- **Latency vs Throughput** (0.6) - Commonly asked conceptual distinction in system design interviews.
-- **Performance vs Scalability** (0.6) - Commonly asked conceptual distinction in system design interviews.
+- **Latency vs Throughput** (0.6) - Commonly asked conceptual distinction in system design interviews. - already named in 20 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 18 more)
+- **Performance vs Scalability** (0.6) - Commonly asked conceptual distinction in system design interviews. - already named in 1 lesson (beh-communication)
 - **RBAC** (0.6) - Role-based access control is a standard part of system authorization design.
-- **SQL Tuning** (0.6) - Query optimization and indexing are common database interview questions.
-- **Service Mesh** (0.6) - Service-to-service communication infrastructure often asked with microservices.
+- **SQL Tuning** (0.6) - Query optimization and indexing are common database interview questions. - already named in 1 lesson (sql-index-seek-vs-scan)
 - **Basics of DNS** (0.6) - DNS is a foundational system design component.
 - **Queue-Based Load Leveling** (0.6) - A specific pattern for handling load with queues, sometimes asked in design.
 - **Real-time APIs** (0.6) - Real-time API choices beyond WebSockets, such as SSE and long polling, are interview-relevant.
 - **Application Caching** (0.5) - Application-level caching is a common interview topic.
+- **Background Jobs** (0.5) - Background job processing is relevant to system designs but rarely a standalone interview topic. - already named in 4 lessons (sd-acid-vs-base, sd-design-a-file-storage-service and 2 more)
 - **Batch Processing** (0.5) - Designing batch data pipelines is a common system design topic.
-- **Denormalization** (0.5) - Schema design technique often discussed in database scaling and NoSQL modeling.
+- **Denormalization** (0.5) - Schema design technique often discussed in database scaling and NoSQL modeling. - already named in 2 lessons (cs-normalization, sd-sql-vs-nosql)
 - **Filtering, Sorting & Search** (0.5) - Backend listing and search design is common in system design interviews.
 - **HTTP Caching** (0.5) - Important for web performance and API design.
-- **HTTP, HTTPS** (0.5) - HTTP/HTTPS fundamentals are commonly asked in interviews.
+- **HTTP Headers** (0.5) - Common interview question about web APIs and caching. - already named in 4 lessons (sd-load-balancing, sd-monitoring-and-observability and 2 more)
 - **Health Endpoint Monitoring** (0.5) - Health checks are common in system design but not explicitly covered.
 - **LB vs Reverse Proxy** (0.5) - Difference between load balancers and reverse proxies is a common interview question.
+- **PII** (0.5) - Handling personally identifiable information is relevant in system design. - already named in 1 lesson (sd-jwt)
 - **Retry Storm** (0.5) - Specific failure mode in distributed systems.
 - **Server Sent Events** (0.5) - Often compared with WebSockets for real-time server push.
 - **Session Based Auth** (0.5) - Session vs token authentication is a common web security question.
-- **Sidecar** (0.5) - Microservices deployment pattern commonly asked in system design.
+- **Sidecar** (0.5) - Microservices deployment pattern commonly asked in system design. - already named in 2 lessons (sd-monitoring-and-observability, sd-service-discovery)
 - **Synchronous vs Asynchronous APIs** (0.5) - API design choice commonly discussed in system design.
-- **TCP** (0.5) - Networking protocols like TCP are sometimes asked in backend and system design interviews.
+- **TCP** (0.5) - Networking protocols like TCP are sometimes asked in backend and system design interviews. - already named in 16 lessons (cs-dns, cs-http-https and 14 more)
 - **Web Server Caching** (0.5) - Specific caching layer at the web server not explicitly covered.
-- **Background Jobs** (0.5) - Background job processing is relevant to system designs but rarely a standalone interview topic.
 - **GraphQL APIs** (0.5) - Modern API technology occasionally asked.
-- **HTTP Headers** (0.5) - Common interview question about web APIs and caching.
-- **PII** (0.5) - Handling personally identifiable information is relevant in system design.
 - **Performance Antipatterns** (0.5) - Common performance pitfalls like chatty I/O and over-fetching are interview-relevant.
 - **Strangler Fig** (0.5) - Legacy system migration pattern asked in system design.
 - **ABAC** (0.4) - Attribute-based access control is sometimes asked in authorization design.
 - **API Integration Patterns** (0.4) - Integration patterns like polling and webhooks appear in design discussions.
 - **Back Pressure** (0.4) - Backpressure is key in streaming and message pipeline reliability.
-- **CORS** (0.4) - Web API security topic often asked.
+- **CORS** (0.4) - Web API security topic often asked. - already named in 274 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 272 more)
 - **Client Caching** (0.4) - Client-side caching via HTTP and service workers is occasionally discussed for performance.
 - **Deployment Stamps** (0.4) - A scaling isolation pattern, occasionally relevant in design discussions.
 - **Noisy Neighbor** (0.4) - Multi-tenant performance problem relevant in cloud design.
-- **Pagination** (0.4) - Pagination strategies are frequently part of API design.
+- **Pagination** (0.4) - Pagination strategies are frequently part of API design. - already named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
 - **Pipes & Filters** (0.4) - Architectural pattern for processing pipelines occasionally asked.
-- **Retry** (0.4) - Retry with backoff is a common reliability pattern; not covered by circuit breaker alone.
-- **Serverless** (0.4) - Serverless architecture is increasingly relevant in system design.
+- **Retry** (0.4) - Retry with backoff is a common reliability pattern; not covered by circuit breaker alone. - already named in 29 lessons (ai-agents-and-agentic-systems, beh-company-specific-questions and 27 more)
 - **Static Content Hosting** (0.4) - A common pattern but often covered under CDN or object storage.
 - **Streaming Responses** (0.4) - Streaming responses are relevant for real-time and large data APIs.
-- **UDP** (0.4) - UDP vs TCP is a common networking question in backend interviews.
-- **Versioning Strategies** (0.4) - API versioning strategies are commonly discussed in API design.
-- **Cookies** (0.3) - Session management and web security may come up.
+- **UDP** (0.4) - UDP vs TCP is a common networking question in backend interviews. - already named in 8 lessons (cs-dns, cs-http-https and 6 more)
+- **Versioning Strategies** (0.4) - API versioning strategies are commonly discussed in API design. - already named in 8 lessons (ai-software-engineering, sd-caching and 6 more)
 - **GDPR** (0.3) - Data privacy regulations can affect system design for user data.
-- **Materialized View** (0.3) - Database optimization concept sometimes asked in design discussions.
 - **ReBAC** (0.3) - Relationship-based access control like Google Zanzibar is an emerging topic.
 - **Security Monitoring** (0.3) - Security-specific monitoring and incident detection can be asked for secure system design.
 - **API Keys & Management** (0.3) - Operational API authentication method occasionally discussed but not a core interview topic.
-- **Actors** (0.3) - Actor model concurrency is sometimes discussed in distributed systems.
+- **Actors** (0.3) - Actor model concurrency is sometimes discussed in distributed systems. - already named in 3 lessons (lld-solid-principles, lld-uml-sequence-diagram and 1 more)
 - **Availability Monitoring** (0.3) - Subset of monitoring not explicitly covered.
+- **Cookies** (0.3) - Session management and web security may come up. - already named in 6 lessons (cs-http-https, cs-tcp-3-way-handshake and 4 more)
 - **ETL, Datawarehouses** (0.3) - Data engineering topics sometimes appear in data-heavy system designs.
 - **Federated Identity** (0.3) - SSO/federation is asked in auth design; OAuth alone doesn't cover.
 - **Hadoop, Spark, MapReduce** (0.3) - Big data processing frameworks are sometimes asked for data-intensive designs.
 - **Health Monitoring** (0.3) - Subset of monitoring not explicitly covered.
 - **Integration Testing** (0.3) - Software testing topic sometimes asked.
 - **Key Generation & Rotation** (0.3) - Key management and rotation is relevant for secret handling but not a core interview topic.
-- **OSI** (0.3) - Networking model often asked in system design interviews.
+- **Materialized View** (0.3) - Database optimization concept sometimes asked in design discussions. - already named in 2 lessons (sd-cqrs, sql-views)
+- **OSI** (0.3) - Networking model often asked in system design interviews. - already named in 2 lessons (cs-osi-model, sd-layer-4-vs-layer-7-load-balancing)
 - **PKI** (0.3) - Public key infrastructure underpins TLS and service authentication, occasionally discussed.
-- **Proxies** (0.3) - Forward and reverse proxies are foundational but not explicitly covered.
-- **RPC** (0.3) - Generic RPC concept beyond gRPC is occasionally asked.
-- **SOLID** (0.3) - Object-oriented design principles mostly asked in coding interviews, not system design.
+- **Proxies** (0.3) - Forward and reverse proxies are foundational but not explicitly covered. - already named in 6 lessons (ai-generative-model-evaluation, ai-metrics-offline-and-online and 4 more)
+- **RPC** (0.3) - Generic RPC concept beyond gRPC is occasionally asked. - already named in 4 lessons (cs-socket-programming, sd-grpc and 2 more)
 - **SPA, SSR, SSG** (0.3) - Rendering patterns relevant to frontend system design.
-- **TCP/IP Model** (0.3) - Networking model often asked alongside OSI.
 - **Unit Testing** (0.3) - Software testing topic sometimes asked.
 - **Content Negotiation** (0.2) - Specific HTTP API concept that may be asked in API design discussions.
 - **DDD** (0.2) - Domain-driven design is an architectural approach occasionally referenced.
 - **PBAC** (0.2) - Policy-based access control is less common and often conflated with ABAC.
 - **PCI DSS** (0.2) - Payment compliance relevant for fintech system design interviews.
-- **Priority Queue** (0.2) - Priority queues can be asked for task scheduling and message ordering.
 - **API Documentation Tools** (0.2) - Tooling topic rarely probed in system design interviews.
 - **API Testing** (0.2) - Occasionally asked but not core system design.
 - **Backends for Frontend** (0.2) - BFF pattern not covered by generic API Gateway.
-- **Basic Auth** (0.2) - Basic authentication is a simple baseline but less commonly asked.
+- **Basic Auth** (0.2) - Basic authentication is a simple baseline but less commonly asked. - already named in 7 lessons (sd-api-gateway, sd-database-federation and 5 more)
 - **CCPA** (0.2) - US privacy regulation sometimes asked in product company interviews.
 - **CI / CD** (0.2) - Foundational engineering practice rarely probed in system design.
 - **Chatty I/O** (0.2) - Anti-pattern sometimes discussed in performance contexts.
 - **DAC** (0.2) - Discretionary access control model rarely asked directly outside security roles.
 - **ESB, SOAP** (0.2) - Legacy integration technologies occasionally referenced.
 - **Extraneous Fetching** (0.2) - Over-fetching anti-pattern relevant to API design.
-- **Functional Programming** (0.2) - Programming paradigm not commonly a system design interview topic.
 - **HATEOAS** (0.2) - REST maturity model advanced constraint, occasionally asked.
 - **HIPAA** (0.2) - Healthcare compliance sometimes relevant to system design.
 - **Index Table** (0.2) - NoSQL secondary index pattern not covered by general indexes.
 - **Infrastructure as Code** (0.2) - Tooling practice rarely asked to explain in depth in SDE interviews.
-- **Layered** (0.2) - Layered architecture is a basic pattern, rarely a deep interview topic.
-- **Load Testing** (0.2) - Performance testing concept occasionally asked in system design discussions.
-- **MAC** (0.2) - Mandatory access control is rarely asked outside security contexts.
+- **Load Testing** (0.2) - Performance testing concept occasionally asked in system design discussions. - already named in 1 lesson (beh-failure-and-learning)
+- **MAC** (0.2) - Mandatory access control is rarely asked outside security contexts. - already named in 2 lessons (cs-osi-model, cs-tls-ssl-handshake)
 - **MVC, MVP, MVVM** (0.2) - Architectural patterns are sometimes discussed in software design interviews.
 - **Microfrontends** (0.2) - Frontend architecture pattern occasionally discussed.
 - **Monolithic Persistence** (0.2) - Anti-pattern relevant to microservices decomposition.
 - **Performance Testing** (0.2) - Testing topic less central to system design.
-- **Pipes and Filters** (0.2) - Integration pattern occasionally referenced in data processing design.
+- **Priority Queue** (0.2) - Priority queues can be asked for task scheduling and message ordering. - already named in 4 lessons (cs-cpu-scheduling, heap-priority-queue and 2 more)
 - **Reactive Programming** (0.2) - Programming paradigm not typically asked in system design interviews.
 - **Service Oriented** (0.2) - SOA is an older architectural style, sometimes contrasted with microservices.
 - **Swagger / Open API** (0.2) - API documentation tools are rarely asked in system design interviews.
@@ -1100,7 +1007,6 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Ambassador** (0.1) - Specific cloud design pattern for offloading client connectivity tasks.
 - **Contract Testing** (0.1) - Testing strategy for service integrations, rarely asked in system design.
 - **External Config Store** (0.1) - Externalized configuration pattern for microservices; rarely asked directly.
-- **Firewalls** (0.1) - Network security topic tangential to system design interviews.
 - **Mocking APIs** (0.1) - Development practice rarely asked in system design interviews.
 - **SOAP APIs** (0.1) - Legacy API protocol rarely asked in modern product companies.
 - **Claim Check** (0.1) - Messaging pattern for large payloads; rarely asked.
@@ -1116,12 +1022,11 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Scheduler Agent Supervisor** (0.1) - Specialized Azure pattern rarely asked in SDE interviews.
 - **Sequential Convoy** (0.1) - Enterprise integration pattern rarely asked in SDE interviews.
 - **Stoplight** (0.1) - API design tool, rarely asked in interviews.
-- **Git** (0.1) - Tooling rarely asked in system design interviews.
 - **Scheduling Agent Supervisor** (0.1) - Obscure pattern rarely asked in SDE interviews.
 
 ---
 
-## Already covered under another name (427)
+## Already covered under another name (469)
 
 - AI Agents -> Agents and Agentic Systems
 - APIs -> Software Engineering
@@ -1137,17 +1042,17 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Back Propagation -> Training and Optimization
 - Basics of Probability -> Probability and Statistics
 - Bayes Theorem -> Probability and Statistics
+- CI/CD -> taught in beh-company-and-motivation
 - Calibrating LLMs -> Generative Model Evaluation
 - Chain of Thought (CoT) Prompting -> Prompt Engineering
 - Choosing the Right Model -> Model Selection and Validation
 - Chunking -> RAG and Production Systems
 - Classification -> Supervised Learning
 - Closed vs Open Source Models -> Generative AI / LLMs
-- Clustering -> Unsupervised Learning
 - CoT -> Prompt Engineering
-- Conditionals -> Python
 - Confusion Matrix -> Evaluation Metrics
 - Constraining outputs and inputs -> Prompt Engineering
+- Constraints -> Constraints
 - Context -> Prompt Engineering
 - Context Compaction -> RAG and Production Systems
 - Context Failure Modes -> RAG and Production Systems
@@ -1171,14 +1076,13 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Deterministic Evals -> Generative Model Evaluation
 - Dimensionality Reduction -> Unsupervised Learning
 - ElasticNet Regularization -> Regularization
-- Embedding -> Embedding Models
 - Embeddings -> Embedding Models
-- Exceptions -> Python
+- Exceptions -> Exceptions
 - F1-Score -> Evaluation Metrics
 - Feature Scaling & Normalization -> Feature Engineering
 - Feature Selection -> Feature Engineering
-- Few-Shot -> Prompt Engineering
-- Fine-tuning -> Supervised Fine-Tuning of LLM
+- Few-Shot -> taught in ai-prompt-engineering
+- Fine-tuning -> taught in ai-embedding-models and 2 more
 - Forward propagation -> Training and Optimization
 - Function Calling -> Agents and Agentic Systems
 - Functions, Builtin Functions -> Python
@@ -1196,6 +1100,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Inferential Statistics -> Probability and Statistics
 - JSON -> Python
 - K-Fold Cross Validation -> Model Selection and Validation
+- LIME -> taught in beh-why-this-role
 - LLM -> Generative AI / LLMs
 - LLM Evaluations -> Generative Model Evaluation
 - LLM Self Evaluation -> Generative Model Evaluation
@@ -1206,7 +1111,6 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Lasso -> Regularization
 - Log Loss -> Evaluation Metrics
 - Long-Context Processing -> Transformer & LLM Internals
-- Loops -> Python
 - Loss Functions -> Training and Optimization
 - Memory Systems -> Agents and Agentic Systems
 - Meta Llama -> Generative AI / LLMs
@@ -1216,10 +1120,10 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Model Selection -> Model Selection and Validation
 - Model Weights / Parameters -> Machine Learning Fundamentals
 - Model-Based Evals -> Generative Model Evaluation
-- Monitoring & Observability -> Scaling, Monitoring, and Updates
+- Monitoring & Observability -> Monitoring and observability
 - Multi-agent Context Sharing -> Agents and Agentic Systems
 - Multi-agents -> Agents and Agentic Systems
-- Multi-head Attention -> Transformer & LLM Internals
+- Multi-head Attention -> taught in ai-transformer-llm-internals and 1 more
 - Neural Network (NN) Basics -> Deep Learning
 - One-Shot / Few-Shot Prompting -> Prompt Engineering
 - OpenAI (GPT, o-series) -> Generative AI / LLMs
@@ -1237,9 +1141,8 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Prompt Debiasing -> Prompt Engineering
 - Prompt Ensembling -> Prompt Engineering
 - Qwen -> Generative AI / LLMs
-- RAG -> RAG and Production Systems
 - RAG & Dynamic Filters -> RAG and Production Systems
-- RAGs -> RAG and Production Systems
+- RAGs -> taught in beh-star-method
 - RNN -> Recurrent Neural Networks and LSTMs
 - ROC-AUC -> Evaluation Metrics
 - Random Variances, PDFs -> Probability and Statistics
@@ -1249,12 +1152,13 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Recurrent Neural Networks -> Recurrent Neural Networks and LSTMs
 - Regression -> Supervised Learning
 - Retrieval Process -> RAG and Production Systems
-- Ridge -> Regularization
+- Ridge -> taught in advanced-graphs and 7 more
 - Robust prompt engineering -> Prompt Engineering
 - Role & Behavior -> Prompt Engineering
 - Role Prompting -> Prompt Engineering
-- Self-Attention -> Transformer & LLM Internals
+- Self-Attention -> taught in ai-deep-learning and 3 more
 - Self-Consistency Prompting -> Prompt Engineering
+- Semi-supervised Learning -> taught in ai-data-collection-and-preparation
 - Sentence Transformers -> Embedding Models
 - State & Historical Context -> Agents and Agentic Systems
 - Statistics -> Probability and Statistics
@@ -1288,58 +1192,91 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - What is Supervised Learning? -> Supervised Learning
 - What is Unsupervised Learning? -> Unsupervised Learning
 - What is a Prompt? -> Prompt Engineering
-- Zero-Shot -> Prompt Engineering
-- Zero-Shot Prompting -> Prompt Engineering
+- Zero-Shot -> taught in ai-prompt-engineering
+- Zero-Shot Prompting -> taught in ai-prompt-engineering
 - Executive summaries -> Communication
 - Feature prioritization -> Prioritization
 - Lessons Learned -> Failure and learning
 - Stakeholder Communication -> Communication
 - ACID Model -> ACID Properties
+- Availability -> High availability
+- B-Tree -> taught in ai-vector-databases and 8 more
+- Binary Search -> Binary Search
+- Blue-Green Deployments -> taught in ai-rag-and-production-systems
+- CAP Theorem -> CAP theorem
+- CDN -> CDN
 - CPU Cache -> TLB and Caching
+- Caching -> Caching
 - DNS Resolution -> DNS
+- Data Management -> taught in sd-object-storage
+- Data Structures -> Data Structures and Algorithms
+- Database Federation -> Database federation
+- Design Patterns -> Design Patterns
+- Dijkstra's Algorithm -> taught in advanced-graphs and 2 more
 - Disks and Filesystems -> File Systems
 - Filesystems -> File Systems
+- Graph -> Graphs
 - HTTP -> HTTP/HTTPS
-- HTTPS -> HTTP/HTTPS
+- In-Order Traversal -> taught in java-hashset-vs-treeset and 1 more
+- Indexes -> Indexes
+- Kruskal's Algorithm -> taught in greedy
 - LFU Cache -> Page Replacement Algorithms
 - LRU Cache -> Page Replacement Algorithms
+- Linked List -> Linked List
+- Load Balancing -> Load balancing
 - Lock / Mutex / Semaphore -> Synchronization Primitives
 - Locking -> Locking Mechanisms
 - MFU Cache -> Page Replacement Algorithms
+- Mounts -> taught in 1-d-dynamic-programming and 6 more
+- Nano -> taught in java-thread-lifecycle
 - Normalization / Denormalization -> Normalization
+- Observability -> Monitoring and observability
+- Probability -> Probability and Statistics
 - Processes and Threads -> Processes vs Threads
+- Python -> Python
+- Replication -> Replication
 - SSL / TLS -> TLS/SSL Handshake
 - Scheduling -> CPU Scheduling
 - Scheduling Algorithms -> CPU Scheduling
 - Sockets -> Socket Programming
+- Stack -> Stack
+- Stored Procedures -> Stored procedures
 - Subnetting -> Subnetting and CIDR
 - Swap -> Paging and Virtual Memory
+- TCP/IP Model -> taught in cs-osi-model
 - TLS & HTTPS -> HTTP/HTTPS
+- Tree -> Trees
+- Tries -> Tries
+- Views -> Views
+- gRPC -> gRPC
+- join -> Joins
 - A* Algorithm -> Advanced Graphs
-- Array -> Arrays & Hashing
+- B-Trees -> taught in ai-vector-databases and 3 more
 - Bellman-Ford Algoritm -> Advanced Graphs
 - Binary Search Trees -> Trees
 - Binary Trees -> Trees
 - Breadth First Search -> Graphs
 - Depth First Search -> Graphs
-- Dijkstra's Algorithm -> Advanced Graphs
-- Directed Graph -> Graphs
+- Dijkstra's Algorithm -> taught in advanced-graphs and 2 more
 - Disjoint Set (Union-Find) -> Advanced Graphs
 - Fast and Slow Pointers -> Two Pointers
 - Fenwick Trees -> Segment Tree & Fenwick
+- Functions -> Functions
 - Graph Data Structures -> Graphs
 - Greedy Algorithms -> Greedy
 - Hash Tables -> Arrays & Hashing
-- Heap -> Heap / Priority Queue
-- In-Order Traversal -> Trees
+- ISAM -> taught in cs-locking-mechanisms
+- In-Order Traversal -> taught in java-hashset-vs-treeset and 1 more
 - Island traversal -> Matrix / Grid
-- Kruskal's Algorithm -> Advanced Graphs
+- Kruskal's Algorithm -> taught in greedy
 - Linked Lists -> Linked List
 - Merge Intervals -> Intervals
 - Minimum Spanning Tree -> Advanced Graphs
+- Multi-threaded -> taught in java-garbage-collection and 1 more
 - Post-Order Traversal -> Trees
 - Pre-Order Traversal -> Trees
 - Prim's Algorithm -> Advanced Graphs
+- Python -> Python
 - Segment Trees -> Segment Tree & Fenwick
 - Shortest Path Algorithms -> Advanced Graphs
 - Sliding Window Technique -> Sliding Window
@@ -1350,42 +1287,48 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Trie -> Tries
 - Two Heaps -> Heap / Priority Queue
 - Two Pointer Technique -> Two Pointers
-- Undirected Graph -> Graphs
-- Abstraction -> Abstract class vs interface
+- Abstraction -> Abstraction
 - Access Specifiers -> OOP Concepts
 - Attributes and Methods -> OOP Concepts
 - Basics of OOP -> OOP Concepts
 - Classes and Objects -> OOP Concepts
+- Data Types -> Data types
 - Dequeue -> Collections Framework
-- Encapsulation -> OOP Concepts
+- Encapsulation -> Encapsulation
 - Exception Handling -> Exceptions
 - Functional Interfaces -> Lambda expressions
 - Generic Collections -> Generics
 - High Order Functions -> Lambda expressions
-- Inheritance -> Inheritance vs Composition
-- Interfaces -> Abstract class vs interface
+- I/O Operations -> taught in java-thread-lifecycle
+- Inheritance -> Inheritance
+- Interfaces -> Interfaces
 - Iterator -> Collections Framework
 - Map -> Collections Framework
 - Method Overloading / Overriding -> Polymorphism
+- Microservices -> Microservices
 - Optionals -> Optional
-- Queue -> Collections Framework
 - Set -> Collections Framework
-- Stack -> Collections Framework
+- Stack -> Stack
 - Static vs Dynamic Binding -> Polymorphism
 - Stream API -> Streams API
 - Strings and Methods -> Strings
 - Threads -> Concurrency
+- CQRS -> CQRS
 - Concrete Classes -> Abstract Classes
+- Event Sourcing -> Event sourcing
+- Event-Driven -> taught in sd-cqrs and 2 more
 - GoF Design Patterns -> Design Patterns
+- Microservices -> Microservices
 - Program against abstractions -> SOLID Principles
-- Publish-Subscribe -> Pub/Sub System Design
-- SOLID -> SOLID Principles
+- Publish-Subscribe -> Publish-subscribe
 - Scope / Visibility -> Encapsulation
+- Tell, don't ask -> taught in lld-encapsulation
 - ABS -> Functions
 - AVG -> Aggregate functions
 - Aggregate Queries -> Aggregate functions
 - Alter Table -> DDL/DML/DCL/TCL
 - Attributes -> Relational database fundamentals
+- B-Tree -> taught in ai-vector-databases and 8 more
 - BEGIN -> DDL/DML/DCL/TCL
 - Basic RDBMS Concepts -> Relational database fundamentals
 - CASE -> CASE expression
@@ -1395,7 +1338,6 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - CONCAT -> Functions
 - COUNT -> Aggregate functions
 - CTE -> CTEs
-- Column -> Subqueries
 - Columns -> Relational database fundamentals
 - Common Table Expressions -> CTEs
 - Correlated Subqueries -> Correlated vs nested subqueries
@@ -1415,11 +1357,11 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - FROM -> DDL/DML/DCL/TCL
 - FULL OUTER JOIN -> INNER vs OUTER JOIN
 - Foreign Key -> Constraints
-- GRANT and Revoke -> DDL/DML/DCL/TCL
 - GROUP BY -> GROUP BY and HAVING
 - Grant / Revoke -> DDL/DML/DCL/TCL
 - Grouping -> GROUP BY and HAVING
 - HAVING -> GROUP BY and HAVING
+- Helm -> taught in cs-tcp-flow-and-congestion-control and 4 more
 - INNER JOIN -> INNER vs OUTER JOIN
 - INSERT -> DDL/DML/DCL/TCL
 - Indexes and their Usecases -> Indexes
@@ -1454,7 +1396,8 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Reducing Subqueries -> JOIN vs Subquery
 - Relational Model -> Relational database fundamentals
 - Relations -> Relational database fundamentals
-- Row -> Subqueries
+- Replication -> Replication
+- Row-Level Security -> taught in cs-locking-mechanisms
 - Rows -> Relational database fundamentals
 - SAVEPOINT -> DDL/DML/DCL/TCL
 - SELECT -> DDL/DML/DCL/TCL
@@ -1467,8 +1410,8 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Stored Procedures & Functions -> Stored procedures
 - TIME -> Data types
 - TIMESTAMP -> Data types
-- Table -> Subqueries
 - Tables -> Relational database fundamentals
+- Transaction Isolation Levels -> Transaction Isolation Levels
 - Truncate Table -> DDL/DML/DCL/TCL
 - Tuples -> Relational database fundamentals
 - UPDATE -> DDL/DML/DCL/TCL
@@ -1476,7 +1419,8 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Using Indexes -> Indexes
 - WHERE -> DDL/DML/DCL/TCL
 - What are Relational Databases? -> Relational database fundamentals
-- dense_rank -> ROW_NUMBER/RANK/DENSE_RANK
+- Write-ahead Log -> taught in cs-acid-properties and 4 more
+- dense_rank -> taught in sql-row-number-rank-dense-rank and 1 more
 - first_value -> Window functions
 - lag -> LAG and LEAD
 - lead -> LAG and LEAD
@@ -1493,13 +1437,15 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - CQRS, Eventual Consistency -> CQRS
 - CRUD Operations -> REST API
 - Cache Aside -> Cache strategies
-- Cache-Aside -> Cache strategies
 - Caching Strategies -> Cache strategies
 - Choreography -> Sagas
+- Communication -> Communication
 - Compensating Transaction -> Sagas
 - Competing Consumers -> Message queues
 - Content Delivery Networks -> CDN
+- Data Management -> taught in sd-object-storage
 - Document Store -> NoSQL types
+- Event-Driven -> taught in sd-cqrs and 2 more
 - Eventual Consistency -> Consistency models
 - Fail-Over -> High availability
 - Federation -> Database federation
@@ -1507,12 +1453,13 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Gateway Offloading -> API Gateway
 - Gateway Routing -> API Gateway
 - Graph Databases -> NoSQL types
+- HTTP -> HTTP/HTTPS
 - HTTP Methods -> REST API
 - HTTP Status Codes -> REST API
+- HTTP, HTTPS -> HTTP/HTTPS
 - Idempotent Operations -> Idempotency
 - Instrumentation -> Monitoring and observability
-- Kafka -> Message queues
-- Key-Value Store -> NoSQL types
+- Key-Value Store -> taught in lld-lru-cache-design and 11 more
 - Layer 4 Load Balancing -> Layer 4 vs Layer 7 load balancing
 - Layer 7 Load Balancing -> Layer 4 vs Layer 7 load balancing
 - Load Balancers -> Load balancing
@@ -1526,7 +1473,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Publisher/Subscriber -> Publish-subscribe
 - Pull CDNs -> CDN
 - Push CDNs -> CDN
-- REST -> REST API
+- Python -> Python
 - REST Principles -> REST API
 - RESTful APIs -> REST API
 - Rabbit MQ -> Message queues
@@ -1534,9 +1481,9 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Refresh Ahead -> Cache strategies
 - Resource modeling -> REST API
 - Scopes & Permissions -> OAuth 2.0
-- Sharding -> Database sharding
 - Simple JSON APIs -> REST API
 - Strong Consistency -> Consistency models
+- TCP/IP Model -> taught in cs-osi-model
 - Task Queues -> Message queues
 - Throttling -> Rate limiting
 - Token Based Auth -> OAuth 2.0
@@ -1547,6 +1494,6 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Weak Consistency -> Consistency models
 - Web Sockets -> WebSockets
 - Wide Column Store -> NoSQL types
-- Write-behind -> Cache strategies
+- Write-behind -> taught in sd-cache-strategies
 - Write-through -> Cache strategies
 - gRPC APIs -> gRPC

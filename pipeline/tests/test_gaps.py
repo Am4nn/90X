@@ -60,3 +60,230 @@ def test_a_complete_sort_carries_no_missing_note():
         all_domains=["ai"],
     )
     assert "missing from this report" not in out
+
+
+def test_a_topic_we_already_have_is_never_asked_about(tmp_path):
+    """The worst defect in the first sort: candidates were compared against
+    their own area's topic names only. "Linked List" came off the CS roadmap,
+    our Linked List topic is in DSA, so it was structurally invisible - and it
+    came back a gap at 0.9. Twenty gaps were exact matches for topics we had."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into topics (slug, domain, name, sort) values
+        ('linked-list', 'dsa', 'Linked List', 1), ('sd-cap-theorem', 'system_design', 'CAP theorem', 2)""")
+    ours = gaps.already_ours(con)
+    assert ours[gaps.canonical("Linked Lists")] == "Linked List"
+    assert ours[gaps.canonical("CAP Theorem")] == "CAP theorem"
+
+
+def test_a_subject_taught_inside_another_lesson_is_covered(tmp_path):
+    """The sorter only ever saw topic titles. "Prompt Injection" is taught in
+    two lesson bodies and was still scored 0.7 as a gap."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('ai-generative-ai-llms', 'Generative AI', 'A prompt injection attack rewrites the instruction.', 'ok')""")
+    assert gaps.taught_in(con, "Prompt Injection") == ["ai-generative-ai-llms"]
+    assert gaps.taught_in(con, "Kubernetes Operators") == []
+
+
+def test_spelling_variants_are_one_topic():
+    assert gaps.canonical("Big-O Notation") == gaps.canonical("Big O")
+    assert gaps.canonical("Queues") == gaps.canonical("Queue")
+    assert gaps.canonical("Load Balancers") == gaps.canonical("load balancer")
+    # Not a synonym engine: this one needs a model to see, and pretending
+    # otherwise would quietly drop a real candidate.
+    assert gaps.canonical("Asymptotic Notation") != gaps.canonical("Big O")
+
+
+def test_a_stored_gap_is_corrected_when_a_query_proves_we_cover_it(tmp_path):
+    """The settling pass must overrule what is already stored, or the 20 wrong
+    verdicts already on disk stay in front of Aman. It must also not leave the
+    candidate in the report twice with opposite answers."""
+    from pipeline import staging
+    from pipeline import llm as llm_mod
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("insert into topics (slug, domain, name, sort) values ('linked-list', 'dsa', 'Linked List', 1)")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n1', 'cs', 'cs', 'Linked List', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Linked List', 'gap', '', 0.9, 'core data structure')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("the model must not be asked about a topic we own")
+
+    out = gaps.run(con, NoLLM())
+    rows = [r for r in out if r["label"] == "Linked List"]
+    assert len(rows) == 1, rows
+    assert rows[0]["verdict"] == "covered" and rows[0]["covered_by"] == "Linked List"
+    assert gaps.stored(con)[0]["verdict"] == "covered"
+
+
+def test_a_comparison_needs_both_sides_taught(tmp_path):
+    """"RAG vs Fine-tuning" never appears verbatim in prose, so searching for
+    the whole phrase found nothing. Each side is searched separately - but half
+    a comparison being mentioned must not count as covering it."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('a', 'Fine-tuning', 'Supervised fine tuning adapts a base model.', 'ok')""")
+    assert gaps.taught_in(con, "RAG vs Fine-tuning") == []
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('b', 'Both', 'A RAG pipeline retrieves context; fine tuning changes weights.', 'ok')""")
+    assert gaps.taught_in(con, "RAG vs Fine-tuning") == ["b"]
+
+
+def test_a_short_acronym_is_matched_on_a_word_boundary(tmp_path):
+    """`%rag%` as a substring also matches "storage", "fragment" and "average",
+    which would mark a real gap covered on the strength of a coincidence."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('s', 'Object storage', 'Object storage keeps average fragment size low.', 'ok')""")
+    assert gaps.taught_in(con, "RAG") == []
+
+
+def test_a_noise_word_does_not_hide_the_subject(tmp_path):
+    """"Prompt Injection Attacks" found nothing while "Prompt Injection" was
+    sitting in two lessons, because the trailing noun was part of the search."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('g', 'Generative AI', 'A prompt injection rewrites the instruction.', 'ok')""")
+    assert gaps.taught_in(con, "Prompt Injection Attacks") == ["g"]
+
+
+def test_a_label_too_short_to_search_is_not_called_covered(tmp_path):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('m', 'ML', 'Machine learning models.', 'ok')""")
+    assert gaps.subjects_of("ML") is None
+    assert gaps.taught_in(con, "ML") == []
+
+
+def test_language_punctuation_is_part_of_the_name():
+    """canonical("C"), canonical("C++") and canonical("C#") all came back "c",
+    so one language would have been marked covered by another, or merged out of
+    the report."""
+    keys = {gaps.canonical(x) for x in ("C", "C++", "C#")}
+    assert len(keys) == 3, keys
+
+
+def test_an_acronym_is_bounded_at_both_ends(tmp_path):
+    """An opening boundary alone let "RAG" match "ragged arrays", marking a real
+    gap covered on a coincidence."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('r', 'Arrays', 'A ragged array has rows of different lengths.', 'ok')""")
+    assert gaps.taught_in(con, "RAG") == []
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('t', 'Retrieval', 'A RAG pipeline retrieves context first.', 'ok')""")
+    assert gaps.taught_in(con, "RAG") == ["t"]
+
+
+def test_an_inflection_still_matches(tmp_path):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('i', 'Indexes', 'Covering indexes avoid a heap lookup.', 'ok')""")
+    assert gaps.taught_in(con, "Index") == ["i"]
+
+
+def test_a_lesson_mention_annotates_a_gap_instead_of_removing_it(tmp_path):
+    """A phrase in a body is a hint, not coverage. Settling on it marked "Linear
+    Search" covered because some lesson named it, and a covered candidate drops
+    out of the list - so a passing mention could hide a lesson worth writing.
+    539 candidates were settled this way and 230 of them were real gaps."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('c', 'ConcurrentHashMap', 'It may fall back to a linear search of the bin.', 'ok')""")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n', 'cs', 'cs', 'Linear Search', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Linear Search', 'gap', '', 0.6, 'basic algorithm')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("nothing left to sort")
+
+    out = gaps.run(con, NoLLM())
+    row = next(r for r in out if r["label"] == "Linear Search")
+    assert row["verdict"] == "gap", "a mention must not remove it from the list"
+    assert "already named in 1 lesson" in row["why"]
+    assert gaps.stored(con)[0]["verdict"] == "gap"
+
+
+def test_a_stale_mention_note_is_replaced_not_stacked(tmp_path):
+    """Appending left both notes on the row when a later run matched different
+    lessons, and left the old one when nothing matched - so the report could
+    claim a gap is named in lessons that no longer name it."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n', 'cs', 'cs', 'Bloom Filters', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Bloom Filters', 'gap', '', 0.6,
+                'probabilistic structure - already named in 3 lessons (old-a, old-b and 1 more)')""")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('only', 'Caching', 'A bloom filter answers set membership approximately.', 'ok')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("nothing to sort")
+
+    row = next(r for r in gaps.run(con, NoLLM()) if r["label"] == "Bloom Filters")
+    assert row["why"].count("already named in") == 1, row["why"]
+    assert "old-a" not in row["why"]
+    assert "already named in 1 lesson (only)" in row["why"]
+
+
+def test_a_note_is_cleared_when_no_lesson_names_it_any_more(tmp_path):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n', 'cs', 'cs', 'Bloom Filters', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Bloom Filters', 'gap', '', 0.6,
+                'probabilistic structure - already named in 2 lessons (gone-a, gone-b)')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("nothing to sort")
+
+    row = next(r for r in gaps.run(con, NoLLM()) if r["label"] == "Bloom Filters")
+    assert row["why"] == "probabilistic structure", row["why"]
+
+
+def test_the_shortlist_has_one_line_per_topic_across_areas():
+    """"Big O" under cs and "Big-O Notation" under dsa are one lesson to write,
+    not two for someone to approve separately."""
+    out = gaps.report([
+        row("cs", "Big O", relevance=0.8, why="asked constantly"),
+        row("dsa", "Big-O Notation", relevance=0.7, why="same thing"),
+    ])
+    assert out.count("(0.8)") == 1
+    assert "(0.7)" not in out

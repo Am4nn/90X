@@ -287,3 +287,26 @@ def test_a_lesson_with_only_soft_objections_publishes():
 
     soft = Review(findings=[Finding(claim="Mostly right", verdict="oversimplified", correction="Needs a condition.")])
     assert blocking(soft) == []
+
+
+def test_a_lesson_is_never_written_without_a_source(tmp_path):
+    """Aman's rule: lessons come from material we downloaded, never from the
+    model's own memory. Two of the first 274 slipped through with no source at
+    all, and that is the one failure the gates downstream cannot catch - a
+    lesson written from memory reads perfectly well and cites nothing."""
+    from pipeline import staging
+    from pipeline.lessons import run as lesson_run
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    topic = {"slug": "beh-teamwork", "name": "Teamwork", "domain": "behavioral",
+             "description": "", "importance": 0.5, "parent_name": None, "carried_notes": None}
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("the model must not be asked to write without a source")
+
+    with pytest.raises(lesson_run.NoSource) as caught:
+        lesson_run.one(NoLLM(), con, topic, documents=[])
+    assert "no source material" in str(caught.value)

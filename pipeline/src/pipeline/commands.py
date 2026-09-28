@@ -134,17 +134,31 @@ def consistency(args, con) -> None:
     from .lessons import run as lesson_run
 
     ai = llm.LLM(con)
-    found = c.run(con, ai, domains=args.domains or None, tier=args.tier)
+    # Findings on disk are reused, because re-running the check to apply a fix it
+    # already found costs the whole $2.40 again. Filtered to the asked-for areas
+    # BEFORE deciding whether to run: stored findings from another area used to
+    # count as "already checked", so `consistency sql` with only cs findings on
+    # disk wrote "None found" for sql without ever looking at it.
+    wanted = set(args.domains or [])
+    kept = [] if args.redo else [x for x in c.stored(con) if not wanted or x["domain"] in wanted]
+    found = kept or c.run(con, ai, domains=args.domains or None, tier=args.tier)
+    if wanted:
+        found = [x for x in found if x["domain"] in wanted]
+
     out = Path(REPO_DIR) / ".planning" / "lesson-contradictions.md"
+    # The report always covers everything known, even when this run looked at one
+    # area: writing only the filtered subset deleted every other area's findings
+    # from the file.
+    everything = c.stored(con) or found
     lines = ["# Claims that disagree across lessons", "",
-             f"{len(found)} found." if found else "None found.", ""]
-    for x in found:
+             f"{len(everything)} found." if everything else "None found.", ""]
+    for x in sorted(everything, key=lambda x: (x["domain"], x["disagreement"])):
         lines += [f"## {x['domain']}: {', '.join(x['topics'])}", "",
                   f"- **They disagree:** {x['disagreement']}",
                   f"- **Correct:** {x['correct']}",
                   f"- **Rewriting:** `{x['fix']}`", ""]
     out.write_text("\n".join(lines), encoding="utf-8")
-    print(f"{len(found)} contradictions, written to {out}")
+    print(f"{len(found)} contradictions in scope, {len(everything)} known, written to {out}")
 
     if args.fix and found:
         # Each named lesson is rewritten once, carrying the correction.
@@ -155,7 +169,13 @@ def consistency(args, con) -> None:
                 if x["fix"] == slug
             )
             con.execute("update lessons set status = 'draft', problems = ? where topic_slug = ?", [notes, slug])
-        print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them")
+        # Retired once applied. Keeping them meant the next --fix marked the same
+        # corrected lessons for rewrite again, with the notes they had already
+        # taken - scheduling work that was done and paying to redo it.
+        c.retire(con, found)
+        print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them."
+              " These findings are now retired, so the next `consistency` run checks afresh rather than"
+              " re-applying them; the report file keeps the record.")
     print(f"spend ${llm.spend_usd(con):.2f}")
 
 
@@ -220,6 +240,24 @@ def publish(args, con) -> None:
     print("dry run: rolled back" if args.dry_run else "published")
 
 
+def card_fix(args, con) -> None:
+    from . import llm
+    from .cards import fix
+
+    fixed, failed = fix.run(con, llm.LLM(con), tier=args.tier, only=args.topics or None)
+    print(f"card-fix: {fixed} fixed, {failed} still failing, spend ${llm.spend_usd(con):.2f}")
+
+
+def card_regate(args, con) -> None:
+    from . import llm
+    from .cards import regate
+
+    t = regate.run(con, only=args.topics or None, tier=args.tier)
+    print(f"card-regate: {t['judged']} cards re-judged across {t['topics']} topics, "
+          f"{t['recovered']} recovered, {t['reformatted']} rewritten and passed, "
+          f"{t['rejected']} still rejected, spend ${llm.spend_usd(con):.2f}")
+
+
 def rebatch(args, con) -> None:
     from .cards import rebatch as rb
 
@@ -230,7 +268,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:
