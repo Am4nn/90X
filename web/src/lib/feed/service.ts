@@ -624,13 +624,14 @@ export async function queueFirst(userId: string, cardIds: string[], q: Db = db, 
   for (const id of ids) {
     for (const reason of REASONS) await store.remove(queue, JSON.stringify({ id, reason }));
   }
-  await store.unshift(
-    queue,
-    ids.map((id) => JSON.stringify({ id, reason: "weak" })),
-    QUEUE_TTL,
-  );
-  // The card on screen is served before the queue, so leaving it there would put
-  // these behind it.
+  // The card on screen is served before the queue, so it has to be cleared or
+  // these would come after it. Clearing it alone dropped it: an unanswered card
+  // the reader was part-way through vanished from the session, and a reload
+  // showed the coach's card instead. Put it back at the head, behind the new
+  // ones, so the reader gets these next and then returns to where they were.
+  const onScreen = parseQueueItem(await store.get(currentKey(userId)));
+  const displaced = onScreen && !ids.includes(onScreen.id) ? [JSON.stringify(onScreen)] : [];
+  await store.unshift(queue, [...ids.map((id) => JSON.stringify({ id, reason: "weak" })), ...displaced], QUEUE_TTL);
   await store.del(currentKey(userId));
   return ids;
 }

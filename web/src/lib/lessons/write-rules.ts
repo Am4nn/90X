@@ -10,7 +10,9 @@
 
 import { z } from "zod";
 
-export type Passage = { title: string; text: string; ref: string };
+/** `sourceId` is what credits the lesson: it joins `public.sources`. A passage
+ *  without one still feeds the writing, it just cannot be credited. */
+export type Passage = { title: string; text: string; sourceId: string | null };
 
 /** A hit below this adds nothing to a lesson. */
 const RELEVANCE_FLOOR = 0.3;
@@ -102,7 +104,7 @@ export function usablePassages(hits: unknown[]): Passage[] {
     out.push({
       title: typeof meta.title === "string" ? meta.title : "Untitled",
       text,
-      ref: typeof meta.source_id === "string" ? meta.source_id : typeof meta.url === "string" ? meta.url : "library",
+      sourceId: typeof meta.source_id === "string" && meta.source_id ? meta.source_id : null,
     });
   }
   return out.slice(0, PASSAGES);

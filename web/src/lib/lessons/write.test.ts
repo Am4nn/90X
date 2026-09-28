@@ -7,7 +7,7 @@ import { enoughToWriteFrom, type Passage, renderLesson, usablePassages } from ".
 // the two that must be testable on their own.
 
 const hit = (score: number, data: string, metadata: Record<string, unknown> = {}) => ({ score, data, metadata });
-const passage = (text: string, ref = "ostep"): Passage => ({ title: "T", text, ref });
+const passage = (text: string, sourceId: string | null = "ostep"): Passage => ({ title: "T", text, sourceId });
 
 describe("usablePassages", () => {
   it("drops hits below the relevance floor", () => {
@@ -27,13 +27,15 @@ describe("usablePassages", () => {
     expect(usablePassages([{ data: "text", metadata: {} }])).toHaveLength(1);
   });
 
-  it("prefers source_id as the ref and falls back to url, then to library", () => {
+  it("keeps only a real source id, because that is what the credit line joins on", () => {
+    // A url is not a source id. Crediting one would put a raw link in the
+    // "Written from" line, which is the wrong shape and the wrong content.
     const out = usablePassages([
       hit(0.9, "a", { source_id: "ostep", url: "https://x" }),
       hit(0.9, "b", { url: "https://y" }),
       hit(0.9, "c", {}),
     ]);
-    expect(out.map((p) => p.ref)).toEqual(["ostep", "https://y", "library"]);
+    expect(out.map((p) => p.sourceId)).toEqual(["ostep", null, null]);
   });
 
   it("caps how many passages one write reads", () => {

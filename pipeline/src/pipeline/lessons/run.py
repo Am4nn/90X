@@ -62,14 +62,20 @@ def spare_documents(con) -> list[dict]:
     """Documents mapped to no topic: 2,346 of 5,290, so nearly half the corpus.
 
     Read once per run and offered to every topic, where `context.for_topic` takes
-    only the ones whose title overlaps the topic's name. Titles and bodies of
-    every one of them is far too much to hold, so this is capped at the longest -
-    length is a rough proxy for a real article rather than a stub heading.
+    only the ones whose title overlaps the topic's name.
+
+    This was capped at the 1,200 longest, on the assumption that holding all of
+    them was too much memory. Measured, it is not: 2,071 of the 2,346 clear the
+    400-character floor and their bodies come to 4.5 MB against 3.9 MB for the
+    top 1,200. The cap was guarding 0.6 MB and hiding 871 documents, any one of
+    which could be the only title match for a topic - which would hold that
+    lesson for want of a source that was sitting right there. The floor stays,
+    because a sub-400-character body is a stub heading rather than an article.
     """
     rows = con.execute(
         """select id, title, body_md from documents
            where topic_slug is null and length(coalesce(body_md, '')) > 400
-           order by length(body_md) desc limit 1200"""
+           order by length(body_md) desc"""
     ).fetchall()
     return [dict(zip(["id", "title", "body_md"], r)) for r in rows]
 

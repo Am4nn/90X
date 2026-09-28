@@ -62,9 +62,12 @@ const users = [
   "00000000-0000-4000-8000-0000000000e1",
   "00000000-0000-4000-8000-0000000000e2",
   "00000000-0000-4000-8000-0000000000e3",
-  // Two more for the Coach's queueing, which needs its own feed areas.
+  // Three more for the Coach's queueing, which needs its own feed areas: one to
+  // refuse an out-of-area card, one to prove a repeat leaves one copy, and one
+  // to prove the card on screen comes back.
   "00000000-0000-4000-8000-0000000000e4",
   "00000000-0000-4000-8000-0000000000e5",
+  "00000000-0000-4000-8000-0000000000e6",
 ] as const;
 const now = new Date("2026-09-27T06:00:00Z");
 
@@ -203,6 +206,20 @@ try {
     await queueFirst(twiceUser, [liveInQueue], tx, twiceStore);
     const queueLines = await twiceStore.list(`90x:feed:${twiceUser}`);
     expect("queueing a card twice leaves one copy", queueLines.length === 1, JSON.stringify(queueLines));
+
+    // The card already on screen must come back. Clearing `current` was needed
+    // so the Coach's card is served first, but clearing it alone threw the
+    // reader's half-finished card away: it was in neither place afterwards.
+    const placeUser = users[5];
+    const placeStore = memoryStore();
+    await setFeedAreas(placeUser, ["cs"], tx, placeStore);
+    await placeStore.set(`90x:feed:${placeUser}:current`, JSON.stringify({ id: typed, reason: "new" }), 60);
+    await queueFirst(placeUser, [liveInQueue], tx, placeStore);
+    const coachFirst = await nextCard(placeUser, tx, placeStore, now);
+    expect("the Coach's card is served first", coachFirst?.id === liveInQueue, String(coachFirst?.id));
+    await placeStore.del(`90x:feed:${placeUser}:current`);
+    const restored = await nextCard(placeUser, tx, placeStore, now);
+    expect("and the card that was on screen is served next, not lost", restored?.id === typed, String(restored?.id));
 
     // Offline cards start with the card on screen and never carry the answer.
     const upcoming = await upcomingCards(u2, tx, store, now);

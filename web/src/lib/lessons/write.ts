@@ -1,8 +1,8 @@
 import "server-only";
 import { generateText, Output } from "ai";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { lessons, topics } from "@/db/schema";
+import { lessons, sources, topics } from "@/db/schema";
 import { coachModel, trackCoachUsage } from "@/lib/coach/model";
 import { searchKnowledge } from "@/lib/coach/tools-data";
 import { key } from "@/lib/upstash/keys";
@@ -143,6 +143,31 @@ async function factCheck(userId: string, bodyMd: string, passages: Passage[]): P
 }
 
 /**
+ * The "Written from" line, in the shape the Library reads.
+ *
+ * `sourcesOf` in `lib/library/queries.ts` wants `{ id, name, url }` and drops
+ * anything else, so storing the raw refs the way the pipeline holds them in
+ * staging would have hidden the credit entirely — on the one kind of lesson
+ * whose whole claim is that it came from somewhere. `publish._sources_of()`
+ * does this same resolution on the way out of staging; this is that step for a
+ * lesson that never goes through staging.
+ *
+ * Only ids that resolve to a real `sources` row are credited, as publish does.
+ * A passage with no source id still fed the writing; it just cannot be named.
+ */
+async function creditedSources(passages: Passage[], q: typeof db) {
+  const ids = [...new Set(passages.map((p) => p.sourceId).filter((id): id is string => Boolean(id)))];
+  if (!ids.length) return [];
+  const rows = await q.select({ id: sources.id, name: sources.name, url: sources.url }).from(sources).where(inArray(sources.id, ids));
+  // Keep the passages' order, so the strongest hit is credited first.
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  return ids.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [{ id: row.id, name: row.name, url: row.url }] : [];
+  });
+}
+
+/**
  * Write a lesson for `topicSlug` if the corpus has the material for one.
  *
  * Refuses rather than overwriting: a topic the pipeline has already written is
@@ -209,7 +234,7 @@ export async function writeLessonOnDemand(userId: string, topicSlug: string, q =
       summary: lesson.summary,
       bodyMd,
       practice: {},
-      sourceRefs: [...new Set(passages.map((p) => p.ref))],
+      sourceRefs: await creditedSources(passages, q),
       words,
       generatedAt: new Date().toISOString(),
       writtenBy: userId,
