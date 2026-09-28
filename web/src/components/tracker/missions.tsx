@@ -22,16 +22,6 @@ function href(m: TodayMission) {
   return `/library/problem/${m.ref}`;
 }
 
-/** The status square.
- *
- *  Decorative for a done, skipped or coming-soon mission, because `Meta` beside
- *  it already says "Done", "Skipped" or "Soon" and labelling this repeated it.
- *  Named for an open one, because there `Meta` shows the estimate - "45m" - and
- *  nothing else says the mission is still to do.
- *
- *  All four used to carry an aria-label on a bare span, where the attribute is
- *  prohibited and was being ignored, so none of them were announced at all.
- *  Making them work is what revealed the duplication. */
 /** The status square, which is what names a mission's state.
  *
  *  The square says "Done", "Skipped", "Coming soon" or "Open"; `Meta` beside it

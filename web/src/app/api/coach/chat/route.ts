@@ -19,7 +19,7 @@ import { type ModeContext, modeFor } from "@/lib/coach/mode";
 import "@/lib/coach/modes";
 import { coachModel, trackCoachUsage } from "@/lib/coach/model";
 import { takeMessageSlot } from "@/lib/coach/rate-limit";
-import { clearStop, stopSignal } from "@/lib/coach/stop";
+import { stopSignal } from "@/lib/coach/stop";
 import { ensureThread, saveMessage, threadMessages } from "@/lib/coach/threads";
 import { limitToolCalls } from "@/lib/coach/tool-limit";
 
@@ -77,6 +77,10 @@ export async function POST(request: Request) {
     return plain(`That's a lot of messages in a short time. You can send more in ${minutes} minute${minutes === 1 ? "" : "s"}.`, 429);
   }
 
+  // Declared out here so the catch can release it. Left inside the try it is not
+  // in scope there, and `stop?.done()` silently resolved to lib.dom's global
+  // `stop()` instead - which typechecks and releases nothing.
+  let stop: { signal: AbortSignal; done: () => void } | undefined;
   try {
     const thread = await ensureThread(viewer.id, {
       id: body.data.threadId ?? randomUUID(),
@@ -100,10 +104,6 @@ export async function POST(request: Request) {
       language: viewer.language,
       now: new Date(),
     };
-    // A stop left over from the previous reply in this thread would kill this one
-    // before it started.
-    await clearStop(viewer.id, thread.id);
-    const stop = stopSignal(viewer.id, thread.id);
     const tools = limitToolCalls(mode.tools?.(ctx) ?? {});
     const [instructions, { model }] = await Promise.all([mode.system(ctx), coachModel()]);
 
@@ -136,6 +136,14 @@ export async function POST(request: Request) {
       }
     };
 
+    // Started here rather than earlier: anything above this that throws returns
+    // before `done()` could run, and the interval would keep polling Redis every
+    // 1.5 seconds after the request was over. The catch below releases it for the
+    // same reason.
+    stop = stopSignal(viewer.id, thread.id);
+    // A local binding as well, because the closures below run later and cannot
+    // narrow the outer `let`.
+    const stopping = stop;
     const stream = createUIMessageStream({
       originalMessages: messages,
       generateId: randomUUID,
@@ -153,7 +161,7 @@ export async function POST(request: Request) {
           // so the work was paid for and thrown away. This aborts on an explicit
           // Stop instead, which is the only one of the two that means "I do not
           // want this". `maxDuration` bounds the rest.
-          abortSignal: stop.signal,
+          abortSignal: stopping.signal,
           onEnd: (end) => trackCoachUsage(viewer.id, `coach.${thread.kind}`, model, end),
         });
         writer.merge(
@@ -198,7 +206,7 @@ export async function POST(request: Request) {
         console.error("coach answer could not be assembled", e);
       } finally {
         // Or the poll outlives the reply it was watching.
-        stop.done();
+        stopping.done();
       }
       await store(latest);
     })();
@@ -206,6 +214,7 @@ export async function POST(request: Request) {
     return createUIMessageStreamResponse({ stream: toClient });
   } catch (e) {
     console.error("coach chat setup failed", e);
+    stop?.done();
     return plain(BUSY, 500);
   }
 }
