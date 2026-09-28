@@ -39,4 +39,24 @@ def test_the_same_topic_twice_is_one_line_at_its_best_score():
     ])
     assert out.count("Sampling Parameters") == 1
     assert "(0.7)" in out and "(0.5)" not in out
-    assert "1 were the same topic listed twice" in out
+    assert "1 was the same topic listed twice" in out
+
+
+def test_an_area_the_sort_never_reached_says_so():
+    """The sort died on a provider balance error two areas from the end. An
+    empty section reads as "no gaps here", which is the opposite of the
+    truth, and nobody rereads a report to notice a heading is absent."""
+    out = gaps.report(
+        [row("ai", "Linear Regression", relevance=0.8, why="always asked")],
+        all_domains=["ai", "sql", "system_design"],
+    )
+    assert "sql, system_design are missing from this report" in out
+    assert "nothing was looked at, not that nothing was found" in out
+
+
+def test_a_complete_sort_carries_no_missing_note():
+    out = gaps.report(
+        [row("ai", "Linear Regression", relevance=0.8, why="always asked")],
+        all_domains=["ai"],
+    )
+    assert "missing from this report" not in out

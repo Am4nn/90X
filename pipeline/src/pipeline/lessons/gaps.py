@@ -93,14 +93,25 @@ def judge(llm, domain: str, our_topics: list[str], candidates: list[str], tier: 
     return llm.complete_json(SYSTEM, user, Judgements, tier=tier, purpose="taxonomy-gaps").judgements
 
 
-def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list[dict]:
-    """Returns every candidate with its verdict, ready to be written up."""
+def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: bool = False) -> list[dict]:
+    """Returns every candidate with its verdict, ready to be written up.
+
+    Resumes by default: a candidate already sorted is not sorted again. The
+    first run died on a provider balance error with two areas left, and
+    starting over would have paid a second time for the 1,357 verdicts already
+    stored. `redo` sorts everything again, for when the prompt changes.
+    """
     rows = uncovered(con)
     wanted = set(domains or {r["domain"] for r in rows})
-    out: list[dict] = []
+    done = set() if redo else {(r["domain"], r["label"]) for r in stored(con)}
+    out: list[dict] = [r for r in stored(con) if r["domain"] in wanted] if not redo else []
     for domain in sorted(wanted):
         ours = [r[0] for r in con.execute("select name from topics where domain = ? order by sort", [domain]).fetchall()]
-        candidates = [r["label"] for r in rows if r["domain"] == domain]
+        candidates = [r["label"] for r in rows
+                      if r["domain"] == domain and (domain, r["label"]) not in done]
+        if not candidates:
+            print(f"  {domain}: already sorted", flush=True)
+            continue
         for i in range(0, len(candidates), BATCH):
             chunk = candidates[i : i + BATCH]
             judged = {j.label: j for j in judge(llm, domain, ours, chunk, tier=tier)}
@@ -152,7 +163,7 @@ def _listing(rows: list[dict]) -> list[str]:
     return lines
 
 
-def report(rows: list[dict]) -> str:
+def report(rows: list[dict], all_domains: list[str] | None = None) -> str:
     """The list Aman cuts down.
 
     The first version handed over all 1,100 gaps and asked him to cut them,
@@ -179,14 +190,25 @@ def report(rows: list[dict]) -> str:
         "",
         f"{n_covered} candidates were already covered under another name and "
         f"{n_broad} were headings rather than topics"
-        + (f"; {duplicates} were the same topic listed twice." if duplicates else "."),
+        + (f"; {duplicates} {'was' if duplicates == 1 else 'were'} the same topic listed twice."
+           if duplicates else "."),
         "",
         "**Deleting a line is the whole review.** Anything you keep gets a lesson written for "
         "it, at roughly $0.04 each - and 90x is 274 curated topics, which is the thing worth "
         "protecting. The score is a suggestion, not a decision.",
         "",
-        "## Worth writing",
     ]
+    # A partial sort must say which areas it never reached. Otherwise an empty
+    # section reads as "no gaps here", which is the opposite of "not looked at".
+    missing = sorted(set(all_domains or []) - {r["domain"] for r in rows})
+    if missing:
+        lines += [
+            f"> **{', '.join(missing)} {'is' if len(missing) == 1 else 'are'} missing from this "
+            f"report.** The sort stopped before reaching {'it' if len(missing) == 1 else 'them'}, "
+            "so an absent area means nothing was looked at, not that nothing was found.",
+            "",
+        ]
+    lines.append("## Worth writing")
     lines += _listing(likely)
     if tail:
         lines += [
