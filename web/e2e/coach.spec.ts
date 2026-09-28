@@ -156,10 +156,17 @@ test("the answer arrives even if the app is closed mid-reply", async ({ page, co
   await reopened.goto(url);
   await expect(reopened.getByRole("heading", { name: message, exact: true })).toBeVisible();
   await expect(conversation(reopened).getByText(message, { exact: true })).toBeVisible();
-  // Generously: the run carries on server-side while nobody is listening, and
-  // this is waiting for it to land in the thread rather than for a render. The
-  // old code never gets here at all - it aborted the moment the page closed.
-  await expect(conversation(reopened).getByText(fakeReply(message), { exact: true })).toBeVisible({ timeout: 30_000 });
+
+  // Reload until it lands, rather than waiting on the DOM. The thread is
+  // server-rendered once: the run is still going when this page is built, so the
+  // answer arrives in the database afterwards and the markup already sent will
+  // never mention it. Polling the DOM for it waits for something that cannot
+  // happen, which is how this test failed twice while the fix underneath it
+  // worked.
+  await expect(async () => {
+    await reopened.reload();
+    await expect(conversation(reopened).getByText(fakeReply(message), { exact: true })).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 40_000 });
 
   const prompt = await promptFor(request, message);
   expect(prompt.system).toContain("You are Coach, the interview-prep coach inside 90x");
