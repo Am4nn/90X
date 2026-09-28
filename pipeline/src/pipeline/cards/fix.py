@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ..config import REPO_DIR
-from ..llm import LLM
+from ..llm import LLM, LLMError
 from . import gate
 from .from_lessons import rewrite
 from .run_lessons import card_id
@@ -54,17 +54,26 @@ class Draft:
 
     def __init__(self, row) -> None:
         (self.id, self.topic_slug, self.format, self.difficulty, self.prompt,
-         options, self.answer, key_points) = row
+         options, self.answer, key_points, quality) = row
         self.options = json.loads(options) if options else []
         self.key_points = json.loads(key_points or "[]")
+        self.from_review = bool((json.loads(quality or "{}") or {}).get("from_review"))
 
 
 def drafts_for(con, slugs: list[str]) -> dict[str, Draft]:
+    """The card a reviewer is talking about, per topic.
+
+    Rejected cards are in scope, not only drafts: "the gate was wrong to drop
+    this, make it multiple choice" is a normal objection, and the reviewer
+    named the Java equals() contract card as exactly that. Drafts are preferred
+    when a topic has both, because a live card is the one being complained
+    about.
+    """
     rows = con.execute(
-        f"""select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points
-            from cards where source = 'lesson' and status = 'draft'
+        f"""select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points, quality
+            from cards where source = 'lesson' and status in ('draft', 'rejected')
               and topic_slug in ({', '.join('?' * len(slugs))})
-            order by topic_slug, id""",
+            order by topic_slug, case status when 'draft' then 0 else 1 end, id""",
         slugs,
     ).fetchall()
     # One card per topic in the sample, so the first is the one reviewed. If a
@@ -104,10 +113,19 @@ def replace(con, old: Draft, card, topic: dict, reason: str | None) -> None:
     )
 
 
-def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTIONS) -> tuple[int, int]:
-    """Returns (fixed, still_failing)."""
+def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTIONS,
+        only: list[str] | None = None) -> tuple[int, int]:
+    """Returns (fixed, still_failing).
+
+    Idempotent: a card already carrying `from_review` is the answer to this
+    objection, not a new subject for it. Without that, a second run - to retry
+    the one topic whose rewrite returned bad JSON - would rewrite the twelve
+    good replacements against the objections they had already satisfied.
+    """
     llm = llm or LLM(con)
     notes = objections(path)
+    if only:
+        notes = {k: v for k, v in notes.items() if k in set(only)}
     if not notes:
         print(f"no objections in {path}", flush=True)
         return 0, 0
@@ -128,7 +146,16 @@ def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTION
         if old is None or topic is None:
             print(f"  {slug}: no draft card to fix", flush=True)
             continue
-        replacements = rewrite(llm, topic, topic["lesson"], [(old, objection)], tier=tier)
+        if old.from_review:
+            print(f"  {slug}: already answered by a review rewrite", flush=True)
+            continue
+        # One objection the model cannot answer must not cost the other twelve.
+        try:
+            replacements = rewrite(llm, topic, topic["lesson"], [(old, objection)], tier=tier)
+        except LLMError as e:
+            print(f"  {slug}: the rewrite failed, {e}", flush=True)
+            failed += 1
+            continue
         if not replacements:
             print(f"  {slug}: the rewrite returned nothing", flush=True)
             failed += 1

@@ -230,7 +230,7 @@ def card_fix(args, con) -> None:
     from . import llm
     from .cards import fix
 
-    fixed, failed = fix.run(con, llm.LLM(con), tier=args.tier)
+    fixed, failed = fix.run(con, llm.LLM(con), tier=args.tier, only=args.topics or None)
     print(f"card-fix: {fixed} fixed, {failed} still failing, spend ${llm.spend_usd(con):.2f}")
 
 
@@ -240,8 +240,8 @@ def card_regate(args, con) -> None:
 
     t = regate.run(con, only=args.topics or None, tier=args.tier)
     print(f"card-regate: {t['judged']} cards re-judged across {t['topics']} topics, "
-          f"{t['recovered']} recovered, {t['newly_rejected']} newly rejected, "
-          f"{t['rejected']} rejected in total, spend ${llm.spend_usd(con):.2f}")
+          f"{t['recovered']} recovered, {t['reformatted']} rewritten and passed, "
+          f"{t['rejected']} still rejected, spend ${llm.spend_usd(con):.2f}")
 
 
 def rebatch(args, con) -> None:

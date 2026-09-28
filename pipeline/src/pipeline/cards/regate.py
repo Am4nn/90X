@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 
 from ..llm import LLM, BudgetExceeded, LLMError, lock_for, spend_usd
 from . import gate
+from .from_lessons import rewrite
 from .run_lessons import WORKERS, card_id
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -34,12 +35,13 @@ class Draft:
 
 def topics_with_cards(con, only: list[str] | None = None) -> list[dict]:
     rows = con.execute(
-        """select t.slug, t.name, t.domain from topics t
+        """select t.slug, t.name, t.domain, l.body_md from topics t
+           join lessons l on l.topic_slug = t.slug
            where exists (select 1 from cards c where c.topic_slug = t.slug and c.source = 'lesson'
                          and c.status in ('draft', 'rejected'))
            order by t.importance desc, t.slug"""
     ).fetchall()
-    out = [{"slug": s, "name": n, "domain": d} for s, n, d in rows]
+    out = [{"slug": s, "name": n, "domain": d, "lesson": b} for s, n, d, b in rows]
     return [t for t in out if t["slug"] in set(only)] if only else out
 
 
@@ -56,6 +58,32 @@ def cards_of(con, slug: str) -> list[Draft]:
         [slug],
     ).fetchall()
     return [Draft(r) for r in rows]
+
+
+def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> None:
+    """Replace a rejected card with the rewrite that passed.
+
+    The old row stays as `repaired`, carrying what the gate objected to, so the
+    review pack can still show what was caught. Its id is keyed apart from the
+    replacement's, because a rewrite that changes only the format or the answer
+    keeps the question and the two would otherwise collide.
+    """
+    now = datetime.now(timezone.utc)
+    con.execute("update cards set status = 'repaired', kept = false where id = ?", [old.id])
+    refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
+    con.execute(
+        """insert or replace into cards
+           (id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points,
+            source_refs, quality, kept, status, source, reject_reason, created_at)
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, true, 'draft', 'lesson', null, ?)""",
+        [
+            card_id(topic["slug"], card.prompt), topic["slug"], card.format, card.difficulty, card.prompt,
+            json.dumps(card.options) if card.options else None, card.answer,
+            json.dumps(card.key_points), refs,
+            json.dumps({"gate_confidence": confidence.get(id(card), 0.5), "regated": True}),
+            now,
+        ],
+    )
 
 
 def apply(con, cards: list[Draft], rejected: list[tuple[object, str]], confidence: dict) -> tuple[int, int]:
@@ -86,15 +114,38 @@ def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | Non
     todo = topics_with_cards(con, only)
     db = lock_for(con)
     started, before = time.time(), spend_usd(con)
-    totals = {"topics": 0, "judged": 0, "recovered": 0, "newly_rejected": 0, "rejected": 0}
+    totals = {"topics": 0, "judged": 0, "recovered": 0, "newly_rejected": 0, "rejected": 0, "reformatted": 0}
 
     def work(topic: dict):
         with db:
             cards = cards_of(con, topic["slug"])
         if not cards:
-            return topic, [], [], {}
+            return topic, [], [], {}, []
         result = gate.review(llm, topic, cards, tier=tier)
-        return topic, cards, gate.judge(cards, result), gate.confidence_of(result)
+        rejected = gate.judge(cards, result)
+        confidence = gate.confidence_of(result)
+        # A stricter gate without a repair pass is just a delete button. Most of
+        # what it turns down here is a good question in the wrong format - "what
+        # iteration order do HashSet, LinkedHashSet and TreeSet give?" is a fair
+        # interview question and a bad flash card - so each rejection gets the
+        # same one rewrite the first pass gives, with the reason attached.
+        fixes: list[tuple[object, object]] = []
+        if rejected:
+            try:
+                replacements = rewrite(llm, topic, topic["lesson"], rejected, tier="smart")
+            except LLMError:
+                replacements = []
+            if replacements:
+                passed = gate.review(llm, topic, replacements)
+                still_bad = {id(c) for c, _ in gate.judge(replacements, passed)}
+                confidence.update(gate.confidence_of(passed))
+                # Positional pairing is what the rewrite prompt asks for; when
+                # the counts disagree there is no honest mapping, so nothing is
+                # claimed and the originals stay rejected.
+                if len(replacements) == len(rejected):
+                    fixes = [(old, new) for (old, _), new in zip(rejected, replacements)
+                             if id(new) not in still_bad]
+        return topic, cards, rejected, confidence, fixes
 
     print(f"{len(todo)} topics to re-judge, {WORKERS} at a time", flush=True)
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -103,7 +154,7 @@ def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | Non
             for future in as_completed(futures):
                 topic = futures[future]
                 try:
-                    topic, cards, rejected, confidence = future.result()
+                    topic, cards, rejected, confidence, fixes = future.result()
                 except BudgetExceeded as e:
                     print(f"  stopping: {e}", flush=True)
                     break
@@ -114,14 +165,18 @@ def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | Non
                     continue
                 with db:
                     recovered, newly = apply(con, cards, rejected, confidence)
+                    for old, card in fixes:
+                        store_fix(con, topic, old, card, confidence)
                     spent = spend_usd(con) - before
                 totals["topics"] += 1
                 totals["judged"] += len(cards)
                 totals["recovered"] += recovered
                 totals["newly_rejected"] += newly
-                totals["rejected"] += len(rejected)
-                if recovered or newly:
-                    print(f"  {topic['slug']}: +{recovered} recovered, -{newly} newly rejected", flush=True)
+                totals["rejected"] += len(rejected) - len(fixes)
+                totals["reformatted"] += len(fixes)
+                if recovered or newly or fixes:
+                    print(f"  {topic['slug']}: +{recovered} recovered, -{newly} newly rejected, "
+                          f"{len(fixes)} rewritten", flush=True)
                 if totals["topics"] % 25 == 0:
                     print(f"[{totals['topics']}/{len(todo)}] {totals['judged']} judged, "
                           f"+{totals['recovered']} / -{totals['newly_rejected']}  ${spent:.3f}  "

@@ -55,6 +55,7 @@ def main() -> None:
     gp.add_argument("--report-only", action="store_true",
                     help="rewrite the report from stored verdicts, without paying to sort again")
     cf = sub.add_parser("card-fix", help="apply .planning/card-objections.md to the cards named there (AI)")
+    cf.add_argument("topics", nargs="*", help="only these topic slugs")
     cf.add_argument("--tier", default="smart")
     cr = sub.add_parser("card-regate", help="judge the cards we already have again, after a gate change (AI)")
     cr.add_argument("topics", nargs="*", help="only these topic slugs")

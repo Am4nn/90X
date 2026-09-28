@@ -108,3 +108,23 @@ MyISAM beside PostgreSQL and SQL Server - so only two options are even
 candidates and the card is trivially easy. Every wrong option should be a real
 mistake: use four MySQL storage engines, or ask the question about database
 systems and choose four of those.
+
+## java-equals-and-hashcode-contract
+
+The reviewer named this card as one the gate was wrong to throw away: the
+equals() contract is a real interview question. It was rejected as a typed card
+because the honest answer enumerates five properties - reflexive, symmetric,
+transitive, consistent, and non-null handling - and a candidate cannot guess how
+many are wanted. Make it multiple choice, with four options where the wrong ones
+are mistakes people actually make: leaving out symmetry, requiring equal
+hashCodes as part of the equals contract rather than as a consequence, or
+allowing equals(null) to throw.
+
+## sd-jwt
+
+Rejected as a typed card for asking an open-ended list of verification checks,
+and it is a question worth keeping - "what does a server check on a JWT" is
+asked constantly. Bound it: make it multiple choice over four checks where the
+wrong options are real errors (trusting the `alg` header, checking the signature
+but not `exp`, validating `iss` but not the audience), or ask about one check
+and why skipping it is exploitable.

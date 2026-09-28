@@ -123,3 +123,50 @@ def test_a_stored_gap_is_corrected_when_a_query_proves_we_cover_it(tmp_path):
     assert len(rows) == 1, rows
     assert rows[0]["verdict"] == "covered" and rows[0]["covered_by"] == "Linked List"
     assert gaps.stored(con)[0]["verdict"] == "covered"
+
+
+def test_a_comparison_needs_both_sides_taught(tmp_path):
+    """"RAG vs Fine-tuning" never appears verbatim in prose, so searching for
+    the whole phrase found nothing. Each side is searched separately - but half
+    a comparison being mentioned must not count as covering it."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('a', 'Fine-tuning', 'Supervised fine tuning adapts a base model.', 'ok')""")
+    assert gaps.taught_in(con, "RAG vs Fine-tuning") == []
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('b', 'Both', 'A RAG pipeline retrieves context; fine tuning changes weights.', 'ok')""")
+    assert gaps.taught_in(con, "RAG vs Fine-tuning") == ["b"]
+
+
+def test_a_short_acronym_is_matched_on_a_word_boundary(tmp_path):
+    """`%rag%` as a substring also matches "storage", "fragment" and "average",
+    which would mark a real gap covered on the strength of a coincidence."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('s', 'Object storage', 'Object storage keeps average fragment size low.', 'ok')""")
+    assert gaps.taught_in(con, "RAG") == []
+
+
+def test_a_noise_word_does_not_hide_the_subject(tmp_path):
+    """"Prompt Injection Attacks" found nothing while "Prompt Injection" was
+    sitting in two lessons, because the trailing noun was part of the search."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('g', 'Generative AI', 'A prompt injection rewrites the instruction.', 'ok')""")
+    assert gaps.taught_in(con, "Prompt Injection Attacks") == ["g"]
+
+
+def test_a_label_too_short_to_search_is_not_called_covered(tmp_path):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('m', 'ML', 'Machine learning models.', 'ok')""")
+    assert gaps.subjects_of("ML") is None
+    assert gaps.taught_in(con, "ML") == []

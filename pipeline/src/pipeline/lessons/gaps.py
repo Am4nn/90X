@@ -72,6 +72,40 @@ def already_ours(con) -> dict[str, str]:
             for (name,) in con.execute("select name from topics order by sort").fetchall()}
 
 
+# Words naming the shape of a topic rather than the topic. "Prompt Injection
+# Attacks" is the subject "prompt injection", and searching a body for the whole
+# phrase found nothing while the bare phrase was sitting in two lessons.
+SUBJECT_NOISE = {"attack", "attacks", "basic", "basics", "overview", "introduction",
+                 "fundamental", "fundamentals", "concept", "concepts", "notation",
+                 "practice", "practices", "best", "technique", "techniques",
+                 "strategy", "strategies", "type", "types"}
+COMPARISON = re.compile(r"\s+(?:vs\.?|versus)\s+", re.IGNORECASE)
+
+
+def subjects_of(label: str) -> list[str] | None:
+    """The phrases a lesson must contain to be teaching this, or None.
+
+    A comparison is two subjects, not one: "RAG vs Fine-tuning" never appears
+    verbatim in prose, so the whole-phrase search found nothing even though both
+    sides are taught. Each side is searched separately and every side must be
+    present - otherwise half a comparison being mentioned would count as
+    covering it, which is worse than not checking at all.
+
+    None means the label is too short to search on, and the caller must not
+    treat that as "not covered".
+    """
+    parts = COMPARISON.split(label) if COMPARISON.search(label) else [label]
+    out = []
+    for part in parts:
+        words = re.sub(r"[^a-z0-9 ]+", " ", part.casefold()).split()
+        kept = [w for w in words if w not in SUBJECT_NOISE] or words
+        phrase = " ".join(kept).strip()
+        if len(phrase) < 3:
+            return None
+        out.append(phrase)
+    return out or None
+
+
 def taught_in(con, label: str) -> list[str]:
     """Lessons whose body already teaches this, by name.
 
@@ -79,13 +113,18 @@ def taught_in(con, label: str) -> list[str]:
     lesson looked like a gap: "Prompt Injection" is taught in two lessons and
     was still scored 0.7. Titles are what a taxonomy knows; bodies are what a
     reader actually gets.
+
+    Matched on a word boundary rather than as a substring, because "RAG" as
+    `%rag%` also matches "storage", "fragment" and "average". A trailing suffix
+    is still allowed, so "index" finds "indexes".
     """
-    term = " ".join(label.split()).casefold()
-    if len(term) < 4:
+    subjects = subjects_of(label)
+    if not subjects:
         return []
+    clause = " and ".join("regexp_matches(lower(body_md), ?)" for _ in subjects)
     return [r[0] for r in con.execute(
-        "select topic_slug from lessons where status = 'ok' and lower(body_md) like ? order by topic_slug",
-        [f"%{term}%"],
+        f"select topic_slug from lessons where status = 'ok' and {clause} order by topic_slug",
+        [rf"\b{re.escape(subject)}" for subject in subjects],
     ).fetchall()]
 
 
@@ -166,9 +205,16 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
             settled.append({**row, "verdict": "covered", "covered_by": match,
                             "relevance": 0.0, "why": ""})
         elif lessons := taught_in(con, row["label"]):
+            # The citation says how thin the evidence is, because a phrase found
+            # anywhere in a body can be a passing mention: "Indexing" matches the
+            # array indexing in a dynamic-programming lesson. The verdict is
+            # still usually right - we do have Indexes - and every settled
+            # candidate is listed in the report's covered section, so a wrong one
+            # costs Aman a glance rather than a lesson.
+            where = ", ".join(lessons[:2]) + (f" and {len(lessons) - 2} more" if len(lessons) > 2 else "")
             settled.append({**row, "verdict": "covered",
-                            "covered_by": f"taught in {lessons[0]}"
-                                          + (f" and {len(lessons) - 1} more" if len(lessons) > 1 else ""),
+                            "covered_by": f"named in {len(lessons)} "
+                                          f"{'lesson' if len(lessons) == 1 else 'lessons'} ({where})",
                             "relevance": 0.0, "why": ""})
     if settled:
         print(f"{len(settled)} candidates settled without asking the model", flush=True)
