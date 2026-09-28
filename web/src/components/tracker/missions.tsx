@@ -25,7 +25,7 @@ function href(m: TodayMission) {
 function Box({ status }: { status: TodayMission["status"] }) {
   if (status === "done")
     return (
-      <span className="grid size-5 place-items-center rounded-md bg-cyan text-on-cyan" aria-label="Done">
+      <span className="grid size-5 place-items-center rounded-md bg-cyan text-on-cyan" role="img" aria-label="Done">
         <svg viewBox="0 0 12 12" className="size-3" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M2.5 6.5 5 9l4.5-6" />
         </svg>
@@ -33,13 +33,17 @@ function Box({ status }: { status: TodayMission["status"] }) {
     );
   if (status === "skipped")
     return (
-      <span className="grid size-5 place-items-center rounded-md border border-line-2 text-mute" aria-label="Skipped">
+      <span className="grid size-5 place-items-center rounded-md border border-line-2 text-mute" role="img" aria-label="Skipped">
         –
       </span>
     );
   return (
     <span
       className={`size-5 rounded-md border-[1.5px] ${status === "coming_soon" ? "border-dashed border-line-2" : "border-line-2"}`}
+      // A bare span may not carry aria-label; as the only thing conveying this
+      // mission's state to a screen reader, it is an image with a text
+      // alternative.
+      role="img"
       aria-label={status === "coming_soon" ? "Coming soon" : "Open"}
     />
   );

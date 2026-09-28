@@ -141,6 +141,8 @@ test("the answer arrives even if the app is closed mid-reply", async ({ page, co
   // page drops the connection exactly as closing the app does. The run used to
   // be tied to request.signal, so this aborted it and the answer was lost.
   await expect(page.getByRole("status").filter({ hasText: "Coach is working" })).toBeVisible();
+  // The thread id has to be in the URL before we can come back to it.
+  await expect(page).toHaveURL(/\/coach\?t=[0-9a-f-]{36}$/);
   const url = page.url();
   await page.close();
 
@@ -148,8 +150,10 @@ test("the answer arrives even if the app is closed mid-reply", async ({ page, co
   await reopened.goto(url);
   await expect(reopened.getByRole("heading", { name: message, exact: true })).toBeVisible();
   await expect(conversation(reopened).getByText(message, { exact: true })).toBeVisible();
-  // Finished on the server while nothing was listening, and saved.
-  await expect(conversation(reopened).getByText(fakeReply(message), { exact: true })).toBeVisible();
+  // Generously: the run carries on server-side while nobody is listening, and
+  // this is waiting for it to land in the thread rather than for a render. The
+  // old code never gets here at all - it aborted the moment the page closed.
+  await expect(conversation(reopened).getByText(fakeReply(message), { exact: true })).toBeVisible({ timeout: 30_000 });
 
   const prompt = await promptFor(request, message);
   expect(prompt.system).toContain("You are Coach, the interview-prep coach inside 90x");

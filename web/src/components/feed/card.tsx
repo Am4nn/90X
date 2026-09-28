@@ -377,7 +377,7 @@ function Result({
                       •
                     </span>
                   ) : (
-                    <span className={hit ? "text-ok" : "text-bad"} aria-label={hit ? "Covered" : "Missed"}>
+                    <span className={hit ? "text-ok" : "text-bad"} role="img" aria-label={hit ? "Covered" : "Missed"}>
                       {hit ? "✓" : "✕"}
                     </span>
                   )}
