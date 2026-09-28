@@ -127,6 +127,9 @@ What replaced it:
   `cs-tlb-and-caching`, `sql-recursive-ctes` — were rewritten and passed.)
   Their topics do not appear in the Library rather than 404ing, because the
   listing joins on the lesson.
+- **The DeepSeek account is out of credit.** The taxonomy sort died on `402
+  Insufficient Balance` with two areas left. No pipeline AI run will work until it
+  is topped up. `PIPELINE_MAX_USD` was not the limit; lifetime spend is $48.11.
 - **Cross-lesson consistency has not been re-run** since every lesson was
   rewritten. The rewrite carried the previous round's corrections in as
   notes, so the four contradictions it found are addressed, but a fresh pass
