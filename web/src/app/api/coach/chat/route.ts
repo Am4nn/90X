@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  consumeStream,
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -119,7 +120,11 @@ export async function POST(request: Request) {
           stopWhen: stepCountIs(maxSteps),
           // The last step must answer, so a thread never ends on a bare tool call.
           prepareStep: ({ stepNumber }) => (stepNumber >= maxSteps - 1 ? { toolChoice: "none" } : undefined),
-          abortSignal: request.signal,
+          // No abortSignal on purpose. Tying generation to `request.signal` meant
+          // closing the app mid-answer killed the run before `onEnd` could save
+          // it, so the work was paid for and thrown away. The run now finishes
+          // server-side and the answer is in the thread when the reader returns.
+          // `maxDuration` still bounds it.
           onEnd: (end) => trackCoachUsage(viewer.id, `coach.${thread.kind}`, model, end),
         });
         writer.merge(
@@ -153,7 +158,15 @@ export async function POST(request: Request) {
         }
       },
     });
-    return createUIMessageStreamResponse({ stream });
+    // A tee'd copy, drained here. Without it the only thing pulling the stream is
+    // the client's connection, so a disconnect stalls it at the first unread
+    // chunk and `onEnd` never runs - which is the same lost answer by a
+    // different route. Draining a copy costs nothing and does not block the
+    // response.
+    return createUIMessageStreamResponse({
+      stream,
+      consumeSseStream: ({ stream: copy }) => consumeStream({ stream: copy, onError: (e) => console.error("coach stream copy failed", e) }),
+    });
   } catch (e) {
     console.error("coach chat setup failed", e);
     return plain(BUSY, 500);

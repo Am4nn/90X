@@ -108,7 +108,9 @@ function Working() {
 
 /** The answer lives in this connection until it's saved, so leaving loses it. */
 function KeepOpen() {
-  return <p className="text-small text-mute">Keep the app open until the reply arrives. After that you can close it and pick up later.</p>;
+  // It used to say "keep the app open", because closing it aborted the run and
+  // lost the answer. The run now finishes on the server either way.
+  return <p className="text-small text-mute">Still thinking. You can close the app — the reply will be here when you come back.</p>;
 }
 
 /** One coach thread: messages, tool activity, proposals, and the composer. */

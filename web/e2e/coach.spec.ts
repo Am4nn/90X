@@ -128,3 +128,29 @@ test("starting a design mock opens the interview in Coach", async ({ page, reque
   expect(prompt.system).toContain("You are the interviewer in a text mock interview");
   expect(prompt.system).toContain(topic);
 });
+
+test("the answer arrives even if the app is closed mid-reply", async ({ page, context, request }) => {
+  await signIn(page, "coach-closed", { next: "/coach?new=1" });
+  await expect(page.getByRole("heading", { name: "New chat", exact: true })).toBeVisible();
+
+  const message = "What should I do about a weak spot in graphs?";
+  await composer(page).fill(message);
+  await composer(page).press("Enter");
+
+  // Wait until the model is genuinely mid-answer, then walk away: closing the
+  // page drops the connection exactly as closing the app does. The run used to
+  // be tied to request.signal, so this aborted it and the answer was lost.
+  await expect(page.getByRole("status").filter({ hasText: "Coach is working" })).toBeVisible();
+  const url = page.url();
+  await page.close();
+
+  const reopened = await context.newPage();
+  await reopened.goto(url);
+  await expect(reopened.getByRole("heading", { name: message, exact: true })).toBeVisible();
+  await expect(conversation(reopened).getByText(message, { exact: true })).toBeVisible();
+  // Finished on the server while nothing was listening, and saved.
+  await expect(conversation(reopened).getByText(fakeReply(message), { exact: true })).toBeVisible();
+
+  const prompt = await promptFor(request, message);
+  expect(prompt.system).toContain("You are Coach, the interview-prep coach inside 90x");
+});
