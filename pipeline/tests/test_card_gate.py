@@ -22,7 +22,7 @@ def test_rejects_a_card_that_needs_the_source():
     """The card Aman found: it quotes a solution the reader never sees."""
     card = FakeCard("In the reference solution, after removing the run starting at x up to y-1, "
                     "it sets d[x] = d[y] + y - x. What invariant makes this correct?")
-    rejected = gate([card], [Verdict(index=0, verdict="answerable")])
+    rejected = gate([card], [Verdict(index=0)])
     assert len(rejected) == 1
     assert "unseen material" in rejected[0][1], rejected
     assert "reference solution" in rejected[0][1]
@@ -30,33 +30,35 @@ def test_rejects_a_card_that_needs_the_source():
 
 def test_rejects_what_the_reviewer_calls_unanswerable():
     card = FakeCard("What does the diagram show?")
-    rejected = gate([card], [Verdict(index=0, verdict="needs_context", reason="no diagram is present")])
-    assert rejected[0][1].startswith("needs_context")
+    rejected = gate([card], [Verdict(index=0, answerable=False, reason="no diagram is present")])
+    assert rejected[0][1].startswith("not answerable")
 
 
 def test_rejects_a_typed_card_that_should_be_multiple_choice():
     """Aman's second example: the honest answer is a list to enumerate."""
     card = FakeCard("Along which dimensions can content negotiation vary the representation of a resource?")
-    rejected = gate([card], [Verdict(index=0, verdict="wrong_format", reason="the answer is a list")])
+    rejected = gate([card], [Verdict(index=0, fits_format=False, reason="the answer is a list")])
     assert rejected[0][1].startswith("wrong_format")
 
 
 def test_keeps_a_fair_card():
     card = FakeCard("Why does a sliding window run in O(n) even with a nested loop?")
-    assert gate([card], [Verdict(index=0, verdict="answerable")]) == []
+    assert gate([card], [Verdict(index=0)]) == []
 
 
 def test_mcq_where_a_competent_answer_disagrees_is_rejected():
     card = FakeCard("Which is true of TCP?", answer="It is connection-oriented", format="mcq",
-                    options=["It is connectionless", "It is connection-oriented"])
-    rejected = gate([card], [Verdict(index=0, verdict="answerable", picked="It is connectionless")])
+                    options=["It is connectionless", "It is connection-oriented",
+                             "It never retransmits", "It has no ordering guarantee"])
+    rejected = gate([card], [Verdict(index=0, picked="It is connectionless")])
     assert "disagrees with the marked option" in rejected[0][1]
 
 
 def test_mcq_agreement_is_kept():
     card = FakeCard("Which is true of TCP?", answer="It is connection-oriented", format="mcq",
-                    options=["It is connectionless", "It is connection-oriented"])
-    assert gate([card], [Verdict(index=0, verdict="answerable", picked=" It is connection-oriented ")]) == []
+                    options=["It is connectionless", "It is connection-oriented",
+                             "It never retransmits", "It has no ordering guarantee"])
+    assert gate([card], [Verdict(index=0, picked=" It is connection-oriented ")]) == []
 
 
 def test_a_card_the_reviewer_never_ruled_on_is_rejected():
@@ -64,7 +66,7 @@ def test_a_card_the_reviewer_never_ruled_on_is_rejected():
     checked. Rejected is not deleted: it goes through the repair pass and is
     gated again, so an omission costs a retry rather than a card."""
     cards = [FakeCard("Why is TCP reliable?"), FakeCard("Why is UDP fast?")]
-    rejected = gate(cards, [Verdict(index=0, verdict="answerable")])
+    rejected = gate(cards, [Verdict(index=0)])
     assert len(rejected) == 1
     assert rejected[0][0].prompt == "Why is UDP fast?"
     assert "did not rule" in rejected[0][1]
@@ -185,10 +187,10 @@ def test_a_rejected_card_is_repaired_before_it_is_discarded():
     llm = _FakeLLM({
         "cards-from-lesson": CardSet(cards=[good, leaky, good, good]),
         "card-gate": GateResult(verdicts=[
-            Verdict(index=0, verdict="answerable", confidence=0.9),
-            Verdict(index=1, verdict="needs_context", reason="names a solution", confidence=0.2),
-            Verdict(index=2, verdict="answerable", confidence=0.9),
-            Verdict(index=3, verdict="answerable", confidence=0.9),
+            Verdict(index=0, confidence=0.9),
+            Verdict(index=1, answerable=False, reason="names a solution", confidence=0.2),
+            Verdict(index=2, confidence=0.9),
+            Verdict(index=3, confidence=0.9),
         ]),
         "cards-rewrite": CardSet(cards=[fixed, fixed, fixed]),
     })
@@ -200,7 +202,7 @@ def test_a_rejected_card_is_repaired_before_it_is_discarded():
         calls["n"] += 1
         if calls["n"] == 1:
             return llm.replies["card-gate"]
-        return GateResult(verdicts=[Verdict(index=i, verdict="answerable", confidence=0.8) for i in range(len(cards))])
+        return GateResult(verdicts=[Verdict(index=i, confidence=0.8) for i in range(len(cards))])
 
     run_lessons.gate.review = review
     try:
@@ -232,3 +234,62 @@ def test_a_card_id_follows_its_question_not_its_position():
     assert first == card_id("sliding-window", "  Why is it O(n)   despite the nested loop?\n")
     assert first != card_id("sliding-window", "When does the technique stop working?")
     assert first != card_id("two-pointers", "Why is it O(n) despite the nested loop?")
+
+
+def test_the_gate_cannot_reject_a_card_for_having_a_valid_format():
+    """The real rejection, from the published review pack:
+
+        wrong_format: Format 'output' is not one of the allowed card formats
+        (flash, typed, mcq).
+
+    69 output cards were live at the time. The prompt documents `output` and
+    the Card enum allows it - the reviewing model invented the restriction. A
+    format from our own enum is legal by construction, so an objection that
+    only says otherwise is not an objection.
+    """
+    card = FakeCard("What is the exact output?\n```python\nprint(sorted({3,1,2}))\n```",
+                    answer="[1, 2, 3]", format="output")
+    verdict = Verdict(index=0, fits_format=False,
+                      reason="Format 'output' is not one of the allowed card formats (flash, typed, mcq).")
+    assert gate([card], [verdict]) == []
+
+
+def test_a_real_format_objection_still_rejects():
+    """The guard must not swallow the objection it was built to allow."""
+    card = FakeCard("What is the exact output?\n```python\nprint(time.time())\n```",
+                    answer="1759000000.0", format="output")
+    rejected = gate([card], [Verdict(index=0, fits_format=False,
+                                     reason="the snippet prints a timestamp, so the output changes")])
+    assert "wrong_format" in rejected[0][1]
+
+
+def test_an_answerable_card_in_the_wrong_format_reports_the_format():
+    """The stages are separate so both can be true at once. Collapsing them
+    into one enum meant the reviewer had to choose, and the repair pass was
+    told whichever it happened to pick."""
+    card = FakeCard("Name the four transaction isolation levels.")
+    rejected = gate([card], [Verdict(index=0, answerable=True, fits_format=False,
+                                     reason="the honest answer is a list to enumerate")])
+    assert rejected[0][1].startswith("wrong_format")
+
+
+def test_the_earliest_failure_is_the_one_reported():
+    """A card that needs unseen material is a worse card than one in the wrong
+    format, and the repair pass should be told the more fundamental thing."""
+    card = FakeCard("In the reference solution, name the four isolation levels.")
+    rejected = gate([card], [Verdict(index=0, answerable=False, fits_format=False,
+                                     reason="the answer is a list")])
+    assert "unseen material" in rejected[0][1]
+
+
+def test_a_structurally_broken_card_is_caught_without_the_model():
+    card = FakeCard("Which isolation level?", answer="Serializable", format="mcq",
+                    options=["Read committed", "Serializable"])
+    rejected = gate([card], [Verdict(index=0)])
+    assert "malformed" in rejected[0][1] and "4 options" in rejected[0][1]
+
+
+def test_an_output_card_must_show_its_snippet():
+    card = FakeCard("What does the loop print?", answer="3", format="output")
+    rejected = gate([card], [Verdict(index=0)])
+    assert "must show the snippet" in rejected[0][1]
