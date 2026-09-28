@@ -69,7 +69,14 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> None:
     keeps the question and the two would otherwise collide.
     """
     now = datetime.now(timezone.utc)
-    con.execute("update cards set status = 'repaired', kept = false where id = ?", [old.id])
+    # Re-key the old row first. A card's id comes from its question, and a
+    # rewrite that changes only the format or the answer keeps the question, so
+    # the replacement's id equals the original's - and `insert or replace` then
+    # overwrote the repaired row, erasing the gate's objection.
+    con.execute(
+        "update cards set id = ?, status = 'repaired', kept = false where id = ?",
+        [card_id(topic["slug"], old.prompt, "repaired"), old.id],
+    )
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     con.execute(
         """insert or replace into cards
@@ -123,7 +130,7 @@ def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | Non
             return topic, [], [], {}, []
         result = gate.review(llm, topic, cards, tier=tier)
         rejected = gate.judge(cards, result)
-        confidence = gate.confidence_of(result)
+        confidence = gate.confidence_by_card(cards, result)
         # A stricter gate without a repair pass is just a delete button. Most of
         # what it turns down here is a good question in the wrong format - "what
         # iteration order do HashSet, LinkedHashSet and TreeSet give?" is a fair
@@ -138,7 +145,7 @@ def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | Non
             if replacements:
                 passed = gate.review(llm, topic, replacements)
                 still_bad = {id(c) for c, _ in gate.judge(replacements, passed)}
-                confidence.update(gate.confidence_of(passed))
+                confidence.update(gate.confidence_by_card(replacements, passed))
                 # Positional pairing is what the rewrite prompt asks for; when
                 # the counts disagree there is no honest mapping, so nothing is
                 # claimed and the originals stay rejected.

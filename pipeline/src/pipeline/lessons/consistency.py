@@ -91,6 +91,22 @@ def save(con, rows: list[dict], lock=None) -> None:
         con.executemany(statement, args)
 
 
+def retire(con, applied: list[dict]) -> None:
+    """Forget findings whose correction has been handed to the rewrite.
+
+    A finding kept after its lesson was fixed comes back on the next `--fix`
+    and marks the corrected lesson for rewrite again, carrying the note it has
+    already taken. The record of what was wrong lives in the report file and in
+    git; what this table is for is work still to do.
+    """
+    if not applied:
+        return
+    con.executemany(
+        "delete from lesson_contradictions where domain = ? and disagreement = ?",
+        [[x["domain"], x["disagreement"]] for x in applied],
+    )
+
+
 def stored(con) -> list[dict]:
     rows = con.execute(
         """select domain, topics, disagreement, correct, fix from lesson_contradictions

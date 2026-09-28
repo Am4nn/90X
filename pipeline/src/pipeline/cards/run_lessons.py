@@ -61,7 +61,7 @@ def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bo
 def _kept(cards: list, result) -> tuple[list, list[tuple[object, str]], dict]:
     rejected = gate.judge(cards, result)
     bad = {id(c) for c, _ in rejected}
-    confidence = {id(c): gate.confidence_of(result).get(i, 0.5) for i, c in enumerate(cards)}
+    confidence = gate.confidence_by_card(cards, result)
     return [c for c in cards if id(c) not in bad], rejected, confidence
 
 

@@ -53,7 +53,11 @@ def canonical(label: str) -> str:
     sorted separately, paid for separately, and reached the list Aman is meant
     to cut down. Punctuation, case and a trailing plural are not a new topic.
     """
-    text = re.sub(r"[^a-z0-9 ]+", " ", label.casefold())
+    # Some punctuation IS the name. Stripping it made canonical("C"),
+    # canonical("C++") and canonical("C#") all "c", so one would have been
+    # marked covered by another, or merged away in the report.
+    text = label.casefold().replace("++", " cpp").replace("#", " csharp")
+    text = re.sub(r"[^a-z0-9 ]+", " ", text)
     words = [w[:-1] if len(w) > 3 and w.endswith("s") else w for w in text.split()]
     # Words that never distinguish one topic from another.
     return " ".join(w for w in words if w not in {"notation", "the", "a", "an", "and", "of", "to"})
@@ -114,9 +118,10 @@ def taught_in(con, label: str) -> list[str]:
     was still scored 0.7. Titles are what a taxonomy knows; bodies are what a
     reader actually gets.
 
-    Matched on a word boundary rather than as a substring, because "RAG" as
-    `%rag%` also matches "storage", "fragment" and "average". A trailing suffix
-    is still allowed, so "index" finds "indexes".
+    Bounded at both ends, with only the inflections a topic name actually takes.
+    An opening boundary alone let "RAG" match "ragged arrays", which would mark
+    a real gap covered on the strength of a coincidence; the suffix group keeps
+    "index" finding "indexes" and "indexing".
     """
     subjects = subjects_of(label)
     if not subjects:
@@ -124,7 +129,7 @@ def taught_in(con, label: str) -> list[str]:
     clause = " and ".join("regexp_matches(lower(body_md), ?)" for _ in subjects)
     return [r[0] for r in con.execute(
         f"select topic_slug from lessons where status = 'ok' and {clause} order by topic_slug",
-        [rf"\b{re.escape(subject)}" for subject in subjects],
+        [rf"\b{re.escape(subject)}(?:s|es|ing|ed)?\b" for subject in subjects],
     ).fetchall()]
 
 
@@ -204,18 +209,6 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
         if match := ours_everywhere.get(canonical(row["label"])):
             settled.append({**row, "verdict": "covered", "covered_by": match,
                             "relevance": 0.0, "why": ""})
-        elif lessons := taught_in(con, row["label"]):
-            # The citation says how thin the evidence is, because a phrase found
-            # anywhere in a body can be a passing mention: "Indexing" matches the
-            # array indexing in a dynamic-programming lesson. The verdict is
-            # still usually right - we do have Indexes - and every settled
-            # candidate is listed in the report's covered section, so a wrong one
-            # costs Aman a glance rather than a lesson.
-            where = ", ".join(lessons[:2]) + (f" and {len(lessons) - 2} more" if len(lessons) > 2 else "")
-            settled.append({**row, "verdict": "covered",
-                            "covered_by": f"named in {len(lessons)} "
-                                          f"{'lesson' if len(lessons) == 1 else 'lessons'} ({where})",
-                            "relevance": 0.0, "why": ""})
     if settled:
         print(f"{len(settled)} candidates settled without asking the model", flush=True)
         save(con, settled)
@@ -254,6 +247,28 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
             # candidates that dies on the last batch should not have to start
             # over, and the report is rewritten far more often than the sort.
             save(con, out[-len(chunk):])
+
+    # A phrase found in a lesson body is a hint, not a verdict, so it annotates
+    # the candidate rather than settling it. Treating it as coverage marked
+    # "Linear Search" covered because some lesson happened to name it, and a
+    # covered candidate drops out of the list Aman reads - so a passing mention
+    # could hide a lesson still worth writing. He can tell a mention from a
+    # treatment; a LIKE query cannot.
+    annotated = []
+    for row in out:
+        if row["verdict"] != "gap":
+            continue
+        lessons = taught_in(con, row["label"])
+        if not lessons:
+            continue
+        where = ", ".join(lessons[:2]) + (f" and {len(lessons) - 2} more" if len(lessons) > 2 else "")
+        note = f"already named in {len(lessons)} {'lesson' if len(lessons) == 1 else 'lessons'} ({where})"
+        if note not in (row["why"] or ""):
+            row["why"] = f"{row['why']} - {note}".strip(" -")
+            annotated.append(row)
+    if annotated:
+        save(con, annotated)
+        print(f"{len(annotated)} gaps are already named in a lesson; noted, not removed", flush=True)
     return out
 
 

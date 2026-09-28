@@ -62,3 +62,21 @@ def test_findings_survive_an_interrupted_run(tmp_path):
     # The same window landing twice must not double the list Aman reads.
     consistency.save(con, back)
     assert len(consistency.stored(con)) == 1
+
+
+def test_an_applied_finding_is_retired(tmp_path):
+    """A finding kept after its lesson was fixed comes back on the next --fix
+    and marks the corrected lesson for rewrite again, with the note it has
+    already taken."""
+    from pipeline import staging
+    from pipeline.lessons import consistency
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    finding = {"domain": "sd", "topics": ["a", "b"], "disagreement": "They disagree about replication.",
+               "correct": "Synchronous replication reduces but does not remove stale reads.", "fix": "a"}
+    consistency.save(con, [finding])
+    assert len(consistency.stored(con)) == 1
+    consistency.retire(con, [finding])
+    assert consistency.stored(con) == []
+    # Retiring something that was never stored is not an error.
+    consistency.retire(con, [finding])

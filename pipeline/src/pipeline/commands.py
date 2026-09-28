@@ -134,23 +134,31 @@ def consistency(args, con) -> None:
     from .lessons import run as lesson_run
 
     ai = llm.LLM(con)
-    # Findings already on disk are used as they are. Re-running the check to
-    # apply a fix it already found costs the whole $2.40 again, which is what
-    # --fix used to do; --redo asks for a fresh look.
-    kept = [] if args.redo else c.stored(con)
+    # Findings on disk are reused, because re-running the check to apply a fix it
+    # already found costs the whole $2.40 again. Filtered to the asked-for areas
+    # BEFORE deciding whether to run: stored findings from another area used to
+    # count as "already checked", so `consistency sql` with only cs findings on
+    # disk wrote "None found" for sql without ever looking at it.
+    wanted = set(args.domains or [])
+    kept = [] if args.redo else [x for x in c.stored(con) if not wanted or x["domain"] in wanted]
     found = kept or c.run(con, ai, domains=args.domains or None, tier=args.tier)
-    if args.domains:
-        found = [x for x in found if x["domain"] in set(args.domains)]
+    if wanted:
+        found = [x for x in found if x["domain"] in wanted]
+
     out = Path(REPO_DIR) / ".planning" / "lesson-contradictions.md"
+    # The report always covers everything known, even when this run looked at one
+    # area: writing only the filtered subset deleted every other area's findings
+    # from the file.
+    everything = c.stored(con) or found
     lines = ["# Claims that disagree across lessons", "",
-             f"{len(found)} found." if found else "None found.", ""]
-    for x in found:
+             f"{len(everything)} found." if everything else "None found.", ""]
+    for x in sorted(everything, key=lambda x: (x["domain"], x["disagreement"])):
         lines += [f"## {x['domain']}: {', '.join(x['topics'])}", "",
                   f"- **They disagree:** {x['disagreement']}",
                   f"- **Correct:** {x['correct']}",
                   f"- **Rewriting:** `{x['fix']}`", ""]
     out.write_text("\n".join(lines), encoding="utf-8")
-    print(f"{len(found)} contradictions, written to {out}")
+    print(f"{len(found)} contradictions in scope, {len(everything)} known, written to {out}")
 
     if args.fix and found:
         # Each named lesson is rewritten once, carrying the correction.
@@ -161,7 +169,13 @@ def consistency(args, con) -> None:
                 if x["fix"] == slug
             )
             con.execute("update lessons set status = 'draft', problems = ? where topic_slug = ?", [notes, slug])
-        print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them")
+        # Retired once applied. Keeping them meant the next --fix marked the same
+        # corrected lessons for rewrite again, with the notes they had already
+        # taken - scheduling work that was done and paying to redo it.
+        c.retire(con, found)
+        print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them."
+              " These findings are now retired, so the next `consistency` run checks afresh rather than"
+              " re-applying them; the report file keeps the record.")
     print(f"spend ${llm.spend_usd(con):.2f}")
 
 

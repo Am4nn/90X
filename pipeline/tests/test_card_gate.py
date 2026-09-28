@@ -293,3 +293,38 @@ def test_an_output_card_must_show_its_snippet():
     card = FakeCard("What does the loop print?", answer="3", format="output")
     rejected = gate([card], [Verdict(index=0)])
     assert "must show the snippet" in rejected[0][1]
+
+
+def test_confidence_is_keyed_by_card_not_by_position():
+    """The gate returns verdicts keyed by position; a caller holding cards has
+    to join the two. Leaving that to callers cost every one of 2,804 cards its
+    score: the re-gate looked up `id(card)` in a position-keyed map, missed
+    every time, and stored the 0.5 fallback into the column the review screen
+    sorts on."""
+    from pipeline.cards.gate import confidence_by_card
+
+    cards = [FakeCard("a"), FakeCard("b"), FakeCard("c")]
+    result = GateResult(verdicts=[Verdict(index=0, confidence=0.2), Verdict(index=2, confidence=0.9)])
+    scores = confidence_by_card(cards, result)
+    assert scores[id(cards[0])] == 0.2
+    assert scores[id(cards[2])] == 0.9
+    # Never ruled on: the fallback, but only for that card.
+    assert scores[id(cards[1])] == 0.5
+
+
+def test_a_gradability_objection_is_never_suppressed():
+    """The format-denial guard used to cover the gradable verdict too, so an
+    ungradable card stayed publishable whenever the reason mentioned formats."""
+    card = FakeCard("What is the exact output?\n```sql\nselect 1;\n```", answer="1", format="output")
+    rejected = gate([card], [Verdict(index=0, gradable=False,
+                                     reason="no standard plaintext format is valid for a SQL result set")])
+    assert "not gradable" in rejected[0][1]
+
+
+def test_a_real_format_objection_that_mentions_validity_still_rejects():
+    """"this format is not valid for exact-match grading" is a genuine
+    objection. A looser denial pattern swallowed it."""
+    card = FakeCard("What is printed?\n```python\nprint(hash('a'))\n```", answer="x", format="output")
+    rejected = gate([card], [Verdict(index=0, fits_format=False,
+                                     reason="this format is not valid for exact-match grading here")])
+    assert "wrong_format" in rejected[0][1]

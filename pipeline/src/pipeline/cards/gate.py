@@ -45,11 +45,14 @@ from ..lessons.check import REFERS_TO_SOURCE
 
 FENCED_SNIPPET = re.compile(r"```.*?```", re.DOTALL)
 MCQ_OPTIONS = 4
-# A reason that says the format itself is not allowed is the model overstepping:
-# formats come from our enum, not from its opinion.
+# A reason that says our format list does not contain this format is the model
+# overstepping: formats come from the enum, not from its opinion. The test is
+# narrow on purpose - it must name the permitted set, by listing format names or
+# by saying "one of". An earlier, looser version also matched a real objection
+# like "this format is not valid for exact-match grading" and threw it away.
 DENIES_THE_FORMAT = re.compile(
-    r"\b(format|card type)\b[^.]{0,40}\b(not|isn't|is not)\b[^.]{0,30}"
-    r"\b(allowed|supported|valid|permitted|one of)\b",
+    r"\bformats?\b[^.]{0,60}?\b(?:not|isn't)\b[^.]{0,30}?"
+    r"(?:one of|among|in the (?:list|set)|allowed formats|supported formats|valid formats)",
     re.IGNORECASE,
 )
 
@@ -112,9 +115,18 @@ def review(llm, topic: dict, cards: list, tier: str = "review") -> GateResult:
     return llm.complete_json(SYSTEM, user, GateResult, tier=tier, purpose="card-gate")
 
 
-def confidence_of(result: GateResult) -> dict[int, float]:
-    """How sure the gate was, per card index. Missing means it never ruled."""
-    return {v.index: v.confidence for v in result.verdicts}
+def confidence_by_card(cards: list, result: GateResult) -> dict[int, float]:
+    """How sure the gate was, keyed by `id(card)`.
+
+    The verdicts arrive keyed by position, and a caller holding cards rather
+    than indices has to join the two. Returning the position-keyed map and
+    letting callers guess cost every one of 2,804 cards its score: the re-gate
+    looked its cards up by `id(card)` in a map keyed by index, missed every
+    time, and stored the 0.5 fallback. That is the column the review screen
+    sorts on, so nothing could be shown least-confident-first.
+    """
+    scores = {v.index: v.confidence for v in result.verdicts}
+    return {id(card): scores.get(i, 0.5) for i, card in enumerate(cards)}
 
 
 def malformed(card) -> str:
@@ -162,13 +174,16 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
             rejected.append((card, "the reviewer did not rule on this card"))
             continue
         # The model may not overrule the format enum. A card whose only
-        # objection is that its format "is not allowed" has no objection.
+        # objection is that its format "is not one of the allowed formats" has
+        # no objection. This applies to the format verdict alone: a gradability
+        # objection is about marking, and suppressing it here let an ungradable
+        # card stay publishable.
         denied_the_format = bool(DENIES_THE_FORMAT.search(v.reason))
         if not v.answerable:
             rejected.append((card, f"not answerable: {v.reason}"))
         elif not v.fits_format and not denied_the_format:
             rejected.append((card, f"wrong_format: {v.reason}"))
-        elif not v.gradable and not denied_the_format:
+        elif not v.gradable:
             rejected.append((card, f"not gradable: {v.reason}"))
         elif card.format == "mcq" and v.picked and v.picked.strip() != card.answer.strip():
             rejected.append((card, "a competent answer disagrees with the marked option"))

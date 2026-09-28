@@ -84,17 +84,30 @@ def drafts_for(con, slugs: list[str]) -> dict[str, Draft]:
     return out
 
 
-def replace(con, old: Draft, card, topic: dict, reason: str | None) -> None:
+def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: float = 0.5) -> None:
     """Swap the reviewed card for its replacement, or mark it rejected.
 
     The old row goes whatever happens: a card a human called false must not
-    still be in the Feed because its rewrite also failed. It is kept as the
-    record, with the objection on it, the way the gate's own rejects are.
+    still be in the Feed because its rewrite also failed.
+
+    What it becomes depends on the replacement. Marking it `repaired`
+    unconditionally counted a failed fix as a success, because the review pack
+    reads every repaired row as "rewritten and passed" - so one objection showed
+    up as both a fix and a drop. It is only `repaired` when something replaced
+    it; otherwise it is `rejected`, carrying the objection.
     """
     now = datetime.now(timezone.utc)
+    # Re-keyed first: a rewrite that changes only the answer keeps the question,
+    # so old and new share a prompt-derived id and `insert or replace` would
+    # overwrite the record of what was objected to.
     con.execute(
-        "update cards set status = 'repaired', kept = false, reject_reason = ? where id = ?",
-        [f"a human reviewer objected: {old.prompt[:80]}", old.id],
+        "update cards set id = ?, status = ?, kept = false, reject_reason = ? where id = ?",
+        [
+            card_id(topic["slug"], old.prompt, "repaired" if reason is None else "rejected"),
+            "repaired" if reason is None else "rejected",
+            f"a human reviewer objected: {old.prompt[:80]}",
+            old.id,
+        ],
     )
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     con.execute(
@@ -103,11 +116,14 @@ def replace(con, old: Draft, card, topic: dict, reason: str | None) -> None:
             source_refs, quality, kept, status, source, reject_reason, created_at)
            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?, ?)""",
         [
-            card_id(topic["slug"], card.prompt, "" if reason is None else "rejected"),
+            card_id(topic["slug"], card.prompt, "" if reason is None else "rejected-fix"),
             topic["slug"], card.format, card.difficulty, card.prompt,
             json.dumps(card.options) if card.options else None, card.answer,
             json.dumps(card.key_points), refs,
-            json.dumps({"gate_confidence": 0.5, "from_review": True}),
+            # `from_review` marks only a replacement that passed. A rejected one
+            # must stay retryable: marking it too meant the next run skipped the
+            # objection as "already answered" and it could never be fixed.
+            json.dumps({"gate_confidence": confidence, "from_review": reason is None}),
             reason is None, "rejected" if reason else "draft", reason, now,
         ],
     )
@@ -161,9 +177,11 @@ def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTION
             failed += 1
             continue
         card = replacements[0]
-        rejected = gate.judge([card], gate.review(llm, topic, [card]))
+        result = gate.review(llm, topic, [card])
+        rejected = gate.judge([card], result)
         reason = rejected[0][1] if rejected else None
-        replace(con, old, card, topic, reason)
+        replace(con, old, card, topic, reason,
+                gate.confidence_by_card([card], result).get(id(card), 0.5))
         if reason:
             print(f"  {slug}: replacement still rejected - {reason}", flush=True)
             failed += 1

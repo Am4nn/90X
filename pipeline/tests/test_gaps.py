@@ -170,3 +170,62 @@ def test_a_label_too_short_to_search_is_not_called_covered(tmp_path):
         ('m', 'ML', 'Machine learning models.', 'ok')""")
     assert gaps.subjects_of("ML") is None
     assert gaps.taught_in(con, "ML") == []
+
+
+def test_language_punctuation_is_part_of_the_name():
+    """canonical("C"), canonical("C++") and canonical("C#") all came back "c",
+    so one language would have been marked covered by another, or merged out of
+    the report."""
+    keys = {gaps.canonical(x) for x in ("C", "C++", "C#")}
+    assert len(keys) == 3, keys
+
+
+def test_an_acronym_is_bounded_at_both_ends(tmp_path):
+    """An opening boundary alone let "RAG" match "ragged arrays", marking a real
+    gap covered on a coincidence."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('r', 'Arrays', 'A ragged array has rows of different lengths.', 'ok')""")
+    assert gaps.taught_in(con, "RAG") == []
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('t', 'Retrieval', 'A RAG pipeline retrieves context first.', 'ok')""")
+    assert gaps.taught_in(con, "RAG") == ["t"]
+
+
+def test_an_inflection_still_matches(tmp_path):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('i', 'Indexes', 'Covering indexes avoid a heap lookup.', 'ok')""")
+    assert gaps.taught_in(con, "Index") == ["i"]
+
+
+def test_a_lesson_mention_annotates_a_gap_instead_of_removing_it(tmp_path):
+    """A phrase in a body is a hint, not coverage. Settling on it marked "Linear
+    Search" covered because some lesson named it, and a covered candidate drops
+    out of the list - so a passing mention could hide a lesson worth writing.
+    539 candidates were settled this way and 230 of them were real gaps."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('c', 'ConcurrentHashMap', 'It may fall back to a linear search of the bin.', 'ok')""")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n', 'cs', 'cs', 'Linear Search', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Linear Search', 'gap', '', 0.6, 'basic algorithm')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("nothing left to sort")
+
+    out = gaps.run(con, NoLLM())
+    row = next(r for r in out if r["label"] == "Linear Search")
+    assert row["verdict"] == "gap", "a mention must not remove it from the list"
+    assert "already named in 1 lesson" in row["why"]
+    assert gaps.stored(con)[0]["verdict"] == "gap"
