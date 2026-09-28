@@ -157,7 +157,7 @@ roll back a committed invite.**
 
 ## Build
 
-### 1. Migration `supabase/migrations/20260929000018_friends.sql`
+### 1. Migration `supabase/migrations/20260929000019_friends.sql`
 
 Two tables. Curfew's group invite shape, retargeted from a group to a pair.
 
