@@ -111,11 +111,34 @@ export function usablePassages(hits: unknown[]): Passage[] {
 }
 
 /**
+ * Keep only passages that came from something we downloaded.
+ *
+ * `known` is the set of ids that exist in `public.sources`. Two things fall out:
+ *
+ * A passage whose source cannot be named cannot be credited, so keeping it would
+ * produce a lesson with an empty "Written from" line.
+ *
+ * And, more importantly, the vector index holds **our own lessons** — `chunk.py`
+ * embeds them under `source_id` `"90x"`, which is deliberately not a row in
+ * `sources` because it is not a source. They are the single most common hit for a
+ * topic that already has a lesson. Writing a new lesson from those would be a
+ * model-written lesson sourced from a model-written lesson: laundered memory that
+ * passes every gate, because the text really is "in the corpus". That is the
+ * failure the source rule exists to stop, so this runs *before*
+ * `enoughToWriteFrom` and a topic whose only matches are our own prose correctly
+ * comes back as having no source.
+ */
+export function keepDownloaded(passages: Passage[], known: Set<string>): Passage[] {
+  return passages.filter((p) => p.sourceId !== null && known.has(p.sourceId));
+}
+
+/**
  * True when there is genuinely enough downloaded material to write from.
  *
  * This is the source rule in one function. It runs before a single token is
  * generated, and a false here means the Coach says the library does not cover
- * the topic rather than writing it from the model's own memory.
+ * the topic rather than writing it from the model's own memory. Give it the
+ * output of `keepDownloaded`, never the raw hits.
  */
 export function enoughToWriteFrom(passages: Passage[]): boolean {
   if (passages.length < MIN_PASSAGES) return false;

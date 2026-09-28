@@ -12,6 +12,7 @@ import {
   contextOf,
   enoughToWriteFrom,
   FactCheckSchema,
+  keepDownloaded,
   type Lesson,
   LESSONS_PER_DAY,
   LessonSchema,
@@ -143,28 +144,34 @@ async function factCheck(userId: string, bodyMd: string, passages: Passage[]): P
 }
 
 /**
- * The "Written from" line, in the shape the Library reads.
+ * The source rows behind these passages, in one query.
  *
- * `sourcesOf` in `lib/library/queries.ts` wants `{ id, name, url }` and drops
- * anything else, so storing the raw refs the way the pipeline holds them in
- * staging would have hidden the credit entirely — on the one kind of lesson
- * whose whole claim is that it came from somewhere. `publish._sources_of()`
- * does this same resolution on the way out of staging; this is that step for a
- * lesson that never goes through staging.
- *
- * Only ids that resolve to a real `sources` row are credited, as publish does.
- * A passage with no source id still fed the writing; it just cannot be named.
+ * Serves two purposes and must stay one query: it decides which passages count
+ * as downloaded material at all (`keepDownloaded`), and it supplies the
+ * "Written from" line. `sourcesOf` in `lib/library/queries.ts` reads
+ * `{ id, name, url }` and drops anything else, so storing the bare refs the way
+ * staging holds them would have hidden the credit entirely - on the one kind of
+ * lesson whose whole claim is that it came from somewhere.
+ * `publish._sources_of()` does this same resolution on the way out of staging.
  */
-async function creditedSources(passages: Passage[], q: typeof db) {
+async function sourceRows(passages: Passage[], q: typeof db) {
   const ids = [...new Set(passages.map((p) => p.sourceId).filter((id): id is string => Boolean(id)))];
   if (!ids.length) return [];
-  const rows = await q.select({ id: sources.id, name: sources.name, url: sources.url }).from(sources).where(inArray(sources.id, ids));
-  // Keep the passages' order, so the strongest hit is credited first.
+  return q.select({ id: sources.id, name: sources.name, url: sources.url }).from(sources).where(inArray(sources.id, ids));
+}
+
+type SourceRow = { id: string; name: string; url: string | null };
+
+/** The credit line, in the passages' order so the strongest hit is named first. */
+function creditsFor(passages: Passage[], rows: SourceRow[]) {
   const byId = new Map(rows.map((r) => [r.id, r]));
-  return ids.flatMap((id) => {
-    const row = byId.get(id);
-    return row ? [{ id: row.id, name: row.name, url: row.url }] : [];
-  });
+  const out: SourceRow[] = [];
+  for (const p of passages) {
+    if (!p.sourceId) continue;
+    const row = byId.get(p.sourceId);
+    if (row && !out.some((o) => o.id === row.id)) out.push({ id: row.id, name: row.name, url: row.url });
+  }
+  return out;
 }
 
 /**
@@ -184,8 +191,13 @@ export async function writeLessonOnDemand(userId: string, topicSlug: string, q =
   // Material before anything else, including before the allowance: a topic with
   // no source should not cost the user one of their three.
   let passages: Passage[];
+  let rows: SourceRow[];
   try {
-    passages = usablePassages(await searchKnowledge(topic.name, PASSAGES));
+    const hits = usablePassages(await searchKnowledge(topic.name, PASSAGES));
+    rows = await sourceRows(hits, q);
+    // Before the sufficiency check, not after: our own lessons are in the index
+    // and must not count as source material for a new one.
+    passages = keepDownloaded(hits, new Set(rows.map((r) => r.id)));
   } catch (e) {
     console.error("lesson write search failed", e);
     return { ok: false, reason: "failed", detail: "The library search failed, so there was nothing to write from." };
@@ -234,7 +246,7 @@ export async function writeLessonOnDemand(userId: string, topicSlug: string, q =
       summary: lesson.summary,
       bodyMd,
       practice: {},
-      sourceRefs: await creditedSources(passages, q),
+      sourceRefs: creditsFor(passages, rows),
       words,
       generatedAt: new Date().toISOString(),
       writtenBy: userId,

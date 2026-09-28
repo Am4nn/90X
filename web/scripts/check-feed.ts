@@ -62,9 +62,9 @@ const users = [
   "00000000-0000-4000-8000-0000000000e1",
   "00000000-0000-4000-8000-0000000000e2",
   "00000000-0000-4000-8000-0000000000e3",
-  // Three more for the Coach's queueing, which needs its own feed areas: one to
-  // refuse an out-of-area card, one to prove a repeat leaves one copy, and one
-  // to prove the card on screen comes back.
+  // Three more for the Coach's queueing, which needs its own feed areas: refuse
+  // an out-of-area card, prove a repeat leaves one copy, and prove the card on
+  // screen comes back.
   "00000000-0000-4000-8000-0000000000e4",
   "00000000-0000-4000-8000-0000000000e5",
   "00000000-0000-4000-8000-0000000000e6",

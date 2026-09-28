@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { checkLesson } from "./contract";
-import { enoughToWriteFrom, type Passage, renderLesson, usablePassages } from "./write-rules";
+import { enoughToWriteFrom, keepDownloaded, type Passage, renderLesson, usablePassages } from "./write-rules";
 
 // The source gate and the renderer, without a vector index or a model. These are
 // the two pieces that decide whether a lesson gets written at all, so they are
@@ -40,6 +40,36 @@ describe("usablePassages", () => {
 
   it("caps how many passages one write reads", () => {
     expect(usablePassages(Array.from({ length: 30 }, (_, i) => hit(0.9, `p${i}`)))).toHaveLength(8);
+  });
+});
+
+describe("keepDownloaded", () => {
+  const known = new Set(["ostep", "tech-interview-handbook"]);
+
+  it("drops our own lessons, which the index holds under the id 90x", () => {
+    // chunk.py embeds every authored lesson with source_id "90x", and for a topic
+    // that already has one those are the most common hits. Writing a new lesson
+    // from them would be a model-written lesson sourced from a model-written
+    // lesson - laundered memory that passes every gate because the text really
+    // is in the corpus. "90x" is deliberately not a row in `sources`.
+    const kept = keepDownloaded([passage("a".repeat(300), "90x"), passage("b".repeat(300), "ostep")], known);
+    expect(kept.map((p) => p.sourceId)).toEqual(["ostep"]);
+  });
+
+  it("drops a passage with no source id at all", () => {
+    expect(keepDownloaded([passage("x".repeat(300), null)], known)).toEqual([]);
+  });
+
+  it("keeps everything that resolves to a real source", () => {
+    const all = [passage("a".repeat(300), "ostep"), passage("b".repeat(300), "tech-interview-handbook")];
+    expect(keepDownloaded(all, known)).toHaveLength(2);
+  });
+
+  it("means a topic whose only matches are our own lessons has no source", () => {
+    // The two gates in sequence, which is the order writeLessonOnDemand uses.
+    const onlyOurs = [passage("a".repeat(400), "90x"), passage("b".repeat(400), "90x"), passage("c".repeat(400), "90x")];
+    expect(enoughToWriteFrom(onlyOurs)).toBe(true); // long enough on its own...
+    expect(enoughToWriteFrom(keepDownloaded(onlyOurs, known))).toBe(false); // ...but not ours to use.
   });
 });
 

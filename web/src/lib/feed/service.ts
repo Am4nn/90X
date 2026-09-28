@@ -629,6 +629,15 @@ export async function queueFirst(userId: string, cardIds: string[], q: Db = db, 
   // the reader was part-way through vanished from the session, and a reload
   // showed the coach's card instead. Put it back at the head, behind the new
   // ones, so the reader gets these next and then returns to where they were.
+  //
+  // The sequential case is already safe: `answerCard` clears `current` itself, so
+  // a reader who answers and then confirms a coach proposal has nothing to
+  // displace. A concurrent interleave - this read landing before answerCard's
+  // delete - could still put an answered card back, and `nextCard` checks a
+  // queued card is servable and in area, not that it is unanswered. Left as is:
+  // the cost is one repeated question on an answer path that is already
+  // idempotent, and every guard tried here either could not be reproduced in a
+  // test or moved the check somewhere it would run on every pop.
   const onScreen = parseQueueItem(await store.get(currentKey(userId)));
   const displaced = onScreen && !ids.includes(onScreen.id) ? [JSON.stringify(onScreen)] : [];
   await store.unshift(queue, [...ids.map((id) => JSON.stringify({ id, reason: "weak" })), ...displaced], QUEUE_TTL);
