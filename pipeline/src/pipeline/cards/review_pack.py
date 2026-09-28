@@ -76,6 +76,29 @@ def rejected(con, status: str = "rejected") -> list[dict]:
     return [dict(zip(["slug", "format", "prompt", "reason"], r)) for r in rows]
 
 
+def selector(con, slug: str, prompt: str) -> str:
+    """The shortest leading fragment of `prompt` that no sibling card shares.
+
+    A fixed 60 characters is not necessarily unique: two cards in a topic can
+    open the same way, and `pick` refuses an ambiguous fragment - so the report
+    would print an instruction that cannot be followed.
+    """
+    others = [
+        " ".join(r[0].split())
+        for r in con.execute(
+            """select prompt_md from cards where topic_slug = ? and source = 'lesson'
+                 and status in ('draft', 'rejected') and prompt_md <> ?""",
+            [slug, prompt],
+        ).fetchall()
+    ]
+    mine = " ".join(prompt.split())
+    for n in (60, 90, 120, 160, 200):
+        head = mine[:n]
+        if not any(o.startswith(head) for o in others):
+            return head
+    return mine
+
+
 def report(con) -> str:
     kept, dropped, fixed = con.execute(
         """select count(*) filter (where status = 'draft'),
@@ -134,7 +157,7 @@ def report(con) -> str:
         # exact card. Without it, an objection keyed on the topic alone hit
         # whichever of the topic's ten cards came first - which is how twelve of
         # thirteen reviewer objections rewrote a card nobody complained about.
-        first_line = " ".join(card["prompt"].split())[:60]
+        first_line = selector(con, card["slug"], card["prompt"])
         lines += [
             f"## {i}. {card['topic']} · {card['format']} · {card['difficulty']}",
             "",

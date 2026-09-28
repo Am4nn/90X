@@ -56,3 +56,13 @@ multiple choice over four checks where the wrong options are real errors
 (trusting the `alg` header, checking the signature but not `exp`, validating
 `iss` but not the audience), or ask about one check and why skipping it is
 exploitable.
+
+## sql-aggregate-functions
+
+match: In PostgreSQL with ONLY_FULL_GROUP_BY enabled
+
+WRONG AS WRITTEN. `ONLY_FULL_GROUP_BY` is a MySQL `sql_mode`; PostgreSQL has no
+such setting and always enforces the rule, so the question teaches a false
+dialect detail while the marked query is in fact valid PostgreSQL. Either drop
+the clause and ask which query is valid in PostgreSQL, or keep the toggle and
+say MySQL, where the answer changes depending on whether the mode is set.

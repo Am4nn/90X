@@ -101,6 +101,21 @@ def candidates_for(con, slugs: list[str]) -> dict[str, list[Draft]]:
     return out
 
 
+def superseded(con, slug: str, match: str) -> bool:
+    """Has the card this objection names already been replaced?
+
+    Its wording lives on a `repaired` or `rejected` row afterwards, so a second
+    run can tell "applied" from "I cannot find the card you mean" - which it
+    otherwise reported as a failure every time.
+    """
+    row = con.execute(
+        """select 1 from cards where topic_slug = ? and source = 'lesson'
+             and status in ('repaired', 'rejected') and lower(prompt_md) like ? limit 1""",
+        [slug, f"%{' '.join(match.split()).casefold()}%"],
+    ).fetchone()
+    return row is not None
+
+
 def pick(cards: list[Draft], match: str) -> Draft | None:
     """The one card an objection is about, or None rather than a guess.
 
@@ -144,6 +159,12 @@ def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: 
     now = datetime.now(timezone.utc)
     new_id = card_id(topic["slug"], card.prompt, "" if reason is None else "rejected-fix")
     if would_clobber(con, new_id, old.id):
+        # No replacement can be stored, but a card a human called wrong must not
+        # stay publishable because the rewrite happened to duplicate a question.
+        con.execute(
+            "update cards set status = 'rejected', kept = false, reject_reason = ? where id = ?",
+            [f"a human reviewer objected and the rewrite duplicated another card: {old.prompt[:60]}", old.id],
+        )
         return False
     # Re-keyed first: a rewrite that changes only the answer keeps the question,
     # so old and new share a prompt-derived id and `insert or replace` would
@@ -212,6 +233,11 @@ def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTION
         cards = candidates.get(item.slug, [])
         old = pick(cards, item.match) if topic else None
         if topic is None or old is None:
+            # A card that has already been superseded is not a failure: the
+            # objection was applied, and its wording now sits on a repaired row.
+            if topic is not None and item.match and superseded(con, item.slug, item.match):
+                print(f"  {key}: already applied", flush=True)
+                continue
             why = ("no lesson for this topic" if topic is None
                    else f"{len(cards)} cards in this topic and `match:` picked "
                         f"{'none' if item.match else 'no single one'}")

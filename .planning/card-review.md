@@ -1,6 +1,6 @@
 # 90x card review
 
-2805 cards are ready to publish. An automated gate read 2810 and objected to 95 of them (3%): 90 were rewritten and passed on the second look, 5 could not be saved and were dropped (0%). Mix: 1378 typed, 769 mcq, 596 flash, 62 output.
+2805 cards are ready to publish. An automated gate read 2810 and objected to 96 of them (3%): 91 were rewritten and passed on the second look, 5 could not be saved and were dropped (0%). Mix: 1378 typed, 769 mcq, 596 flash, 62 output.
 
 ## What these are
 
@@ -2045,89 +2045,89 @@ Consider a list of strings: List<String> names = Arrays.asList("Ada", "Bob", "Ch
 
 ---
 
-## 25. Aggregate functions · mcq · Hard
+## 25. CASE expression · mcq · Hard
 
 *sql · gate confidence 0.95*
 
-<sub>to object to this card: `## sql-aggregate-functions` then `match: In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table emplo`</sub>
+<sub>to object to this card: `## sql-case-expression` then `match: Does the SQL standard guarantee that untaken CASE branches a`</sub>
 
 **Question**
 
-In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table employees has id INTEGER PRIMARY KEY, dept_id INTEGER, name TEXT. Which query is valid?
+Does the SQL standard guarantee that untaken CASE branches are never evaluated?
 
 **Options**
 
-- SELECT dept_id, name, COUNT(*) FROM employees GROUP BY id;
-- SELECT dept_id, name, COUNT(*) FROM employees GROUP BY dept_id;
-- SELECT id, dept_id, COUNT(*) FROM employees GROUP BY dept_id;
-- SELECT id, name, COUNT(*) FROM employees GROUP BY dept_id;
+- Yes, all SQL engines skip untaken branches
+- No, the standard does not provide a uniform guarantee across engines
+- Yes, but only when an ELSE clause is present
+- No, but only for simple CASE
 
 **Reference answer**
 
-SELECT dept_id, name, COUNT(*) FROM employees GROUP BY id;
+No, the standard does not provide a uniform guarantee across engines
 
 **Graded on**
 
-- id is primary key, so dept_id and name are functionally dependent on id
-- grouping by a unique key allows other columns of the same row under SQL:1999
-- grouping by dept_id does not determine id or name
+- The standard defines which branch's result is returned, not whether untaken expressions are evaluated
+- Many engines short-circuit in practice
+- Relying on short-circuiting to avoid errors is risky
 
 <details><summary>The lesson this came from</summary>
 
-An aggregate function consumes a set of rows—either the whole table or a group produced by GROUP BY—and returns one scalar value for that set. The core ones are COUNT, SUM, AVG, MIN, and MAX. In standard SQL engines, SUM, AVG, MIN, and MAX ignore NULL input values; COUNT has multiple behaviours: COUNT(*) counts all rows, COUNT(column) counts only non-NULL values, and COUNT(DISTINCT column) counts distinct non-NULL values.
+SQL CASE is an expression that applies if/else logic to row values and returns a scalar result. The simple form compares one expression against a set of values for equality, while the searched form evaluates each WHEN as an independent boolean condition. It is part of the SQL standard and supported by PostgreSQL, MySQL, SQL Server, Oracle, and SQLite; SQL Server's IIF is a proprietary two-branch shorthand added in SQL Server 2012. CASE can be used anywhere a value expression is allowed, including SELECT, WHERE, ORDER BY, GROUP BY, HAVING, and UPDATE assignments.
 
 ## Why interviewers ask this
 
-Aggregate functions are the basic mechanism for reducing row sets, so the interviewer is testing whether you can reason in groups rather than rows. They probe NULL semantics, WHERE versus HAVING placement, and the rules for which columns may appear alongside GROUP BY.
+Interviewers test whether you treat CASE as an expression rather than imperative branching, whether you know both forms and can choose the right one, and whether you can combine it with aggregation to reshape data, such as pivoting rows to columns. Follow-up questions usually probe NULL behavior, ordering of overlapping WHEN branches, and compatibility of result types.
 
 ## The core idea
 
-Aggregation is a reduction that turns row sets into single values per group. With no GROUP BY, the whole table is one group. With GROUP BY, rows sharing the grouping keys form buckets, and each bucket emits one row; columns in SELECT must either be grouped, be inside an aggregate, or be functionally dependent on the grouped columns in SQL:1999-compliant engines. WHERE filters individual rows before aggregation, while HAVING filters whole groups after aggregation. Null handling matters every time: an aggregate over an empty or all-NULL set returns NULL, except COUNT returns 0.
+CASE attaches a conditional computation to each row and produces a value, so it fits inside a SQL query wherever a column expression fits. The searched form is the general mechanism: it walks WHEN predicates in written order and returns the THEN value for the first predicate that is true. The simple form is syntactic sugar for comparing one input to each candidate with equality. This makes CASE the standard tool for derived categories, custom sort orders, conditional filtering, and especially conditional aggregation, where an aggregate function only counts or sums rows that satisfy the CASE condition. The key mental model is first true branch wins; if none win and there is no ELSE, the result is NULL.
 
 ## Key points
 
-- Every aggregate returns one scalar per group; without GROUP BY the entire table is treated as a single group.
-- COUNT(*) counts rows, COUNT(col) counts non-NULL values, and COUNT(DISTINCT col) counts distinct non-NULL values.
-- SUM, AVG, MIN, and MAX ignore NULL inputs; AVG divides by the number of non-NULL values, not by COUNT(*).
-- WHERE filters rows before aggregation, while HAVING filters groups after aggregation.
-- Standard SQL since SQL:1999 allows a non-aggregated SELECT column to be omitted from GROUP BY only if it is functionally dependent on the grouped columns; PostgreSQL 9.1+ and MySQL with ONLY_FULL_GROUP_BY enforce this, while SQL Server does not allow the extension.
+- CASE is a scalar expression, not a control-flow statement, so it returns one value per row and can appear wherever expressions are allowed.
+- Simple CASE compares one expression to values using equality; searched CASE evaluates independent boolean conditions in order and returns the first true branch.
+- WHEN clauses are evaluated in written order, so overlapping conditions must be ordered most specific first.
+- If no WHEN matches and no ELSE is present, CASE returns NULL.
+- CASE enables conditional aggregation such as SUM(CASE WHEN ... THEN 1 ELSE 0 END) and row-to-column pivoting with MAX(CASE WHEN ... END) plus GROUP BY.
 
 ## Your 60-second answer
 
-An aggregate function collapses a set of rows into one scalar. COUNT(*) returns the number of rows in the set. COUNT(column) counts only non-NULL values, and COUNT(DISTINCT column) counts distinct non-NULL values. SUM, AVG, MIN, and MAX ignore NULL inputs, and AVG divides the sum by the count of non-NULL values. Without GROUP BY, the whole table is one group; with GROUP BY, each group produces one output row, and every selected column must either appear in GROUP BY, be inside an aggregate, or be functionally dependent on the grouping columns in engines that implement the SQL standard rule. HAVING filters after aggregation, WHERE filters before it. The main trade-off is that aggregates discard row detail for summary, and null handling can create surprises—COUNT(*) counts rows with NULLs while COUNT(column) skips them.
+CASE is SQL's conditional expression: it evaluates conditions row by row and returns a value, which is why you can use it in SELECT, WHERE, ORDER BY, and inside aggregates. There are two forms. Simple CASE compares one expression against a list of values using equality. Searched CASE evaluates each WHEN as a separate boolean condition and returns the first matching THEN. If no condition matches and there's no ELSE, the result is NULL. A common use is conditional aggregation, like SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) to count only active rows. The main trade-off is readability versus performance: CASE is very flexible for derived columns and pivoting, but putting complex CASE logic in many queries can make them harder to maintain, and the database still evaluates the expression per row.
 
 ## If they dig deeper
 
-**What is the difference between COUNT(*) and COUNT(column)?**
+**What is the difference between simple and searched CASE?**
 
-COUNT(*) returns the total number of rows in the group, including rows where every field is NULL. COUNT(column) returns the number of rows where that column is not NULL, and COUNT(DISTINCT column) returns the number of distinct non-NULL values in that column.
+Simple CASE compares one expression to a set of values using equality. Searched CASE treats each WHEN as an independent boolean predicate, so it can use ranges, inequalities, AND/OR, and IS NULL. Simple CASE is essentially shorthand for repeated equality comparisons.
 
-**When do you filter with WHERE versus HAVING?**
+**What happens when no WHEN matches and there is no ELSE?**
 
-WHERE filters individual rows before any grouping or aggregation, so it cannot reference aggregate function results. HAVING filters the groups after aggregation and can use conditions such as HAVING SUM(amount) > 1000. Both can appear in the same query.
+The CASE expression returns NULL. That is a common source of unexpected results in averages or comparisons; if you need a fallback, add an explicit ELSE.
 
-**Why does SQL reject SELECT dept_id, name, COUNT(*) FROM employees GROUP BY dept_id, and are there exceptions?**
+**How do you use CASE to pivot rows into columns without PIVOT?**
 
-The name column is not a grouping column and not inside an aggregate, so it has no single value per group. Standard SQL since SQL:1999 allows such a column only if it is functionally dependent on the grouped columns—for example, if dept_id is a unique key of the table. PostgreSQL and MySQL with ONLY_FULL_GROUP_BY implement that relaxation; SQL Server still requires every selected column to be grouped or aggregated.
+Group by the row key and wrap an aggregate around a CASE expression. For example, SELECT StudentName, MAX(CASE WHEN Subject = 'Math' THEN Score END) AS Math ... GROUP BY StudentName. The CASE returns the value for the target column and NULL otherwise; MAX or SUM collapses the grouped rows into one row.
 
-**What does AVG return when a column contains only NULLs or the input set is empty?**
+**How does simple CASE interact with NULL?**
 
-AVG returns NULL when all input values are NULL, because the sum of non-NULL values divided by zero non-NULL rows is undefined in SQL. If a query has no groups and the table is empty, the aggregate also returns NULL, while COUNT returns 0. If the query is grouped, an empty group does not produce an output row.
+Simple CASE uses equality comparison, and NULL = anything is unknown, not true. So a WHEN NULL branch will not match a NULL input; use searched CASE with IS NULL or handle NULL with COALESCE first.
 
-**Can you nest aggregate functions, like MAX(SUM(salary))?**
+**Does SQL guarantee short-circuit evaluation of CASE branches?**
 
-No, SQL does not allow directly nesting aggregate functions in the same SELECT or HAVING list because the inner aggregate would need to be computed per group while the outer computes over groups. You can compute the inner aggregate in a subquery or CTE, then apply the outer aggregate to that result.
+The SQL standard defines which branch's result is returned based on the first true condition, but it does not provide a uniform guarantee across engines that untaken expressions are never evaluated. Many engines short-circuit in practice, but relying on it to avoid division by zero or other errors in untaken branches is risky; restructure the expression to be safe instead.
 
 ## Worked example
 
-Consider a sales table with rows (region, amount): ('North', 100), ('North', NULL), ('South', 50), ('South', 150). The query SELECT region, COUNT(*), COUNT(amount), SUM(amount), AVG(amount), MIN(amount), MAX(amount) FROM sales GROUP BY region yields two rows. For North, COUNT(*) is 2 because there are two input rows, COUNT(amount) is 1 because the NULL is ignored, SUM and AVG are both 100, and MIN and MAX are both 100. For South, COUNT(*) is 2, COUNT(amount) is 2, SUM is 200, AVG is 100, MIN is 50, and MAX is 150. The NULL disappears from the numeric aggregates but still contributes to the row count.
+Given a table orders(order_id, status, amount), conditional aggregation can produce one summary row with counts and totals per status. The query SELECT SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count, SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) AS refunded_total FROM orders; evaluates each row. If the table contains (1, 'paid', 50), (2, 'refunded', 20), and (3, 'paid', 30), the first CASE adds 1 to paid_count for rows 1 and 3, while the second CASE adds amount only for row 2. The final result is paid_count = 2 and refunded_total = 20.
 
 ## Common traps
 
-- Using HAVING for a row-level condition, such as HAVING salary > 100000, when WHERE should filter rows before aggregation.
-- Assuming AVG divides by COUNT(*) or treats NULLs as zeros; it ignores NULLs entirely.
-- Forgetting that MIN and MAX also ignore NULLs, so MIN over a column with NULLs does not return NULL unless every value is NULL.
-- Selecting a non-grouped column without checking for functional dependency, which fails in strict engines and can return some indeterminate row's value in MySQL without ONLY_FULL_GROUP_BY.
+- Treating CASE as a procedural if statement rather than an expression that must return a value for each row.
+- Forgetting that no ELSE means NULL, which can silently propagate through aggregates or comparisons.
+- Using simple CASE for range or inequality conditions; simple CASE only performs equality comparisons.
+- Relying on short-circuit evaluation to prevent errors like division by zero in untaken branches.
 
 </details>
 
@@ -2210,17 +2210,17 @@ These are the questions as first written. The gate objected, a rewrite pass repl
 - **beh-handling-feedback** (flash): When receiving feedback as a software engineer, what sequence of steps helps you handle it effectively?
   - Gate said: wrong_format: Describing a sequence of steps requires multiple sentences or a multi-part explanation that exceeds a single crisp flash sentence.
 
-- **beh-leadership** (flash): What is the real measure of thought leadership in an interview answer?
-  - Gate said: not answerable: The question is too vague and subjective with no single standard definition of the 'real measure' of thought leadership.
-
-- **beh-leadership** (flash): What common senior failure makes a candidate sound like an executor instead of a leader?
-  - Gate said: not answerable: The question points to a specific unspecified failure mode from a curriculum rather than a universally unique answer.
-
 - **beh-leadership** (flash): In behavioral interviews, what does leadership mean independent of formal authority?
   - Gate said: a human reviewer objected: In behavioral interviews, what does leadership mean independent of formal author
 
 - **beh-leadership** (mcq): Which set of behaviors best describes effective leadership during a high-pressure crisis or significant disruption?
   - Gate said: a human reviewer objected: Which set of behaviors best describes effective leadership during a high-pressur
+
+- **beh-leadership** (flash): What is the real measure of thought leadership in an interview answer?
+  - Gate said: not answerable: The question is too vague and subjective with no single standard definition of the 'real measure' of thought leadership.
+
+- **beh-leadership** (flash): What common senior failure makes a candidate sound like an executor instead of a leader?
+  - Gate said: not answerable: The question points to a specific unspecified failure mode from a curriculum rather than a universally unique answer.
 
 - **beh-leadership** (mcq): A senior candidate is preparing a behavioral story about leadership. Which set of dimensions should the story cover to avoid sounding like a single-dimensional executor?
   - Gate said: not answerable: Multiple option lists are arbitrary frameworks that could defensibly be considered valid dimensions of leadership without an external syllabus.
@@ -2261,14 +2261,14 @@ String firstLine() {
 What does javac report when compiling it?
   - Gate said: wrong_format: The exact compiler error message has multiple variations/lines and cannot be graded via exact string match.
 
+- **java-collections-framework** (flash): In the Java Collections Framework, which interfaces extend Collection, and where does Map fit?
+  - Gate said: wrong_format: Answering all interfaces extending Collection plus Map's position cannot be crisply answered in a single sentence.
+
 - **java-collections-framework** (flash): How does PriorityQueue order its elements, and what are its add and poll costs?
   - Gate said: wrong_format: Asking for ordering mechanism plus multiple asymptotic complexities exceeds a single crisp flashcard sentence.
 
 - **java-collections-framework** (flash): What iteration order guarantees do HashSet, LinkedHashSet, and TreeSet provide?
   - Gate said: wrong_format: Explaining the order guarantees for three distinct set implementations exceeds a single crisp sentence.
-
-- **java-collections-framework** (flash): In the Java Collections Framework, which interfaces extend Collection, and where does Map fit?
-  - Gate said: wrong_format: Answering all interfaces extending Collection plus Map's position cannot be crisply answered in a single sentence.
 
 - **java-equals-and-hashcode-contract** (mcq): Which statement about equal objects and hash collisions is correct?
   - Gate said: a human reviewer objected: Which statement about equal objects and hash collisions is correct?
@@ -2319,11 +2319,11 @@ System.out.println(s);
 - **lld-parking-lot-design** (flash): What are the typical parking spot types modeled in a parking garage?
   - Gate said: wrong_format: Enumerating a list of spot types does not fit a single-sentence flash card.
 
-- **lld-ride-sharing-service-design** (flash): Why should driver availability be a separate state rather than being derived only from trip status?
-  - Gate said: a human reviewer objected: Why should driver availability be a separate state rather than being derived onl
-
 - **lld-ride-sharing-service-design** (typed): What happens in the dispatch flow when a driver does not accept an offer before the timeout expires?
   - Gate said: a human reviewer objected: What happens in the dispatch flow when a driver does not accept an offer before 
+
+- **lld-ride-sharing-service-design** (flash): Why should driver availability be a separate state rather than being derived only from trip status?
+  - Gate said: a human reviewer objected: Why should driver availability be a separate state rather than being derived onl
 
 - **lld-uml-sequence-diagram** (flash): What is a UML sequence diagram, and what do the vertical and horizontal axes represent?
   - Gate said: wrong_format: Asking for definition plus both axes typically requires multiple sentences or clauses beyond a single crisp sentence.
@@ -2334,32 +2334,32 @@ System.out.println(s);
 - **sd-caching** (mcq): In the worked example, a product page is fetched 5,000 times per second and the database sustains 800 reads per second. After the Redis cache is warm with a 30-second TTL, how many database reads per second does that single product key cause?
   - Gate said: not answerable: References an unseen 'worked example'.
 
-- **sd-consistent-hashing** (typed): How is replication placed on a consistent hash ring?
-  - Gate said: a human reviewer objected: How is replication placed on a consistent hash ring?
-
 - **sd-consistent-hashing** (typed): Why are virtual nodes added to a consistent hash ring?
   - Gate said: a human reviewer objected: Why are virtual nodes added to a consistent hash ring?
+
+- **sd-consistent-hashing** (typed): How is replication placed on a consistent hash ring?
+  - Gate said: a human reviewer objected: How is replication placed on a consistent hash ring?
 
 - **sd-design-a-chat-system** (typed): In a real-time chat system, what are the two primary subsystems of the architecture, and why are they separated?
   - Gate said: not answerable: Asking for 'the two primary subsystems' without context expects specific terminology from an unseen text.
 
+- **sd-design-a-notification-system** (typed): When would you use a persistent WebSocket connection for in-app notifications instead of APNS/FCM push?
+  - Gate said: a human reviewer objected: When would you use a persistent WebSocket connection for in-app notifications in
+
 - **sd-design-a-notification-system** (typed): How do you handle machine failures in a notification worker system?
   - Gate said: a human reviewer objected: How do you handle machine failures in a notification worker system?
 
-- **sd-design-a-notification-system** (typed): When would you use a persistent WebSocket connection for in-app notifications instead of APNS/FCM push?
-  - Gate said: a human reviewer objected: When would you use a persistent WebSocket connection for in-app notifications in
+- **sd-design-case-studies** (flash): What mechanism is appropriate for counting current active page viewers?
+  - Gate said: not answerable: There are many valid mechanisms (Redis HyperLogLog, sliding window bucket counters, sorted sets) with no single correct answer.
+
+- **sd-design-case-studies** (mcq): How should you shard an idempotency store so that uniqueness checks on idempotency keys are local?
+  - Gate said: a competent answer disagrees with the marked option
 
 - **sd-design-case-studies** (typed): Two concurrent requests with the same Idempotency-Key and merchant_id arrive at the payment API. What ensures only one provider call is made?
   - Gate said: a human reviewer objected: Two concurrent requests with the same Idempotency-Key and merchant_id arrive at 
 
 - **sd-design-case-studies** (typed): How do you mark a payment as completed and prevent a duplicate webhook from double-applying the update?
   - Gate said: a human reviewer objected: How do you mark a payment as completed and prevent a duplicate webhook from doub
-
-- **sd-design-case-studies** (mcq): How should you shard an idempotency store so that uniqueness checks on idempotency keys are local?
-  - Gate said: a competent answer disagrees with the marked option
-
-- **sd-design-case-studies** (flash): What mechanism is appropriate for counting current active page viewers?
-  - Gate said: not answerable: There are many valid mechanisms (Redis HyperLogLog, sliding window bucket counters, sorted sets) with no single correct answer.
 
 - **sd-jwt** (typed): When a server verifies a JWT, what should it check?
   - Gate said: a human reviewer objected: When a server verifies a JWT, what should it check?
@@ -2370,11 +2370,11 @@ System.out.println(s);
 - **sd-microservices** (typed): How should a ranking and personalization component be integrated into a microservices system?
   - Gate said: not answerable: The question is too vague and lacks system context, allowing for dozens of mutually distinct correct integration patterns.
 
-- **sd-object-storage** (mcq): In Amazon S3 multipart upload, what is the minimum part size for every part except the last one?
-  - Gate said: wrong_format: AWS documentation defines the minimum part size as 5 MB, making both '5 MiB' and '5 MB' ambiguously close or technically disputable.
-
 - **sd-object-storage** (flash): Name the three major managed object storage services.
   - Gate said: wrong_format: Flash cards require a single crisp sentence, not a list of named entities which is open to varying company selections.
+
+- **sd-object-storage** (mcq): In Amazon S3 multipart upload, what is the minimum part size for every part except the last one?
+  - Gate said: wrong_format: AWS documentation defines the minimum part size as 5 MB, making both '5 MiB' and '5 MB' ambiguously close or technically disputable.
 
 - **sd-rate-limiting** (flash): What HTTP status and response headers should a rate limiter use when a caller exceeds its limit?
   - Gate said: wrong_format: Asking for the HTTP status and multiple response headers requires listing items rather than a single crisp sentence.
@@ -2391,6 +2391,12 @@ System.out.println(s);
 - **sd-unique-id-generation** (flash): What is the classic Twitter Snowflake 64-bit ID layout?
   - Gate said: wrong_format: Listing the exact bit allocation across four fields requires a structured or multi-part answer that does not fit a single crisp flash sentence.
 
+- **sql-aggregate-functions** (mcq): In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table employees has id INTEGER PRIMARY KEY, dept_id INTEGER, name TEXT. Which query is valid?
+  - Gate said: a human reviewer objected: In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table employees has id INTEGER 
+
+- **sql-aggregate-functions** (typed): What are two important consequences of using SQL aggregate functions for reporting?
+  - Gate said: not answerable: The question is completely unconstrained and asks for an arbitrary list of two consequences.
+
 - **sql-aggregate-functions** (typed): Given a sales table with rows ('North', 100), ('North', NULL), ('South', 50), ('South', 150), what rows and column values are returned by this query?
 ```sql
 SELECT region, COUNT(*), COUNT(amount), SUM(amount), AVG(amount)
@@ -2399,9 +2405,6 @@ GROUP BY region
 ORDER BY region;
 ```
   - Gate said: wrong_format: Asking for exact multi-column tabular result sets does not fit prose typed grading.
-
-- **sql-aggregate-functions** (typed): What are two important consequences of using SQL aggregate functions for reporting?
-  - Gate said: not answerable: The question is completely unconstrained and asks for an arbitrary list of two consequences.
 
 - **sql-case-expression** (output): Given the table and query below, what is the exact output?
 ```sql
@@ -2421,11 +2424,11 @@ FROM orders;
 - **sql-constraints** (mcq): Which of the following is a separate column requirement often grouped with SQL constraints, rather than one of the common declarative constraints?
   - Gate said: not answerable: NOT NULL is standardly defined as a declarative constraint in SQL, making the question ambiguous and poorly defined.
 
-- **sql-constraints** (typed): What is the difference between a PRIMARY KEY and a FOREIGN KEY?
-  - Gate said: a human reviewer objected: What is the difference between a PRIMARY KEY and a FOREIGN KEY?
-
 - **sql-constraints** (typed): What happens when you delete or update a parent row referenced by a foreign key, and which referential actions can you declare?
   - Gate said: wrong_format: Asking to list which referential actions can be declared requires an open-ended enumeration.
+
+- **sql-constraints** (typed): What is the difference between a PRIMARY KEY and a FOREIGN KEY?
+  - Gate said: a human reviewer objected: What is the difference between a PRIMARY KEY and a FOREIGN KEY?
 
 - **sql-ddl-dml-dcl-tcl** (mcq): In SQL Server, after ROLLBACK TRANSACTION savepoint_name, what is the state of the outer transaction?
   - Gate said: a human reviewer objected: In SQL Server, after ROLLBACK TRANSACTION savepoint_name, what is the state of t

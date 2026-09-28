@@ -96,6 +96,7 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
             now,
         ],
     )
+    return True
 
 
 def apply(con, cards: list[Draft], rejected: list[tuple[object, str]], confidence: dict) -> tuple[int, int]:
