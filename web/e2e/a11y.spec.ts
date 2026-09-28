@@ -45,6 +45,16 @@ test("the Library and a topic page are accessible", async ({ page }) => {
   await signIn(page, "a11y-library", { next: "/library" });
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await scan(page, "Library");
+
+  // A topic page too, which this test claimed to cover and did not: it is a long
+  // authored lesson with headings, code and a practice list, so it is the page
+  // most likely to have a heading-order or contrast problem in the first place.
+  await page
+    .getByRole("link", { name: /Arrays & Hashing/ })
+    .first()
+    .click();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await scan(page, "A topic page");
 });
 
 test("Coach is accessible", async ({ page }) => {

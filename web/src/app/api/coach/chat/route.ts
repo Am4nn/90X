@@ -19,6 +19,7 @@ import { type ModeContext, modeFor } from "@/lib/coach/mode";
 import "@/lib/coach/modes";
 import { coachModel, trackCoachUsage } from "@/lib/coach/model";
 import { takeMessageSlot } from "@/lib/coach/rate-limit";
+import { clearStop, stopSignal } from "@/lib/coach/stop";
 import { ensureThread, saveMessage, threadMessages } from "@/lib/coach/threads";
 import { limitToolCalls } from "@/lib/coach/tool-limit";
 
@@ -99,6 +100,10 @@ export async function POST(request: Request) {
       language: viewer.language,
       now: new Date(),
     };
+    // A stop left over from the previous reply in this thread would kill this one
+    // before it started.
+    await clearStop(viewer.id, thread.id);
+    const stop = stopSignal(viewer.id, thread.id);
     const tools = limitToolCalls(mode.tools?.(ctx) ?? {});
     const [instructions, { model }] = await Promise.all([mode.system(ctx), coachModel()]);
 
@@ -107,6 +112,29 @@ export async function POST(request: Request) {
     if (!valid.success) console.error("coach history didn't validate; answering from the new message only", valid.error);
     const messages = valid.success ? valid.data : [userMessage];
     const maxSteps = mode.maxSteps ?? 5;
+
+    /** Save the assistant's answer, once, whoever gets there first.
+     *
+     *  Two paths call this: the stream ending normally, before the response
+     *  closes, and the background reader that covers a reader who left.
+     *  `saveMessage` is idempotent by id, so the loser is a no-op. Doing it on
+     *  the stream's end as well is what stops the client refreshing a thread
+     *  that does not have the reply in it yet. */
+    const store = async (message: UIMessage | undefined) => {
+      // step-start parts stay: they split the answer into steps when the history is sent back.
+      const parts = message?.parts ?? [];
+      if (!parts.some((p) => p.type !== "step-start")) return;
+      try {
+        await saveMessage(viewer.id, thread.id, {
+          id: z.uuid().safeParse(message?.id).success ? message!.id : randomUUID(),
+          role: "assistant",
+          parts,
+          citations: citationsOf(parts),
+        });
+      } catch (e) {
+        console.error("coach answer not saved", e);
+      }
+    };
 
     const stream = createUIMessageStream({
       originalMessages: messages,
@@ -120,11 +148,12 @@ export async function POST(request: Request) {
           stopWhen: stepCountIs(maxSteps),
           // The last step must answer, so a thread never ends on a bare tool call.
           prepareStep: ({ stepNumber }) => (stepNumber >= maxSteps - 1 ? { toolChoice: "none" } : undefined),
-          // No abortSignal on purpose. Tying generation to `request.signal` meant
-          // closing the app mid-answer killed the run before `onEnd` could save
-          // it, so the work was paid for and thrown away. The run now finishes
-          // server-side and the answer is in the thread when the reader returns.
-          // `maxDuration` still bounds it.
+          // Not `request.signal`: tying generation to the connection meant
+          // closing the app mid-answer killed the run before it could be saved,
+          // so the work was paid for and thrown away. This aborts on an explicit
+          // Stop instead, which is the only one of the two that means "I do not
+          // want this". `maxDuration` bounds the rest.
+          abortSignal: stop.signal,
           onEnd: (end) => trackCoachUsage(viewer.id, `coach.${thread.kind}`, model, end),
         });
         writer.merge(
@@ -142,19 +171,19 @@ export async function POST(request: Request) {
         console.error("coach chat failed", e);
         return BUSY;
       },
+      // Awaited, so the stream does not report completion before the answer is in
+      // the thread. Without it the client refreshes on the last chunk and can
+      // read a thread that has no reply in it - or send its next message with the
+      // previous answer missing from the history.
+      onEnd: ({ responseMessage }) => store(responseMessage),
     });
 
-    // Saving does not go through this stream's own end callback, and the client
-    // is not what drives it. Two things have to be true for a reader to get
-    // their answer after closing the app: the model must keep going, and
-    // something must still be reading it. `abortSignal` is gone, which handles
-    // the first; this handles the second.
-    //
-    // The chunks are split in two here. The response takes one branch, and the
-    // other is read to the end on the server, which both assembles the message
-    // to save and keeps the source advancing when nobody is listening to the
-    // first. `consumeSseStream` looked like it would do this and did not - a
-    // cancelled response branch stopped the run anyway.
+    // Two things must be true for a reader to get their answer after closing the
+    // app: the model has to keep going, and something has to keep reading it.
+    // Not aborting on the connection handles the first; splitting the stream
+    // handles the second. The response takes one branch, and the other is read
+    // to the end on the server, which assembles the message to save and keeps
+    // the source advancing when nobody is listening to the first.
     const [toClient, toStore] = stream.tee();
     void (async () => {
       let latest: UIMessage | undefined;
@@ -167,20 +196,11 @@ export async function POST(request: Request) {
         }
       } catch (e) {
         console.error("coach answer could not be assembled", e);
+      } finally {
+        // Or the poll outlives the reply it was watching.
+        stop.done();
       }
-      // step-start parts stay: they split the answer into steps when the history is sent back.
-      const parts = latest?.parts ?? [];
-      if (!parts.some((p) => p.type !== "step-start")) return;
-      try {
-        await saveMessage(viewer.id, thread.id, {
-          id: z.uuid().safeParse(latest?.id).success ? latest!.id : randomUUID(),
-          role: "assistant",
-          parts,
-          citations: citationsOf(parts),
-        });
-      } catch (e) {
-        console.error("coach answer not saved", e);
-      }
+      await store(latest);
     })();
 
     return createUIMessageStreamResponse({ stream: toClient });

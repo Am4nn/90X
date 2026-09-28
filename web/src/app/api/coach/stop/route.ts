@@ -1,0 +1,40 @@
+import { z } from "zod";
+import { gate } from "@/lib/auth/gate";
+import { getViewer } from "@/lib/auth/viewer";
+import { requestStop } from "@/lib/coach/stop";
+import { threadOwnedBy } from "@/lib/coach/threads";
+
+// The Stop button. A reply no longer stops when the connection drops - closing
+// the app leaves it to finish - so an explicit stop has to say so itself.
+//
+// Answers 204 whatever happens once the thread is the caller's: there is nothing
+// useful for the client to do about a failed stop, and a reply that finishes
+// anyway is the same outcome as before this existed.
+
+const Body = z.object({ threadId: z.uuid() });
+
+export async function POST(request: Request) {
+  const viewer = await getViewer();
+  if (!viewer || gate({ userId: viewer.id, approval: viewer.approval, setupDone: viewer.setupDone })) {
+    return new Response(null, { status: 401 });
+  }
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(null, { status: 400 });
+  }
+  const parsed = Body.safeParse(body);
+  if (!parsed.success) return new Response(null, { status: 400 });
+
+  // Scoped to the owner, like every other query: a thread id is a uuid somebody
+  // could otherwise guess at to interrupt another reader's answer.
+  if (!(await threadOwnedBy(viewer.id, parsed.data.threadId))) return new Response(null, { status: 404 });
+
+  try {
+    await requestStop(viewer.id, parsed.data.threadId);
+  } catch (e) {
+    console.error("coach stop not recorded", e);
+  }
+  return new Response(null, { status: 204 });
+}

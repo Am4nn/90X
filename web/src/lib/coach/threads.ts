@@ -73,6 +73,16 @@ export async function findThread(userId: string, kind: CoachKind, ref: string, q
  * client picks the id of a new thread, so a taken id (another user's thread)
  * comes back null rather than being reused.
  */
+/** Is this thread the caller's? Scoped like every other query, so a guessed
+ *  uuid cannot reach somebody else's conversation. */
+export async function threadOwnedBy(userId: string, threadId: string, q: Db = db): Promise<boolean> {
+  const [row] = await q
+    .select({ id: coachThreads.id })
+    .from(coachThreads)
+    .where(and(eq(coachThreads.id, threadId), eq(coachThreads.userId, userId)));
+  return Boolean(row);
+}
+
 export async function ensureThread(
   userId: string,
   thread: { id: string; kind: CoachKind; ref: string | null; title: string },
@@ -101,14 +111,20 @@ export async function threadMessages(userId: string, threadId: string, limit = 3
 }
 
 export async function saveMessage(userId: string, threadId: string, message: StoredMessage & { citations?: Citation[] }, q: Db = db) {
-  await q.insert(coachMessages).values({
-    id: message.id,
-    threadId,
-    userId,
-    role: message.role,
-    parts: message.parts,
-    citations: message.citations ?? [],
-  });
+  // Idempotent by id. A coach answer can be saved by whichever finishes first -
+  // the stream ending normally, or the background reader that covers a client
+  // that left - and the loser must be a no-op rather than a primary-key error.
+  await q
+    .insert(coachMessages)
+    .values({
+      id: message.id,
+      threadId,
+      userId,
+      role: message.role,
+      parts: message.parts,
+      citations: message.citations ?? [],
+    })
+    .onConflictDoNothing({ target: coachMessages.id });
   await q
     .update(coachThreads)
     .set({ updatedAt: sql`now()` })

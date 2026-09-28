@@ -106,7 +106,7 @@ function Working() {
   );
 }
 
-/** The answer lives in this connection until it's saved, so leaving loses it. */
+/** Shown once an answer is taking a while, to say that leaving is safe. */
 function KeepOpen() {
   // It used to say "keep the app open", because closing it aborted the run and
   // lost the answer. The run now finishes on the server either way.
@@ -186,6 +186,24 @@ export function CoachChat({
     const timer = setTimeout(() => setSlow(true), 4000);
     return () => clearTimeout(timer);
   }, [busy]);
+
+  // Stop has to say so out of band. Generation no longer follows the connection -
+  // that is what lets a reader close the app and come back to a finished answer -
+  // so dropping it is no longer a cancellation. Without this the model would keep
+  // going and save a reply the reader had just said they did not want.
+  const halt = async () => {
+    await stop();
+    try {
+      await fetch("/api/coach/stop", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ threadId }),
+        keepalive: true,
+      });
+    } catch {
+      // The reply finishes and is saved, which is what used to happen anyway.
+    }
+  };
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -303,7 +321,7 @@ export function CoachChat({
           className="max-h-48 min-h-10 flex-1 resize-none bg-transparent py-2 text-text outline-none placeholder:text-mute disabled:opacity-60"
         />
         {busy ? (
-          <button type="button" onClick={() => void stop()} className={`${button()} shrink-0`}>
+          <button type="button" onClick={() => void halt()} className={`${button()} shrink-0`}>
             Stop
           </button>
         ) : (

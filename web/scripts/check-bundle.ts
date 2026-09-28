@@ -70,6 +70,14 @@ function* jsUnder(dir: string): Generator<string> {
   }
 }
 const chunks = [...jsUnder(path.join(NEXT, "static", "chunks"))];
+if (!chunks.length) {
+  // Measuring nothing and reporting success is the worst thing a check can do.
+  // `jsUnder` swallows a missing directory so one odd path cannot crash the run,
+  // which means an empty result has to be treated as a failure here.
+  console.error("\n  No client chunks found under .next/static/chunks.");
+  console.error("  Either the build did not finish or Next moved them; fix this check rather than deleting it.\n");
+  process.exit(1);
+}
 const totalKb = kb(chunks.reduce((n, f) => n + gz(f), 0));
 
 console.log("\n  JavaScript a cold start downloads, gzipped\n");
