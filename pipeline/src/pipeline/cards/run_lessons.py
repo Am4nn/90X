@@ -23,15 +23,22 @@ WORKERS = 12
 CARD_NAMESPACE = uuid.UUID("90c0de00-0000-4000-8000-000000000001")
 
 
-def card_id(topic_slug: str, prompt: str) -> str:
+def card_id(topic_slug: str, prompt: str, kind: str = "") -> str:
     """A card's identity is its question, not where it landed in the list.
 
     Keying on position meant a card's id moved whenever the gate changed its
     mind about an earlier card, so published study history could end up
     attached to a different question, and `on conflict do nothing` could leave
     the old question sitting under that id. The question is what the reader
-    answered, so the question is the identity."""
-    return str(uuid.uuid5(CARD_NAMESPACE, f"{topic_slug}:{' '.join(prompt.split())}"))
+    answered, so the question is the identity.
+
+    `kind` separates a row that is not a card from the card it describes. A
+    rewrite that fixes only the answer keeps the question, so the replacement
+    and the wording the gate objected to had the same id: one overwrote the
+    other, and whichever lost took the gate's objection out of the record.
+    """
+    prefix = f"{kind}:" if kind else ""
+    return str(uuid.uuid5(CARD_NAMESPACE, f"{prefix}{topic_slug}:{' '.join(prompt.split())}"))
 
 
 def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
@@ -66,10 +73,18 @@ def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[ob
     costs roughly 160 cards across a full run.
 
     Returns (kept, discarded, sent_back, confidence). `sent_back` is what the
-    gate caught on the first pass and the rewrite then fixed. Reporting only
-    `discarded` made the run look like a 1% rejection rate and said nothing
-    about how much work the gate was actually doing - which is the number Aman
-    is judging when he reads the sample.
+    gate objected to on the first pass, which the rewrite then replaced.
+    Reporting only `discarded` made the run look like a 1% rejection rate and
+    said nothing about how much work the gate was actually doing - which is the
+    number Aman is judging when he reads the sample.
+
+    `sent_back` is not a claim that the rewrite succeeded. The rewrite returns
+    one replacement per card in the same order, but nothing enforces that, so
+    there is no reliable mapping from an original to its replacement - and
+    calling a card fixed on the strength of a guess would be exactly the kind
+    of confident wrong number this reporting exists to stop. What is true of
+    every card here is that the gate objected and it did not ship; a
+    replacement the gate turned down again lands in `discarded` on its own.
     """
     cards = for_lesson(llm, topic, topic["lesson"], tier=tier)
     kept, rejected, confidence = _kept(cards, gate.review(llm, topic, cards))
@@ -85,10 +100,9 @@ def one(llm: LLM, topic: dict, tier: str = "smart") -> tuple[list, list[tuple[ob
         return kept, rejected, [], confidence
 
     repaired, still_bad, fixed_confidence = _kept(fixed, gate.review(llm, topic, fixed))
-    # Every first-pass reject went to the rewrite; `still_bad` holds the
-    # replacements the gate turned down again, which are different cards. A
-    # card the gate caught and the rewrite fixed did not fail, but it is
-    # evidence the gate earned its place, so it is kept and labelled.
+    # `still_bad` holds replacements the gate turned down again - different
+    # cards from the originals in `rejected`, which are the wordings it caught
+    # first and which are recorded rather than dropped.
     return kept + repaired, still_bad, rejected, {**confidence, **fixed_confidence}
 
 
@@ -101,9 +115,10 @@ def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confi
     # replaced it. Only draft reaches Supabase; the other two are the record of
     # what the gate did, which is the thing under review alongside the cards.
     #
-    # Drafts go last. A card's id comes from its question, and a rewrite that
-    # changed only the answer keeps the question, so the two rows collide on
-    # `insert or replace`; the publishable one has to be the survivor.
+    # A repaired row is keyed apart from the card it describes, because a
+    # rewrite that fixes only the answer keeps the question and the two would
+    # otherwise share an id - one overwriting the other, and taking either the
+    # publishable card or the gate's objection out of the record.
     rows = (
         [(c, reason, "repaired") for c, reason in (sent_back or [])]
         + [(c, reason, "rejected") for c, reason in rejected]
@@ -120,7 +135,8 @@ def save(con, topic: dict, kept: list, rejected: list[tuple[object, str]], confi
                 source_refs, quality, kept, status, source, reject_reason, created_at)
                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?, ?)""",
             [
-                card_id(topic["slug"], card.prompt), topic["slug"], card.format, card.difficulty, card.prompt,
+                card_id(topic["slug"], card.prompt, "repaired" if status == "repaired" else ""),
+                topic["slug"], card.format, card.difficulty, card.prompt,
                 json.dumps(card.options) if card.options else None, card.answer,
                 json.dumps(card.key_points), refs,
                 json.dumps({"gate_confidence": confidence.get(id(card), 0.5)}),

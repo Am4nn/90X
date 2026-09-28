@@ -66,15 +66,19 @@ IMPERATIVE = re.compile(
 
 
 def is_interviewer_prompt(text: str) -> bool:
-    """True if any sentence in it is a question or an instruction.
+    """True if every sentence in it is a question or an instruction.
 
     Testing only the whole string rejected "Can a table violate both 2NF and
     3NF at the same time? Give an example." - a question and then an
     instruction, which is how people actually talk, and it cost a correct
     lesson a full rewrite.
+
+    Every sentence, not any: the whole field is rendered as the prompt the
+    interviewer says, so "What breaks under load? The lock serializes every
+    request." would show the reader the answer next to the question.
     """
     parts = [p.strip() for p in re.split(r"(?<=[.?!])\s+", text.strip()) if p.strip()]
-    return any(p.endswith("?") or IMPERATIVE.match(p) for p in parts)
+    return bool(parts) and all(p.endswith("?") or IMPERATIVE.match(p) for p in parts)
 
 
 def word_count(text: str) -> int:

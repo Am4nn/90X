@@ -49,6 +49,8 @@ def main() -> None:
     gp = sub.add_parser("gaps", help="sort roadmap nodes 90x lacks into real gaps (AI)")
     gp.add_argument("domains", nargs="*", help="only these areas")
     gp.add_argument("--tier", default="smart")
+    gp.add_argument("--report-only", action="store_true",
+                    help="rewrite the report from stored verdicts, without paying to sort again")
     sub.add_parser("roadmaps", help="fetch roadmap.sh structures and stage their nodes")
     pb = sub.add_parser("publish", help="publish staging to Supabase")
     pb.add_argument("--dry-run", action="store_true", help="run everything, then roll back")

@@ -74,6 +74,15 @@ alter table card_batches add column if not exists label text;
 -- bookkeeping rather than on the data. Publish sends every batch and
 -- converges, so nothing reads this any more.
 alter table card_batches drop column if exists published;
+-- What the sorter decided about each roadmap candidate. Kept because the
+-- verdicts cost a model run and the write-up does not: rewording the report,
+-- changing where the shortlist is cut, or deduplicating it should not mean
+-- paying to sort 1,959 candidates again.
+create table if not exists taxonomy_gaps (
+    domain text not null, label text not null, verdict text not null,
+    covered_by text, relevance double, why text, judged_at timestamp,
+    primary key (domain, label)
+);
 create table if not exists roadmap_nodes (
     id text primary key, roadmap text not null, domain text not null, label text not null,
     kind text not null, sort int not null, topic_slug text

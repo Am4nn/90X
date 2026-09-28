@@ -70,6 +70,18 @@ def test_accepts_a_question_followed_by_an_instruction():
     ]) == []
 
 
+def test_rejects_an_answer_hiding_behind_a_question():
+    """The whole field is rendered as what the interviewer says, so a
+    declarative second sentence shows the reader the answer. Accepting a
+    follow-up because *some* sentence in it was a prompt let that through."""
+    problems = checks.check(GOOD_BODY, [
+        "What breaks under load? The lock serializes every request.",
+        "What breaks under load?",
+        "Why does that matter here?",
+    ])
+    assert any("interviewer would say" in p for p in problems)
+
+
 def test_rejects_a_follow_up_that_is_not_a_prompt():
     problems = checks.check(GOOD_BODY, ["What is a process?", "Processes are useful.", "Why?"])
     assert any("interviewer would say" in p for p in problems)

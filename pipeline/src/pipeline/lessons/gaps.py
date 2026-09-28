@@ -12,6 +12,7 @@ ranking is a suggestion, never the decision, because this is exactly where a
 curated 274 quietly becomes an unfocused 800.
 """
 
+from datetime import datetime, timezone
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -44,16 +45,41 @@ class Judgements(BaseModel):
 
 
 def uncovered(con, domain: str | None = None) -> list[dict]:
-    """Roadmap nodes with no topic, most prominent first."""
+    """Roadmap nodes with no topic, most prominent first.
+
+    Grouping on the raw label treated " Logistic Regression " and "Logistic
+    Regression" as two candidates, so both were sorted, both were paid for, and
+    both reached the list Aman is meant to cut down. Trim and collapse the
+    whitespace first, and group on that.
+    """
     rows = con.execute(
-        """select domain, label, kind, min(sort) as sort, count(*) as seen
+        """select domain, trim(regexp_replace(label, '\\s+', ' ', 'g')) as label, kind,
+                  min(sort) as sort, count(*) as seen
            from roadmap_nodes
            where topic_slug is null and (? is null or domain = ?)
-           group by domain, label, kind
+           group by domain, 2, kind
            order by domain, kind desc, seen desc, sort""",
         [domain, domain],
     ).fetchall()
     return [dict(zip(["domain", "label", "kind", "sort", "seen"], r)) for r in rows]
+
+
+def save(con, rows: list[dict]) -> None:
+    """Keep the verdicts, so rewriting the report costs nothing."""
+    now = datetime.now(timezone.utc)
+    con.executemany(
+        """insert or replace into taxonomy_gaps
+           (domain, label, verdict, covered_by, relevance, why, judged_at)
+           values (?, ?, ?, ?, ?, ?, ?)""",
+        [[r["domain"], r["label"], r["verdict"], r["covered_by"], r["relevance"], r["why"], now] for r in rows],
+    )
+
+
+def stored(con) -> list[dict]:
+    rows = con.execute(
+        "select domain, label, verdict, covered_by, relevance, why from taxonomy_gaps"
+    ).fetchall()
+    return [dict(zip(["domain", "label", "verdict", "covered_by", "relevance", "why"], r)) for r in rows]
 
 
 def judge(llm, domain: str, our_topics: list[str], candidates: list[str], tier: str = "smart") -> list[Judgement]:
@@ -91,33 +117,92 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart") -> list
                     "why": j.why if j else "",
                 })
             print(f"  {domain}: sorted {min(i + BATCH, len(candidates))}/{len(candidates)}", flush=True)
+            # Saved per batch, not at the end. A 33-minute run over 1,959
+            # candidates that dies on the last batch should not have to start
+            # over, and the report is rewritten far more often than the sort.
+            save(con, out[-len(chunk):])
     return out
 
 
+LIKELY = 0.7  # "an interview will go here", in the sorter's own terms
+
+
+def _dedupe(gaps: list[dict]) -> list[dict]:
+    """One row per topic, keeping the highest relevance it was given.
+
+    The same topic appears on several roadmaps under slightly different
+    capitalisation, and each copy was sorted separately, so the list Aman reads
+    had "Sampling Parameters" twice with different reasons."""
+    best: dict[tuple[str, str], dict] = {}
+    for row in gaps:
+        key = (row["domain"], " ".join(row["label"].split()).casefold())
+        if key not in best or row["relevance"] > best[key]["relevance"]:
+            best[key] = row
+    return list(best.values())
+
+
+def _listing(rows: list[dict]) -> list[str]:
+    lines: list[str] = []
+    domain = None
+    for row in sorted(rows, key=lambda r: (r["domain"], -r["relevance"], r["label"])):
+        if row["domain"] != domain:
+            domain = row["domain"]
+            lines += ["", f"### {domain}", ""]
+        lines.append(f"- **{' '.join(row['label'].split())}** ({row['relevance']:.1f}) - {row['why']}")
+    return lines
+
+
 def report(rows: list[dict]) -> str:
-    """The list Aman cuts down, gaps first and most interview-relevant first."""
-    gaps = sorted([r for r in rows if r["verdict"] == "gap"], key=lambda r: (r["domain"], -r["relevance"]))
+    """The list Aman cuts down.
+
+    The first version handed over all 1,100 gaps and asked him to cut them,
+    which is the job rather than the review - and he had already said plainly
+    he would not read 320 cards. The sorter scores each gap for how likely an
+    interview is to go there, so the report leads with the ones it scored 0.7
+    and up and counts the rest. The tail is still listed, because a suggestion
+    is not a decision, but it is below the line.
+    """
+    gaps = _dedupe([r for r in rows if r["verdict"] == "gap"])
+    likely = [r for r in gaps if r["relevance"] >= LIKELY]
+    tail = [r for r in gaps if r["relevance"] < LIKELY]
     n_covered = sum(1 for r in rows if r["verdict"] == "covered")
     n_broad = sum(1 for r in rows if r["verdict"] == "too_broad")
+    duplicates = sum(1 for r in rows if r["verdict"] == "gap") - len(gaps)
+
     lines = [
         "# Topics roadmap.sh has that 90x does not",
         "",
-        f"{len(gaps)} real {'gap' if len(gaps) == 1 else 'gaps'} out of {len(rows)} candidates. "
-        f"{n_covered} {'was' if n_covered == 1 else 'were'} already covered under another name, and "
-        f"{n_broad} {'was a heading' if n_broad == 1 else 'were headings'}, not topics.",
+        f"**{len(likely)} worth reading.** Of {len(rows)} candidates, {len(gaps)} are gaps 90x "
+        f"genuinely does not cover, and {len(likely)} of those scored {LIKELY} or higher for "
+        "\"a real SDE loop will go here\". The other "
+        f"{len(tail)} are gaps the sorter itself rated unlikely to come up; they are below the line.",
         "",
-        "**Cut this list down.** Anything you keep gets a lesson written for it, "
-        "at roughly $0.04 each. Deleting a line is the whole review.",
+        f"{n_covered} candidates were already covered under another name and "
+        f"{n_broad} were headings rather than topics"
+        + (f"; {duplicates} were the same topic listed twice." if duplicates else "."),
         "",
+        "**Deleting a line is the whole review.** Anything you keep gets a lesson written for "
+        "it, at roughly $0.04 each - and 90x is 274 curated topics, which is the thing worth "
+        "protecting. The score is a suggestion, not a decision.",
+        "",
+        "## Worth writing",
     ]
-    domain = None
-    for row in gaps:
-        if row["domain"] != domain:
-            domain = row["domain"]
-            lines += ["", f"## {domain}", ""]
-        lines.append(f"- **{row['label']}** ({row['relevance']:.1f}) - {row['why']}")
-    covered = [r for r in rows if r["verdict"] == "covered"]
+    lines += _listing(likely)
+    if tail:
+        lines += [
+            "",
+            "---",
+            "",
+            f"## Below the line ({len(tail)})",
+            "",
+            "The sorter called each of these a real gap and then rated an interview unlikely "
+            "to reach it - mostly tooling and operations engineers use without being asked to "
+            "explain. Here in case it was wrong about one.",
+        ]
+        lines += _listing(tail)
+    covered = _dedupe([r for r in rows if r["verdict"] == "covered"])
     if covered:
-        lines += ["", "---", "", "## Already covered under another name", ""]
-        lines += [f"- {r['label']} -> {r['covered_by']}" for r in covered]
+        lines += ["", "---", "", f"## Already covered under another name ({len(covered)})", ""]
+        lines += [f"- {' '.join(r['label'].split())} -> {r['covered_by']}"
+                  for r in sorted(covered, key=lambda r: (r["domain"], r["label"]))]
     return "\n".join(lines)
