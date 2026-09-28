@@ -1,8 +1,8 @@
 # Topics roadmap.sh has that 90x does not
 
-**61 worth reading.** Of 1931 candidates, 799 are gaps 90x genuinely does not cover, and 61 of those scored 0.7 or higher for "a real SDE loop will go here". The other 738 are gaps the sorter itself rated unlikely to come up; they are below the line.
+**110 worth reading.** Of 1931 candidates, 1027 are gaps 90x genuinely does not cover, and 110 of those scored 0.7 or higher for "a real SDE loop will go here". The other 917 are gaps the sorter itself rated unlikely to come up; they are below the line.
 
-833 candidates were already covered under another name and 297 were headings rather than topics; 2 were the same topic listed twice.
+478 candidates were already covered under another name and 422 were headings rather than topics; 4 were the same topic listed twice.
 
 **Deleting a line is the whole review.** Anything you keep gets a lesson written for it, at roughly $0.04 each - and 90x is 274 curated topics, which is the thing worth protecting. The score is a suggestion, not a decision.
 
@@ -14,16 +14,21 @@
 - **Chain rule of derivation** (0.8) - Core calculus needed for backpropagation; often assessed.
 - **Derivatives, Partial Derivatives** (0.8) - Calculus foundations are frequently tested in ML engineering interviews.
 - **Matrix & Matrix Operations** (0.8) - Linear algebra fundamentals are central to ML interviews.
+- **Prompt Injection Attacks** (0.8) - Specific LLM security vulnerability commonly discussed in interviews. - already named in 2 lessons (ai-generative-ai-llms, ai-prompt-engineering)
 - **Bias and Fairness** (0.8) - Commonly asked in ML design and ethics discussions.
 - **Fine-Tuning vs Prompt Engg.** (0.8) - The tradeoff between fine-tuning and prompting is a common LLM interview question.
 - **Gradient, Jacobian, Hessian** (0.8) - Multivariate calculus is commonly tested for ML roles.
 - **Scalars, Vectors, Tensors** (0.8) - Basic linear algebra objects are foundational for ML.
 - **Conducting adversarial testing** (0.7) - Important for LLM safety evaluation.
+- **Linear Regression** (0.7) - Core supervised regression algorithm. - already named in 1 lesson (ai-bias-variance-tradeoff)
+- **Logistic Regression** (0.7) - Core classification algorithm. - already named in 2 lessons (ai-ranking, ai-supervised-learning)
+- **Prompt Injection** (0.7) - LLM security issue increasingly asked in AI engineer interviews. - already named in 2 lessons (ai-generative-ai-llms, ai-prompt-engineering)
 - **Singular Value Decomposition** (0.7) - Key linear algebra concept sometimes asked in ML theory interviews.
 
 ### behavioral
 
 - **Production issues management** (0.9) - Managing production issues is a core SDE behavioral topic.
+- **Code Review Best Practices** (0.8) - Code review questions are common in SDE interviews. - already named in 6 lessons (beh-company-and-motivation, beh-failure-and-learning and 4 more)
 - **Critical situation leadership** (0.8) - Interviewers often ask how you lead during a crisis.
 - **Stakeholder management** (0.8) - Directly tested via influence and expectation-management questions.
 - **Stress management** (0.8) - Handling stress is a frequent interview question.
@@ -37,55 +42,99 @@
 
 - **Breadth First Search** (1.0) - Core graph algorithm frequently asked in coding interviews.
 - **Depth First Search** (1.0) - Core graph algorithm frequently asked in coding interviews.
+- **Array** (0.9) - Fundamental data structure asked in most coding interviews. - already named in 44 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 42 more)
+- **Big O** (0.9) - Fundamental algorithm analysis topic asked in interviews. - already named in 1 lesson (ai-data-structures-and-algorithms)
+- **Binary Search Tree** (0.9) - Core data structure frequently asked in coding interviews. - already named in 4 lessons (ai-data-structures-and-algorithms, heap-priority-queue and 2 more)
+- **Binary Tree** (0.9) - Core data structure frequently asked in coding interviews. - already named in 3 lessons (heap-priority-queue, segment-tree-fenwick and 1 more)
+- **Directed Graph** (0.9) - Core graph variant frequently asked in coding interviews. - already named in 3 lessons (advanced-graphs, graphs and 1 more)
+- **Hash Table** (0.9) - Core data structure heavily used in interviews. - already named in 7 lessons (ai-python, arrays-hashing and 5 more)
+- **Heap** (0.9) - Core data structure heavily used in interviews. - already named in 30 lessons (advanced-graphs, ai-data-structures-and-algorithms and 28 more)
+- **Horizontal vs Vertical Scaling** (0.9) - Core system design interview topic. - already named in 2 lessons (sd-database-sharding, sd-horizontal-scaling)
 - **Merge Sort** (0.9) - Core sorting algorithm often asked in coding interviews.
 - **Prim's Algorithm** (0.9) - Core graph algorithm commonly asked for minimum spanning tree.
+- **Queue** (0.9) - Core data structure heavily used in interviews. - already named in 46 lessons (ai-data-structures-and-algorithms, beh-teamwork and 44 more)
 - **Quick Sort** (0.9) - Frequently asked sorting algorithm in coding interviews.
+- **Transactions** (0.9) - Transactions are core to SQL interviews, covering isolation, atomicity, and concurrency. - already named in 24 lessons (ai-sql, cs-acid-properties and 22 more)
+- **Undirected Graph** (0.9) - Core graph variant frequently asked in coding interviews. - already named in 2 lessons (advanced-graphs, graphs)
 - **Full Binary Tree** (0.8) - Specific tree type occasionally asked in coding interviews.
+- **Adjacency List** (0.8) - Graph representation fundamental to graph algorithm questions. - already named in 1 lesson (graphs)
+- **Adjacency Matrix** (0.8) - Graph representation fundamental to graph algorithms. - already named in 2 lessons (advanced-graphs, graphs)
+- **Asymptotic Notation** (0.8) - Interviewers often ask to explain asymptotic notation. - already named in 3 lessons (ai-transformer-llm-internals, java-arraylist-vs-linkedlist and 1 more)
 - **GoF Design Patterns** (0.8) - Design patterns are common in object-oriented design interviews.
 - **Knapsack Problem** (0.8) - Frequent dynamic programming interview problem.
 - **Knuth-Morris Pratt** (0.8) - Classic string matching algorithm often tested in coding interviews.
+- **Load Balancer** (0.8) - Load balancing is a common system design interview topic. - already named in 13 lessons (ai-ml-system-design, sd-api-gateway and 11 more)
 - **Pre-Order Traversal** (0.8) - Common tree traversal used in coding interviews.
+- **REST** (0.8) - REST API design is a staple of backend interviews. - already named in 13 lessons (beh-dealing-with-ambiguity, cs-http-https and 11 more)
+- **SQL vs NoSQL Databases** (0.8) - Common architecture interview question comparing relational and non-relational tradeoffs. - already named in 1 lesson (sd-sql-vs-nosql)
+- **Sharding** (0.8) - Database sharding is frequently discussed in scaling interviews. - already named in 12 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 10 more)
 - **String Search & Manipulations** (0.8) - String algorithms and manipulations are common in coding interviews.
+- **Substring Search** (0.8) - String matching is a frequent interview coding problem. - already named in 1 lesson (string)
 - **TCP/IP Stack** (0.8) - Layered networking model distinct from OSI, often asked.
 - **Balanced Search Trees** (0.8) - Balanced search trees are a standard data structures interview topic.
 - **AVL Trees** (0.7) - Common data structure interview topic.
+- **BASE** (0.7) - NoSQL consistency model frequently asked. - already named in 38 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 36 more)
 - **Big-Theta** (0.7) - Asymptotic notation is fundamental for algorithm analysis.
+- **Bitwise Operators** (0.7) - Bitwise operations are common in coding interviews, especially for low-level roles. - already named in 1 lesson (bit-manipulation)
 - **Heap Sort** (0.7) - Fundamental sorting algorithm.
+- **Huffman Coding** (0.7) - Greedy compression algorithm commonly asked in coding interviews. - already named in 1 lesson (greedy)
 - **Insertion Sort** (0.7) - Fundamental sorting algorithm.
 - **Post Order Traversal** (0.7) - Common tree traversal question.
 - **Robin-Karp** (0.7) - String matching algorithm occasionally asked in coding interviews.
 - **Search Pattern in Text** (0.7) - String matching algorithms are commonly asked in coding interviews.
 - **Selection Sort** (0.7) - Fundamental sorting algorithm.
 - **Soft Links / Hard Links** (0.7) - Commonly asked filesystem concept about inodes and links.
+- **Spanning Tree** (0.7) - Graph concept occasionally asked in algorithm interviews. - already named in 2 lessons (advanced-graphs, greedy)
 
 ### dsa
 
+- **Array** (0.9) - Fundamental data structure asked in most coding interviews. - already named in 44 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 42 more)
+- **Big-O Notation** (0.9) - Big-O is the most common complexity notation asked in interviews. - already named in 1 lesson (ai-data-structures-and-algorithms)
+- **Directed Graph** (0.9) - Core graph variant frequently asked in coding interviews. - already named in 3 lessons (advanced-graphs, graphs and 1 more)
+- **Heap** (0.9) - Core data structure heavily used in interviews. - already named in 30 lessons (advanced-graphs, ai-data-structures-and-algorithms and 28 more)
 - **Time vs Space Complexity** (0.9) - Core interview topic not covered by any existing lesson.
+- **Undirected Graph** (0.9) - Core graph variant frequently asked in coding interviews. - already named in 2 lessons (advanced-graphs, graphs)
 - **Algorithmic Complexity** (0.8) - Time and space complexity analysis is directly tested in SDE interviews.
+- **Asymptotic Notation** (0.8) - Interviewers often ask to explain asymptotic notation. - already named in 3 lessons (ai-transformer-llm-internals, java-arraylist-vs-linkedlist and 1 more)
+- **Indexing** (0.8) - Indexing strategy is directly asked in database and data structure discussions. - already named in 12 lessons (2-d-dynamic-programming, ai-rag-and-production-systems and 10 more)
 - **Merge Sort** (0.8) - Commonly asked sorting algorithm; not covered by existing topics.
 - **Quick Sort** (0.8) - Commonly asked sorting algorithm.
+- **Recursion** (0.8) - Fundamental technique used across trees, DP, and backtracking lessons. - already named in 11 lessons (ai-data-structures-and-algorithms, backtracking and 9 more)
+- **Queues** (0.7) - Queue operations and use cases are commonly tested in DSA interviews. - already named in 19 lessons (ai-data-structures-and-algorithms, cs-cpu-scheduling and 17 more)
 
 ### java
 
 - **Pass by Value / Pass by Reference** (0.9) - Common interview question about Java's parameter passing semantics.
+- **Queue** (0.9) - Core data structure heavily used in interviews. - already named in 46 lessons (ai-data-structures-and-algorithms, beh-teamwork and 44 more)
+- **Transactions** (0.9) - Transactions are core to SQL interviews, covering isolation, atomicity, and concurrency. - already named in 24 lessons (ai-sql, cs-acid-properties and 22 more)
 - **Spring IOC** (0.8) - Inversion of Control is fundamental to Spring.
+- **Array vs ArrayList** (0.8) - Frequently asked to compare arrays and collections. - already named in 6 lessons (java-arraylist-vs-linkedlist, java-fail-fast-vs-fail-safe-iterators and 4 more)
 - **Spring MVC** (0.8) - MVC framework is central to Java web interviews.
 - **Virtual Threads** (0.8) - Modern concurrency feature increasingly asked in Java interviews.
+- **Arrays** (0.7) - Core data structure, common in coding interviews. - already named in 18 lessons (ai-data-structures-and-algorithms, ai-python and 16 more)
+- **Authorization** (0.7) - Authentication vs authorization is a common security question. - already named in 7 lessons (cs-http-https, lld-atm-system-design and 5 more)
 - **JWT Authentication** (0.7) - JWT is a widely used token mechanism.
 - **OAuth2** (0.7) - OAuth2 flows are common in API security discussions.
 - **Spring AOP** (0.7) - Aspect-oriented programming is a common Spring topic.
 
 ### lld
 
+- **Composition over Inheritance** (0.8) - Commonly discussed OOP design principle. - already named in 5 lessons (java-inheritance-vs-composition, lld-composition and 3 more)
 - **Repositories** (0.7) - Repository pattern is common in LLD for data access.
 
 ### sql
 
+- **ACID** (0.9) - ACID properties are fundamental and frequently asked in SQL interviews. - already named in 7 lessons (cs-acid-properties, sd-acid-vs-base and 5 more)
+- **Transactions** (0.9) - Transactions are core to SQL interviews, covering isolation, atomicity, and concurrency. - already named in 24 lessons (ai-sql, cs-acid-properties and 22 more)
 - **Schema Design Patterns / Anti-patterns** (0.8) - Schema design and normalization are commonly asked in database design interviews.
+- **SQL vs NoSQL Databases** (0.8) - Common architecture interview question comparing relational and non-relational tradeoffs. - already named in 1 lesson (sd-sql-vs-nosql)
+- **MVCC** (0.7) - Database internals question about concurrency and transaction isolation. - already named in 4 lessons (cs-locking-mechanisms, cs-transaction-isolation-levels and 2 more)
 - **Sharding Patterns** (0.7) - Sharding is a common scalability topic in system design interviews.
 
 ### system_design
 
+- **REST** (0.8) - REST API design is a staple of backend interviews. - already named in 13 lessons (beh-dealing-with-ambiguity, cs-http-https and 11 more)
+- **Sharding** (0.8) - Database sharding is frequently discussed in scaling interviews. - already named in 12 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 10 more)
 - **Webhooks vs Polling** (0.8) - Common integration pattern asked when discussing real-time updates.
 - **Error Handling / Retries** (0.7) - Critical reliability topic in distributed systems.
 - **HTTP Versions** (0.7) - Differences between HTTP/1.1, HTTP/2, and HTTP/3 are sometimes asked for performance.
@@ -95,13 +144,15 @@
 
 ---
 
-## Below the line (738)
+## Below the line (917)
 
 The sorter called each of these a real gap and then rated an interview unlikely to reach it - mostly tooling and operations engineers use without being asked to explain. Here in case it was wrong about one.
 
 ### ai
 
 - **Sampling Parameters** (0.7) - LLM sampling parameters like temperature and top-p are frequently discussed in interviews.
+- **Context Engineering** (0.6) - Emerging applied LLM topic that interviewers increasingly ask about. - already named in 1 lesson (ai-prompt-engineering)
+- **Context vs Prompt Eng.** (0.6) - Comparison between context engineering and prompting is increasingly relevant.
 - **Determinants, inverse of Matrix** (0.6) - Linear algebra fundamentals are commonly tested in AI/ML interviews.
 - **Eigenvalues, Diagonalization** (0.6) - Core linear algebra concepts often asked in AI/ML fundamentals rounds.
 - **Image Generation** (0.6) - Specific generative CV topic not covered by LLM-focused generative AI.
@@ -111,18 +162,22 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Image Segmentation** (0.5) - Specific CV task not explicitly covered by CNN topics.
 - **K-Nearest Neighbors (KNN)** (0.5) - Instance-based classification/regression algorithm.
 - **Prompt Tuning** (0.5) - Parameter-efficient adaptation technique sometimes asked in advanced LLM roles.
+- **Reinforcement Learning** (0.5) - Training agents via rewards; separate ML area not covered. - already named in 1 lesson (ai-machine-learning-fundamentals)
 - **Self-supervised Learning** (0.5) - Pretraining technique crucial for transformers and LLMs.
+- **Semantic Search** (0.5) - Similarity search over embeddings for retrieval. - already named in 1 lesson (ai-embedding-models)
 - **Structured Outputs** (0.5) - Constraining LLM outputs to schemas is a common practical AI interview topic.
 - **Support Vector Machines** (0.5) - Maximum-margin classifier.
 - **Video Understanding** (0.5) - Specific multimodal task not covered.
 - **Context Evaluation** (0.5) - Evaluating retrieved context is a specific RAG concern that may come up in AI engineer interviews.
 - **Autoencoders** (0.4) - Specific deep learning architecture, occasionally asked.
+- **Clustering** (0.4) - Database clustering is a real architecture topic for scaling interviews. - already named in 7 lessons (ai-machine-learning-fundamentals, ai-supervised-learning and 5 more)
 - **Context Security** (0.4) - Security around RAG/context systems is relevant but not a common SDE interview topic.
 - **Generative Adversarial Networks** (0.4) - Specific generative model often asked in ML interviews and absent here.
 - **Input Format** (0.4) - Formatting LLM inputs is practical but often covered briefly in prompt engineering.
 - **Max Tokens** (0.4) - Basic LLM API parameter that may be asked in practical LLM rounds.
 - **Polynomial Regression** (0.4) - Nonlinear regression via polynomial features.
 - **Repetition Penalties** (0.4) - This specific LLM parameter occasionally comes up in applied LLM interviews.
+- **SHAP** (0.4) - Uses Shapley values to explain model outputs; commonly asked in ML interviews. - already named in 10 lessons (ai-bias-variance-tradeoff, ai-convolutional-neural-networks and 8 more)
 - **Experiment Tracking** (0.3) - MLOps tooling is occasionally discussed but rarely a deep interview focus.
 - **MCP** (0.3) - Model Context Protocol is an emerging integration standard occasionally asked in AI engineering interviews.
 - **Stop Sequences** (0.3) - LLM API parameter with modest direct interview relevance.
@@ -130,6 +185,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Actor-Critic Methods** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
 - **Audio Processing** (0.3) - Specialized modality, rarely asked in general SDE interviews.
 - **Deep-Q Networks** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
+- **Kubernetes** (0.3) - Container orchestration relevant to infra but secondary in interviews. - already named in 2 lessons (ai-rag-and-production-systems, sd-horizontal-scaling)
 - **Policy Gradient** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
 - **Q-Learning** (0.3) - Reinforcement learning algorithm, occasionally asked in ML roles.
 - **Self-Hosted Models** (0.3) - Covers deploying open-source LLMs on own infrastructure.
@@ -147,6 +203,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Bash** (0.2) - Command-line skill; occasionally checked but rarely a deep interview topic.
 - **CML** (0.2) - Continuous ML tooling has low direct interview relevance.
 - **Content Moderation APIs** (0.2) - API usage, low interview relevance.
+- **Data Formats** (0.2) - Data serialization formats are practical but not usually an interview topic. - already named in 1 lesson (lld-adapter-pattern)
 - **Data Lakes & Warehouses** (0.2) - Data storage architecture is occasionally discussed in ML system design.
 - **Data Lineage** (0.2) - Data lineage is important in production ML but rarely asked in SDE interviews.
 - **DeepEval** (0.2) - LLM evaluation tool, low interview relevance.
@@ -160,15 +217,19 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Go** (0.2) - General-purpose language; relevance depends on the role.
 - **Helicone** (0.2) - LLM observability tool, low interview relevance.
 - **Jenkins** (0.2) - CI/CD tools are not a common interview focus for AI/ML roles.
+- **Kafka** (0.2) - Streaming platform sometimes relevant for ML systems. - already named in 4 lessons (lld-pub-sub-system-design, sd-design-a-notification-system and 2 more)
 - **LLM Observability** (0.2) - LLM monitoring and tracing is production tooling, not a core SDE interview topic.
 - **LangSmith** (0.2) - LLM observability tool, low interview relevance.
 - **Langchain** (0.2) - Tooling detail rarely asked to explain.
 - **Langfuse** (0.2) - LLM observability tool, low interview relevance.
 - **Lemmatization** (0.2) - Basic NLP preprocessing, low interview focus.
 - **Model Context Protocol (MCP)** (0.2) - Emerging agent tooling protocol; rarely a deep SDE interview topic.
+- **Numpy** (0.2) - Python library for numerical computing; usually not an interview topic outside data-specific roles. - already named in 1 lesson (ai-python)
 - **OpenAI Response API** (0.2) - Vendor API for structured model responses.
 - **OpenAI-compatible APIs** (0.2) - Integration tooling, not a core interview concept.
 - **Presence Penalty** (0.2) - LLM API parameter rarely asked directly in SDE interviews.
+- **PyTorch** (0.2) - Widely used framework but rarely a direct interview topic beyond basic familiarity. - already named in 4 lessons (ai-neural-network-design, ai-python and 2 more)
+- **RAGAS** (0.2) - RAG evaluation tool, low interview relevance. - already named in 1 lesson (ai-generative-model-evaluation)
 - **Spark** (0.2) - Big data processing tool sometimes relevant for ML pipelines.
 - **Stemming** (0.2) - Basic NLP preprocessing, low interview focus.
 - **Version Control Systems** (0.2) - Git basics are expected but rarely a deep interview topic.
@@ -186,16 +247,20 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Using SDKs Directly** (0.1) - Implementation choice, not a conceptual topic.
 - **Airflow** (0.1) - Workflow orchestration tool rarely asked in SDE loops.
 - **Ansible** (0.1) - Configuration management tooling rarely asked to explain in SDE interviews.
+- **Atlan** (0.1) - Data governance/catalog tool; operational.
 - **Building an MCP Client** (0.1) - Tooling-specific, rarely asked in interviews.
 - **Building an MCP Server** (0.1) - Tooling-specific, rarely asked in interviews.
 - **Chroma** (0.1) - Specific vector database tool.
 - **Claude Agent SDK** (0.1) - Vendor-specific tooling.
 - **Claude Messages API** (0.1) - Anthropic API for conversational models.
+- **Cohere** (0.1) - Vendor-specific API; not a generalizable interview topic.
+- **Conditionals** (0.1) - Control flow is too basic for most SDE interviews. - already named in 2 lessons (lld-uml-sequence-diagram, string)
 - **Flink** (0.1) - Stream processing tool rarely asked.
 - **Gemini** (0.1) - Specific LLM product; interviews typically test general LLM understanding, not a particular model's details.
 - **Gemini Embedding** (0.1) - Vendor-specific embedding model/API.
 - **Google ADK** (0.1) - Vendor-specific tooling.
 - **Google Gemini APi** (0.1) - Provider-specific LLM API, rarely a direct interview topic.
+- **Grafana** (0.1) - Monitoring tool rarely asked about directly in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **Haystack** (0.1) - Specific framework, low interview relevance.
 - **Hugging Face Hub** (0.1) - Model/dataset sharing platform; tool-specific.
 - **Hugging Face Inference SDK** (0.1) - Specific tooling, rarely asked to explain in depth.
@@ -206,13 +271,16 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **KubeFlow** (0.1) - MLOps platform tool rarely asked.
 - **LM Studio** (0.1) - Tool for running local LLMs; rarely asked in SDE interviews.
 - **LanceDB** (0.1) - Specific vector database tool.
+- **Loops** (0.1) - Loop constructs are rarely asked directly. - already named in 22 lessons (ai-agents-and-agentic-systems, ai-recommendation-systems and 20 more)
 - **MLFlow** (0.1) - Specific MLOps tool rarely explained in SDE interviews.
 - **Models on Hugging Face** (0.1) - Platform-specific repository, not an interview topic.
 - **MongoDB Atlas** (0.1) - Managed database service, not an interview theory topic.
 - **Open AI Embeddings API** (0.1) - Specific vendor API, low interview relevance.
+- **OpenAI** (0.1) - Vendor-specific API; not a general interview topic. - already named in 1 lesson (design)
 - **OpenAI AgentKit & Agent SDK** (0.1) - Vendor-specific agent tooling.
 - **OpenRouter** (0.1) - LLM API routing tooling; not a core SDE interview topic.
 - **Pinecone** (0.1) - Specific vector database tool.
+- **Prometheus** (0.1) - Monitoring tool rarely asked about in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **PyTorch Mobile** (0.1) - Edge deployment with PyTorch; rarely asked in SDE interviews.
 - **Qdrant** (0.1) - Specific vector database tool.
 - **RAGFlow** (0.1) - Specific tool, low interview relevance.
@@ -240,10 +308,13 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **LlamaIndex for Multimodal Apps** (0.0) - Specific framework feature with low conceptual interview relevance, similar to LangChain.
 - **NanoBanana API** (0.0) - Niche image generation model/API, not a common interview topic.
 - **Replit** (0.0) - Online IDE with AI features is tooling with little interview relevance.
+- **Cursor** (0.0) - AI-powered IDE is a productivity tool, not typically discussed as an interview topic. - already named in 4 lessons (java-jdbc, sd-monitoring-and-observability and 2 more)
+- **Excel** (0.0) - Not an interview topic for SDE roles.
 
 ### behavioral
 
 - **Bias Recognition / Mitigation** (0.6) - Increasingly asked about bias in decisions and interactions.
+- **Company Culture** (0.6) - Common behavioral question about culture fit and values. - already named in 1 lesson (beh-questions-to-ask-the-interviewer)
 - **Cross-department collaboration** (0.6) - Common behavioral question about working with other teams.
 - **Emotional Intelligence** (0.6) - EQ underpins many behavioral answers but may be asked directly.
 - **Feedback Delivery** (0.6) - Giving feedback is a common behavioral scenario.
@@ -252,12 +323,15 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Process changes** (0.6) - Process improvement is a frequent behavioral topic.
 - **Resistance management** (0.6) - Handling pushback is a common behavioral probe.
 - **Risk Management** (0.6) - Asked about identifying and mitigating risks.
+- **Testing Strategies** (0.6) - Common interview question about testing approaches and trade-offs. - already named in 78 lessons (ai-a-b-testing, ai-ensemble-methods and 76 more)
 - **War Room Management** (0.6) - Incident response is a common behavioral topic.
 - **Architectural Decision-Making** (0.5) - Design interviews implicitly evaluate architectural decisions.
 - **Blameless Post-mortems** (0.5) - Asked about blameless culture and incident reviews.
 - **Burnout prevention** (0.5) - Asked about managing stress and preventing burnout.
+- **Change management** (0.5) - Asked about adapting to or driving change. - already named in 1 lesson (beh-leadership)
 - **Communication planning** (0.5) - Communication strategy during change is sometimes evaluated.
 - **Contingency planning** (0.5) - Similar to risk management, asked about backup plans.
+- **Delegation** (0.5) - Senior SDE interviews may ask how you delegate tasks. - already named in 6 lessons (cs-dns, java-jvm-architecture and 4 more)
 - **Inclusive environment creation** (0.5) - Increasingly asked about inclusion and diversity.
 - **Knowledge sharing practices** (0.5) - Asked about promoting knowledge sharing.
 - **Mentoring and Coaching** (0.5) - Mentoring junior engineers is a common behavioral topic.
@@ -277,6 +351,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Learning culture development** (0.4) - Asked about fostering learning in team.
 - **Politics navigation** (0.4) - Sometimes asked about navigating organizational politics.
 - **Project Tracking** (0.4) - Asked about how you track project progress and status.
+- **Resource Allocation** (0.4) - Allocating resources can come up in prioritization or project management questions. - already named in 1 lesson (cs-deadlocks)
 - **Role transitions** (0.4) - Occasionally asked about adapting to new roles.
 - **Team Motivation** (0.4) - Motivating peers or junior engineers can come up in senior interviews.
 - **Team mergers** (0.4) - Less common but possible scenario for teamwork and change questions.
@@ -294,6 +369,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Technical Documentation** (0.3) - Documentation practices are sometimes asked about in teamwork questions.
 - **Technical Risk Assessment** (0.3) - Risk trade-offs come up in system design discussions.
 - **Work-life balance during crises** (0.3) - Occasionally asked about maintaining balance.
+- **API strategy** (0.2) - Strategic API decisions may arise but are uncommon. - already named in 56 lessons (ai-data-collection-and-preparation, ai-deep-learning and 54 more)
 - **Career Development Planning** (0.2) - Career planning questions are more relevant for managers.
 - **Cost Optimization** (0.2) - Occasionally asked about cost consciousness.
 - **Development / Release Workflow** (0.2) - Release process questions occasionally arise but are not deep.
@@ -302,6 +378,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Legacy System Retirement** (0.2) - Occasionally discussed in architecture or maintenance contexts.
 - **Recognition programs** (0.2) - Low relevance; specific management practice.
 - **Social connections** (0.2) - Low relevance; team building specifics.
+- **Sprint Planning** (0.2) - Rarely asked directly in SDE behavioral interviews. - already named in 1 lesson (beh-prioritization)
 - **System Monitoring & Performance** (0.2) - Operational topic sometimes touched in system design or incident discussions.
 - **Team Structure and Design** (0.2) - Team design questions are rare outside EM interviews.
 - **Team Traditions and Rituals** (0.2) - Low relevance; specific cultural practice.
@@ -329,13 +406,21 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 
 ### cs
 
+- **Balanced Tree** (0.6) - Balanced vs unbalanced trees affect data structure performance; often asked. - already named in 5 lessons (arrays-hashing, design and 3 more)
 - **Big Omega** (0.6) - Asymptotic lower bound notation used in algorithm analysis.
 - **Boyer-Moore** (0.6) - String matching algorithm sometimes asked in coding interviews.
 - **CPU Interrupts** (0.6) - Interrupt handling is a core OS concept often probed in systems interviews.
 - **Caching Server** (0.6) - Caching servers like Redis are common in system design interviews.
+- **Complexity Classes** (0.6) - Complexity classes like P and NP come up in algorithm-focused interviews. - already named in 1 lesson (java-arraylist-vs-linkedlist)
+- **Dependency Injection** (0.6) - Design pattern frequently discussed in OOP and system design interviews. - already named in 7 lessons (lld-abstract-factory-pattern, lld-abstraction and 5 more)
+- **Exponential** (0.6) - Exponential complexity is central to NP-hardness and algorithm limits. - already named in 7 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 5 more)
+- **GraphQL** (0.6) - GraphQL is occasionally discussed as an API alternative in design interviews. - already named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
 - **Hashing / Encryption / Encoding** (0.6) - The differences between these are commonly asked in security interviews.
 - **Killing Processes** (0.6) - Process control via signals, common in Linux interviews.
+- **Polynomial** (0.6) - Polynomial complexity class central to P vs NP discussions. - already named in 4 lessons (ai-bias-variance-tradeoff, ai-data-structures-and-algorithms and 2 more)
 - **Process Signals** (0.6) - Core OS concept, often asked in systems interviews.
+- **Reverse Proxy** (0.6) - Common system design interview topic. - already named in 1 lesson (sd-api-gateway)
+- **Service Mesh** (0.6) - Service-to-service communication infrastructure often asked with microservices. - already named in 1 lesson (sd-service-discovery)
 - **Web Sockets** (0.6) - WebSockets are commonly asked for real-time communication.
 - **Brute Force Search** (0.6) - Common approach to solving algorithm problems.
 - **Ford-Fulkerson Algorithm** (0.6) - Max-flow algorithm sometimes asked in algorithm interviews.
@@ -344,19 +429,25 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Background / Foreground Processes** (0.5) - Common shell/process control concept.
 - **Bellman Ford's Algorithm** (0.5) - Graph shortest path algorithm occasionally asked.
 - **Character Encodings** (0.5) - Character encodings like Unicode and UTF-8 are sometimes discussed in backend interviews.
+- **Complete Binary Tree** (0.5) - A specific tree type that may be asked to define or use in heap discussions. - already named in 1 lesson (heap-priority-queue)
 - **Concurrency in Multiple Cores** (0.5) - Multicore concurrency is a relevant advanced OS topic.
 - **Containerization** (0.5) - Containerization concepts are increasingly discussed in backend and DevOps-oriented interviews.
 - **Entity-Relationship Model** (0.5) - ER modeling asked in database design discussions.
 - **Finding Hamiltonian Paths** (0.5) - Backtracking graph problem occasionally asked in interviews.
+- **Firewall** (0.5) - Network security component often discussed in system design. - already named in 2 lessons (cs-osi-model, sd-websockets)
 - **Floating Point Math** (0.5) - Floating point representation and rounding are asked in systems and trading interviews.
 - **Forward Proxy** (0.5) - Common system design interview topic.
 - **Git** (0.5) - Version control basics sometimes discussed in interviews.
 - **Hashing Algorithms** (0.5) - Specific hashing algorithms are sometimes asked for data integrity and security.
 - **How CPU Executes Programs** (0.5) - CPU execution cycle is a fundamental CS topic sometimes asked.
 - **IP Routing** (0.5) - Core networking concept sometimes asked.
+- **Linear** (0.5) - Linear time complexity is a core algorithm analysis concept. - already named in 21 lessons (1-d-dynamic-programming, advanced-graphs and 19 more)
 - **Listing / Finding Processes** (0.5) - Process management commands often part of Linux interviews.
+- **Long Polling** (0.5) - Long polling is a common technique for real-time updates. - already named in 3 lessons (sd-message-queues, sd-publish-subscribe and 1 more)
 - **Maze Solving Problem** (0.5) - Backtracking/search problem occasionally used in interviews.
+- **PACELC** (0.5) - Extension of CAP often asked in distributed systems discussions. - already named in 2 lessons (sd-cap-theorem, sd-sql-vs-nosql)
 - **Process Forking** (0.5) - OS concept occasionally asked in systems interviews.
+- **Proxy** (0.5) - Proxy servers are a practical networking and system design topic. - already named in 14 lessons (ai-generative-model-evaluation, ai-metrics-offline-and-online and 12 more)
 - **Public Key Cryptography** (0.5) - Public key cryptography is a core security concept often explored.
 - **Red / Black Trees** (0.5) - Commonly asked advanced tree structure in data structure interviews.
 - **SOPs** (0.5) - Same-Origin Policy is a web security fundamental often asked in front-end/security interviews.
@@ -368,7 +459,10 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **A* Algorithm** (0.4) - Pathfinding algorithm occasionally asked.
 - **Bubble Sort** (0.4) - Basic sorting algorithm, occasionally asked.
 - **Canary Deployments** (0.4) - Deployment strategy sometimes discussed in system design and DevOps interviews.
+- **Clustering** (0.4) - Database clustering is a real architecture topic for scaling interviews. - already named in 7 lessons (ai-machine-learning-fundamentals, ai-supervised-learning and 5 more)
 - **Container Orchestration** (0.4) - Container orchestration concepts appear in system design and DevOps-related discussions.
+- **DDL** (0.4) - SQL command categories are common knowledge checks. - already named in 3 lessons (java-jdbc, sql-ddl-dml-dcl-tcl and 1 more)
+- **DML** (0.4) - SQL command categories are common knowledge checks. - already named in 5 lessons (ai-sql, java-jdbc and 3 more)
 - **Docker and OCI** (0.4) - Containerization basics are increasingly asked in backend interviews.
 - **FTP / SFTP** (0.4) - Legacy but sometimes asked for file transfer protocols.
 - **File Permissions** (0.4) - Unix file permissions can be relevant for debugging and system questions.
@@ -377,6 +471,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **OWASP Top 10** (0.4) - OWASP Top 10 is a standard security checklist sometimes referenced.
 - **Registers and RAM** (0.4) - Memory hierarchy basics are sometimes covered in hardware/OS interviews.
 - **Rolling Updates / Rollbacks** (0.4) - Deployment strategy occasionally discussed in system design interviews.
+- **SSE** (0.4) - Server-Sent Events are a less common but relevant real-time topic. - already named in 3 lessons (sd-monitoring-and-observability, sd-publish-subscribe and 1 more)
 - **Short Polling** (0.4) - Short polling is a basic polling technique sometimes compared.
 - **Skip Lists** (0.4) - Skip lists are an alternative data structure sometimes asked.
 - **Uptime and Load** (0.4) - System performance metrics, sometimes asked to explain load average.
@@ -387,25 +482,34 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **What are Containers?** (0.3) - Containerization concept sometimes discussed in infra-aware loops.
 - **2 3 4 Trees** (0.3) - Specific balanced tree structure occasionally asked in advanced DS interviews.
 - **2 3 Search Trees** (0.3) - Specific balanced tree structure occasionally asked in advanced DS interviews.
+- **Apache** (0.3) - Common web server, sometimes asked in web infrastructure contexts. - already named in 2 lessons (sd-consistent-hashing, sd-message-queues)
 - **Autoscaling** (0.3) - System design topic, sometimes discussed.
 - **Basics of Docker** (0.3) - Basic container concepts occasionally probed, but mostly operational.
 - **Big Endian** (0.3) - Byte order concept sometimes asked in systems interviews.
+- **Class Diagrams** (0.3) - UML class diagrams occasionally used in design discussions. - already named in 5 lessons (lld-aggregation, lld-composition and 3 more)
 - **Co-NP** (0.3) - Complexity class occasionally comes up in theory-focused interviews.
 - **Container Security** (0.3) - Container-specific security is operational and only occasionally comes up in SDE interviews.
 - **Container and Pod Security** (0.3) - Security practices for containers/pods, relevant to DevOps but less common in core SDE interviews.
+- **DCL** (0.3) - SQL control language category occasionally asked. - already named in 1 lesson (sql-ddl-dml-dcl-tcl)
+- **DQL** (0.3) - SQL query language category occasionally asked. - already named in 1 lesson (sql-ddl-dml-dcl-tcl)
 - **Deploying Containers** (0.3) - Deploying containers is an operational skill that may be touched on in DevOps-focused roles.
 - **Dockerfiles** (0.3) - Dockerfile instructions; common in DevOps but not core SDE.
 - **Horizontal Pod Autoscaler (HPA)** (0.3) - Kubernetes autoscaling, relevant for K8s-heavy roles.
+- **Inodes** (0.3) - Unix file system concept, sometimes asked. - already named in 1 lesson (cs-file-systems)
 - **K-ary / M-ary Tree** (0.3) - Tree variant sometimes asked in data structure discussions.
+- **Kubernetes** (0.3) - Container orchestration relevant to infra but secondary in interviews. - already named in 2 lessons (ai-rag-and-production-systems, sd-horizontal-scaling)
 - **Little Endian** (0.3) - Byte order concept sometimes asked in systems interviews.
+- **Namespaces** (0.3) - Linux namespaces underpin containers and may be asked in systems interviews. - already named in 1 lesson (java-jvm-architecture)
 - **Nginx** (0.3) - Common reverse proxy/web server, sometimes asked about configuration.
 - **P = NP** (0.3) - Famous open problem sometimes asked as general CS knowledge.
 - **Process Priorities** (0.3) - OS scheduling concept, sometimes asked.
 - **Role Based Access Control (RBAC)** (0.3) - Authorization concept relevant to system design.
+- **Small O** (0.3) - Little-o notation less common but part of asymptotic analysis.
 - **Small Omega** (0.3) - Asymptotic notation is relevant, but small omega is less commonly asked than Big O.
 - **Taints and Tolerations** (0.3) - Kubernetes scheduling concept, niche outside k8s.
 - **Topology Spread Constraints** (0.3) - Kubernetes scheduling feature, niche.
 - **Vertical Pod Autoscaler (VPA)** (0.3) - Kubernetes autoscaling, niche.
+- **Volumes** (0.3) - Storage concept in containers/Kubernetes, moderate interview relevance. - already named in 3 lessons (cs-file-systems, cs-http-https and 1 more)
 - **Bare Metal vs VMs vs Containers** (0.2) - Infrastructure comparison relevant to some system design discussions.
 - **Image Security** (0.2) - Container image security practices; DevOps-focused.
 - **Secret Management** (0.2) - Secret management is operational and only occasionally raised in security-focused interviews.
@@ -425,9 +529,11 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **CSI Drivers** (0.2) - Kubernetes storage plugin concept, niche in interviews.
 - **Container Runtime** (0.2) - Container internals occasionally asked in DevOps-oriented backend roles.
 - **Continuous Integration** (0.2) - CI concepts occasionally discussed.
+- **Deployments** (0.2) - Kubernetes deployment objects may be asked in backend interviews. - already named in 4 lessons (ai-rag-and-production-systems, ai-scaling-monitoring-and-updates and 2 more)
 - **Docker** (0.2) - Containerization tooling occasionally referenced but not deeply tested.
 - **Efficient Layer Caching** (0.2) - Docker layer caching best practice; tooling-specific.
 - **Environment Variables** (0.2) - Configuration via env vars is common and sometimes discussed.
+- **Envoy** (0.2) - Proxy technology occasionally mentioned in system design. - already named in 2 lessons (sd-grpc, sd-layer-4-vs-layer-7-load-balancing)
 - **Ephemeral Container Filesystem** (0.2) - Container storage concept rarely asked in SDE interviews.
 - **External Access to Services** (0.2) - Container networking topic rarely central to SDE loops.
 - **Factorial** (0.2) - Simple recursion example, rarely asked as a standalone topic.
@@ -441,6 +547,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **K-D Trees** (0.2) - Specialized data structure rarely asked outside specific domains.
 - **Longest Path Problem** (0.2) - NP-hard problem rarely asked in coding interviews.
 - **Managing Permissions** (0.2) - Linux permissions, occasionally asked.
+- **Metrics** (0.2) - Observability concept; occasionally relevant in system design but not deep. - already named in 24 lessons (ai-a-b-testing, ai-candidate-generation and 22 more)
 - **NP** (0.2) - Complexity class concept occasionally tested in theoretical CS interviews.
 - **Networking & Pod-to-Pod Communication** (0.2) - Kubernetes networking topic rarely central to SDE loops.
 - **Null Object Pattern** (0.2) - Less common design pattern occasionally discussed in OOP interviews.
@@ -450,11 +557,14 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Package Repositories** (0.2) - Package management concept occasionally relevant to developer tooling.
 - **Pods** (0.2) - Kubernetes basics may come up in backend roles but not core SDE.
 - **Running Containers** (0.2) - Operational Docker task, occasionally referenced.
+- **SMTP** (0.2) - Email protocol, rarely asked. - already named in 2 lessons (cs-osi-model, sd-design-a-notification-system)
 - **Setting Resource Requests and Limits** (0.2) - Kubernetes resource management; tooling-specific and rarely asked in SDE interviews.
 - **Shell Scripting** (0.2) - Scripting ability is useful but not a common interview deep-dive.
 - **Super User** (0.2) - Linux root/sudo concept; occasionally relevant for troubleshooting.
 - **Tomcat** (0.2) - Java application server, relevant only for specific stacks.
+- **Traces** (0.2) - Distributed tracing concept; relevant to observability but less common in SDE interviews. - already named in 4 lessons (ai-prediction-service, java-exceptions and 2 more)
 - **Type Object Pattern** (0.2) - Niche design pattern occasionally discussed in OOP interviews.
+- **Unicode** (0.2) - Character encoding fundamentals sometimes asked. - already named in 5 lessons (java-strings, sql-data-types and 3 more)
 - **Union Filesystems** (0.2) - Container storage concept relevant to Docker internals.
 - **Users and Groups** (0.2) - Linux user management, occasionally asked.
 - **Volume Mounts** (0.2) - Docker storage topic rarely central to SDE interviews.
@@ -472,6 +582,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **stdout / stdin / stderr** (0.1) - Standard streams are basic but may be probed in OS/systems questions.
 - **ulimits** (0.1) - Linux resource limit concept occasionally asked in backend/OS interviews.
 - **Netfilter** (0.1) - Linux firewall framework occasionally asked in systems interviews.
+- **ASCII** (0.1) - Basic encoding, usually covered alongside Unicode but rarely standalone. - already named in 1 lesson (string)
 - **Adding Disks** (0.1) - Disk management task rarely asked in SDE interviews.
 - **Adding and Managing Worker Nodes** (0.1) - Cluster administration task rarely asked in SDE interviews.
 - **Archiving and Compressing** (0.1) - tar/gzip usage; tooling rarely asked.
@@ -482,8 +593,11 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Cloud Smith** (0.1) - Artifact repository tool rarely an interview topic.
 - **Cluster Autoscaling** (0.1) - Kubernetes operations, rarely an interview topic.
 - **Command Path** (0.1) - PATH resolution is a basic OS concept sometimes covered.
+- **Conditionals** (0.1) - Control flow is too basic for most SDE interviews. - already named in 2 lessons (lld-uml-sequence-diagram, string)
+- **Consul** (0.1) - Service discovery infrastructure rarely asked about. - already named in 1 lesson (sd-service-discovery)
 - **Container Registries** (0.1) - Operational tooling, low interview relevance.
 - **Creating Custom Controllers** (0.1) - Kubernetes extension, rarely asked.
+- **Datadog** (0.1) - Specific monitoring tool rarely asked. - already named in 2 lessons (1-d-dynamic-programming, tries)
 - **Debuggers** (0.1) - Tooling rarely asked conceptually.
 - **Directory Hierarchy Overview** (0.1) - Linux file system layout is occasionally asked in OS fundamentals.
 - **Docker CLI** (0.1) - Tool-specific commands, rarely an interview focus.
@@ -498,11 +612,15 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **GitHub** (0.1) - Code hosting platform; not a conceptual interview topic.
 - **GitLab** (0.1) - DevOps platform; not a core SDE interview topic.
 - **GitOps** (0.1) - Deployment methodology, rarely asked.
+- **Grafana** (0.1) - Monitoring tool rarely asked about directly in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **Graylog** (0.1) - Specific log management tool rarely asked about directly in SDE interviews.
 - **Helm Charts** (0.1) - Kubernetes package manager, rarely asked.
 - **Hot Reloading** (0.1) - Development tooling, rarely asked.
+- **Jaeger** (0.1) - Tracing tool rarely asked to explain in interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **LVM** (0.1) - Storage management tooling rarely asked in SDE interviews.
 - **LXC** (0.1) - Container runtime technology; niche for SDE interviews.
+- **Linear Search** (0.1) - Trivial algorithm rarely asked directly; not covered separately. - already named in 1 lesson (java-concurrenthashmap)
+- **Loops** (0.1) - Loop constructs are rarely asked directly. - already named in 22 lessons (ai-agents-and-agentic-systems, ai-recommendation-systems and 20 more)
 - **Multi-Cluster Management** (0.1) - Niche Kubernetes administration concept rarely asked in SDE interviews.
 - **New Relic** (0.1) - Observability tool rarely asked in interviews.
 - **Nexus** (0.1) - Artifact repository tooling rarely asked in SDE interviews.
@@ -511,10 +629,16 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Package Managers** (0.1) - Tooling concept occasionally referenced but not a core interview topic.
 - **Pod Priorities** (0.1) - Kubernetes feature, rarely asked.
 - **Process Monitoring** (0.1) - Tools like ps/top are useful but rarely a deep interview topic.
+- **Prometheus** (0.1) - Monitoring tool rarely asked about in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **RHEL / Derivatives** (0.1) - Specific Linux distro family rarely central to SDE interviews.
+- **Redirects** (0.1) - Shell redirection rarely tested in SDE loops. - already named in 3 lessons (cs-http-https, sd-design-a-url-shortener and 1 more)
 - **SPF** (0.1) - Email authentication method rarely asked in SDE interviews.
+- **SSH** (0.1) - Remote access tool sometimes assumed but rarely probed. - already named in 2 lessons (cs-tcp-vs-udp, sd-monitoring-and-observability)
+- **Salt** (0.1) - Configuration management tool not an interview topic. - already named in 1 lesson (sd-unique-id-generation)
+- **Sequence Diagrams** (0.1) - UML sequence diagrams occasionally used in design discussions. - already named in 2 lessons (lld-uml-sequence-diagram, lld-uml-use-case-diagram)
 - **Service Management (systemd)** (0.1) - systemd service management is rarely asked in product-company SDE interviews.
 - **Setting up Kubernetes** (0.1) - Operational setup task, rarely asked in SDE interviews.
+- **Snap** (0.1) - Package manager tool rarely asked in SDE interviews. - already named in 3 lessons (backtracking, matrix-grid and 1 more)
 - **Starting / Stopping Services** (0.1) - Operational task rarely asked to explain in SDE interviews.
 - **StatefulSets** (0.1) - Stateful workloads in Kubernetes occasionally discussed.
 - **Terraform** (0.1) - Infrastructure as code tool rarely asked about directly in SDE interviews.
@@ -524,10 +648,20 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **VCS Hosting** (0.1) - Platform-specific tooling, rarely a SDE interview topic.
 - **White / Grey Listing** (0.1) - Email/security list concept, rarely asked.
 - **Zabbix** (0.1) - Monitoring tool rarely asked to explain in interviews.
+- **cut** (0.1) - Text processing command rarely asked directly. - already named in 11 lessons (2-d-dynamic-programming, advanced-graphs and 9 more)
+- **expand** (0.1) - Unix command for converting tabs to spaces; rarely asked in SDE interviews. - already named in 16 lessons (1-d-dynamic-programming, ai-bias-variance-tradeoff and 14 more)
+- **head** (0.1) - Unix command rarely asked beyond basic usage. - already named in 18 lessons (ai-deep-learning, ai-hypothesis-testing and 16 more)
 - **netstat** (0.1) - Network diagnostic command rarely the focus of interview questions.
 - **nl** (0.1) - Unix command rarely asked beyond basic usage.
+- **paste** (0.1) - Text processing command rarely asked directly. - already named in 2 lessons (sd-caching, sd-design-a-pastebin)
+- **ping** (0.1) - Network diagnostic command rarely the focus of interview questions. - already named in 2 lessons (beh-prioritization, sd-websockets)
+- **pipe** (0.1) - Shell pipe concept rarely tested in SDE loops. - already named in 3 lessons (cs-inter-process-communication, cs-processes-vs-threads and 1 more)
+- **sort** (0.1) - Sorting command is a tool rarely a focus. - already named in 48 lessons (1-d-dynamic-programming, advanced-graphs and 46 more)
+- **split** (0.1) - Unix command rarely asked beyond basic usage. - already named in 69 lessons (2-d-dynamic-programming, ai-agents-and-agentic-systems and 67 more)
+- **tail** (0.1) - Unix command rarely asked beyond basic usage. - already named in 13 lessons (ai-data-structures-and-algorithms, ai-prediction-service and 11 more)
 - **tee** (0.1) - Unix command rarely asked beyond basic usage.
 - **traceroute** (0.1) - Network diagnostic command rarely the focus of interview questions.
+- **uniq** (0.1) - Unix command for filtering duplicate lines; low interview relevance.
 - **wc** (0.1) - Unix command rarely asked beyond basic usage.
 - **Artifactory** (0.1) - Binary repository tool rarely asked about directly.
 - **Available Memory / Disk** (0.1) - Operational metric, rarely asked.
@@ -572,14 +706,23 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Listing Installed Packages** (0.0) - Package management command, not conceptual interview material.
 - **Papertrail** (0.0) - Logging service tooling rarely asked.
 - **Railway** (0.0) - Platform-as-a-service tool rarely asked to explain.
+- **Literals** (0.0) - Basic syntax concept, not discussed in SDE interviews. - already named in 1 lesson (java-string-pool)
+- **Splunk** (0.0) - Log management tool rarely asked to explain. - already named in 1 lesson (1-d-dynamic-programming)
+- **Variables** (0.0) - Basic programming construct, not an interview topic. - already named in 22 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 20 more)
+- **awk** (0.0) - Text processing tool, not SQL interviews.
 
 ### dsa
 
+- **Exponential** (0.6) - Exponential complexity is central to NP-hardness and algorithm limits. - already named in 7 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 5 more)
+- **Kth Element** (0.6) - Frequent interview problem class with heap and quickselect solutions. - already named in 1 lesson (linked-list)
+- **Polynomial** (0.6) - Polynomial complexity class central to P vs NP discussions. - already named in 4 lessons (ai-bias-variance-tradeoff, ai-data-structures-and-algorithms and 2 more)
 - **Divide and Conquer** (0.6) - Common paradigm underpinning merge sort and quickselect, often expected in interviews.
 - **Heap Sort** (0.5) - Sorting algorithm using heap; occasionally asked.
+- **Linear** (0.5) - Linear time complexity is a core algorithm analysis concept. - already named in 21 lessons (1-d-dynamic-programming, advanced-graphs and 19 more)
 - **B/B+ Trees** (0.5) - Specific database index structures occasionally asked in database internals interviews.
 - **Cyclic Sort** (0.4) - Specific pattern for range-based array problems, appears in some loops.
 - **AVL Trees** (0.3) - Self-balancing BST occasionally asked; not in basic Trees.
+- **Big-θ Notation** (0.3) - Less commonly asked than Big-O but still a specific notation. - already named in 5 lessons (ai-data-structures-and-algorithms, beh-why-this-company and 3 more)
 - **Insertion Sort** (0.3) - Sometimes asked to explain or implement.
 - **Skip List** (0.3) - Rarely asked but appears in some system design and Redis internals discussions.
 - **Suffix Trees and Arrays** (0.3) - Advanced string data structures; occasionally asked.
@@ -587,32 +730,45 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **2-3 Trees** (0.2) - Rarely asked; specific balanced tree variant.
 - **Bubble Sort** (0.2) - Basic sorting algorithm sometimes asked for explanation.
 - **Selection Sort** (0.2) - Basic sorting algorithm rarely asked.
+- **Linear Search** (0.1) - Trivial algorithm rarely asked directly; not covered separately. - already named in 1 lesson (java-concurrenthashmap)
 - **Pseudo Code** (0.1) - Pseudocode is rarely the focus of SDE interviews, which expect actual code.
 
 ### java
 
+- **Dependency Injection** (0.6) - Design pattern frequently discussed in OOP and system design interviews. - already named in 7 lessons (lld-abstract-factory-pattern, lld-abstraction and 5 more)
+- **Hibernate** (0.6) - Popular ORM, often asked in Java enterprise interviews. - already named in 2 lessons (java-jdbc, sd-n-1-query-problem)
 - **Spring Bean Scope** (0.6) - Bean scopes are a standard Spring question.
+- **Annotations** (0.5) - Built-in and custom annotations are sometimes discussed. - already named in 1 lesson (lld-uml-class-diagram)
+- **Authentication** (0.5) - Security concepts appear in backend interviews. - already named in 9 lessons (cs-http-https, cs-tcp-3-way-handshake and 7 more)
 - **Entity Lifecycle** (0.5) - JPA entity states are asked in backend roles.
+- **Enums** (0.5) - Java enums and their methods are sometimes asked. - already named in 1 lesson (ai-agents-and-agentic-systems)
 - **Functional Composition** (0.5) - Functional programming technique occasionally asked with lambdas.
 - **JUnit** (0.5) - Common testing framework; sometimes asked about unit testing practices.
 - **Spring Data JPA** (0.5) - Repositories and query methods common in Java backend interviews.
 - **Spring Data MongoDB** (0.5) - Spring Data repositories may be discussed.
 - **Spring Security** (0.5) - Common in Java backend interviews for authentication/authorization.
+- **Static Keyword** (0.5) - Static members and blocks are common Java questions. - already named in 1 lesson (java-default-and-static-interface-methods)
 - **Autoconfiguration** (0.4) - Spring Boot core concept often asked.
+- **Date and Time** (0.4) - java.time API can appear in coding or concept questions. - already named in 1 lesson (sql-data-types)
 - **File Operations** (0.4) - Reading/writing files is common but not deep.
 - **Final Keyword** (0.4) - Final variables, methods, and classes may come up.
 - **Nested Classes** (0.4) - Inner and anonymous classes appear occasionally.
+- **Relationships** (0.4) - Aggregation vs composition may be asked in OOP. - already named in 26 lessons (ai-deep-learning, ai-embedding-models and 24 more)
 - **Servlet** (0.4) - Foundational Java web technology, still asked in some enterprise interviews.
 - **Spring Boot Starters** (0.4) - Framework-specific configuration topic.
 - **Spring Cloud Circuit Breaker** (0.4) - Resilience patterns are moderately common.
 - **Spring Cloud Open Feign** (0.4) - Declarative REST clients are tooling-specific.
 - **Spring Data JDBC** (0.4) - Spring Data module; sometimes asked in Spring-specific roles but less core.
+- **Type Casting** (0.4) - Casting rules and ClassCastException sometimes come up. - already named in 1 lesson (java-lambda-expressions)
 - **Mock MVC** (0.3) - Spring MVC testing tool, occasionally asked for web layer testing.
 - **Mocking > Mockito** (0.3) - Mockito is common for unit testing, and interviewers may probe mocking concepts.
 - **Actuators** (0.3) - Monitoring endpoints rarely deep-dived.
 - **Cloud Config** (0.3) - Spring Cloud Config is specific tooling.
 - **Embedded Server** (0.3) - Rarely asked beyond basic awareness.
 - **JPA Test** (0.3) - Niche testing topic; rarely core interview focus.
+- **Object Lifecycle** (0.3) - Initialization and finalization are less common. - already named in 1 lesson (java-serialization)
+- **Packages** (0.3) - Fundamental language feature occasionally asked about access modifiers and package structure. - already named in 3 lessons (ai-vector-databases, beh-company-and-motivation and 1 more)
+- **Record** (0.3) - Java records are newer and less frequently asked. - already named in 59 lessons (ai-python, ai-supervised-fine-tuning-of-llm and 57 more)
 - **Regular Expressions** (0.3) - Occasionally tested in coding exercises.
 - **Spring Cloud Gateway** (0.3) - API gateway tooling is less likely in core interviews.
 - **Why use Spring?** (0.3) - Conceptual question but part of Spring ecosystem.
@@ -627,6 +783,8 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **JSP Files** (0.2) - Legacy view technology; rarely asked in modern interviews.
 - **Math Operations** (0.2) - Math class rarely asked beyond basic knowledge.
 - **Maven** (0.2) - Build tooling rarely asked in core coding interviews.
+- **Method Chaining** (0.2) - Fluent interfaces are occasionally discussed. - already named in 1 lesson (lld-builder-pattern)
+- **Modules** (0.2) - JPMS rarely covered in interviews. - already named in 7 lessons (ai-neural-network-design, ai-supervised-fine-tuning-of-llm and 5 more)
 - **Play Framework** (0.2) - Less common framework; rarely asked.
 - **Quarkus** (0.2) - Niche framework; rarely asked in general SDE interviews.
 - **REST Assured** (0.2) - API testing tool; rarely core interview focus.
@@ -637,7 +795,9 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Logback** (0.1) - Logging configuration rarely asked.
 - **Micrometer** (0.1) - Operational tooling rarely asked in core SDE interviews.
 - **SLF4J** (0.1) - SLF4J is a logging facade; questions about logging are usually shallow.
+- **Conditionals** (0.1) - Control flow is too basic for most SDE interviews. - already named in 2 lessons (lld-uml-sequence-diagram, string)
 - **Javadoc** (0.1) - Documentation tooling rarely asked in interviews.
+- **Loops** (0.1) - Loop constructs are rarely asked directly. - already named in 22 lessons (ai-agents-and-agentic-systems, ai-recommendation-systems and 20 more)
 - **TestNG** (0.1) - TestNG is a testing tool not commonly a focus unless the role requires it.
 - **JMeter** (0.1) - Performance testing tools are outside typical SDE interview scope.
 - **TinyLog** (0.0) - TinyLog is a niche logging library unlikely to be asked about.
@@ -649,29 +809,42 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Value Objects** (0.6) - Value objects are a core DDD concept relevant to LLD.
 - **Commands / Queries** (0.6) - CQRS pattern often discussed with event-driven systems.
 - **Message Queues / Streams** (0.6) - Messaging patterns are common in distributed system design.
+- **Boundaries** (0.5) - Architectural boundaries are a common system design topic. - already named in 36 lessons (ai-a-b-testing, ai-agents-and-agentic-systems and 34 more)
 - **Command query separation** (0.5) - Command query separation is a known design principle sometimes asked in OOD interviews.
 - **DRY** (0.5) - DRY is a fundamental design principle often asked in interviews.
+- **Law of Demeter** (0.5) - Law of Demeter is a common OOP design question about reducing coupling. - already named in 1 lesson (lld-encapsulation)
+- **Mappers** (0.5) - Data mapping is common in application design. - already named in 1 lesson (sd-n-1-query-problem)
 - **Encapsulate what varies** (0.5) - Design principle behind several patterns, not explicitly covered.
 - **Domain Models** (0.4) - Domain modeling can come up in OOD interviews, especially with DDD-aligned roles.
 - **Keep it simple and refactor often** (0.4) - Simplicity and refactoring are often discussed in design interviews.
+- **Monolithic** (0.4) - Monolith vs microservices tradeoffs are common. - already named in 1 lesson (sd-database-federation)
 - **Organize code by actor it belongs to** (0.4) - Package organization and modularity can be discussed in design interviews.
+- **Pure functions** (0.4) - Pure functions are a common question when discussing testability and side effects. - already named in 1 lesson (ai-software-engineering)
 - **Usecases** (0.4) - Use case concept relevant to requirements and clean architecture.
 - **Client-Server** (0.3) - Foundational architecture style, occasionally discussed.
 - **Serverless Architecture** (0.3) - Serverless is common in system design but less in LLD.
 - **Transaction Script** (0.3) - Domain logic pattern, occasionally discussed.
+- **Anemic Models** (0.3) - Domain modeling anti-pattern occasionally referenced. - already named in 1 lesson (lld-encapsulation)
 - **Component-Based** (0.3) - Component-based architecture style, moderate interview relevance.
 - **Domain Language** (0.3) - Ubiquitous language concept, less common in LLD interviews.
 - **Keep framework code distant** (0.3) - Relevant for maintainability and architecture but rarely asked directly in interviews.
 - **Keep methods / classes / files small** (0.3) - Occasionally discussed as part of clean code and maintainability.
 - **Meaningful names over comments** (0.3) - Naming and comments may be discussed in code quality questions, but not a standalone design topic.
 - **Microkernel** (0.3) - Architectural pattern occasionally discussed.
+- **ORMs** (0.3) - Tooling concept occasionally asked about (e.g., N+1, lazy loading) but low LLD interview frequency. - already named in 3 lessons (java-jdbc, sd-n-1-query-problem and 1 more)
+- **Policy vs Detail** (0.3) - Clean architecture principle, less common. - already named in 3 lessons (beh-company-specific-questions, lld-hotel-management-system-design and 1 more)
+- **SOA** (0.3) - Service-oriented architecture is less common than microservices. - already named in 1 lesson (cs-dns)
+- **SOLID** (0.3) - Object-oriented design principles mostly asked in coding interviews, not system design. - already named in 4 lessons (lld-aggregation, lld-solid-principles and 2 more)
 - **Tests should be fast and independent** (0.3) - Testing practices are sometimes discussed, but this specific guideline is not a common design interview topic.
 - **YAGNI** (0.3) - Design principle occasionally discussed but not core to LLD.
 - **Blackboard Pattern** (0.2) - Architectural pattern rarely asked in interviews.
 - **Identity Maps** (0.2) - ORM pattern rarely asked in LLD.
 - **Peer-to-Peer** (0.2) - Decentralized architecture rarely asked in LLD.
 - **Avoid passing nulls, booleans** (0.2) - Discussed sometimes in clean code/refactoring, but not a core interview topic.
+- **Be consistent** (0.2) - Rarely asked directly; more of a code review practice than an interview topic. - already named in 4 lessons (binary-search, java-hashmap-internals and 2 more)
+- **Functional Programming** (0.2) - Programming paradigm not commonly a system design interview topic. - already named in 1 lesson (java-java-8-features)
 - **Hollywood Principle** (0.2) - Inversion-of-control principle rarely asked directly.
+- **Layered** (0.2) - Layered architecture is a basic pattern, rarely a deep interview topic. - already named in 1 lesson (sd-object-storage)
 - **Minimize cyclomatic complexity** (0.2) - Rarely asked directly; mostly a code quality metric.
 - **Structured Programming** (0.2) - Rarely asked directly; foundational but seldom an interview focus.
 - **Indentation and Code Style** (0.1) - Rarely asked in SDE design interviews; more about code formatting.
@@ -685,35 +858,53 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Data Partitioning** (0.5) - Partitioning strategies are moderately likely in database design discussions.
 - **Lock Management** (0.5) - Locking and isolation levels can come up in backend or database interviews.
 - **OLAP** (0.5) - OLAP and analytical workloads are moderately common in design discussions.
+- **PostgreSQL vs NoSQL Databases** (0.5) - Occasionally asked in system design discussions when justifying database choice. - already named in 1 lesson (sd-sql-vs-nosql)
 - **Pivot / Unpivot Operations** (0.5) - Interviewers may ask how to transform rows to columns in SQL.
 - **PostgreSQL vs Other RDBMS** (0.5) - Sometimes asked to compare specific relational databases.
+- **Dynamic SQL** (0.4) - Dynamic SQL construction and its risks can come up in backend interviews. - already named in 2 lessons (sql-sql-injection-prevention, sql-stored-procedures)
+- **Lateral Join** (0.4) - Lateral joins are a specific SQL feature occasionally asked in advanced SQL interviews. - already named in 1 lesson (sd-n-1-query-problem)
 - **Logical Replication** (0.4) - Replication concepts can come up in backend interviews.
+- **OLTP** (0.4) - OLTP concept is sometimes discussed in context of database workloads. - already named in 1 lesson (sd-database-federation)
+- **Operators** (0.4) - SQL operators are fundamental but rarely asked about in isolation. - already named in 10 lessons (ai-prediction-service, bit-manipulation and 8 more)
 - **Bulk Loading / Processing Data** (0.3) - Efficiently loading large datasets is sometimes discussed, though less common for SDE loops.
+- **Hash** (0.3) - Hash index use cases and limitations are occasionally asked. - already named in 62 lessons (ai-data-structures-and-algorithms, ai-feature-engineering and 60 more)
+- **Roles** (0.3) - Database roles and privileges are sometimes discussed in access-control questions. - already named in 13 lessons (ai-convolutional-neural-networks, ai-hypothesis-testing and 11 more)
 - **Streaming Replication** (0.3) - PostgreSQL streaming replication is specific and rarely central.
 - **Checkpoints / Background Writer** (0.2) - Postgres internals occasionally come up but mostly operational.
+- **Domains** (0.2) - PostgreSQL-specific feature rarely asked in general SDE interviews. - already named in 5 lessons (beh-why-this-company, cs-dns and 3 more)
 - **Using Logical Replication** (0.2) - Logical replication is sometimes relevant in data sync discussions.
 - **Default Privileges** (0.1) - PostgreSQL-specific privilege defaults; sometimes asked in DBA-oriented interviews.
 - **PL/pgSQL** (0.1) - PL/pgSQL specifics are rarely asked; stored procedure concepts are covered separately.
 - **Processes & Memory Architecture** (0.1) - PostgreSQL internal architecture is rarely asked outside DBA roles.
 - **Authentication Models** (0.1) - Authentication models are operational and not usually an SDE interview topic.
+- **BRIN** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles.
 - **Backup Validation Procedures** (0.1) - Backup validation is operational, occasionally mentioned in reliability questions.
 - **Buffer Management** (0.1) - PostgreSQL buffer management is internal and rarely asked.
+- **CEILING** (0.1) - Rarely asked in isolation; basic scalar numeric function. - already named in 2 lessons (java-hashset-vs-treeset, sd-horizontal-scaling)
 - **Connect using `psql`** (0.1) - Tooling for connecting to PostgreSQL, rarely asked directly in SDE interviews.
+- **Consul** (0.1) - Service discovery infrastructure rarely asked about. - already named in 1 lesson (sd-service-discovery)
 - **DATEADD** (0.1) - Date function rarely asked standalone.
 - **DATEPART** (0.1) - Date function rarely asked standalone.
+- **Etcd** (0.1) - Distributed key-value store infrastructure rarely asked about. - already named in 4 lessons (sd-cap-theorem, sd-consistency-models and 2 more)
 - **GIN** (0.1) - Generalized inverted index relevant for full-text and JSON, occasionally asked.
+- **GiST** (0.1) - PostgreSQL-specific index type rarely asked outside specialist roles. - already named in 1 lesson (sd-design-a-ride-sharing-service)
+- **HAProxy** (0.1) - Load balancing infrastructure rarely asked about in SDE interviews. - already named in 1 lesson (sd-layer-4-vs-layer-7-load-balancing)
 - **HTAP** (0.1) - HTAP is a niche architecture rarely asked.
 - **Import / Export Using `COPY`** (0.1) - Data import/export tooling; rarely an SDE interview focus.
 - **Installation and Setup** (0.1) - Operational setup is rarely part of SDE interview loops.
+- **LOWER** (0.1) - Basic string function rarely asked standalone. - already named in 49 lessons (ai-a-b-testing, ai-bias-variance-tradeoff and 47 more)
 - **Migration Related Tools** (0.1) - Database migration tooling is operational and rarely a core interview topic.
 - **Package Managers** (0.1) - Package tooling, not SQL interview material.
 - **Patroni** (0.1) - Specific PostgreSQL HA tool rarely asked in SDE interviews.
 - **Per-User, Per-Database Setting** (0.1) - Configuration settings are rarely a focus of SDE interviews.
 - **PgBouncer** (0.1) - Connection pooling tool sometimes relevant but rarely asked.
 - **Physical Storage and File Layout** (0.1) - Physical storage details are rarely asked in SDE interviews.
+- **Prometheus** (0.1) - Monitoring tool rarely asked about in SDE interviews. - already named in 1 lesson (sd-monitoring-and-observability)
 - **SSL Settings** (0.1) - Transport encryption settings are operational, rarely asked in SDE interviews.
+- **Salt** (0.1) - Configuration management tool not an interview topic. - already named in 1 lesson (sd-unique-id-generation)
 - **Storage Parameters** (0.1) - Storage parameters are operational details, not common in interviews.
 - **System Catalog** (0.1) - System catalogs are PostgreSQL-specific and rarely asked.
+- **UPPER** (0.1) - Basic string function rarely asked standalone. - already named in 4 lessons (backtracking, cs-osi-model and 2 more)
 - **Using Docker** (0.1) - Tooling for running databases, rarely asked as interview topic.
 - **Using `systemd`** (0.1) - Linux service management tooling, not SQL interview material.
 - **Vacuum Processing** (0.1) - Vacuum/autovacuum is operational and seldom covered in SDE interviews.
@@ -753,8 +944,12 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **sysstat** (0.0) - System performance tools, not SQL interview material.
 - **Core Dumps** (0.0) - Debugging crash dumps is operational and rarely asked in SQL interviews.
 - **Golden Signals** (0.0) - Monitoring framework, not SQL interview material.
+- **RED** (0.0) - Observability method, not SQL-specific and rarely asked. - already named in 5 lessons (ai-generative-model-evaluation, beh-questions-to-ask-the-interviewer and 3 more)
 - **Reviewing Patches** (0.0) - Open-source contribution process, not asked in interviews.
+- **Tensor** (0.0) - Obscure tool, not an interview topic. - already named in 4 lessons (ai-convolutional-neural-networks, ai-neural-network-design and 2 more)
+- **USE** (0.0) - Observability method, not SQL-specific and rarely asked. - already named in 262 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 260 more)
 - **Writing Patches** (0.0) - Open-source contribution process, not asked in interviews.
+- **awk** (0.0) - Text processing tool, not SQL interviews.
 - **ebpf** (0.0) - Kernel tracing technology, not SQL interview material.
 - **gdb** (0.0) - Debugger tool, not SQL interview material.
 - **grep** (0.0) - Text search tool, not SQL interviews.
@@ -763,26 +958,40 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **pgcenter** (0.0) - PostgreSQL monitoring tool, not an interview topic.
 - **sed** (0.0) - Stream editor, not SQL interviews.
 - **strace** (0.0) - System call tracer, not SQL interview material.
+- **top** (0.0) - System monitoring command, not an interview topic. - already named in 42 lessons (ai-agents-and-agentic-systems, ai-candidate-generation and 40 more)
 
 ### system_design
 
 - **BFF Pattern** (0.6) - Specific API architecture pattern for client-specific backends.
+- **Bulkhead** (0.6) - Isolation pattern often discussed alongside circuit breakers. - already named in 1 lesson (sd-circuit-breaker)
 - **Database Caching** (0.6) - Database-level caching is a distinct performance topic.
+- **Domain Name System** (0.6) - Fundamental system design concept directly asked about resolution, records, and TTL. - already named in 1 lesson (cs-dns)
 - **Event Driven Architecture** (0.6) - Common architectural pattern in distributed systems.
+- **GraphQL** (0.6) - GraphQL is occasionally discussed as an API alternative in design interviews. - already named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
+- **Latency vs Throughput** (0.6) - Commonly asked conceptual distinction in system design interviews. - already named in 20 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 18 more)
+- **Performance vs Scalability** (0.6) - Commonly asked conceptual distinction in system design interviews. - already named in 1 lesson (beh-communication)
 - **RBAC** (0.6) - Role-based access control is a standard part of system authorization design.
+- **SQL Tuning** (0.6) - Query optimization and indexing are common database interview questions. - already named in 1 lesson (sql-index-seek-vs-scan)
+- **Service Mesh** (0.6) - Service-to-service communication infrastructure often asked with microservices. - already named in 1 lesson (sd-service-discovery)
 - **Basics of DNS** (0.6) - DNS is a foundational system design component.
 - **Queue-Based Load Leveling** (0.6) - A specific pattern for handling load with queues, sometimes asked in design.
 - **Real-time APIs** (0.6) - Real-time API choices beyond WebSockets, such as SSE and long polling, are interview-relevant.
 - **Application Caching** (0.5) - Application-level caching is a common interview topic.
+- **Background Jobs** (0.5) - Background job processing is relevant to system designs but rarely a standalone interview topic. - already named in 1 lesson (sd-design-a-file-storage-service)
 - **Batch Processing** (0.5) - Designing batch data pipelines is a common system design topic.
+- **Denormalization** (0.5) - Schema design technique often discussed in database scaling and NoSQL modeling. - already named in 2 lessons (cs-normalization, sd-sql-vs-nosql)
 - **Filtering, Sorting & Search** (0.5) - Backend listing and search design is common in system design interviews.
 - **HTTP Caching** (0.5) - Important for web performance and API design.
+- **HTTP Headers** (0.5) - Common interview question about web APIs and caching. - already named in 3 lessons (sd-load-balancing, sd-rest-api and 1 more)
 - **Health Endpoint Monitoring** (0.5) - Health checks are common in system design but not explicitly covered.
 - **LB vs Reverse Proxy** (0.5) - Difference between load balancers and reverse proxies is a common interview question.
+- **PII** (0.5) - Handling personally identifiable information is relevant in system design. - already named in 1 lesson (sd-jwt)
 - **Retry Storm** (0.5) - Specific failure mode in distributed systems.
 - **Server Sent Events** (0.5) - Often compared with WebSockets for real-time server push.
 - **Session Based Auth** (0.5) - Session vs token authentication is a common web security question.
+- **Sidecar** (0.5) - Microservices deployment pattern commonly asked in system design. - already named in 2 lessons (sd-monitoring-and-observability, sd-service-discovery)
 - **Synchronous vs Asynchronous APIs** (0.5) - API design choice commonly discussed in system design.
+- **TCP** (0.5) - Networking protocols like TCP are sometimes asked in backend and system design interviews. - already named in 16 lessons (cs-dns, cs-http-https and 14 more)
 - **Web Server Caching** (0.5) - Specific caching layer at the web server not explicitly covered.
 - **GraphQL APIs** (0.5) - Modern API technology occasionally asked.
 - **Performance Antipatterns** (0.5) - Common performance pitfalls like chatty I/O and over-fetching are interview-relevant.
@@ -794,22 +1003,33 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Client Caching** (0.4) - Client-side caching via HTTP and service workers is occasionally discussed for performance.
 - **Deployment Stamps** (0.4) - A scaling isolation pattern, occasionally relevant in design discussions.
 - **Noisy Neighbor** (0.4) - Multi-tenant performance problem relevant in cloud design.
+- **Pagination** (0.4) - Pagination strategies are frequently part of API design. - already named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
 - **Pipes & Filters** (0.4) - Architectural pattern for processing pipelines occasionally asked.
+- **Retry** (0.4) - Retry with backoff is a common reliability pattern; not covered by circuit breaker alone. - already named in 29 lessons (ai-agents-and-agentic-systems, beh-company-specific-questions and 27 more)
 - **Serverless** (0.4) - Serverless architecture is increasingly relevant in system design.
 - **Static Content Hosting** (0.4) - A common pattern but often covered under CDN or object storage.
 - **Streaming Responses** (0.4) - Streaming responses are relevant for real-time and large data APIs.
+- **UDP** (0.4) - UDP vs TCP is a common networking question in backend interviews. - already named in 8 lessons (cs-dns, cs-http-https and 6 more)
+- **Versioning Strategies** (0.4) - API versioning strategies are commonly discussed in API design. - already named in 8 lessons (ai-software-engineering, sd-caching and 6 more)
 - **GDPR** (0.3) - Data privacy regulations can affect system design for user data.
 - **ReBAC** (0.3) - Relationship-based access control like Google Zanzibar is an emerging topic.
 - **Security Monitoring** (0.3) - Security-specific monitoring and incident detection can be asked for secure system design.
 - **API Keys & Management** (0.3) - Operational API authentication method occasionally discussed but not a core interview topic.
+- **Actors** (0.3) - Actor model concurrency is sometimes discussed in distributed systems. - already named in 2 lessons (lld-uml-sequence-diagram, lld-uml-use-case-diagram)
 - **Availability Monitoring** (0.3) - Subset of monitoring not explicitly covered.
+- **Cookies** (0.3) - Session management and web security may come up. - already named in 5 lessons (cs-http-https, cs-tcp-3-way-handshake and 3 more)
 - **ETL, Datawarehouses** (0.3) - Data engineering topics sometimes appear in data-heavy system designs.
 - **Federated Identity** (0.3) - SSO/federation is asked in auth design; OAuth alone doesn't cover.
 - **Hadoop, Spark, MapReduce** (0.3) - Big data processing frameworks are sometimes asked for data-intensive designs.
 - **Health Monitoring** (0.3) - Subset of monitoring not explicitly covered.
 - **Integration Testing** (0.3) - Software testing topic sometimes asked.
 - **Key Generation & Rotation** (0.3) - Key management and rotation is relevant for secret handling but not a core interview topic.
+- **Materialized View** (0.3) - Database optimization concept sometimes asked in design discussions. - already named in 2 lessons (sd-cqrs, sql-views)
+- **OSI** (0.3) - Networking model often asked in system design interviews. - already named in 2 lessons (cs-osi-model, sd-layer-4-vs-layer-7-load-balancing)
 - **PKI** (0.3) - Public key infrastructure underpins TLS and service authentication, occasionally discussed.
+- **Proxies** (0.3) - Forward and reverse proxies are foundational but not explicitly covered. - already named in 6 lessons (ai-generative-model-evaluation, ai-metrics-offline-and-online and 4 more)
+- **RPC** (0.3) - Generic RPC concept beyond gRPC is occasionally asked. - already named in 4 lessons (cs-socket-programming, sd-grpc and 2 more)
+- **SOLID** (0.3) - Object-oriented design principles mostly asked in coding interviews, not system design. - already named in 4 lessons (lld-aggregation, lld-solid-principles and 2 more)
 - **SPA, SSR, SSG** (0.3) - Rendering patterns relevant to frontend system design.
 - **Unit Testing** (0.3) - Software testing topic sometimes asked.
 - **Content Negotiation** (0.2) - Specific HTTP API concept that may be asked in API design discussions.
@@ -819,20 +1039,27 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **API Documentation Tools** (0.2) - Tooling topic rarely probed in system design interviews.
 - **API Testing** (0.2) - Occasionally asked but not core system design.
 - **Backends for Frontend** (0.2) - BFF pattern not covered by generic API Gateway.
+- **Basic Auth** (0.2) - Basic authentication is a simple baseline but less commonly asked. - already named in 7 lessons (sd-api-gateway, sd-database-federation and 5 more)
 - **CCPA** (0.2) - US privacy regulation sometimes asked in product company interviews.
 - **CI / CD** (0.2) - Foundational engineering practice rarely probed in system design.
 - **Chatty I/O** (0.2) - Anti-pattern sometimes discussed in performance contexts.
 - **DAC** (0.2) - Discretionary access control model rarely asked directly outside security roles.
 - **ESB, SOAP** (0.2) - Legacy integration technologies occasionally referenced.
 - **Extraneous Fetching** (0.2) - Over-fetching anti-pattern relevant to API design.
+- **Functional Programming** (0.2) - Programming paradigm not commonly a system design interview topic. - already named in 1 lesson (java-java-8-features)
 - **HATEOAS** (0.2) - REST maturity model advanced constraint, occasionally asked.
 - **HIPAA** (0.2) - Healthcare compliance sometimes relevant to system design.
 - **Index Table** (0.2) - NoSQL secondary index pattern not covered by general indexes.
 - **Infrastructure as Code** (0.2) - Tooling practice rarely asked to explain in depth in SDE interviews.
+- **Kafka** (0.2) - Streaming platform sometimes relevant for ML systems. - already named in 4 lessons (lld-pub-sub-system-design, sd-design-a-notification-system and 2 more)
+- **Layered** (0.2) - Layered architecture is a basic pattern, rarely a deep interview topic. - already named in 1 lesson (sd-object-storage)
+- **Load Testing** (0.2) - Performance testing concept occasionally asked in system design discussions. - already named in 1 lesson (beh-failure-and-learning)
+- **MAC** (0.2) - Mandatory access control is rarely asked outside security contexts. - already named in 2 lessons (cs-osi-model, cs-tls-ssl-handshake)
 - **MVC, MVP, MVVM** (0.2) - Architectural patterns are sometimes discussed in software design interviews.
 - **Microfrontends** (0.2) - Frontend architecture pattern occasionally discussed.
 - **Monolithic Persistence** (0.2) - Anti-pattern relevant to microservices decomposition.
 - **Performance Testing** (0.2) - Testing topic less central to system design.
+- **Priority Queue** (0.2) - Priority queues can be asked for task scheduling and message ordering. - already named in 4 lessons (cs-cpu-scheduling, heap-priority-queue and 2 more)
 - **Reactive Programming** (0.2) - Programming paradigm not typically asked in system design interviews.
 - **Service Oriented** (0.2) - SOA is an older architectural style, sometimes contrasted with microservices.
 - **Swagger / Open API** (0.2) - API documentation tools are rarely asked in system design interviews.
@@ -848,6 +1075,7 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - **Claim Check** (0.1) - Messaging pattern for large payloads; rarely asked.
 - **Apache Spark** (0.1) - Big data technology rarely asked in SDE interviews.
 - **Compute Resource Consolidation** (0.1) - Specialized Azure pattern rarely asked in SDE interviews.
+- **Firewalls** (0.1) - Network security topic tangential to system design interviews. - already named in 2 lessons (cs-osi-model, sd-websockets)
 - **Gatekeeper** (0.1) - Specialized security pattern rarely asked in SDE interviews.
 - **Geodes** (0.1) - An obscure edge data distribution pattern, rarely relevant.
 - **Hadoop** (0.1) - Big data technology rarely asked in SDE interviews.
@@ -863,126 +1091,98 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 
 ---
 
-## Already covered under another name (822)
+## Already covered under another name (469)
 
 - AI Agents -> Agents and Agentic Systems
-- APIs -> named in 20 lessons (ai-data-collection-and-preparation, ai-prompt-engineering and 18 more)
-- Accuracy -> named in 20 lessons (ai-candidate-generation, ai-embedding-models and 18 more)
-- Activation Functions -> named in 1 lesson (ai-neural-network-design)
+- APIs -> Software Engineering
+- Accuracy -> Evaluation Metrics
+- Activation Functions -> Neural Network Design
 - Adding end-user IDs in prompts -> Prompt Engineering
-- Agents -> named in 2 lessons (ai-agents-and-agentic-systems, sd-monitoring-and-observability)
+- Agents -> Agents and Agentic Systems
 - Agents Usecases -> Agents and Agentic Systems
-- Anthropic -> named in 1 lesson (ai-agents-and-agentic-systems)
-- Anthropic Claude -> named in 1 lesson (ai-agents-and-agentic-systems)
+- Anthropic Claude -> Generative AI / LLMs
 - Applications of CNNs -> Convolutional Neural Networks
-- Atlan -> named in 1 lesson (sd-cdn)
 - Attention Mechanisms -> Transformer & LLM Internals
 - Attention Models -> Transformers
 - Back Propagation -> Training and Optimization
-- Basic Syntax -> named in 24 lessons (ai-deep-learning, java-checked-vs-unchecked-exceptions and 22 more)
 - Basics of Probability -> Probability and Statistics
 - Bayes Theorem -> Probability and Statistics
 - CI/CD -> taught in beh-company-and-motivation
 - Calibrating LLMs -> Generative Model Evaluation
 - Chain of Thought (CoT) Prompting -> Prompt Engineering
 - Choosing the Right Model -> Model Selection and Validation
-- Chunking -> named in 3 lessons (ai-generative-ai-llms, ai-rag-and-production-systems and 1 more)
-- Classification -> named in 13 lessons (ai-candidate-generation, ai-convolutional-neural-networks and 11 more)
+- Chunking -> RAG and Production Systems
+- Classification -> Supervised Learning
 - Closed vs Open Source Models -> Generative AI / LLMs
-- Clustering -> named in 7 lessons (ai-machine-learning-fundamentals, ai-supervised-learning and 5 more)
 - CoT -> Prompt Engineering
-- Cohere -> named in 3 lessons (cs-cpu-scheduling, cs-tlb-and-caching and 1 more)
-- Conditionals -> named in 2 lessons (lld-uml-sequence-diagram, string)
-- Confusion Matrix -> named in 1 lesson (ai-evaluation-metrics)
+- Confusion Matrix -> Evaluation Metrics
 - Constraining outputs and inputs -> Prompt Engineering
 - Constraints -> Constraints
-- Context -> named in 44 lessons (ai-agents-and-agentic-systems, ai-candidate-generation and 42 more)
+- Context -> Prompt Engineering
 - Context Compaction -> RAG and Production Systems
-- Context Engineering -> named in 1 lesson (ai-prompt-engineering)
 - Context Failure Modes -> RAG and Production Systems
 - Context Isolation -> Agents and Agentic Systems
 - Context Sources -> RAG and Production Systems
-- Context Window -> named in 4 lessons (ai-agents-and-agentic-systems, ai-generative-ai-llms and 2 more)
-- Context vs Prompt Eng. -> named in 2 lessons (ai-prompt-engineering, ai-supervised-fine-tuning-of-llm)
+- Context Window -> Transformer & LLM Internals
 - Contextual Prompting -> Prompt Engineering
-- Convolution -> named in 2 lessons (ai-convolutional-neural-networks, ai-deep-learning)
+- Convolution -> Convolutional Neural Networks
 - Convolutional Neural Network -> Convolutional Neural Networks
 - Cost/latency monitoring -> Scaling, Monitoring, and Updates
-- Cursor -> named in 4 lessons (java-jdbc, sd-monitoring-and-observability and 2 more)
 - Data Classification -> Supervised Learning
 - Data Cleaning -> Data Collection and Preparation
-- Data Formats -> named in 1 lesson (lld-adapter-pattern)
 - Data Ingestion Architecture -> Data Collection and Preparation
-- Data Layer -> named in 1 lesson (sd-database-sharding)
 - Data Loading -> Data Collection and Preparation
-- Data Pipelines -> named in 2 lessons (ai-data-collection-and-preparation, ai-software-engineering)
+- Data Pipelines -> Data Collection and Preparation
 - Data Preparation -> Data Collection and Preparation
-- Data Sources -> named in 4 lessons (ai-data-collection-and-preparation, java-java-8-features and 2 more)
-- Data Structures -> named in 8 lessons (ai-data-structures-and-algorithms, ai-python and 6 more)
+- Data Structures -> Data Structures and Algorithms
 - Decision Trees, Random Forest -> Ensemble Methods
 - DeepSeek -> Generative AI / LLMs
 - Descriptive Statistics -> Probability and Statistics
 - Deterministic Evals -> Generative Model Evaluation
-- Development Tools -> named in 1 lesson (sd-n-1-query-problem)
-- Dimensionality Reduction -> named in 2 lessons (ai-machine-learning-fundamentals, ai-unsupervised-learning)
+- Dimensionality Reduction -> Unsupervised Learning
 - ElasticNet Regularization -> Regularization
-- Embeddings -> named in 13 lessons (ai-candidate-generation, ai-deep-learning and 11 more)
-- Excel -> named in 2 lessons (ai-machine-learning-fundamentals, ai-metrics-offline-and-online)
+- Embeddings -> Embedding Models
 - Exceptions -> Exceptions
-- Exclusive -> named in 13 lessons (ai-deep-learning, ai-neural-network-design and 11 more)
 - F1-Score -> Evaluation Metrics
 - Feature Scaling & Normalization -> Feature Engineering
-- Feature Selection -> named in 3 lessons (ai-feature-engineering, ai-hypothesis-testing and 1 more)
+- Feature Selection -> Feature Engineering
 - Few-Shot -> taught in ai-prompt-engineering
 - Fine-tuning -> taught in ai-embedding-models and 2 more
 - Forward propagation -> Training and Optimization
 - Function Calling -> Agents and Agentic Systems
 - Functions, Builtin Functions -> Python
-- GRU -> named in 2 lessons (ai-deep-learning, ai-recurrent-neural-networks-and-lstms)
+- GRU -> Recurrent Neural Networks and LSTMs
 - Gemma -> Generative AI / LLMs
-- Generation -> named in 17 lessons (ai-candidate-generation, ai-embedding-models and 15 more)
-- Google -> named in 18 lessons (beh-why-this-company, bit-manipulation and 16 more)
+- Generation -> Generative AI / LLMs
 - Google Gemini -> Generative AI / LLMs
-- Gradient Boosting Machines -> named in 1 lesson (ai-ensemble-methods)
-- Grafana -> named in 1 lesson (sd-monitoring-and-observability)
-- Hallucination -> named in 3 lessons (ai-generative-ai-llms, ai-generative-model-evaluation and 1 more)
-- Hierarchical -> named in 12 lessons (ai-convolutional-neural-networks, ai-deep-learning and 10 more)
+- Gradient Boosting Machines -> Ensemble Methods
+- Hallucination -> Generative AI / LLMs
 - How LLMs Work -> Generative AI / LLMs
 - Human Evals -> Generative Model Evaluation
 - Image Classification -> Convolutional Neural Networks
 - Indexing Embeddings -> Vector Databases
-- Inference -> named in 11 lessons (ai-generative-ai-llms, ai-ml-system-design and 9 more)
+- Inference -> Prediction Service
 - Inferential Statistics -> Probability and Statistics
-- Internet -> named in 2 lessons (cs-dns, cs-osi-model)
-- Introduction -> named in 1 lesson (beh-tell-me-about-yourself)
-- IoT -> named in 1 lesson (sd-nosql-types)
-- JSON -> named in 9 lessons (ai-agents-and-agentic-systems, ai-prompt-engineering and 7 more)
+- JSON -> Python
 - K-Fold Cross Validation -> Model Selection and Validation
-- Kafka -> named in 4 lessons (lld-pub-sub-system-design, sd-design-a-notification-system and 2 more)
-- Kubernetes -> named in 2 lessons (ai-rag-and-production-systems, sd-horizontal-scaling)
 - LIME -> taught in beh-why-this-role
-- LLM -> named in 9 lessons (ai-agents-and-agentic-systems, ai-deep-learning and 7 more)
+- LLM -> Generative AI / LLMs
 - LLM Evaluations -> Generative Model Evaluation
 - LLM Self Evaluation -> Generative Model Evaluation
 - LLMs and how they work? -> Generative AI / LLMs
 - LOOCV -> Model Selection and Validation
-- LSTM -> named in 2 lessons (ai-deep-learning, ai-recurrent-neural-networks-and-lstms)
+- LSTM -> Recurrent Neural Networks and LSTMs
 - Large Language Model (LLM) -> Generative AI / LLMs
 - Lasso -> Regularization
-- Linear Regression -> named in 1 lesson (ai-bias-variance-tradeoff)
-- Log Loss -> named in 2 lessons (ai-ensemble-methods, ai-metrics-offline-and-online)
-- Logistic Regression -> named in 2 lessons (ai-ranking, ai-supervised-learning)
+- Log Loss -> Evaluation Metrics
 - Long-Context Processing -> Transformer & LLM Internals
-- Loops -> named in 22 lessons (ai-agents-and-agentic-systems, ai-recommendation-systems and 20 more)
-- Loss Functions -> named in 3 lessons (ai-bias-variance-tradeoff, ai-probability-and-statistics and 1 more)
-- Machine Learning -> named in 7 lessons (ai-deep-learning, ai-machine-learning-fundamentals and 5 more)
+- Loss Functions -> Training and Optimization
 - Memory Systems -> Agents and Agentic Systems
-- Meta -> named in 49 lessons (ai-data-collection-and-preparation, ai-feature-engineering and 47 more)
 - Meta Llama -> Generative AI / LLMs
 - Metrics to Evaluate -> Evaluation Metrics
 - Mistral -> Generative AI / LLMs
-- Model Evaluation -> named in 3 lessons (ai-generative-model-evaluation, ai-hypothesis-testing and 1 more)
-- Model Selection -> named in 2 lessons (ai-ml-system-design, ai-model-selection-and-validation)
+- Model Evaluation -> Evaluation Metrics
+- Model Selection -> Model Selection and Validation
 - Model Weights / Parameters -> Machine Learning Fundamentals
 - Model-Based Evals -> Generative Model Evaluation
 - Monitoring & Observability -> Monitoring and observability
@@ -990,82 +1190,65 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - Multi-agents -> Agents and Agentic Systems
 - Multi-head Attention -> taught in ai-transformer-llm-internals and 1 more
 - Neural Network (NN) Basics -> Deep Learning
-- Numpy -> named in 1 lesson (ai-python)
 - One-Shot / Few-Shot Prompting -> Prompt Engineering
-- OpenAI -> named in 1 lesson (design)
 - OpenAI (GPT, o-series) -> Generative AI / LLMs
-- Orchestration -> named in 4 lessons (ai-software-engineering, sd-design-case-studies and 2 more)
-- Overlapping -> named in 18 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 16 more)
-- Padding -> named in 5 lessons (ai-convolutional-neural-networks, segment-tree-fenwick and 3 more)
+- Padding -> Convolutional Neural Networks
 - Perceptron, Multi-layer Perceptrons -> Neural Network Design
 - Performing Similarity Search -> Vector Databases
-- Pooling -> named in 7 lessons (ai-convolutional-neural-networks, ai-deep-learning and 5 more)
+- Pooling -> Convolutional Neural Networks
 - Pre-trained Models -> Deep Learning
-- Precision -> named in 15 lessons (ai-agents-and-agentic-systems, ai-candidate-generation and 13 more)
-- Prediction -> named in 17 lessons (ai-bias-variance-tradeoff, ai-data-collection-and-preparation and 15 more)
-- Preprocessing Techniques -> named in 7 lessons (ai-feature-engineering, ai-model-selection-and-validation and 5 more)
+- Precision -> Evaluation Metrics
+- Preprocessing Techniques -> Data Collection and Preparation
 - Principal Component Analysis -> Feature Engineering
-- Probabilistic -> named in 5 lessons (ai-unsupervised-learning, sd-bloom-filters and 3 more)
-- Probability -> named in 18 lessons (ai-a-b-testing, ai-ensemble-methods and 16 more)
+- Probability -> Probability and Statistics
 - Production monitoring -> Scaling, Monitoring, and Updates
-- Programming Fundamentals -> named in 14 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 12 more)
-- Prometheus -> named in 1 lesson (sd-monitoring-and-observability)
 - Prompt Caching -> RAG and Production Systems
 - Prompt Debiasing -> Prompt Engineering
 - Prompt Ensembling -> Prompt Engineering
-- Prompt Injection -> named in 2 lessons (ai-generative-ai-llms, ai-prompt-engineering)
-- Prompt Injection Attacks -> named in 2 lessons (ai-generative-ai-llms, ai-prompt-engineering)
-- PyTorch -> named in 4 lessons (ai-neural-network-design, ai-python and 2 more)
 - Qwen -> Generative AI / LLMs
 - RAG & Dynamic Filters -> RAG and Production Systems
-- RAGAS -> named in 1 lesson (ai-generative-model-evaluation)
 - RAGs -> taught in beh-star-method
-- RNN -> named in 4 lessons (ai-convolutional-neural-networks, ai-deep-learning and 2 more)
-- ROC-AUC -> named in 1 lesson (ai-metrics-offline-and-online)
+- RNN -> Recurrent Neural Networks and LSTMs
+- ROC-AUC -> Evaluation Metrics
 - Random Variances, PDFs -> Probability and Statistics
-- ReAct -> named in 8 lessons (ai-problem-formulation, beh-growth-mindset and 6 more)
+- ReAct -> Agents and Agentic Systems
 - ReAct Prompting -> Agents and Agentic Systems
-- Recall -> named in 14 lessons (ai-agents-and-agentic-systems, ai-candidate-generation and 12 more)
+- Recall -> Evaluation Metrics
 - Recurrent Neural Networks -> Recurrent Neural Networks and LSTMs
-- Regression -> named in 19 lessons (ai-a-b-testing, ai-bias-variance-tradeoff and 17 more)
-- Reinforcement Learning -> named in 1 lesson (ai-machine-learning-fundamentals)
+- Regression -> Supervised Learning
 - Retrieval Process -> RAG and Production Systems
 - Ridge -> taught in advanced-graphs and 7 more
 - Robust prompt engineering -> Prompt Engineering
 - Role & Behavior -> Prompt Engineering
 - Role Prompting -> Prompt Engineering
-- SHAP -> named in 23 lessons (ai-bias-variance-tradeoff, ai-convolutional-neural-networks and 21 more)
 - Self-Attention -> taught in ai-deep-learning and 3 more
 - Self-Consistency Prompting -> Prompt Engineering
-- Semantic Search -> named in 1 lesson (ai-embedding-models)
 - Semi-supervised Learning -> taught in ai-data-collection-and-preparation
 - Sentence Transformers -> Embedding Models
 - State & Historical Context -> Agents and Agentic Systems
-- Statistics -> named in 10 lessons (ai-evaluation-metrics, ai-feature-engineering and 8 more)
+- Statistics -> Probability and Statistics
 - Step-back Prompting -> Prompt Engineering
 - Streaming Responses -> RAG and Production Systems
-- Strides -> named in 1 lesson (ai-python)
-- Structured Output -> named in 1 lesson (ai-agents-and-agentic-systems)
+- Strides -> Convolutional Neural Networks
+- Structured Output -> Prompt Engineering
 - System Prompting -> Prompt Engineering
-- Temperature -> named in 2 lessons (ai-generative-ai-llms, stack)
-- Tokenization -> named in 1 lesson (ai-transformer-llm-internals)
-- Tokens -> named in 16 lessons (ai-deep-learning, ai-embedding-models and 14 more)
+- Temperature -> Prompt Engineering
+- Tokenization -> Transformer & LLM Internals
+- Tokens -> Transformer & LLM Internals
 - Tools & Function Calling -> Agents and Agentic Systems
-- Top-K -> named in 2 lessons (ai-metrics-offline-and-online, sd-design-search-autocomplete)
-- Top-P -> named in 3 lessons (ai-generative-model-evaluation, beh-prioritization and 1 more)
+- Top-K -> Prompt Engineering
+- Top-P -> Prompt Engineering
 - Tracing & logging -> Scaling, Monitoring, and Updates
 - Train - Test Data -> Model Selection and Validation
-- Training -> named in 28 lessons (ai-bias-variance-tradeoff, ai-candidate-generation and 26 more)
-- Transport Layer -> named in 3 lessons (cs-osi-model, cs-tls-ssl-handshake and 1 more)
+- Training -> Training and Optimization
 - Tree of Thoughts (ToT) Prompting -> Prompt Engineering
-- Tuning -> named in 15 lessons (ai-embedding-models, ai-ensemble-methods and 13 more)
 - Types of Distribution -> Probability and Statistics
-- Types of Machine Learning -> named in 1 lesson (ai-deep-learning)
-- Validation Techniques -> named in 34 lessons (ai-agents-and-agentic-systems, ai-data-collection-and-preparation and 32 more)
+- Types of Machine Learning -> Machine Learning Fundamentals
+- Validation Techniques -> Model Selection and Validation
 - Variables and Data Types -> Python
 - Vector DBs -> Vector Databases
 - Vector Database -> Vector Databases
-- Version Control -> named in 1 lesson (ai-software-engineering)
+- Version Control -> Software Engineering
 - What are Embeddings -> Embedding Models
 - What are RAGs? -> RAG and Production Systems
 - What is Machine Learning? -> Machine Learning Fundamentals
@@ -1076,614 +1259,306 @@ The sorter called each of these a real gap and then rated an interview unlikely 
 - What is a Prompt? -> Prompt Engineering
 - Zero-Shot -> taught in ai-prompt-engineering
 - Zero-Shot Prompting -> taught in ai-prompt-engineering
-- API strategy -> named in 56 lessons (ai-data-collection-and-preparation, ai-deep-learning and 54 more)
-- Change management -> named in 1 lesson (beh-leadership)
-- Change strategy -> named in 171 lessons (1-d-dynamic-programming, advanced-graphs and 169 more)
-- Code Review Best Practices -> named in 6 lessons (beh-company-and-motivation, beh-failure-and-learning and 4 more)
-- Company Culture -> named in 1 lesson (beh-questions-to-ask-the-interviewer)
-- Delegation -> named in 6 lessons (cs-dns, java-jvm-architecture and 4 more)
 - Executive summaries -> Communication
 - Feature prioritization -> Prioritization
-- Knowledge bases -> named in 1 lesson (ai-data-collection-and-preparation)
 - Lessons Learned -> Failure and learning
-- People -> named in 21 lessons (ai-probability-and-statistics, beh-company-and-motivation and 19 more)
-- Process -> named in 86 lessons (ai-data-collection-and-preparation, ai-data-structures-and-algorithms and 84 more)
-- Product -> named in 75 lessons (1-d-dynamic-programming, ai-a-b-testing and 73 more)
-- Resource Allocation -> named in 1 lesson (cs-deadlocks)
-- Security Best Practices -> named in 10 lessons (ai-prompt-engineering, ai-supervised-fine-tuning-of-llm and 8 more)
-- Sprint Planning -> named in 1 lesson (beh-prioritization)
 - Stakeholder Communication -> Communication
-- Testing Strategies -> named in 78 lessons (ai-a-b-testing, ai-ensemble-methods and 76 more)
 - ACID Model -> ACID Properties
-- ASCII -> named in 1 lesson (string)
-- AWS -> named in 3 lessons (beh-why-this-company, sd-api-gateway and 1 more)
-- Adjacency List -> named in 1 lesson (graphs)
-- Adjacency Matrix -> named in 2 lessons (advanced-graphs, graphs)
-- Apache -> named in 2 lessons (sd-consistent-hashing, sd-message-queues)
-- Array -> named in 47 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 45 more)
-- Asymptotic Notation -> named in 3 lessons (ai-transformer-llm-internals, java-arraylist-vs-linkedlist and 1 more)
-- Availability -> named in 33 lessons (ai-ml-system-design, ai-problem-formulation and 31 more)
-- Azure -> named in 2 lessons (sd-design-a-file-storage-service, sd-object-storage)
+- Availability -> High availability
 - B-Tree -> taught in ai-vector-databases and 8 more
-- BASE -> named in 129 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 127 more)
-- Balanced Tree -> named in 5 lessons (arrays-hashing, design and 3 more)
-- Basic Commands -> named in 5 lessons (ai-prompt-engineering, sd-cqrs and 3 more)
-- Basics -> named in 3 lessons (ai-probability-and-statistics, beh-prioritization and 1 more)
-- Big O -> named in 1 lesson (ai-data-structures-and-algorithms)
 - Binary Search -> Binary Search
-- Binary Search Tree -> named in 4 lessons (ai-data-structures-and-algorithms, heap-priority-queue and 2 more)
-- Binary Tree -> named in 3 lessons (heap-priority-queue, segment-tree-fenwick and 1 more)
-- Bitwise Operators -> named in 1 lesson (bit-manipulation)
 - Blue-Green Deployments -> taught in ai-rag-and-production-systems
 - CAP Theorem -> CAP theorem
 - CDN -> CDN
-- CPU Cache -> named in 2 lessons (cs-tlb-and-caching, java-java-memory-model)
+- CPU Cache -> TLB and Caching
 - Caching -> Caching
-- Class Diagrams -> named in 5 lessons (lld-aggregation, lld-composition and 3 more)
-- Clustering -> named in 7 lessons (ai-machine-learning-fundamentals, ai-supervised-learning and 5 more)
-- Common Algorithms -> named in 1 lesson (ai-unsupervised-learning)
-- Complete Binary Tree -> named in 1 lesson (heap-priority-queue)
-- Complexity Classes -> named in 1 lesson (java-arraylist-vs-linkedlist)
-- Conditionals -> named in 2 lessons (lld-uml-sequence-diagram, string)
-- Constant -> named in 35 lessons (2-d-dynamic-programming, advanced-graphs and 33 more)
-- Consul -> named in 7 lessons (beh-leadership, cs-paging-and-virtual-memory and 5 more)
-- Containers -> named in 5 lessons (ai-python, java-streams-api and 3 more)
-- DCL -> named in 1 lesson (sql-ddl-dml-dcl-tcl)
-- DDL -> named in 3 lessons (java-jdbc, sql-ddl-dml-dcl-tcl and 1 more)
-- DML -> named in 5 lessons (ai-sql, java-jdbc and 3 more)
-- DNS Resolution -> named in 1 lesson (sd-cdn)
-- DQL -> named in 1 lesson (sql-ddl-dml-dcl-tcl)
+- DNS Resolution -> DNS
 - Data Management -> taught in sd-object-storage
-- Data Structures -> named in 8 lessons (ai-data-structures-and-algorithms, ai-python and 6 more)
+- Data Structures -> Data Structures and Algorithms
 - Database Federation -> Database federation
-- Databases -> named in 19 lessons (ai-data-collection-and-preparation, ai-sql and 17 more)
-- Datadog -> named in 2 lessons (1-d-dynamic-programming, tries)
-- Debugging -> named in 11 lessons (ai-deep-learning, beh-story-bank and 9 more)
-- Dependency Injection -> named in 7 lessons (lld-abstract-factory-pattern, lld-abstraction and 5 more)
-- Deployments -> named in 4 lessons (ai-rag-and-production-systems, ai-scaling-monitoring-and-updates and 2 more)
 - Design Patterns -> Design Patterns
 - Dijkstra's Algorithm -> taught in advanced-graphs and 2 more
-- Directed Graph -> named in 3 lessons (advanced-graphs, graphs and 1 more)
 - Disks and Filesystems -> File Systems
-- Envoy -> named in 2 lessons (sd-grpc, sd-layer-4-vs-layer-7-load-balancing)
-- Exponential -> named in 10 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 8 more)
-- File Transfer -> named in 2 lessons (cs-tcp-vs-udp, sd-object-storage)
-- Filesystems -> named in 1 lesson (cs-file-systems)
-- Firewall -> named in 2 lessons (cs-osi-model, sd-websockets)
-- Google Cloud -> named in 4 lessons (beh-why-this-company, sd-cache-strategies and 2 more)
-- Grafana -> named in 1 lesson (sd-monitoring-and-observability)
+- Filesystems -> File Systems
 - Graph -> Graphs
-- GraphQL -> named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
-- HTTP -> named in 26 lessons (cs-http-https, cs-osi-model and 24 more)
-- Hash Table -> named in 7 lessons (ai-python, arrays-hashing and 5 more)
-- Heap -> named in 30 lessons (advanced-graphs, ai-data-structures-and-algorithms and 28 more)
-- Horizontal vs Vertical Scaling -> named in 2 lessons (sd-database-sharding, sd-horizontal-scaling)
-- Huffman Coding -> named in 1 lesson (greedy)
-- Images -> named in 10 lessons (ai-convolutional-neural-networks, ai-deep-learning and 8 more)
+- HTTP -> HTTP/HTTPS
 - In-Order Traversal -> taught in java-hashset-vs-treeset and 1 more
 - Indexes -> Indexes
-- Inodes -> named in 1 lesson (cs-file-systems)
-- Introduction -> named in 1 lesson (beh-tell-me-about-yourself)
-- Jaeger -> named in 1 lesson (sd-monitoring-and-observability)
-- Java -> named in 61 lessons (arrays-hashing, bit-manipulation and 59 more)
-- Jobs -> named in 7 lessons (beh-why-this-role, cs-cpu-scheduling and 5 more)
 - Kruskal's Algorithm -> taught in greedy
-- Kubernetes -> named in 2 lessons (ai-rag-and-production-systems, sd-horizontal-scaling)
 - LFU Cache -> Page Replacement Algorithms
-- LRU Cache -> named in 7 lessons (java-collections-framework, linked-list and 5 more)
-- Linear -> named in 33 lessons (1-d-dynamic-programming, advanced-graphs and 31 more)
-- Linear Search -> named in 1 lesson (java-concurrenthashmap)
+- LRU Cache -> Page Replacement Algorithms
 - Linked List -> Linked List
-- Literals -> named in 1 lesson (java-string-pool)
-- Load Balancer -> named in 13 lessons (ai-ml-system-design, sd-api-gateway and 11 more)
 - Load Balancing -> Load balancing
 - Lock / Mutex / Semaphore -> Synchronization Primitives
-- Locking -> named in 19 lessons (cs-inter-process-communication, cs-locking-mechanisms and 17 more)
-- Logarithmic -> named in 5 lessons (design, java-concurrency and 3 more)
-- Logs -> named in 25 lessons (1-d-dynamic-programming, ai-data-collection-and-preparation and 23 more)
-- Long Polling -> named in 3 lessons (sd-message-queues, sd-publish-subscribe and 1 more)
-- Loops -> named in 22 lessons (ai-agents-and-agentic-systems, ai-recommendation-systems and 20 more)
+- Locking -> Locking Mechanisms
 - MFU Cache -> Page Replacement Algorithms
-- Memory Management -> named in 2 lessons (java-garbage-collection, lld-composition)
-- Metrics -> named in 24 lessons (ai-a-b-testing, ai-candidate-generation and 22 more)
 - Mounts -> taught in 1-d-dynamic-programming and 6 more
-- Namespaces -> named in 1 lesson (java-jvm-architecture)
 - Nano -> taught in java-thread-lifecycle
-- Navigation Basics -> named in 4 lessons (lld-aggregation, lld-association and 2 more)
-- Networking -> named in 1 lesson (cs-osi-model)
-- Networks -> named in 15 lessons (ai-convolutional-neural-networks, ai-deep-learning and 13 more)
 - Normalization / Denormalization -> Normalization
-- Observability -> named in 2 lessons (sd-api-gateway, sd-monitoring-and-observability)
-- Operating System -> named in 3 lessons (beh-why-this-company, cs-cpu-scheduling and 1 more)
-- PACELC -> named in 2 lessons (sd-cap-theorem, sd-sql-vs-nosql)
-- Polynomial -> named in 4 lessons (ai-bias-variance-tradeoff, ai-data-structures-and-algorithms and 2 more)
-- Probability -> named in 18 lessons (ai-a-b-testing, ai-ensemble-methods and 16 more)
-- Processes and Threads -> named in 1 lesson (cs-processes-vs-threads)
-- Prometheus -> named in 1 lesson (sd-monitoring-and-observability)
-- Provisioning -> named in 1 lesson (sd-design-case-studies)
-- Proxy -> named in 14 lessons (ai-generative-model-evaluation, ai-metrics-offline-and-online and 12 more)
+- Observability -> Monitoring and observability
+- Probability -> Probability and Statistics
+- Processes and Threads -> Processes vs Threads
 - Python -> Python
-- Queue -> named in 47 lessons (ai-data-structures-and-algorithms, beh-teamwork and 45 more)
-- REST -> named in 66 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 64 more)
-- Redirects -> named in 3 lessons (cs-http-https, sd-design-a-url-shortener and 1 more)
-- Render -> named in 2 lessons (lld-abstract-factory-pattern, sd-n-1-query-problem)
 - Replication -> Replication
-- Reverse Proxy -> named in 1 lesson (sd-api-gateway)
-- Rust -> named in 1 lesson (lld-abstraction)
-- SMTP -> named in 2 lessons (cs-osi-model, sd-design-a-notification-system)
-- SQL vs NoSQL Databases -> named in 1 lesson (sd-sql-vs-nosql)
-- SSE -> named in 3 lessons (sd-monitoring-and-observability, sd-publish-subscribe and 1 more)
-- SSH -> named in 2 lessons (cs-tcp-vs-udp, sd-monitoring-and-observability)
 - SSL / TLS -> TLS/SSL Handshake
-- Salt -> named in 1 lesson (sd-unique-id-generation)
-- Scheduling -> named in 8 lessons (ai-software-engineering, cs-cpu-scheduling and 6 more)
+- Scheduling -> CPU Scheduling
 - Scheduling Algorithms -> CPU Scheduling
-- Security -> named in 10 lessons (ai-prompt-engineering, ai-supervised-fine-tuning-of-llm and 8 more)
-- Sequence Diagrams -> named in 2 lessons (lld-uml-sequence-diagram, lld-uml-use-case-diagram)
-- Service Mesh -> named in 1 lesson (sd-service-discovery)
-- Sharding -> named in 12 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 10 more)
-- Small O -> named in 6 lessons (ai-recommendation-systems, cs-tlb-and-caching and 4 more)
-- Snap -> named in 22 lessons (ai-software-engineering, backtracking and 20 more)
-- Sockets -> named in 4 lessons (cs-inter-process-communication, cs-processes-vs-threads and 2 more)
-- Spanning Tree -> named in 2 lessons (advanced-graphs, greedy)
-- Splunk -> named in 1 lesson (1-d-dynamic-programming)
+- Sockets -> Socket Programming
 - Stack -> Stack
 - Stored Procedures -> Stored procedures
-- Subnetting -> named in 1 lesson (cs-subnetting-and-cidr)
-- Substring Search -> named in 1 lesson (string)
-- Swap -> named in 22 lessons (ai-evaluation-metrics, cs-critical-section-problem and 20 more)
-- System Design -> named in 18 lessons (ai-data-collection-and-preparation, ai-generative-ai-llms and 16 more)
+- Subnetting -> Subnetting and CIDR
+- Swap -> Paging and Virtual Memory
 - TCP/IP Model -> taught in cs-osi-model
 - TLS & HTTPS -> HTTP/HTTPS
-- Tests -> named in 45 lessons (ai-a-b-testing, ai-hypothesis-testing and 43 more)
-- Traces -> named in 4 lessons (ai-prediction-service, java-exceptions and 2 more)
-- Transactions -> named in 25 lessons (ai-sql, cs-acid-properties and 23 more)
 - Tree -> Trees
 - Tries -> Tries
-- Troubleshooting -> named in 3 lessons (cs-dns, cs-osi-model and 1 more)
-- Undirected Graph -> named in 2 lessons (advanced-graphs, graphs)
-- Unicode -> named in 5 lessons (java-strings, sql-data-types and 3 more)
-- Variables -> named in 22 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 20 more)
 - Views -> Views
-- Volumes -> named in 3 lessons (cs-file-systems, cs-http-https and 1 more)
-- Windows -> named in 17 lessons (ai-a-b-testing, ai-convolutional-neural-networks and 15 more)
-- awk -> named in 3 lessons (java-checked-vs-unchecked-exceptions, lld-composition and 1 more)
-- cut -> named in 20 lessons (2-d-dynamic-programming, advanced-graphs and 18 more)
-- expand -> named in 16 lessons (1-d-dynamic-programming, ai-bias-variance-tradeoff and 14 more)
 - gRPC -> gRPC
-- head -> named in 38 lessons (ai-deep-learning, ai-hypothesis-testing and 36 more)
 - join -> Joins
-- paste -> named in 2 lessons (sd-caching, sd-design-a-pastebin)
-- ping -> named in 2 lessons (beh-prioritization, sd-websockets)
-- pipe -> named in 27 lessons (ai-data-collection-and-preparation, ai-feature-engineering and 25 more)
-- sort -> named in 48 lessons (1-d-dynamic-programming, advanced-graphs and 46 more)
-- split -> named in 73 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 71 more)
-- tail -> named in 19 lessons (ai-data-structures-and-algorithms, ai-prediction-service and 17 more)
-- uniq -> named in 42 lessons (2-d-dynamic-programming, ai-python and 40 more)
 - A* Algorithm -> Advanced Graphs
-- Array -> named in 47 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 45 more)
-- Asymptotic Notation -> named in 3 lessons (ai-transformer-llm-internals, java-arraylist-vs-linkedlist and 1 more)
 - B-Trees -> taught in ai-vector-databases and 3 more
-- Basic Data Structures -> named in 8 lessons (ai-data-structures-and-algorithms, ai-python and 6 more)
 - Bellman-Ford Algoritm -> Advanced Graphs
-- Big-O Notation -> named in 1 lesson (ai-data-structures-and-algorithms)
-- Big-θ Notation -> named in 9 lessons (ai-data-structures-and-algorithms, beh-why-this-company and 7 more)
-- Binary Search Trees -> named in 1 lesson (ai-data-structures-and-algorithms)
+- Binary Search Trees -> Trees
 - Binary Trees -> Trees
 - Breadth First Search -> Graphs
-- Brute Force -> named in 8 lessons (ai-data-structures-and-algorithms, ai-feature-engineering and 6 more)
-- Constant -> named in 35 lessons (2-d-dynamic-programming, advanced-graphs and 33 more)
 - Depth First Search -> Graphs
 - Dijkstra's Algorithm -> taught in advanced-graphs and 2 more
-- Directed Graph -> named in 3 lessons (advanced-graphs, graphs and 1 more)
 - Disjoint Set (Union-Find) -> Advanced Graphs
-- Dynamic Programming -> named in 6 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 4 more)
-- Exponential -> named in 10 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 8 more)
-- Fast and Slow Pointers -> named in 2 lessons (linked-list, two-pointers)
+- Fast and Slow Pointers -> Two Pointers
 - Fenwick Trees -> Segment Tree & Fenwick
 - Functions -> Functions
 - Graph Data Structures -> Graphs
 - Greedy Algorithms -> Greedy
-- Hash Tables -> named in 2 lessons (ai-python, sd-nosql-types)
-- Heap -> named in 30 lessons (advanced-graphs, ai-data-structures-and-algorithms and 28 more)
+- Hash Tables -> Arrays & Hashing
 - ISAM -> taught in cs-locking-mechanisms
 - In-Order Traversal -> taught in java-hashset-vs-treeset and 1 more
-- Indexing -> named in 12 lessons (2-d-dynamic-programming, ai-rag-and-production-systems and 10 more)
 - Island traversal -> Matrix / Grid
-- Java -> named in 61 lessons (arrays-hashing, bit-manipulation and 59 more)
-- JavaScript -> named in 2 lessons (sd-jwt, string)
 - Kruskal's Algorithm -> taught in greedy
-- Kth Element -> named in 1 lesson (linked-list)
-- Linear -> named in 33 lessons (1-d-dynamic-programming, advanced-graphs and 31 more)
-- Linear Search -> named in 1 lesson (java-concurrenthashmap)
 - Linked Lists -> Linked List
-- Logarithmic -> named in 5 lessons (design, java-concurrency and 3 more)
-- Merge Intervals -> named in 1 lesson (intervals)
-- Minimum Spanning Tree -> named in 2 lessons (advanced-graphs, greedy)
+- Merge Intervals -> Intervals
+- Minimum Spanning Tree -> Advanced Graphs
 - Multi-threaded -> taught in java-garbage-collection and 1 more
-- OOP Basics -> named in 3 lessons (java-oop-concepts, lld-abstraction and 1 more)
-- Polynomial -> named in 4 lessons (ai-bias-variance-tradeoff, ai-data-structures-and-algorithms and 2 more)
 - Post-Order Traversal -> Trees
 - Pre-Order Traversal -> Trees
 - Prim's Algorithm -> Advanced Graphs
-- Programming Fundamentals -> named in 14 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 12 more)
 - Python -> Python
-- Queues -> named in 19 lessons (ai-data-structures-and-algorithms, cs-cpu-scheduling and 17 more)
-- Recursion -> named in 11 lessons (ai-data-structures-and-algorithms, backtracking and 9 more)
-- Rust -> named in 1 lesson (lld-abstraction)
 - Segment Trees -> Segment Tree & Fenwick
 - Shortest Path Algorithms -> Advanced Graphs
-- Sliding Window Technique -> named in 12 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 10 more)
+- Sliding Window Technique -> Sliding Window
 - Stacks -> Stack
 - Tree Data Structures -> Trees
 - Tree Traversal -> Trees
 - Tree-Based -> Trees
 - Trie -> Tries
-- Two Heaps -> named in 1 lesson (heap-priority-queue)
-- Two Pointer Technique -> named in 5 lessons (ai-data-structures-and-algorithms, intervals and 3 more)
-- Undirected Graph -> named in 2 lessons (advanced-graphs, graphs)
+- Two Heaps -> Heap / Priority Queue
+- Two Pointer Technique -> Two Pointers
 - Abstraction -> Abstraction
 - Access Specifiers -> OOP Concepts
-- Annotations -> named in 1 lesson (lld-uml-class-diagram)
-- Architecture -> named in 28 lessons (ai-candidate-generation, ai-convolutional-neural-networks and 26 more)
-- Array vs ArrayList -> named in 7 lessons (java-arraylist-vs-linkedlist, java-collections-framework and 5 more)
-- Arrays -> named in 18 lessons (ai-data-structures-and-algorithms, ai-python and 16 more)
-- Attributes and Methods -> named in 1 lesson (lld-uml-class-diagram)
-- Authentication -> named in 9 lessons (cs-http-https, cs-tcp-3-way-handshake and 7 more)
-- Authorization -> named in 7 lessons (cs-http-https, lld-atm-system-design and 5 more)
-- Basic Syntax -> named in 24 lessons (ai-deep-learning, java-checked-vs-unchecked-exceptions and 22 more)
+- Attributes and Methods -> OOP Concepts
 - Basics of OOP -> OOP Concepts
-- Classes and Objects -> named in 1 lesson (lld-design-patterns)
-- Components -> named in 21 lessons (advanced-graphs, ai-ml-system-design and 19 more)
-- Conditionals -> named in 2 lessons (lld-uml-sequence-diagram, string)
-- Configuration -> named in 13 lessons (ai-model-selection-and-validation, ai-software-engineering and 11 more)
+- Classes and Objects -> OOP Concepts
 - Data Types -> Data types
-- Database Access -> named in 2 lessons (java-jdbc, lld-abstract-factory-pattern)
-- Date and Time -> named in 1 lesson (sql-data-types)
-- Dependency Injection -> named in 7 lessons (lld-abstract-factory-pattern, lld-abstraction and 5 more)
-- Dequeue -> named in 3 lessons (design, lld-pub-sub-system-design and 1 more)
-- Documentation -> named in 3 lessons (beh-ownership, java-optional and 1 more)
+- Dequeue -> Collections Framework
 - Encapsulation -> Encapsulation
-- Enums -> named in 1 lesson (ai-agents-and-agentic-systems)
-- Exception Handling -> named in 1 lesson (java-exceptions)
-- Functional Interfaces -> named in 3 lessons (java-checked-vs-unchecked-exceptions, java-java-8-features and 1 more)
+- Exception Handling -> Exceptions
+- Functional Interfaces -> Lambda expressions
 - Generic Collections -> Generics
-- Hibernate -> named in 2 lessons (java-jdbc, sd-n-1-query-problem)
 - High Order Functions -> Lambda expressions
 - I/O Operations -> taught in java-thread-lifecycle
 - Inheritance -> Inheritance
 - Interfaces -> Interfaces
-- Introduction -> named in 1 lesson (beh-tell-me-about-yourself)
-- Iterator -> named in 9 lessons (cs-page-replacement-algorithms, design and 7 more)
-- Learn the Basics -> named in 2 lessons (beh-why-this-company, cs-tcp-3-way-handshake)
-- Loops -> named in 22 lessons (ai-agents-and-agentic-systems, ai-recommendation-systems and 20 more)
-- Map -> named in 95 lessons (ai-candidate-generation, ai-convolutional-neural-networks and 93 more)
-- Method Chaining -> named in 1 lesson (lld-builder-pattern)
+- Iterator -> Collections Framework
+- Map -> Collections Framework
 - Method Overloading / Overriding -> Polymorphism
 - Microservices -> Microservices
-- Modules -> named in 7 lessons (ai-neural-network-design, ai-supervised-fine-tuning-of-llm and 5 more)
-- Networking -> named in 1 lesson (cs-osi-model)
-- Object Lifecycle -> named in 1 lesson (java-serialization)
 - Optionals -> Optional
-- Packages -> named in 3 lessons (ai-vector-databases, beh-company-and-motivation and 1 more)
-- Queue -> named in 47 lessons (ai-data-structures-and-algorithms, beh-teamwork and 45 more)
-- Record -> named in 59 lessons (ai-python, ai-supervised-fine-tuning-of-llm and 57 more)
-- Relationships -> named in 26 lessons (ai-deep-learning, ai-embedding-models and 24 more)
-- Set -> named in 181 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 179 more)
+- Set -> Collections Framework
 - Stack -> Stack
-- Static Keyword -> named in 1 lesson (java-default-and-static-interface-methods)
 - Static vs Dynamic Binding -> Polymorphism
 - Stream API -> Streams API
 - Strings and Methods -> Strings
-- Terminology -> named in 1 lesson (ai-machine-learning-fundamentals)
-- Testing -> named in 78 lessons (ai-a-b-testing, ai-ensemble-methods and 76 more)
-- Threads -> named in 28 lessons (cs-cpu-scheduling, cs-critical-section-problem and 26 more)
-- Transactions -> named in 25 lessons (ai-sql, cs-acid-properties and 23 more)
-- Type Casting -> named in 1 lesson (java-lambda-expressions)
-- Anemic Models -> named in 1 lesson (lld-encapsulation)
-- Be consistent -> named in 4 lessons (binary-search, java-hashmap-internals and 2 more)
-- Boundaries -> named in 36 lessons (ai-a-b-testing, ai-agents-and-agentic-systems and 34 more)
+- Threads -> Concurrency
 - CQRS -> CQRS
-- Clean Code -> named in 1 lesson (lld-library-management-system-design)
-- Composition over Inheritance -> named in 5 lessons (java-inheritance-vs-composition, lld-composition and 3 more)
-- Concrete Classes -> named in 5 lessons (java-collections-framework, lld-abstract-factory-pattern and 3 more)
-- Design Principles -> named in 1 lesson (lld-solid-principles)
-- Distributed -> named in 46 lessons (ai-probability-and-statistics, ai-scaling-monitoring-and-updates and 44 more)
-- Entities -> named in 9 lessons (ai-data-collection-and-preparation, lld-abstraction and 7 more)
+- Concrete Classes -> Abstract Classes
 - Event Sourcing -> Event sourcing
 - Event-Driven -> taught in sd-cqrs and 2 more
-- Functional Programming -> named in 1 lesson (java-java-8-features)
 - GoF Design Patterns -> Design Patterns
-- Law of Demeter -> named in 1 lesson (lld-encapsulation)
-- Layered -> named in 1 lesson (sd-object-storage)
-- Mappers -> named in 1 lesson (sd-n-1-query-problem)
-- Messaging -> named in 7 lessons (beh-why-this-company, lld-pub-sub-system-design and 5 more)
 - Microservices -> Microservices
-- Monolithic -> named in 1 lesson (sd-database-federation)
-- ORMs -> named in 3 lessons (java-jdbc, sd-n-1-query-problem and 1 more)
-- Policy vs Detail -> named in 3 lessons (beh-company-specific-questions, lld-hotel-management-system-design and 1 more)
 - Program against abstractions -> SOLID Principles
 - Publish-Subscribe -> Publish-subscribe
-- Pure functions -> named in 1 lesson (ai-software-engineering)
-- SOA -> named in 1 lesson (cs-dns)
-- SOLID -> named in 4 lessons (lld-aggregation, lld-solid-principles and 2 more)
 - Scope / Visibility -> Encapsulation
-- Structural -> named in 11 lessons (ai-bias-variance-tradeoff, java-concurrenthashmap and 9 more)
 - Tell, don't ask -> taught in lld-encapsulation
-- ABS -> named in 63 lessons (ai-candidate-generation, ai-data-collection-and-preparation and 61 more)
-- ACID -> named in 7 lessons (cs-acid-properties, sd-acid-vs-base and 5 more)
-- AVG -> named in 10 lessons (sql-aggregate-functions, sql-correlated-vs-nested-subqueries and 8 more)
-- Aggregate Queries -> named in 1 lesson (sd-database-sharding)
+- ABS -> Functions
+- AVG -> Aggregate functions
+- Aggregate Queries -> Aggregate functions
 - Alter Table -> DDL/DML/DCL/TCL
-- Attributes -> named in 9 lessons (ai-recommendation-systems, cs-normalization and 7 more)
+- Attributes -> Relational database fundamentals
 - B-Tree -> taught in ai-vector-databases and 8 more
-- BEGIN -> named in 16 lessons (beh-handling-feedback, cs-file-systems and 14 more)
-- BRIN -> named in 8 lessons (ai-training-and-optimization, ai-transformers and 6 more)
-- Basic RDBMS Concepts -> named in 1 lesson (sql-sql-injection-prevention)
-- Basic SQL Syntax -> named in 1 lesson (sql-join-vs-subquery)
-- CASE -> named in 76 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 74 more)
-- CEILING -> named in 2 lessons (java-hashset-vs-treeset, sd-horizontal-scaling)
-- CHECK -> named in 179 lessons (2-d-dynamic-programming, advanced-graphs and 177 more)
-- COALESCE -> named in 4 lessons (cs-memory-allocation, cs-socket-programming and 2 more)
-- COMMIT -> named in 34 lessons (ai-sql, beh-communication and 32 more)
-- CONCAT -> named in 10 lessons (ai-ranking, ai-transformers and 8 more)
-- COUNT -> named in 115 lessons (1-d-dynamic-programming, ai-candidate-generation and 113 more)
+- BEGIN -> DDL/DML/DCL/TCL
+- Basic RDBMS Concepts -> Relational database fundamentals
+- CASE -> CASE expression
+- CHECK -> Constraints
+- COALESCE -> NULL handling
+- COMMIT -> DDL/DML/DCL/TCL
+- CONCAT -> Functions
+- COUNT -> Aggregate functions
 - CTE -> CTEs
-- Columns -> named in 35 lessons (2-d-dynamic-programming, ai-data-collection-and-preparation and 33 more)
+- Columns -> Relational database fundamentals
 - Common Table Expressions -> CTEs
-- Consul -> named in 7 lessons (beh-leadership, cs-paging-and-virtual-memory and 5 more)
-- Correlated Subqueries -> named in 3 lessons (sql-correlated-vs-nested-subqueries, sql-running-totals-and-moving-averages and 1 more)
-- Create Table -> named in 2 lessons (sql-char-vs-varchar, sql-ddl-dml-dcl-tcl)
-- Creating Views -> named in 1 lesson (sql-ctes)
-- Cross Join -> named in 1 lesson (sql-joins)
-- DATE -> named in 26 lessons (ai-prompt-engineering, ai-sql and 24 more)
-- DELETE -> named in 37 lessons (ai-python, ai-sql and 35 more)
+- Correlated Subqueries -> Correlated vs nested subqueries
+- Create Table -> DDL/DML/DCL/TCL
+- Creating Views -> Views
+- Cross Join -> Joins
+- DATE -> Data types
+- DELETE -> DDL/DML/DCL/TCL
 - Data Constraints -> Constraints
 - Data Definition Language (DDL) -> DDL/DML/DCL/TCL
 - Data Integrity Constraints -> Constraints
 - Data Manipulation Language (DML) -> DDL/DML/DCL/TCL
-- Databases -> named in 19 lessons (ai-data-collection-and-preparation, ai-sql and 17 more)
-- Domains -> named in 5 lessons (beh-why-this-company, cs-dns and 3 more)
 - Drop Table -> DDL/DML/DCL/TCL
 - Dropping Views -> Views
-- Dynamic SQL -> named in 2 lessons (sql-sql-injection-prevention, sql-stored-procedures)
-- EXPLAIN -> named in 50 lessons (ai-a-b-testing, ai-evaluation-metrics and 48 more)
-- Etcd -> named in 4 lessons (sd-cap-theorem, sd-consistency-models and 2 more)
-- FLOOR -> named in 5 lessons (ai-convolutional-neural-networks, beh-company-and-motivation and 3 more)
-- FROM -> named in 258 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 256 more)
-- FULL OUTER JOIN -> named in 4 lessons (ai-sql, sql-inner-vs-outer-join and 2 more)
-- Foreign Key -> named in 7 lessons (cs-acid-properties, sd-sql-vs-nosql and 5 more)
-- GROUP BY -> named in 13 lessons (ai-sql, lld-splitwise-system-design and 11 more)
-- GiST -> named in 1 lesson (sd-design-a-ride-sharing-service)
+- EXPLAIN -> Execution plans
+- FLOOR -> Functions
+- FROM -> DDL/DML/DCL/TCL
+- FULL OUTER JOIN -> INNER vs OUTER JOIN
+- Foreign Key -> Constraints
+- GROUP BY -> GROUP BY and HAVING
 - Grant / Revoke -> DDL/DML/DCL/TCL
-- Grouping -> named in 8 lessons (ai-sql, java-streams-api and 6 more)
-- HAProxy -> named in 1 lesson (sd-layer-4-vs-layer-7-load-balancing)
-- HAVING -> named in 16 lessons (ai-candidate-generation, ai-sql and 14 more)
-- Hash -> named in 66 lessons (ai-data-structures-and-algorithms, ai-feature-engineering and 64 more)
+- Grouping -> GROUP BY and HAVING
+- HAVING -> GROUP BY and HAVING
 - Helm -> taught in cs-tcp-flow-and-congestion-control and 4 more
-- INNER JOIN -> named in 6 lessons (ai-sql, sql-execution-plans and 4 more)
-- INSERT -> named in 65 lessons (2-d-dynamic-programming, ai-data-structures-and-algorithms and 63 more)
+- INNER JOIN -> INNER vs OUTER JOIN
+- INSERT -> DDL/DML/DCL/TCL
 - Indexes and their Usecases -> Indexes
-- Introduction -> named in 1 lesson (beh-tell-me-about-yourself)
 - JOIN Queries -> Joins
 - Joining Tables -> Joins
-- LEFT JOIN -> named in 3 lessons (ai-sql, sql-inner-vs-outer-join and 1 more)
-- LENGTH -> named in 41 lessons (2-d-dynamic-programming, advanced-graphs and 39 more)
-- LOWER -> named in 50 lessons (ai-a-b-testing, ai-bias-variance-tradeoff and 48 more)
-- Lateral Join -> named in 1 lesson (sd-n-1-query-problem)
-- Learn the Basics -> named in 2 lessons (beh-why-this-company, cs-tcp-3-way-handshake)
-- MAX -> named in 54 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 52 more)
-- MIN -> named in 89 lessons (1-d-dynamic-programming, advanced-graphs and 87 more)
-- MOD -> named in 172 lessons (ai-a-b-testing, ai-agents-and-agentic-systems and 170 more)
-- MVCC -> named in 4 lessons (cs-locking-mechanisms, cs-transaction-isolation-levels and 2 more)
+- LEFT JOIN -> INNER vs OUTER JOIN
+- LENGTH -> Functions
+- MAX -> Aggregate functions
+- MIN -> Aggregate functions
+- MOD -> Functions
 - Managing Indexes -> Indexes
-- Modifying Data -> named in 1 lesson (ai-sql)
 - Modifying Views -> Views
-- NOT NULL -> named in 7 lessons (ai-sql, linked-list and 5 more)
-- NULL -> named in 42 lessons (ai-a-b-testing, ai-hypothesis-testing and 40 more)
-- NULLIF -> named in 1 lesson (sql-null-handling)
-- Nested Subqueries -> named in 1 lesson (sql-correlated-vs-nested-subqueries)
-- OLTP -> named in 1 lesson (sd-database-federation)
-- ORDER BY -> named in 13 lessons (ai-sql, sd-nosql-types and 11 more)
-- Object Model -> named in 5 lessons (java-inheritance-vs-composition, java-oop-concepts and 3 more)
+- NOT NULL -> Constraints
+- NULL -> NULL handling
+- NULLIF -> NULL handling
+- Nested Subqueries -> Correlated vs nested subqueries
+- ORDER BY -> DDL/DML/DCL/TCL
 - Object Privileges -> DDL/DML/DCL/TCL
-- Operators -> named in 10 lessons (ai-prediction-service, bit-manipulation and 8 more)
 - Optimizing Joins -> Query performance tuning
 - Performance Optimization -> Query performance tuning
-- PostgreSQL vs NoSQL Databases -> named in 1 lesson (sd-sql-vs-nosql)
-- Primary Key -> named in 17 lessons (cs-normalization, java-comparable-vs-comparator and 15 more)
-- Procedures and Functions -> named in 1 lesson (sql-stored-procedures)
-- Prometheus -> named in 1 lesson (sd-monitoring-and-observability)
-- Queries -> named in 52 lessons (ai-data-structures-and-algorithms, ai-embedding-models and 50 more)
-- Query Analysis Techniques -> named in 1 lesson (cs-normalization)
+- Primary Key -> Constraints
+- Query Analysis Techniques -> Execution plans
 - Query Optimization -> Query performance tuning
 - Query Planner -> Execution plans
-- Query Processing -> named in 1 lesson (sql-group-by-and-having)
 - RDBMS Benefits and Limitations -> Relational database fundamentals
-- RED -> named in 147 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 145 more)
-- REPLACE -> named in 55 lessons (1-d-dynamic-programming, ai-convolutional-neural-networks and 53 more)
-- RIGHT JOIN -> named in 3 lessons (ai-sql, sql-inner-vs-outer-join and 1 more)
-- ROLLBACK -> named in 16 lessons (ai-ml-system-design, ai-prediction-service and 14 more)
-- ROUND -> named in 29 lessons (advanced-graphs, ai-generative-ai-llms and 27 more)
+- REPLACE -> Functions
+- RIGHT JOIN -> INNER vs OUTER JOIN
+- ROLLBACK -> DDL/DML/DCL/TCL
+- ROUND -> Functions
 - Recursive CTE -> Recursive CTEs
 - Recursive Queries -> Recursive CTEs
 - Reducing Subqueries -> JOIN vs Subquery
-- Relational Model -> named in 2 lessons (sd-sql-vs-nosql, sql-relational-database-fundamentals)
-- Relations -> named in 42 lessons (ai-deep-learning, ai-embedding-models and 40 more)
+- Relational Model -> Relational database fundamentals
+- Relations -> Relational database fundamentals
 - Replication -> Replication
-- Resource Usage -> named in 1 lesson (ai-scaling-monitoring-and-updates)
-- Roles -> named in 13 lessons (ai-convolutional-neural-networks, ai-hypothesis-testing and 11 more)
 - Row-Level Security -> taught in cs-locking-mechanisms
-- Rows -> named in 57 lessons (2-d-dynamic-programming, ai-data-collection-and-preparation and 55 more)
-- SAVEPOINT -> named in 2 lessons (java-jdbc, sql-ddl-dml-dcl-tcl)
-- SELECT -> named in 85 lessons (1-d-dynamic-programming, ai-candidate-generation and 83 more)
-- SQL Keywords -> named in 1 lesson (sql-sql-injection-prevention)
-- SQL vs NoSQL Databases -> named in 1 lesson (sd-sql-vs-nosql)
-- SUBSTRING -> named in 6 lessons (1-d-dynamic-programming, java-string-vs-stringbuilder-vs-stringbuffer and 4 more)
-- SUM -> named in 47 lessons (advanced-graphs, ai-agents-and-agentic-systems and 45 more)
-- Salt -> named in 1 lesson (sd-unique-id-generation)
-- Scalar -> named in 12 lessons (ai-deep-learning, ai-prediction-service and 10 more)
-- Schemas -> named in 8 lessons (sd-database-federation, sd-database-sharding and 6 more)
-- Security -> named in 10 lessons (ai-prompt-engineering, ai-supervised-fine-tuning-of-llm and 8 more)
+- Rows -> Relational database fundamentals
+- SAVEPOINT -> DDL/DML/DCL/TCL
+- SELECT -> DDL/DML/DCL/TCL
+- SUBSTRING -> Functions
+- SUM -> Aggregate functions
+- Scalar -> Subqueries
+- Schemas -> Relational database fundamentals
 - Selective Projection -> Query performance tuning
-- Self Join -> named in 1 lesson (sql-joins)
+- Self Join -> Joins
 - Stored Procedures & Functions -> Stored procedures
-- TIME -> named in 203 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 201 more)
-- TIMESTAMP -> named in 27 lessons (ai-data-collection-and-preparation, ai-feature-engineering and 25 more)
-- Tables -> named in 32 lessons (ai-python, ai-sql and 30 more)
-- Tensor -> named in 4 lessons (ai-convolutional-neural-networks, ai-neural-network-design and 2 more)
+- TIME -> Data types
+- TIMESTAMP -> Data types
+- Tables -> Relational database fundamentals
 - Transaction Isolation Levels -> Transaction Isolation Levels
-- Transactions -> named in 25 lessons (ai-sql, cs-acid-properties and 23 more)
 - Truncate Table -> DDL/DML/DCL/TCL
-- Tuples -> named in 4 lessons (ai-python, sql-covering-indexes and 2 more)
-- UPDATE -> named in 106 lessons (ai-deep-learning, ai-ensemble-methods and 104 more)
-- UPPER -> named in 4 lessons (backtracking, cs-osi-model and 2 more)
-- USE -> named in 269 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 267 more)
-- Unique -> named in 42 lessons (2-d-dynamic-programming, ai-python and 40 more)
-- Using Indexes -> named in 1 lesson (ai-vector-databases)
-- WHERE -> named in 203 lessons (1-d-dynamic-programming, 2-d-dynamic-programming and 201 more)
+- Tuples -> Relational database fundamentals
+- UPDATE -> DDL/DML/DCL/TCL
+- Unique -> Constraints
+- Using Indexes -> Indexes
+- WHERE -> DDL/DML/DCL/TCL
 - What are Relational Databases? -> Relational database fundamentals
 - Write-ahead Log -> taught in cs-acid-properties and 4 more
-- awk -> named in 3 lessons (java-checked-vs-unchecked-exceptions, lld-composition and 1 more)
 - dense_rank -> taught in sql-row-number-rank-dense-rank and 1 more
-- first_value -> named in 1 lesson (sql-query-performance-tuning)
-- lag -> named in 14 lessons (1-d-dynamic-programming, ai-generative-ai-llms and 12 more)
-- lead -> named in 49 lessons (ai-data-structures-and-algorithms, ai-embedding-models and 47 more)
-- rank -> named in 30 lessons (ai-a-b-testing, ai-candidate-generation and 28 more)
-- row_number -> named in 1 lesson (sql-row-number-rank-dense-rank)
-- top -> named in 70 lessons (advanced-graphs, ai-agents-and-agentic-systems and 68 more)
+- first_value -> Window functions
+- lag -> LAG and LEAD
+- lead -> LAG and LEAD
+- rank -> ROW_NUMBER/RANK/DENSE_RANK
+- row_number -> ROW_NUMBER/RANK/DENSE_RANK
 - ACID, CAP Theorem -> ACID vs BASE
 - API Gateways -> API Gateway
-- Actors -> named in 2 lessons (lld-uml-sequence-diagram, lld-uml-use-case-diagram)
-- Application Layer -> named in 4 lessons (cs-osi-model, sd-design-a-file-storage-service and 2 more)
-- Architecture -> named in 28 lessons (ai-candidate-generation, ai-convolutional-neural-networks and 26 more)
 - Async Request Reply -> Message queues
-- Auth Strategies -> named in 40 lessons (ai-generative-model-evaluation, beh-choosing-and-organizing-stories and 38 more)
-- Availability -> named in 33 lessons (ai-ml-system-design, ai-problem-formulation and 31 more)
+- Availability -> High availability
 - Availability in Numbers -> High availability
-- Availability vs Consistency -> named in 20 lessons (ai-ml-system-design, cs-acid-properties and 18 more)
-- Background Jobs -> named in 1 lesson (sd-design-a-file-storage-service)
-- Balance -> named in 53 lessons (ai-a-b-testing, ai-data-structures-and-algorithms and 51 more)
-- Basic Auth -> named in 40 lessons (ai-generative-model-evaluation, beh-choosing-and-organizing-stories and 38 more)
+- Availability vs Consistency -> CAP theorem
 - Building JSON / RESTful APIs -> REST API
-- Bulkhead -> named in 1 lesson (sd-circuit-breaker)
-- CDN Caching -> named in 1 lesson (sd-design-a-video-streaming-service)
+- CDN Caching -> CDN
 - CQRS, Eventual Consistency -> CQRS
 - CRUD Operations -> REST API
 - Cache Aside -> Cache strategies
-- Caching Strategies -> named in 29 lessons (ai-ml-system-design, cs-dns and 27 more)
-- Choreography -> named in 2 lessons (sd-microservices, sd-sagas)
+- Caching Strategies -> Cache strategies
+- Choreography -> Sagas
 - Communication -> Communication
-- Compensating Transaction -> named in 2 lessons (sd-distributed-transactions, sd-sagas)
+- Compensating Transaction -> Sagas
 - Competing Consumers -> Message queues
-- Containers -> named in 5 lessons (ai-python, java-streams-api and 3 more)
 - Content Delivery Networks -> CDN
-- Cookies -> named in 5 lessons (cs-http-https, cs-tcp-3-way-handshake and 3 more)
 - Data Management -> taught in sd-object-storage
-- Databases -> named in 19 lessons (ai-data-collection-and-preparation, ai-sql and 17 more)
-- Denormalization -> named in 2 lessons (cs-normalization, sd-sql-vs-nosql)
-- Distributed Systems -> named in 6 lessons (cs-dns, sd-cap-theorem and 4 more)
-- Document Store -> named in 2 lessons (sd-nosql-types, sd-sql-vs-nosql)
-- Documentation -> named in 3 lessons (beh-ownership, java-optional and 1 more)
-- Domain Name System -> named in 1 lesson (cs-dns)
-- Error Handling -> named in 5 lessons (java-exceptions, lld-abstraction and 3 more)
+- Document Store -> NoSQL types
 - Event-Driven -> taught in sd-cqrs and 2 more
-- Eventual Consistency -> named in 14 lessons (sd-acid-vs-base, sd-cap-theorem and 12 more)
+- Eventual Consistency -> Consistency models
 - Fail-Over -> High availability
-- Federation -> named in 2 lessons (sd-database-federation, sd-n-1-query-problem)
-- Firewalls -> named in 2 lessons (cs-osi-model, sd-websockets)
-- Frameworks -> named in 4 lessons (ai-deep-learning, beh-leadership and 2 more)
-- Functional Programming -> named in 1 lesson (java-java-8-features)
+- Federation -> Database federation
 - Gateway Aggregation -> API Gateway
 - Gateway Offloading -> API Gateway
 - Gateway Routing -> API Gateway
-- Graph Databases -> named in 2 lessons (sd-nosql-types, sd-sql-vs-nosql)
-- GraphQL -> named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
-- HTTP -> named in 26 lessons (cs-http-https, cs-osi-model and 24 more)
-- HTTP Headers -> named in 3 lessons (sd-load-balancing, sd-rest-api and 1 more)
-- HTTP Methods -> named in 3 lessons (sd-grpc, sd-idempotency and 1 more)
-- HTTP Status Codes -> named in 2 lessons (cs-http-https, sd-grpc)
+- Graph Databases -> NoSQL types
+- HTTP -> HTTP/HTTPS
+- HTTP Methods -> REST API
+- HTTP Status Codes -> REST API
 - HTTP, HTTPS -> HTTP/HTTPS
-- Idempotent Operations -> named in 2 lessons (ai-agents-and-agentic-systems, sd-idempotency)
+- Idempotent Operations -> Idempotency
 - Instrumentation -> Monitoring and observability
-- Introduction -> named in 1 lesson (beh-tell-me-about-yourself)
-- Kafka -> named in 4 lessons (lld-pub-sub-system-design, sd-design-a-notification-system and 2 more)
 - Key-Value Store -> taught in lld-lru-cache-design and 11 more
-- Latency vs Throughput -> named in 20 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 18 more)
-- Layer 4 Load Balancing -> named in 1 lesson (sd-layer-4-vs-layer-7-load-balancing)
-- Layer 7 Load Balancing -> named in 2 lessons (sd-layer-4-vs-layer-7-load-balancing, sd-load-balancing)
-- Layered -> named in 1 lesson (sd-object-storage)
-- LeSS -> named in 49 lessons (ai-ensemble-methods, ai-hypothesis-testing and 47 more)
-- Learn the Basics -> named in 2 lessons (beh-why-this-company, cs-tcp-3-way-handshake)
-- Load Balancers -> named in 4 lessons (sd-high-availability, sd-horizontal-scaling and 2 more)
-- Load Balancing Algorithms -> named in 1 lesson (sd-load-balancing)
-- Load Testing -> named in 1 lesson (beh-failure-and-learning)
-- MAC -> named in 44 lessons (ai-data-structures-and-algorithms, ai-deep-learning and 42 more)
-- Management -> named in 21 lessons (beh-failure-and-learning, beh-leadership and 19 more)
-- Materialized View -> named in 2 lessons (sd-cqrs, sql-views)
-- Messaging -> named in 7 lessons (beh-why-this-company, lld-pub-sub-system-design and 5 more)
+- Layer 4 Load Balancing -> Layer 4 vs Layer 7 load balancing
+- Layer 7 Load Balancing -> Layer 4 vs Layer 7 load balancing
+- Load Balancers -> Load balancing
+- Load Balancing Algorithms -> Load balancing
 - Messaging Queues -> Message queues
-- Microservices Architecture -> named in 1 lesson (sd-api-gateway)
-- Monitoring -> named in 10 lessons (ai-ml-system-design, ai-scaling-monitoring-and-updates and 8 more)
-- Naming Conventions -> named in 2 lessons (lld-encapsulation, sd-object-storage)
-- Networks -> named in 15 lessons (ai-convolutional-neural-networks, ai-deep-learning and 13 more)
-- No Caching -> named in 1 lesson (sql-views)
-- NoSQL Databases -> named in 2 lessons (sd-nosql-types, sd-sql-vs-nosql)
+- Microservices Architecture -> Microservices
+- Monitoring -> Monitoring and observability
 - OIDC -> OAuth 2.0
-- OOP -> named in 3 lessons (java-oop-concepts, lld-abstraction and 1 more)
-- OSI -> named in 2 lessons (cs-osi-model, sd-layer-4-vs-layer-7-load-balancing)
-- Observability -> named in 2 lessons (sd-api-gateway, sd-monitoring-and-observability)
-- PII -> named in 1 lesson (sd-jwt)
-- Pagination -> named in 2 lessons (sd-n-1-query-problem, sd-rest-api)
-- Performance Metrics -> named in 2 lessons (ai-data-collection-and-preparation, ai-metrics-offline-and-online)
+- Observability -> Monitoring and observability
 - Performance Monitoring -> Monitoring and observability
-- Performance vs Scalability -> named in 1 lesson (beh-communication)
-- Priority Queue -> named in 4 lessons (cs-cpu-scheduling, heap-priority-queue and 2 more)
-- Proxies -> named in 6 lessons (ai-generative-model-evaluation, ai-metrics-offline-and-online and 4 more)
 - Publisher/Subscriber -> Publish-subscribe
 - Pull CDNs -> CDN
 - Push CDNs -> CDN
 - Python -> Python
-- REST -> named in 66 lessons (ai-agents-and-agentic-systems, ai-data-structures-and-algorithms and 64 more)
 - REST Principles -> REST API
 - RESTful APIs -> REST API
-- RPC -> named in 4 lessons (cs-socket-programming, sd-grpc and 2 more)
 - Rabbit MQ -> Message queues
 - Rate Limiting / Throttling -> Rate limiting
 - Refresh Ahead -> Cache strategies
 - Resource modeling -> REST API
-- Responsibilities -> named in 10 lessons (beh-delivering-results, lld-composition and 8 more)
-- Retry -> named in 29 lessons (ai-agents-and-agentic-systems, beh-company-specific-questions and 27 more)
-- SOLID -> named in 4 lessons (lld-aggregation, lld-solid-principles and 2 more)
-- SQL Databases -> named in 1 lesson (sd-sql-vs-nosql)
-- SQL Tuning -> named in 1 lesson (sql-index-seek-vs-scan)
-- SaFE -> named in 88 lessons (2-d-dynamic-programming, ai-a-b-testing and 86 more)
 - Scopes & Permissions -> OAuth 2.0
-- Security -> named in 10 lessons (ai-prompt-engineering, ai-supervised-fine-tuning-of-llm and 8 more)
-- Service Mesh -> named in 1 lesson (sd-service-discovery)
-- Sharding -> named in 12 lessons (ai-prediction-service, ai-scaling-monitoring-and-updates and 10 more)
-- Sidecar -> named in 2 lessons (sd-monitoring-and-observability, sd-service-discovery)
 - Simple JSON APIs -> REST API
-- Slack -> named in 3 lessons (beh-company-specific-questions, beh-prioritization and 1 more)
-- Strong Consistency -> named in 7 lessons (sd-consistency-models, sd-design-a-distributed-key-value-store and 5 more)
-- TCP -> named in 16 lessons (cs-dns, cs-http-https and 14 more)
+- Strong Consistency -> Consistency models
 - TCP/IP Model -> taught in cs-osi-model
 - Task Queues -> Message queues
-- Technical Skills -> named in 1 lesson (beh-teamwork)
-- Throttling -> named in 4 lessons (sd-api-gateway, sd-design-a-notification-system and 2 more)
+- Throttling -> Rate limiting
 - Token Based Auth -> OAuth 2.0
-- Tools -> named in 5 lessons (ai-agents-and-agentic-systems, ai-generative-ai-llms and 3 more)
-- UDP -> named in 8 lessons (cs-dns, cs-http-https and 6 more)
-- UML -> named in 6 lessons (lld-aggregation, lld-association and 4 more)
 - URI Design -> REST API
 - URL, Query & Path Parameters -> REST API
-- Understand the Basics -> named in 30 lessons (ai-convolutional-neural-networks, ai-deep-learning and 28 more)
 - Usage Monitoring -> Monitoring and observability
-- Versioning Strategies -> named in 8 lessons (ai-software-engineering, sd-caching and 6 more)
 - Visualization & Alerts -> Monitoring and observability
-- Weak Consistency -> named in 2 lessons (java-concurrenthashmap, java-fail-fast-vs-fail-safe-iterators)
+- Weak Consistency -> Consistency models
 - Web Sockets -> WebSockets
 - Wide Column Store -> NoSQL types
 - Write-behind -> taught in sd-cache-strategies
-- Write-through -> named in 5 lessons (cs-tlb-and-caching, sd-cache-strategies and 3 more)
+- Write-through -> Cache strategies
 - gRPC APIs -> gRPC
