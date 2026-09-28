@@ -182,6 +182,10 @@ export function CoachChat({
   // Only warn about leaving once an answer is actually taking a while.
   const [slow, setSlow] = useState(false);
   const [stopFailed, setStopFailed] = useState(false);
+  // Which attempt a pending stop belongs to. Sending a new message moves this on,
+  // so a stop request that fails after the reader has carried on cannot put its
+  // warning against the wrong reply.
+  const attempt = useRef(0);
   useEffect(() => {
     if (!busy) return;
     const timer = setTimeout(() => setSlow(true), 4000);
@@ -193,22 +197,22 @@ export function CoachChat({
   // so dropping it is no longer a cancellation. Without this the model would keep
   // going and save a reply the reader had just said they did not want.
   const halt = async () => {
+    const mine = ++attempt.current;
     await stop();
     setStopFailed(false);
-    try {
-      const response = await fetch("/api/coach/stop", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ threadId }),
-        keepalive: true,
-      });
+    const failed = await fetch("/api/coach/stop", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ threadId }),
+      keepalive: true,
+    }).then(
       // Reaching the server is what stops the model. If that did not happen the
       // reply carries on and is saved, and the reader is entitled to know rather
       // than watch an answer they cancelled appear anyway.
-      if (!response.ok) setStopFailed(true);
-    } catch {
-      setStopFailed(true);
-    }
+      (response) => !response.ok,
+      () => true,
+    );
+    if (failed && attempt.current === mine) setStopFailed(true);
   };
 
   const send = (text: string) => {
@@ -224,6 +228,7 @@ export function CoachChat({
     clearError();
     setSlow(false);
     setStopFailed(false);
+    attempt.current += 1;
     void sendMessage({ text: trimmed });
     setInput("");
   };
