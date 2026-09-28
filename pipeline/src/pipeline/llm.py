@@ -31,6 +31,27 @@ DEFAULT_PRICE = (1.0, 5.0)  # unknown model: count it conservatively
 PEAK_WINDOWS = ((1, 4), (6, 10))
 
 
+# One lock per connection, shared by everything that touches it.
+#
+# A DuckDB connection is not thread-safe, and the lock belongs to the
+# connection rather than to whoever happens to be using it. A worker pool
+# holding its own lock while LLM held a second one over the same connection
+# left the two of them free to interleave: a select's rows came back short,
+# `dict(zip(cols, row))` quietly dropped the missing keys, and the topic died
+# on `KeyError: 'title'` - twice in 274, never in the same place.
+#
+# Reentrant, so a caller that already holds it and reaches code that takes it
+# again stalls nothing. A 40-minute run deadlocking on its own lock is a worse
+# outcome than a nested acquire nobody notices.
+_LOCKS: dict[int, threading.RLock] = {}
+_LOCKS_GUARD = threading.Lock()
+
+
+def lock_for(con: duckdb.DuckDBPyConnection) -> threading.RLock:
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(id(con), threading.RLock())
+
+
 class LLMError(RuntimeError):
     pass
 
@@ -63,10 +84,18 @@ def cost_usd(model: str, tokens_in: int, tokens_out: int, off_peak: bool) -> flo
     return cost / 2 if off_peak and model.startswith("deepseek") else cost
 
 
+# Without these the SDK waits 600s per attempt and retries twice, so one
+# stalled request blocks a whole run for half an hour. A consistency run lost
+# 28 minutes to a single hung call that never returned.
+REQUEST_TIMEOUT = 120.0
+MAX_RETRIES = 2
+
+
 def _default_client():
     from openai import OpenAI
 
-    return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=os.environ.get("AI_BASE_URL") or None)
+    return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=os.environ.get("AI_BASE_URL") or None,
+                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
 
 
 def _review_client():
@@ -75,7 +104,8 @@ def _review_client():
         return None
     from openai import OpenAI
 
-    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=os.environ.get("REVIEW_BASE_URL") or None)
+    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=os.environ.get("REVIEW_BASE_URL") or None,
+                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
 
 
 class LLM:
@@ -85,9 +115,14 @@ class LLM:
         self.max_usd = max_usd if max_usd is not None else float(os.environ.get("PIPELINE_MAX_USD", DEFAULT_MAX_USD))
         self.client = client or _default_client()
         # DuckDB connections aren't thread-safe; calls may run in a thread pool.
-        self.lock = threading.Lock()
+        # The lock is the connection's, so a runner that also reads it in
+        # workers waits on the same one rather than on a lock of its own.
+        self.lock = lock_for(con)
         # This process's calls per model: {model: [calls, cost_usd]}, for live progress lines.
         self.run_costs: dict[str, list] = {}
+        # Calls started but not yet charged, so the cap accounts for them.
+        self.in_flight = 0
+        self.typical_call_usd = 0.02
         self.models = models or {"fast": os.environ["AI_MODEL_FAST"], "smart": os.environ["AI_MODEL_SMART"]}
         # Per-tier clients; tiers without one use the main client.
         self.clients = dict(clients or {})
@@ -101,8 +136,21 @@ class LLM:
         error; raises LLMError if the second answer is also invalid."""
         with self.lock:
             spent = spend_usd(self.con)
-        if spent >= self.max_usd:
-            raise BudgetExceeded(f"AI spend ${spent:.2f} reached the ${self.max_usd:.2f} cap")
+            in_flight = self.in_flight
+            self.in_flight += 1
+        try:
+            # Every worker reads the same total before any of them records a
+            # cost, so with 14 in flight the cap could be passed by a dozen
+            # calls. Charging the calls already running against it closes most
+            # of that gap without pretending to know their exact cost.
+            if spent + in_flight * self.typical_call_usd >= self.max_usd:
+                raise BudgetExceeded(f"AI spend ${spent:.2f} plus {in_flight} in flight reached the ${self.max_usd:.2f} cap")
+            return self._complete_json(system, user, schema, tier, purpose)
+        finally:
+            with self.lock:
+                self.in_flight -= 1
+
+    def _complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "") -> T:
         model = self.models[tier]
         system_full = (
             f"{system}\n\nReply with a single JSON object matching this JSON Schema, and nothing else:\n"

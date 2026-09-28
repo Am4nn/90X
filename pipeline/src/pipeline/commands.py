@@ -102,29 +102,134 @@ def cards(args, con) -> None:
     print(f"cards: {stats}, spend ${llm.spend_usd(con):.2f}")
 
 
+def lessons(args, con) -> None:
+    from . import llm
+    from .lessons import run as lesson_run
+
+    written, failed = lesson_run.run(
+        con, only=args.topics or None, limit=args.limit, redo=args.redo, tier=args.tier
+    )
+    print(f"lessons: {written} written, {failed} failed, spend ${llm.spend_usd(con):.2f}")
+
+
+def lesson_cards(args, con) -> None:
+    from . import llm
+    from .cards import run_lessons
+
+    kept, rejected = run_lessons.run(
+        con, only=args.topics or None, limit=args.limit, redo=args.redo, tier=args.tier
+    )
+    total = kept + rejected
+    share = rejected / total if total else 0
+    print(f"cards: {kept} kept, {rejected} rejected ({share:.0%}), spend ${llm.spend_usd(con):.2f}")
+
+
+def consistency(args, con) -> None:
+    import json
+    from pathlib import Path
+
+    from . import llm
+    from .config import REPO_DIR
+    from .lessons import consistency as c
+    from .lessons import run as lesson_run
+
+    ai = llm.LLM(con)
+    found = c.run(con, ai, domains=args.domains or None, tier=args.tier)
+    out = Path(REPO_DIR) / ".planning" / "lesson-contradictions.md"
+    lines = ["# Claims that disagree across lessons", "",
+             f"{len(found)} found." if found else "None found.", ""]
+    for x in found:
+        lines += [f"## {x['domain']}: {', '.join(x['topics'])}", "",
+                  f"- **They disagree:** {x['disagreement']}",
+                  f"- **Correct:** {x['correct']}",
+                  f"- **Rewriting:** `{x['fix']}`", ""]
+    out.write_text("\n".join(lines), encoding="utf-8")
+    print(f"{len(found)} contradictions, written to {out}")
+
+    if args.fix and found:
+        # Each named lesson is rewritten once, carrying the correction.
+        for slug in sorted({x["fix"] for x in found}):
+            notes = "\n".join(
+                f"- [contradicts {', '.join(t for t in x['topics'] if t != slug)}] {x['correct']}"
+                for x in found
+                if x["fix"] == slug
+            )
+            con.execute("update lessons set status = 'draft', problems = ? where topic_slug = ?", [notes, slug])
+        print(f"marked {len({x['fix'] for x in found})} lessons for rewrite; run `pipeline lessons` to redo them")
+    print(f"spend ${llm.spend_usd(con):.2f}")
+
+
+def card_review(args, con) -> None:
+    from pathlib import Path
+
+    from .cards import review_pack
+    from .config import REPO_DIR
+
+    out = Path(REPO_DIR) / ".planning" / "card-review.md"
+    out.write_text(review_pack.report(con), encoding="utf-8")
+    print(f"written to {out}")
+
+
+def lesson_review(args, con) -> None:
+    from pathlib import Path
+
+    from .config import REPO_DIR
+    from .lessons import review_pack
+
+    out = Path(REPO_DIR) / ".planning" / "lesson-review.md"
+    out.write_text(review_pack.report(con), encoding="utf-8")
+    print(f"written to {out}")
+
+
+def gaps(args, con) -> None:
+    from pathlib import Path
+
+    from . import llm
+    from .config import REPO_DIR
+    from .lessons import gaps as g
+
+    # --report-only rewrites the write-up from the verdicts already stored. The
+    # sort costs a model run over ~2,000 candidates; the wording does not.
+    rows = g.stored(con) if args.report_only else g.run(
+        con, llm.LLM(con), domains=args.domains or None, tier=args.tier)
+    if args.report_only and not rows:
+        raise SystemExit("no stored verdicts: run `pipeline gaps` without --report-only first")
+    out = Path(REPO_DIR) / ".planning" / "taxonomy-gaps.md"
+    out.write_text(g.report(rows), encoding="utf-8")
+    kept = sum(1 for r in rows if r["verdict"] == "gap")
+    print(f"gaps: {kept} of {len(rows)} candidates are real, written to {out}, spend ${llm.spend_usd(con):.2f}")
+
+
+def roadmaps(args, con) -> None:
+    from . import roadmaps as rm
+
+    counts = rm.fetch()
+    staged = rm.normalize(con)
+    linked = con.execute("select count(*) from roadmap_nodes where topic_slug is not null").fetchone()[0]
+    print(f"{len(counts)} roadmaps, {staged} nodes staged, {linked} linked to a topic")
+
+
 def publish(args, con) -> None:
     import os
 
     from . import publish as p
 
-    for table, (n, deleted) in p.run(con, os.environ["DATABASE_URL"], dry_run=args.dry_run).items():
+    for table, (n, deleted) in p.run(con, os.environ["DATABASE_URL"], dry_run=args.dry_run, force=args.force).items():
         print(f"  {table:15} {n:6} upserted, {deleted} removed")
     print("dry run: rolled back" if args.dry_run else "published")
 
 
 def rebatch(args, con) -> None:
-    import os
-
     from .cards import rebatch as rb
 
-    summary = rb.run(con, None if args.dry_run else os.environ["DATABASE_URL"], dry_run=args.dry_run)
+    summary = rb.run(con, dry_run=args.dry_run)
     for label, n in sorted(summary.items()):
         print(f"  {label:40} {n:5} cards")
-    print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", applied to staging and Supabase"))
+    print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", in staging; run publish to send them"))
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "publish": publish, "rebatch": rebatch, "status": status}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status}
 
 
 def run(name: str, args) -> None:

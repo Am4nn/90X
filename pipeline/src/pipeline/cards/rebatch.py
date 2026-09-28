@@ -3,14 +3,15 @@ reviews a handful of batches instead of one per generation run. Each card also
 gets a risk score (the reviewer's lowest score, scaled 0-1) so the review
 screen can show the riskiest cards first.
 
-Works on staging and on Supabase in one go: cards are already published there
-as drafts, so the new batches are inserted, cards are moved, and the old,
-now-empty draft batches are removed."""
+Staging only. This used to write to Supabase as well, which worked while the
+cards were always already up there and broke the first time a batch was built
+before its first publish: the batch was marked published, publish sends
+unpublished batches, and 2,692 cards were grouped and never sent. Publish is
+the one path to Supabase now, and it carries the batch, the label and the
+risk together."""
 
 import json
 import uuid
-
-import psycopg
 
 DSA_GROUPS = {
     "dsa-arrays": ("DSA · Arrays, strings, windows",
@@ -49,11 +50,21 @@ def group_of(domain: str, topic: str | None, parent: str | None, sort: int, sd_s
         if topic in CS_DB:
             return "cs-db", "CS · Databases"
         return "cs-os", "CS · Operating systems, OOP"
-    return domain, {"java": "Java", "sql": "SQL"}.get(domain, domain)
+    return domain, {"java": "Java", "sql": "SQL", "ai": "AI / ML", "lld": "Low level design",
+                    "behavioral": "Behavioural"}.get(domain, domain)
 
 
 def risk_of(quality) -> float | None:
+    """Despite the name, LOW means doubtful.
+
+    `pickReviewSample` sorts ascending and reviews the first half, treating a
+    card with no score as safest. So the column holds confidence: the old
+    reviewer's lowest 0-5 score scaled down, and for lesson cards the gate's
+    own confidence, which is already 0-1. Inverting it here would put the
+    cards the gate liked most in front of the reviewer."""
     q = json.loads(quality) if isinstance(quality, str) else (quality or {})
+    if isinstance(q.get("gate_confidence"), (int, float)):
+        return round(float(q["gate_confidence"]), 3)
     scores = [q[k] for k in ("correct", "clear", "relevant") if isinstance(q.get(k), (int, float))]
     return round(min(scores) / 5, 3) if scores else None
 
@@ -65,17 +76,24 @@ def plan(con) -> dict[str, dict]:
            where domain = 'system_design' and slug <> ? and coalesce(parent_slug, '') <> ?""",
         [CASE_STUDIES, CASE_STUDIES],
     ).fetchone()[0] or 0
+    # Drafts are what ship; rejected cards are here for the denominator only.
+    # Filtering to drafts alone made `ai_pass_rate` 1.0 for every lesson batch,
+    # because a lesson card the gate turned down is stored as `rejected` rather
+    # than as a draft with kept = false, so nothing was left to fail. A
+    # `repaired` row is excluded on purpose: its replacement is already counted
+    # as a draft, and counting both would penalise a topic for being fixed.
     rows = con.execute(
         """select c.id, c.kept, c.quality, t.domain, c.topic_slug, t.parent_slug, coalesce(t.sort, 0)
            from cards c join topics t on t.slug = c.topic_slug
-           where coalesce(c.status, 'draft') = 'draft'"""
+           where coalesce(c.status, 'draft') in ('draft', 'rejected')"""
     ).fetchall()
     groups: dict[str, dict] = {}
     for card_id, kept, quality, domain, topic, parent, sort in rows:
         key, label = group_of(domain, topic, parent, sort, split)
-        g = groups.setdefault(key, {"label": label, "domain": domain, "topics": set(), "card_ids": [], "risks": {},
-                                    "generated": 0})
+        g = groups.setdefault(key, {"label": label, "domain": domain, "topics": set(), "card_ids": [],
+                                    "all_ids": [], "risks": {}, "generated": 0})
         g["generated"] += 1
+        g["all_ids"].append(card_id)
         if kept:
             g["topics"].add(topic)
             g["card_ids"].append(card_id)
@@ -85,7 +103,7 @@ def plan(con) -> dict[str, dict]:
     return groups
 
 
-def run(con, database_url: str | None, dry_run: bool = False) -> dict[str, int]:
+def run(con, dry_run: bool = False) -> dict[str, int]:
     groups = plan(con)
     ids = {key: str(uuid.uuid4()) for key in groups}
     summary = {groups[k]["label"]: len(groups[k]["card_ids"]) for k in groups}
@@ -93,30 +111,18 @@ def run(con, database_url: str | None, dry_run: bool = False) -> dict[str, int]:
         return summary
 
     old = [r[0] for r in con.execute("select id from card_batches").fetchall()]
-    if database_url:
-        with psycopg.connect(database_url, prepare_threshold=None) as pg, pg.cursor() as cur:
-            for key, g in groups.items():
-                cur.execute(
-                    """insert into public.card_batches (id, domain, label, topic_slugs, ai_pass_rate, status)
-                       values (%s, %s, %s, %s, %s, 'draft')""",
-                    [ids[key], g["domain"], g["label"], sorted(g["topics"]), g["pass_rate"]],
-                )
-                cur.executemany(
-                    "update public.cards set batch_id = %s, risk = %s where id = %s and status = 'draft'",
-                    [[ids[key], g["risks"][c], c] for c in g["card_ids"]],
-                )
-            # Old draft batches that no longer hold any card.
-            cur.execute(
-                """delete from public.card_batches b where b.status = 'draft' and b.label is null
-                   and not exists (select 1 from public.cards c where c.batch_id = b.id)""",
-            )
     for key, g in groups.items():
         con.execute(
-            """insert into card_batches (id, domain, topic_slugs, ai_pass_rate, status, published)
-               values (?, ?, ?, ?, 'draft', true)""",
-            [ids[key], g["domain"], sorted(g["topics"]), g["pass_rate"]],
+            """insert into card_batches (id, domain, label, topic_slugs, ai_pass_rate, status)
+               values (?, ?, ?, ?, ?, 'draft')""",
+            [ids[key], g["domain"], g["label"], sorted(g["topics"]), g["pass_rate"]],
         )
-        con.executemany("update cards set batch_id = ? where id = ?", [[ids[key], c] for c in g["card_ids"]])
-    # Dropped (not kept) cards move with their group too, so old batches empty out.
+        # Dropped cards move with their group too, so no card is left pointing
+        # at a batch row this same call then deletes.
+        con.executemany("update cards set batch_id = ? where id = ?", [[ids[key], c] for c in g["all_ids"]])
+        # Risk is the review screen's sort key and it sorts ascending, so a card
+        # with none reads as the safest in the batch.
+        con.executemany("update cards set risk = ? where id = ?",
+                        [[g["risks"][c], c] for c in g["card_ids"]])
     con.execute(f"delete from card_batches where id in ({', '.join('?' * len(old))})", old) if old else None
     return summary

@@ -1,8 +1,15 @@
-"""Split documents and problem statements into ~300-450-word chunks for the
-coach's semantic search. Each chunk starts with its title for context."""
+"""Split lessons, documents and problem statements into ~300-450-word chunks
+for the coach's semantic search. Each chunk starts with its title for context.
+
+Lessons are indexed alongside the raw documents rather than instead of them.
+A lesson is the better answer - it is authored, self-contained, and fact
+checked - and it is the only source the coach can cite that sends the reader
+somewhere we control."""
 
 import hashlib
 import json
+
+from .config import SITE_URL
 
 
 def split_text(text: str, max_words: int = 450, min_words: int = 60) -> list[str]:
@@ -42,6 +49,14 @@ def build_chunks(owner_kind: str, owner_id: str, title: str, text: str, meta: di
 
 def run(con) -> int:
     rows: list[dict] = []
+    for slug, title, body, domain in con.execute(
+        """select l.topic_slug, l.title, l.body_md, t.domain
+           from lessons l join topics t on t.slug = l.topic_slug
+           where l.status = 'ok'"""
+    ).fetchall():
+        rows += build_chunks("lesson", slug, title, body,
+                             {"domain": domain, "topic_slug": slug, "source_id": "90x",
+                              "title": title, "url": f"{SITE_URL}/library/topic/{slug}"})
     for doc_id, title, body, domain, topic, source, url in con.execute(
         "select id, title, body_md, domain, topic_slug, source_id, url from documents"
     ).fetchall():

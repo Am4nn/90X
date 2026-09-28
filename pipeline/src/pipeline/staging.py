@@ -43,13 +43,49 @@ create table if not exists chunks (
 );
 create table if not exists card_batches (
     id text primary key, domain text not null, topic_slugs text[], created_at timestamp default now(),
-    ai_pass_rate double, sample_pass_rate double, status text default 'draft', published boolean default false
+    ai_pass_rate double, sample_pass_rate double, status text default 'draft'
 );
 create table if not exists cards (
     id text primary key, batch_id text, topic_slug text, problem_slug text, document_id text,
     format text not null, difficulty text, prompt_md text not null, options json,
     answer_md text not null, key_points json, source_refs json, quality json,
     status text default 'draft', kept boolean
+);
+create table if not exists lessons (
+    topic_slug text primary key, title text not null, body_md text not null,
+    source_refs json, words int, status text default 'draft', problems text,
+    generated_at timestamp
+);
+-- practice: problems and real interview questions this lesson unlocks.
+-- findings: what the fact-checker still objected to, when status is 'failed'.
+alter table lessons add column if not exists practice json;
+alter table lessons add column if not exists findings json;
+alter table lessons add column if not exists summary text;
+alter table cards add column if not exists source text default 'chunk';
+alter table cards add column if not exists reject_reason text;
+alter table cards add column if not exists created_at timestamp;
+-- risk and label are set by rebatch and carried by publish. They used to be
+-- written straight to Supabase, which only worked when the cards were already
+-- there; a batch built before its first publish arrived unlabelled, and every
+-- card arrived with no risk, which the review screen reads as "safest".
+alter table cards add column if not exists risk double;
+alter table card_batches add column if not exists label text;
+-- `published` decided what publish sent, which made the result depend on
+-- bookkeeping rather than on the data. Publish sends every batch and
+-- converges, so nothing reads this any more.
+alter table card_batches drop column if exists published;
+-- What the sorter decided about each roadmap candidate. Kept because the
+-- verdicts cost a model run and the write-up does not: rewording the report,
+-- changing where the shortlist is cut, or deduplicating it should not mean
+-- paying to sort 1,959 candidates again.
+create table if not exists taxonomy_gaps (
+    domain text not null, label text not null, verdict text not null,
+    covered_by text, relevance double, why text, judged_at timestamp,
+    primary key (domain, label)
+);
+create table if not exists roadmap_nodes (
+    id text primary key, roadmap text not null, domain text not null, label text not null,
+    kind text not null, sort int not null, topic_slug text
 );
 create table if not exists pattern_tricks (
     id text primary key, pattern_slug text not null, name text not null, idea_md text not null,

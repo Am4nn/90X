@@ -1,8 +1,10 @@
 # 90x handoff
 
 Written 2026-09-28 at the end of the build session that took 90x from a spec to a
-working app. Read this, then `.planning/SPEC.md`. Everything below is true of
-`main` at commit `78b7c9b`.
+working app, and brought up to date the same day when the content rebuild
+published. Read this, then `.planning/SPEC.md`. The app is `main` at `78b7c9b`;
+the content rebuild is branch `content-rebuild` (PR #19), already published to
+Supabase and waiting to merge.
 
 ## What 90x is
 
@@ -15,10 +17,10 @@ All five MVP parts are built and merged:
 
 | Part | What it does |
 |---|---|
-| 1 Pipeline | 3,693 problems, 5,290 notes, 274 topics, 191 pattern tricks, 8,556 cards |
+| 1 Pipeline | 3,693 problems, 274 topics and their lessons, 191 pattern tricks, 2,109 roadmap nodes |
 | 2 Foundation + Library | Google sign-in, admin approval, setup, Pattern Map, check-ins, LeetCode sync |
 | 3 Tracker | Campaign, Today + 90 Grid, review ladder, streak with revive, readiness, Me, push |
-| 4 Feed | AI-graded typed answers, spaced repetition, diagnostic, flags, `/admin/cards` |
+| 4 Feed | AI-graded typed answers, spaced repetition, diagnostic, flags, declarations, `/admin/cards` |
 | 5 Coach | Tool-using chat, memory, solution review, pattern lessons, mocks, STAR, weekly review |
 
 Plus: installable app with offline Today/Feed, Playwright in CI, brand icons and
@@ -51,18 +53,59 @@ serious bugs were caught (see below).
    issues from `https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/issues/`
    with that token and fix what it found. One real error was captured in
    production and has never been looked at.
-2. **Ask the user to review card batches.** `/admin/cards` holds 13 batches of
-   drafts; 18 of 20 good publishes one. **The Feed serves nothing until at least
-   one batch is published.** This is the single biggest gap between "built" and
-   "usable".
-3. **Finish the knowledge index.** About 1,291 chunks of 10,291 are still not in
-   Upstash Vector (the free tier allows 10K/day and the first run took 9,000).
-   Run `cd pipeline && .venv/Scripts/python.exe -m pipeline embed`. Coach's
-   `search_knowledge` is 87% loaded until then.
+2. **Aman's card review is waiting on him.** `.planning/card-review.md` was
+   written and sent on 2026-09-28: 25 cards, each beside the lesson it came
+   from, plus all 27 the gate rejected with its reasons. One sample gates
+   every batch, because reviewing 20 cards from each of 16 batches is 320 and
+   he said plainly he will not do that. Nothing is `live`, so the Feed serves
+   nothing until he approves batches in `/admin/cards`.
+3. **Four lessons need his ruling**, listed under Known open items.
 4. **Ask the user to check the iPhone hand-off.** With an opaque status bar the
    web view starts below it, so the loading splash may sit ~10–30pt lower than
    the iOS launch image. Needs a real device; the fix is either
    `black-translucent` (then pad for the notch) or per-device offsets.
+
+## The content rebuild (2026-09-28)
+
+Aman read the Library and found it unusable: it was rendering raw scraped
+source text as if it were study material - 25,000-character OSTEP chapters,
+markdown tables of links, PDF output with broken ligatures - and cards were
+generated from those chunks while holding them, so drafts asked about "the
+reference solution" the reader never sees. He was right, and `.planning/`
+holds the whole story: `content-rebuild.md` measures the damage,
+`rebuild-plan.md` is the execution list, `rebuild-dependencies.md` is the
+pass over what else broke when documents were deleted.
+
+**Where it stands.** All of it is published to Supabase and the branch is
+`content-rebuild` (PR #19):
+
+| | |
+|---|---|
+| Lessons | 270 of 274 topics; 4 held back for Aman's ruling |
+| Cards | 2,783 drafts in 16 labelled batches, none `live` yet |
+| Gate | read 2,810 cards, dropped 27 (1%) |
+| Retired | 8,556 chunk cards, with no study history at risk — nothing was ever live |
+| Vector index | fully loaded, 2,010 upserted, nothing deferred |
+| Roadmaps | 2,109 nodes |
+
+What replaced it:
+
+- **One authored lesson per topic**, written from that topic's material. The
+  model fills fields and we render the Markdown, so every lesson reads the
+  same way instead of inheriting the shape of its source. Each carries a
+  spoken 60-second answer and a follow-up ladder with answers.
+- **Gates, because prompts were not enough.** The old card prompt already
+  said "no questions about the text itself" and the drafts leaked anyway. So:
+  a structural contract, an independent model fact-checking every claim, and
+  for cards an answerability gate that reads the question and nothing else.
+- **`documents` is gone from Supabase**, along with `/library/doc` and
+  `cards.document_id`. The master copy lives in pipeline staging and the
+  vector index, which is all Coach's retrieval needs.
+- **Roadmaps** from roadmap.sh as a per-area checklist; only 7% of nodes map
+  to a topic, which is expected rather than a gap.
+- **Declarations**: the reader tells the Feed "new to me" or "I already know
+  this", because the app cannot know what they learned before 90x existed.
+  Neither can move a score.
 
 ## Known open items (none are blocking)
 
@@ -77,8 +120,24 @@ serious bugs were caught (see below).
   Feed's Redis queue format instead of calling the Feed service.
 - **17 more minor findings** are listed in PR #11's description (the whole-app
   review). Read it before starting new work in an area.
-- **Cards for ~36 DSA problems** were cut off when the pipeline hit its $22 cap,
-  and 13 more failed on invalid JSON. A re-run costs about $0.15.
+- **Four lessons are held back** for claims the fact-checker calls outright
+  false, and Aman wants to rule on them himself: `lld-inheritance`,
+  `sd-circuit-breaker`, `sd-distributed-transactions`, `sql-ctes`. (The
+  earlier four — `sd-design-a-url-shortener`, `two-pointers`,
+  `cs-tlb-and-caching`, `sql-recursive-ctes` — were rewritten and passed.)
+  Their topics do not appear in the Library rather than 404ing, because the
+  listing joins on the lesson.
+- **Cross-lesson consistency has not been re-run** since every lesson was
+  rewritten. The rewrite carried the previous round's corrections in as
+  notes, so the four contradictions it found are addressed, but a fresh pass
+  over the new text has not happened. It costs about $1.40.
+- **Cross-lesson consistency is not exhaustive.** An area is read in
+  overlapping windows of eight, so two lessons far apart in the sort order are
+  never compared. It found four real contradictions and missed one that a
+  human reading the pack had already spotted.
+- **Coach should be able to write a lesson on demand** when the existing ones
+  do not cover a question, through the same contract, fact check and
+  answerability gates. Agreed, not built.
 
 ## Things that bite (learned the hard way)
 
@@ -100,6 +159,38 @@ serious bugs were caught (see below).
   Reset such state in the event handler instead.
 - **Vercel Hobby allows 300s** when Fluid Compute is on (it is, by default). A
   route timing out at 60s was our own `maxDuration = 60`, not the plan.
+- **The OpenAI SDK waits 600s per attempt and retries twice.** Nothing set a
+  timeout, and one stalled request blocked a run for 28 minutes. `llm.py` now
+  passes 120s. Low CPU looks the same for working and hung: check whether CPU
+  is *increasing* between samples, not whether it is low.
+- **A green test suite does not mean the code parses.** A syntax error sat in
+  `commands.py` through 114 passing tests because nothing imported it;
+  `tests/test_cli.py` now imports every module.
+- **`cards.id` is a uuid.** Readable ids like `slug:l0` never publish, and an
+  id derived from a card's position moves when the gate changes its mind about
+  an earlier card, so study history can attach to a different question. Derive
+  it from the question.
+- **Deleting a card cascades** to `card_reviews`, `card_state`, `card_flags`
+  and `batch_review_items`. `publish` refuses to remove cards holding answers
+  or schedules unless forced. What counts as "staging still has this card" is
+  `kept`, not the row's presence: a rejected card keeps its row, so matching
+  on presence left a card that a later run rejected live in the Feed for good.
+- **`publish` is the only path to Supabase, and it converges.** `rebatch`
+  writes to staging alone. It used to write to both, which worked only while
+  the cards were already up there: the first batch built before its first
+  publish was marked published, and publish sends what is not published, so
+  2,692 cards were grouped and would never have been sent. `risk` and `label`
+  travel in staging for the same reason — written straight to Supabase they
+  missed any card published afterwards, and `pickReviewSample` sorts risk
+  ascending, so a null card reads as the safest in the batch.
+- **One lock per DuckDB connection** (`llm.lock_for`). The runners each held
+  a lock of their own while `LLM` held a second over the same connection, so
+  a worker's select could interleave with another worker's cost log; the
+  select came back short, `dict(zip(cols, row))` dropped the keys it had no
+  values for, and two topics of 274 died on `KeyError: 'title'`.
+- **A follow-up question can be two sentences.** "Can a table violate both
+  2NF and 3NF at once? Give an example." is what an interviewer says, and
+  testing the whole string saw a trailing full stop and no leading verb.
 - **Signing in on a preview deployment lands on production.** Supabase Auth
   drops a `redirectTo` that isn't in its allow-list and silently falls back to
   Site URL, so the preview looks like it redirects to prod on purpose. Fix is

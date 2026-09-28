@@ -131,3 +131,19 @@ def test_gemini_calls_turn_thinking_off(tmp_path):
     ai.complete_json("s", "u", Answer, tier="fast")
     assert calls.calls[0]["reasoning_effort"] == "none"
     assert "reasoning_effort" not in calls.calls[1]
+
+
+def test_one_lock_per_connection(tmp_path):
+    """A runner and the LLM must wait on the same lock.
+
+    They used to hold one each over the same DuckDB connection, which is not
+    thread-safe, so a worker's select and another worker's cost log were free
+    to interleave. The select came back short, `dict(zip(cols, row))` dropped
+    the keys it had no values for, and the topic died on `KeyError: 'title'`.
+    """
+    con = staging.connect(tmp_path / "s.duckdb")
+    other = staging.connect(tmp_path / "t.duckdb")
+    client, _ = fake_client(['{"pattern": "x", "confidence": 0.1}'])
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"})
+    assert llm.lock_for(con) is ai.lock
+    assert llm.lock_for(con) is not llm.lock_for(other)

@@ -1,0 +1,85 @@
+"""Assemble the source material for one topic's lesson.
+
+Two hard cases decide the design. `cs-http-https` has 162 documents and
+179K characters, far more than a prompt can hold, so documents are ranked by
+how well they match the topic and each is truncated. `beh-teamwork` has none
+at all, so the lesson falls back to roadmap notes and then to the model's own
+knowledge - a behavioural topic never needed a corpus.
+"""
+
+import re
+from functools import lru_cache
+from pathlib import Path
+
+from ..config import DATA_DIR
+
+ROADMAP_DIR = DATA_DIR / "system_design" / "roadmap-sh" / "roadmaps"
+
+MAX_CHARS = 14_000
+MAX_DOCS = 8
+MAX_DOC_CHARS = 2_500
+MAX_ROADMAP_NODES = 4
+STOP = {"and", "or", "the", "a", "an", "of", "in", "to", "vs", "with", "for", "on"}
+
+
+def words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", text.lower()) if w not in STOP and len(w) > 1}
+
+
+@lru_cache(maxsize=1)
+def roadmap_nodes() -> tuple[tuple[frozenset, Path], ...]:
+    """Every roadmap.sh node as (title words, path). Each file is one node:
+    a title, a short authoritative definition, then links we drop."""
+    nodes = []
+    for path in ROADMAP_DIR.glob("*/content/*.md"):
+        title = path.stem.split("@")[0].replace("-", " ")
+        nodes.append((frozenset(words(title)), path))
+    return tuple(nodes)
+
+
+def node_text(path: Path) -> str:
+    """A node without its 'Visit the following resources' link list."""
+    text = path.read_text(encoding="utf-8", errors="replace")
+    return re.split(r"\n\s*(?:Visit the following resources|Learn more from the following)", text)[0].strip()
+
+
+def rank(candidates: list[tuple[frozenset, object]], target: set[str]) -> list[object]:
+    """Best overlap with the topic name first; ties broken by tighter match."""
+    scored = []
+    for keys, item in candidates:
+        hit = len(keys & target)
+        if hit:
+            scored.append((hit, hit / len(keys or {1}), item))
+    scored.sort(key=lambda s: (-s[0], -s[1]))
+    return [item for _, _, item in scored]
+
+
+def for_topic(topic: dict, documents: list[dict]) -> tuple[str, list[str]]:
+    """Returns the prompt context and the source ids that went into it."""
+    target = words(topic["name"]) | words(topic.get("description") or "")
+    parts: list[str] = []
+    refs: list[str] = []
+
+    # Roadmap notes first: short, clean and authoritative, so they anchor the
+    # lesson even when the scraped material around them is a mess.
+    for path in rank([(k, p) for k, p in roadmap_nodes()], target)[:MAX_ROADMAP_NODES]:
+        parts.append(node_text(path))
+        refs.append(f"roadmap-sh:{path.stem}")
+
+    ranked = rank([(words(d["title"]), d) for d in documents], target)
+    # A topic whose documents all miss the name still deserves its own material.
+    chosen = (ranked or documents)[:MAX_DOCS]
+    for doc in chosen:
+        body = (doc["body_md"] or "").strip()
+        parts.append(f"{doc['title']}\n{body[:MAX_DOC_CHARS]}")
+        refs.append(doc["id"])
+
+    context, used = "", 0
+    for part in parts:
+        if len(context) + len(part) > MAX_CHARS:
+            break
+        context += part + "\n\n---\n\n"
+        used += 1
+    # Count the parts we kept. Splitting on "---" also counts horizontal rules
+    # inside a document body, which credited sources we never included.
+    return context.strip(), refs[:used]
