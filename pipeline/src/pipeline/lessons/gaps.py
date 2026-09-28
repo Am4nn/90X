@@ -12,6 +12,7 @@ ranking is a suggestion, never the decision, because this is exactly where a
 curated 274 quietly becomes an unfocused 800.
 """
 
+import re
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -42,6 +43,50 @@ class Judgement(BaseModel):
 
 class Judgements(BaseModel):
     judgements: list[Judgement]
+
+
+def canonical(label: str) -> str:
+    """One key per topic, however a roadmap happens to spell it.
+
+    The candidate list carried "Big O", "Big-O Notation" and "Asymptotic
+    Notation" as three separate topics, and "Queue" beside "Queues". Each was
+    sorted separately, paid for separately, and reached the list Aman is meant
+    to cut down. Punctuation, case and a trailing plural are not a new topic.
+    """
+    text = re.sub(r"[^a-z0-9 ]+", " ", label.casefold())
+    words = [w[:-1] if len(w) > 3 and w.endswith("s") else w for w in text.split()]
+    # Words that never distinguish one topic from another.
+    return " ".join(w for w in words if w not in {"notation", "the", "a", "an", "and", "of", "to"})
+
+
+def already_ours(con) -> dict[str, str]:
+    """Every topic we have, keyed canonically - across all areas.
+
+    This is the fix for the worst defect in the first sort: candidates were
+    compared against their own area's topic names only. "Linked List" came off
+    the CS roadmap, our Linked List topic is in DSA, and so it was structurally
+    invisible - the model could not have got it right. Twenty gaps were exact
+    name matches for topics we already had, four of them scored 0.9.
+    """
+    return {canonical(name): name
+            for (name,) in con.execute("select name from topics order by sort").fetchall()}
+
+
+def taught_in(con, label: str) -> list[str]:
+    """Lessons whose body already teaches this, by name.
+
+    The sorter only ever saw topic titles, so a subject covered inside another
+    lesson looked like a gap: "Prompt Injection" is taught in two lessons and
+    was still scored 0.7. Titles are what a taxonomy knows; bodies are what a
+    reader actually gets.
+    """
+    term = " ".join(label.split()).casefold()
+    if len(term) < 4:
+        return []
+    return [r[0] for r in con.execute(
+        "select topic_slug from lessons where status = 'ok' and lower(body_md) like ? order by topic_slug",
+        [f"%{term}%"],
+    ).fetchall()]
 
 
 def uncovered(con, domain: str | None = None) -> list[dict]:
@@ -105,6 +150,37 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
     wanted = set(domains or {r["domain"] for r in rows})
     done = set() if redo else {(r["domain"], r["label"]) for r in stored(con)}
     out: list[dict] = [r for r in stored(con) if r["domain"] in wanted] if not redo else []
+    ours_everywhere = already_ours(con)
+    # Everything a query can settle is settled before the model is asked. It got
+    # these wrong - "Linked List", "Stack", "Binary Search" and "CAP Theorem"
+    # came back as gaps at 0.8 and above - and it was never going to get them
+    # right, because it only ever saw one area's topic names and one area's
+    # titles. Cheaper and correct beats a second opinion on a fact.
+    settled: list[dict] = []
+    for row in rows:
+        # Not skipped when already stored: correcting a stored verdict is the
+        # point. A query proving we own the topic outranks the model's guess
+        # that we do not, and the stored guesses are what put "Linked List" in
+        # front of Aman at 0.9.
+        if match := ours_everywhere.get(canonical(row["label"])):
+            settled.append({**row, "verdict": "covered", "covered_by": match,
+                            "relevance": 0.0, "why": ""})
+        elif lessons := taught_in(con, row["label"]):
+            settled.append({**row, "verdict": "covered",
+                            "covered_by": f"taught in {lessons[0]}"
+                                          + (f" and {len(lessons) - 1} more" if len(lessons) > 1 else ""),
+                            "relevance": 0.0, "why": ""})
+    if settled:
+        print(f"{len(settled)} candidates settled without asking the model", flush=True)
+        save(con, settled)
+        # Replace, never append: `out` already holds the stored verdict for
+        # these, and two rows for one candidate would put it in the report twice
+        # with opposite answers.
+        corrected = {(s["domain"], s["label"]): s for s in settled}
+        out = [corrected.pop((r["domain"], r["label"]), r) for r in out]
+        out += [s for k, s in corrected.items() if s["domain"] in wanted]
+        done |= {(s["domain"], s["label"]) for s in settled}
+
     for domain in sorted(wanted):
         ours = [r[0] for r in con.execute("select name from topics where domain = ? order by sort", [domain]).fetchall()]
         candidates = [r["label"] for r in rows
@@ -141,12 +217,15 @@ LIKELY = 0.7  # "an interview will go here", in the sorter's own terms
 def _dedupe(gaps: list[dict]) -> list[dict]:
     """One row per topic, keeping the highest relevance it was given.
 
-    The same topic appears on several roadmaps under slightly different
-    capitalisation, and each copy was sorted separately, so the list Aman reads
-    had "Sampling Parameters" twice with different reasons."""
+    The same topic appears on several roadmaps spelled differently, and each
+    copy was sorted separately, so the list Aman reads had "Sampling
+    Parameters" twice with different reasons, and "Big O" beside "Big-O
+    Notation". `canonical` collapses punctuation, case, plurals and filler
+    words; it will not collapse genuine synonyms like "Asymptotic Notation",
+    which needs a model to see."""
     best: dict[tuple[str, str], dict] = {}
     for row in gaps:
-        key = (row["domain"], " ".join(row["label"].split()).casefold())
+        key = (row["domain"], canonical(row["label"]))
         if key not in best or row["relevance"] > best[key]["relevance"]:
             best[key] = row
     return list(best.values())
