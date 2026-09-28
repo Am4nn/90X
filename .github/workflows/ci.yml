@@ -54,6 +54,10 @@ jobs:
       - name: Nothing exported is unreachable
         run: bun run check:dead
 
+      - name: Nothing is written out twice
+        working-directory: web
+        run: bun run check:dupes
+
       # The build never connects to anything, so dummy values are enough.
       # Never put real secrets here.
       - name: Build
