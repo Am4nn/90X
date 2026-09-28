@@ -2,7 +2,7 @@ import { z } from "zod";
 import { gate } from "@/lib/auth/gate";
 import { getViewer } from "@/lib/auth/viewer";
 import { requestStop } from "@/lib/coach/stop";
-import { threadOwnedBy } from "@/lib/coach/threads";
+import { threadOwner } from "@/lib/coach/threads";
 
 // The Stop button. A reply no longer stops when the connection drops - closing
 // the app leaves it to finish - so an explicit stop has to say so itself.
@@ -27,9 +27,14 @@ export async function POST(request: Request) {
   const parsed = Body.safeParse(body);
   if (!parsed.success) return new Response(null, { status: 400 });
 
-  // Scoped to the owner, like every other query: a thread id is a uuid somebody
-  // could otherwise guess at to interrupt another reader's answer.
-  if (!(await threadOwnedBy(viewer.id, parsed.data.threadId))) return new Response(null, { status: 404 });
+  // Somebody else's thread is a 404, like every other query. A thread that does
+  // not exist yet is accepted: the client chooses the id before sending its first
+  // message, so a Stop pressed during that request arrives before the row does -
+  // and refusing it there was the one moment a stop could be lost entirely. The
+  // flag is keyed by user, so the worst a caller can do with an invented id is
+  // stop an answer of their own.
+  const owner = await threadOwner(parsed.data.threadId);
+  if (owner !== null && owner !== viewer.id) return new Response(null, { status: 404 });
 
   try {
     await requestStop(viewer.id, parsed.data.threadId);

@@ -73,14 +73,15 @@ export async function findThread(userId: string, kind: CoachKind, ref: string, q
  * client picks the id of a new thread, so a taken id (another user's thread)
  * comes back null rather than being reused.
  */
-/** Is this thread the caller's? Scoped like every other query, so a guessed
- *  uuid cannot reach somebody else's conversation. */
-export async function threadOwnedBy(userId: string, threadId: string, q: Db = db): Promise<boolean> {
-  const [row] = await q
-    .select({ id: coachThreads.id })
-    .from(coachThreads)
-    .where(and(eq(coachThreads.id, threadId), eq(coachThreads.userId, userId)));
-  return Boolean(row);
+/** Who owns this thread, or null if there is no such thread.
+ *
+ *  Null is a real answer rather than a refusal: the client picks a thread's id
+ *  before sending its first message, so a Stop pressed during that first request
+ *  can arrive before the row exists. Telling the two apart lets the caller accept
+ *  that case and still refuse somebody else's conversation. */
+export async function threadOwner(threadId: string, q: Db = db): Promise<string | null> {
+  const [row] = await q.select({ userId: coachThreads.userId }).from(coachThreads).where(eq(coachThreads.id, threadId));
+  return row?.userId ?? null;
 }
 
 export async function ensureThread(

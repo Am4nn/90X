@@ -51,6 +51,12 @@ const Body = z.object({
 const plain = (text: string, status: number) => new Response(text, { status, headers: { "content-type": "text/plain; charset=utf-8" } });
 
 export async function POST(request: Request) {
+  // Taken before anything is awaited. A stop is honoured when it was asked for
+  // after the run began, and the run begins here: reading it later meant a Stop
+  // pressed while the thread, history and model were loading looked older than
+  // the run and was ignored, which is exactly when a reader is most likely to
+  // press it.
+  const startedAt = Date.now();
   const viewer = await getViewer();
   if (!viewer || gate({ userId: viewer.id, approval: viewer.approval, setupDone: viewer.setupDone })) {
     return plain("Sign in to talk to Coach.", 401);
@@ -140,7 +146,7 @@ export async function POST(request: Request) {
     // before `done()` could run, and the interval would keep polling Redis every
     // 1.5 seconds after the request was over. The catch below releases it for the
     // same reason.
-    stop = stopSignal(viewer.id, thread.id);
+    stop = stopSignal(viewer.id, thread.id, startedAt);
     // A local binding as well, because the closures below run later and cannot
     // narrow the outer `let`.
     const stopping = stop;
