@@ -26,6 +26,13 @@ TABLES = [
 JSON_COLUMNS = {"companies", "solutions", "snippets", "practice", "source_refs"}
 ARRAY_COLUMNS = {"topic_slugs", "tags", "techniques", "problem_slugs"}
 
+# Publishing converges: whatever staging no longer has is deleted. That is right
+# for every row the pipeline owns and wrong for the rows it does not. A lesson
+# the Coach wrote on demand was never in staging, so to that delete it looks
+# like an orphan, and the next publish would quietly remove it. Extra predicates
+# that spare rows this pipeline did not write.
+NOT_OURS = {"lessons": "and t.written_by is null"}
+
 
 def _source_rows(con) -> list[tuple]:
     """sources.py entries plus any source id used by staging rows."""
@@ -132,7 +139,8 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = Fa
             cur.executemany(f"insert into _keep values ({', '.join('%s' for _ in keys)})",
                             [tuple(str(r[columns.index(k)]) for k in keys) for r in rows])
             cur.execute(f"""delete from public.{table} t where not exists (
-                select 1 from _keep k where {' and '.join(f't.{k}::text = k.{k}' for k in keys)})""")
+                select 1 from _keep k where {' and '.join(f't.{k}::text = k.{k}' for k in keys)})
+                {NOT_OURS.get(table, '')}""")
             deleted = cur.rowcount
             cur.execute("drop table _keep")
             counts[table] = (len(rows), deleted)

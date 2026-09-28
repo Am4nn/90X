@@ -70,6 +70,25 @@ def test_accepts_a_question_followed_by_an_instruction():
     ]) == []
 
 
+def test_a_document_store_is_subject_matter_not_a_citation():
+    """sd-nosql-types wrote "The document store adds richer queries" and was
+    rejected for referring to source the reader cannot see. Document stores are
+    one of the NoSQL types the lesson is about. Same mistake as reading
+    List<Integer> as markup: the bare noun is too common to accuse."""
+    body = GOOD_BODY + ("\n\nThe document store adds richer queries but needs indexes. "
+                        "A document database nests fields inside one record. " * 12)
+    assert checks.check(body, ["What breaks under load?", "Why?", "Compare the two."]) == []
+
+
+def test_still_catches_a_document_being_cited():
+    problems = checks.check(GOOD_BODY + "\n\nAccording to the document, writes are cheap.",
+                            ["What breaks under load?", "Why?", "Compare the two."])
+    assert any("cannot see" in p for p in problems)
+    problems = checks.check(GOOD_BODY + "\n\nThe document describes three tradeoffs.",
+                            ["What breaks under load?", "Why?", "Compare the two."])
+    assert any("cannot see" in p for p in problems)
+
+
 def test_accepts_setup_before_the_ask():
     """Interviewers set the scene and then ask, more often than they open with
     the question. Requiring every sentence to be a prompt threw away

@@ -12,13 +12,15 @@ import re
 # "the passage", "the reference solution": the reader cannot see any of it.
 REFERS_TO_SOURCE = re.compile(
     r"\b(?:the|this|that|above|below)\s+"
-    r"(?:passage|excerpt|snippet|chapter|article|document|extract|"
+    r"(?:passage|excerpt|snippet|chapter|article|extract|"
     r"reference\s+solution|given\s+solution|source\s+material)\b"
     # "the section of memory" is ordinary English; "this section covers" is not.
-    r"|\b(?:this|the)\s+(?:section|text)\s+(?:covers|describes|explains|shows|above|below)\b"
-    r"|\b(?:as|which)\s+(?:the\s+)?(?:author|text|passage|article)\s+"
+    # "the document store" is the entire subject of sd-nosql-types, which the
+    # bare noun rejected - the same mistake as reading List<Integer> as markup.
+    r"|\b(?:this|the)\s+(?:section|text|document)\s+(?:covers|describes|explains|shows|above|below)\b"
+    r"|\b(?:as|which)\s+(?:the\s+)?(?:author|text|passage|article|document)\s+"
     r"(?:states|says|notes|mentions|explains|writes)\b"
-    r"|\baccording\s+to\s+the\s+(?:passage|text|author|article|section|chapter)\b"
+    r"|\baccording\s+to\s+the\s+(?:passage|text|author|article|section|chapter|document)\b"
     # The lesson talking about itself: "according to this lesson" turns a
     # practice question into a reading-comprehension question.
     r"|\b(?:this|the)\s+(?:lesson|write-?up|explainer)\b"
