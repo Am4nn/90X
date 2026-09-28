@@ -84,6 +84,9 @@ SUBJECT_NOISE = {"attack", "attacks", "basic", "basics", "overview", "introducti
                  "practice", "practices", "best", "technique", "techniques",
                  "strategy", "strategies", "type", "types"}
 COMPARISON = re.compile(r"\s+(?:vs\.?|versus)\s+", re.IGNORECASE)
+# Recognises a note this module wrote, so a later run replaces it instead of
+# adding a second one beside it.
+NOTE = re.compile(r"\s*-?\s*already named in \d+ lessons?\s*\([^)]*\)")
 
 
 def subjects_of(label: str) -> list[str] | None:
@@ -110,6 +113,24 @@ def subjects_of(label: str) -> list[str] | None:
     return out or None
 
 
+def _pattern(phrase: str) -> str:
+    """A bounded regex for a phrase, tolerant of the form the prose uses.
+
+    A label and a lesson rarely agree on number: the candidate is "Bloom
+    Filters" and the lesson says "a bloom filter". So the last word is reduced
+    to its stem and the inflections are optional - while both ends stay bounded,
+    because an open end let "RAG" match "ragged arrays".
+    """
+    words = phrase.split()
+    last = words[-1]
+    if last.endswith("es") and len(last) > 4:
+        last = last[:-2]
+    elif last.endswith("s") and len(last) > 3:
+        last = last[:-1]
+    stem = " ".join([*words[:-1], last])
+    return rf"\b{re.escape(stem)}(?:e|es|s|ing|ed)?\b"
+
+
 def taught_in(con, label: str) -> list[str]:
     """Lessons whose body already teaches this, by name.
 
@@ -129,7 +150,7 @@ def taught_in(con, label: str) -> list[str]:
     clause = " and ".join("regexp_matches(lower(body_md), ?)" for _ in subjects)
     return [r[0] for r in con.execute(
         f"select topic_slug from lessons where status = 'ok' and {clause} order by topic_slug",
-        [rf"\b{re.escape(subject)}(?:s|es|ing|ed)?\b" for subject in subjects],
+        [_pattern(subject) for subject in subjects],
     ).fetchall()]
 
 
@@ -258,35 +279,49 @@ def run(con, llm, domains: list[str] | None = None, tier: str = "smart", redo: b
     for row in out:
         if row["verdict"] != "gap":
             continue
+        # Stripped and rewritten, never appended. Appending meant a later run
+        # with different matches left both notes on the row, and a run with no
+        # matches left the old one - so the report could claim a gap is named in
+        # lessons that no longer name it.
+        base = NOTE.sub("", row["why"] or "").strip(" -")
         lessons = taught_in(con, row["label"])
-        if not lessons:
-            continue
-        where = ", ".join(lessons[:2]) + (f" and {len(lessons) - 2} more" if len(lessons) > 2 else "")
-        note = f"already named in {len(lessons)} {'lesson' if len(lessons) == 1 else 'lessons'} ({where})"
-        if note not in (row["why"] or ""):
-            row["why"] = f"{row['why']} - {note}".strip(" -")
+        if lessons:
+            where = ", ".join(lessons[:2]) + (f" and {len(lessons) - 2} more" if len(lessons) > 2 else "")
+            note = f"already named in {len(lessons)} {'lesson' if len(lessons) == 1 else 'lessons'} ({where})"
+            why = f"{base} - {note}".strip(" -")
+        else:
+            why = base
+        if why != (row["why"] or ""):
+            row["why"] = why
             annotated.append(row)
     if annotated:
         save(con, annotated)
-        print(f"{len(annotated)} gaps are already named in a lesson; noted, not removed", flush=True)
+        named = sum(1 for r in annotated if NOTE.search(r["why"] or ""))
+        print(f"{named} gaps are already named in a lesson; noted, not removed"
+              + (f" ({len(annotated) - named} stale notes cleared)" if len(annotated) > named else ""),
+              flush=True)
     return out
 
 
 LIKELY = 0.7  # "an interview will go here", in the sorter's own terms
 
 
-def _dedupe(gaps: list[dict]) -> list[dict]:
+def _dedupe(gaps: list[dict], across_areas: bool = False) -> list[dict]:
     """One row per topic, keeping the highest relevance it was given.
 
-    The same topic appears on several roadmaps spelled differently, and each
-    copy was sorted separately, so the list Aman reads had "Sampling
-    Parameters" twice with different reasons, and "Big O" beside "Big-O
-    Notation". `canonical` collapses punctuation, case, plurals and filler
-    words; it will not collapse genuine synonyms like "Asymptotic Notation",
-    which needs a model to see."""
-    best: dict[tuple[str, str], dict] = {}
+    The same topic appears on several roadmaps spelled differently, and each copy
+    was sorted separately, so the list Aman reads had "Sampling Parameters" twice
+    with different reasons, and "Big O" beside "Big-O Notation". `canonical`
+    collapses punctuation, case, plurals and filler; it will not collapse genuine
+    synonyms like "Asymptotic Notation", which needs a model to see.
+
+    `across_areas` is for the list of lessons to write, where one topic means one
+    lesson: "Big O" under cs and "Big-O Notation" under dsa are not two jobs, and
+    keying by area let both through for someone to approve separately.
+    """
+    best: dict[tuple[str, str] | str, dict] = {}
     for row in gaps:
-        key = (row["domain"], canonical(row["label"]))
+        key = canonical(row["label"]) if across_areas else (row["domain"], canonical(row["label"]))
         if key not in best or row["relevance"] > best[key]["relevance"]:
             best[key] = row
     return list(best.values())
@@ -313,7 +348,7 @@ def report(rows: list[dict], all_domains: list[str] | None = None) -> str:
     and up and counts the rest. The tail is still listed, because a suggestion
     is not a decision, but it is below the line.
     """
-    gaps = _dedupe([r for r in rows if r["verdict"] == "gap"])
+    gaps = _dedupe([r for r in rows if r["verdict"] == "gap"], across_areas=True)
     likely = [r for r in gaps if r["relevance"] >= LIKELY]
     tail = [r for r in gaps if r["relevance"] < LIKELY]
     n_covered = sum(1 for r in rows if r["verdict"] == "covered")

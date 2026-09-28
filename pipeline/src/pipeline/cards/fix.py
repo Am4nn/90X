@@ -117,7 +117,19 @@ def pick(cards: list[Draft], match: str) -> Draft | None:
     return cards[0] if len(cards) == 1 else None
 
 
-def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: float = 0.5) -> None:
+def would_clobber(con, new_id: str, old_id: str) -> bool:
+    """Is `new_id` already some other card's row?
+
+    A replacement's id comes from its question, so a rewrite that happens to
+    produce a question another card in the topic already asks lands on that
+    card's id - and `insert or replace` would delete it. The rewrite is a
+    duplicate in that case, which is not worth destroying a card for.
+    """
+    row = con.execute("select id from cards where id = ? and id <> ?", [new_id, old_id]).fetchone()
+    return row is not None
+
+
+def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: float = 0.5) -> bool:
     """Swap the reviewed card for its replacement, or mark it rejected.
 
     The old row goes whatever happens: a card a human called false must not
@@ -130,6 +142,9 @@ def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: 
     it; otherwise it is `rejected`, carrying the objection.
     """
     now = datetime.now(timezone.utc)
+    new_id = card_id(topic["slug"], card.prompt, "" if reason is None else "rejected-fix")
+    if would_clobber(con, new_id, old.id):
+        return False
     # Re-keyed first: a rewrite that changes only the answer keeps the question,
     # so old and new share a prompt-derived id and `insert or replace` would
     # overwrite the record of what was objected to.
@@ -149,7 +164,7 @@ def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: 
             source_refs, quality, kept, status, source, reject_reason, created_at)
            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?, ?)""",
         [
-            card_id(topic["slug"], card.prompt, "" if reason is None else "rejected-fix"),
+            new_id,
             topic["slug"], card.format, card.difficulty, card.prompt,
             json.dumps(card.options) if card.options else None, card.answer,
             json.dumps(card.key_points), refs,
@@ -160,6 +175,7 @@ def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: 
             reason is None, "rejected" if reason else "draft", reason, now,
         ],
     )
+    return True
 
 
 def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTIONS,
@@ -217,11 +233,21 @@ def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTION
             failed += 1
             continue
         card = replacements[0]
-        result = gate.review(llm, topic, [card])
+        # The gate is another model call and fails the same ways the rewrite
+        # does; one objection must not end the run.
+        try:
+            result = gate.review(llm, topic, [card])
+        except LLMError as e:
+            print(f"  {key}: the gate failed, {e}", flush=True)
+            failed += 1
+            continue
         rejected = gate.judge([card], result)
         reason = rejected[0][1] if rejected else None
-        replace(con, old, card, topic, reason,
-                gate.confidence_by_card([card], result).get(id(card), 0.5))
+        if not replace(con, old, card, topic, reason,
+                       gate.confidence_by_card([card], result).get(id(card), 0.5)):
+            print(f"  {key}: the rewrite repeats another card's question; left alone", flush=True)
+            failed += 1
+            continue
         if reason:
             print(f"  {key}: replacement still rejected - {reason}", flush=True)
             failed += 1

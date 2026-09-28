@@ -60,7 +60,7 @@ def cards_of(con, slug: str) -> list[Draft]:
     return [Draft(r) for r in rows]
 
 
-def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> None:
+def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
     """Replace a rejected card with the rewrite that passed.
 
     The old row stays as `repaired`, carrying what the gate objected to, so the
@@ -69,6 +69,11 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> None:
     keeps the question and the two would otherwise collide.
     """
     now = datetime.now(timezone.utc)
+    new_id = card_id(topic["slug"], card.prompt)
+    if con.execute("select 1 from cards where id = ? and id <> ?", [new_id, old.id]).fetchone():
+        # The rewrite repeats a question the topic already has, and its id is
+        # that card's. Replacing would delete a live card to store a duplicate.
+        return False
     # Re-key the old row first. A card's id comes from its question, and a
     # rewrite that changes only the format or the answer keeps the question, so
     # the replacement's id equals the original's - and `insert or replace` then
@@ -84,7 +89,7 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> None:
             source_refs, quality, kept, status, source, reject_reason, created_at)
            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, true, 'draft', 'lesson', null, ?)""",
         [
-            card_id(topic["slug"], card.prompt), topic["slug"], card.format, card.difficulty, card.prompt,
+            new_id, topic["slug"], card.format, card.difficulty, card.prompt,
             json.dumps(card.options) if card.options else None, card.answer,
             json.dumps(card.key_points), refs,
             json.dumps({"gate_confidence": confidence.get(id(card), 0.5), "regated": True}),
@@ -172,8 +177,7 @@ def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | Non
                     continue
                 with db:
                     recovered, newly = apply(con, cards, rejected, confidence)
-                    for old, card in fixes:
-                        store_fix(con, topic, old, card, confidence)
+                    fixes = [(o, c) for o, c in fixes if store_fix(con, topic, o, c, confidence)]
                     spent = spend_usd(con) - before
                 totals["topics"] += 1
                 totals["judged"] += len(cards)

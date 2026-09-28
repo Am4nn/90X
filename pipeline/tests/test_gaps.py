@@ -229,3 +229,61 @@ def test_a_lesson_mention_annotates_a_gap_instead_of_removing_it(tmp_path):
     assert row["verdict"] == "gap", "a mention must not remove it from the list"
     assert "already named in 1 lesson" in row["why"]
     assert gaps.stored(con)[0]["verdict"] == "gap"
+
+
+def test_a_stale_mention_note_is_replaced_not_stacked(tmp_path):
+    """Appending left both notes on the row when a later run matched different
+    lessons, and left the old one when nothing matched - so the report could
+    claim a gap is named in lessons that no longer name it."""
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n', 'cs', 'cs', 'Bloom Filters', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Bloom Filters', 'gap', '', 0.6,
+                'probabilistic structure - already named in 3 lessons (old-a, old-b and 1 more)')""")
+    con.execute("""insert into lessons (topic_slug, title, body_md, status) values
+        ('only', 'Caching', 'A bloom filter answers set membership approximately.', 'ok')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("nothing to sort")
+
+    row = next(r for r in gaps.run(con, NoLLM()) if r["label"] == "Bloom Filters")
+    assert row["why"].count("already named in") == 1, row["why"]
+    assert "old-a" not in row["why"]
+    assert "already named in 1 lesson (only)" in row["why"]
+
+
+def test_a_note_is_cleared_when_no_lesson_names_it_any_more(tmp_path):
+    from pipeline import staging
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into roadmap_nodes (id, roadmap, domain, label, kind, sort) values
+        ('n', 'cs', 'cs', 'Bloom Filters', 'topic', 1)""")
+    con.execute("""insert into taxonomy_gaps (domain, label, verdict, covered_by, relevance, why)
+        values ('cs', 'Bloom Filters', 'gap', '', 0.6,
+                'probabilistic structure - already named in 2 lessons (gone-a, gone-b)')""")
+
+    class NoLLM:
+        models = {"smart": "x"}
+
+        def complete_json(self, *a, **k):
+            raise AssertionError("nothing to sort")
+
+    row = next(r for r in gaps.run(con, NoLLM()) if r["label"] == "Bloom Filters")
+    assert row["why"] == "probabilistic structure", row["why"]
+
+
+def test_the_shortlist_has_one_line_per_topic_across_areas():
+    """"Big O" under cs and "Big-O Notation" under dsa are one lesson to write,
+    not two for someone to approve separately."""
+    out = gaps.report([
+        row("cs", "Big O", relevance=0.8, why="asked constantly"),
+        row("dsa", "Big-O Notation", relevance=0.7, why="same thing"),
+    ])
+    assert out.count("(0.8)") == 1
+    assert "(0.7)" not in out
