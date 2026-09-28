@@ -1,6 +1,6 @@
 # 90x card review
 
-2805 cards are ready to publish. An automated gate read 2810 and objected to 92 of them (3%): 87 were rewritten and passed on the second look, 5 could not be saved and were dropped (0%). Mix: 1379 typed, 768 mcq, 596 flash, 62 output.
+2805 cards are ready to publish. An automated gate read 2810 and objected to 95 of them (3%): 90 were rewritten and passed on the second look, 5 could not be saved and were dropped (0%). Mix: 1378 typed, 769 mcq, 596 flash, 62 output.
 
 ## What these are
 
@@ -18,96 +18,11 @@ Below: 25 cards, spread across areas and formats, weighted toward the ones the g
 
 ---
 
-## 1. Dealing with ambiguity · mcq · Easy
-
-*behavioral · gate confidence 0.7*
-
-**Question**
-
-At the senior level, an ambiguous project story should typically involve leading work across what scope of people?
-
-**Options**
-
-- Your own task
-- Multiple people
-- Multiple teams
-- The entire company
-
-**Reference answer**
-
-Multiple people
-
-**Graded on**
-
-- Senior-level ambiguity involves leading a project with multiple people.
-- Junior-level ambiguity is typically self-directed.
-- Staff-level ambiguity involves multiple teams.
-- Company-wide ambiguity is not typical for senior.
-
-<details><summary>The lesson this came from</summary>
-
-Dealing with ambiguity is the ability to make progress on a task when goals, constraints, or success criteria are unclear. It involves identifying what is unknown, asking targeted questions, documenting assumptions, and iterating as new information arrives. Interviewers evaluate it through stories of underspecified work, where the candidate took ownership and drove alignment.
-
-## Why interviewers ask this
-
-The interviewer is testing whether you can operate without a complete spec, since senior work is often assigned as a problem statement rather than a task list. They want evidence you can reduce ambiguity by gathering requirements, making decisions explicit, and bringing others along. At higher levels the scope changes: junior stories involve self-directed tasks, senior stories involve leading three or more people, staff stories involve multiple teams.
-
-## The core idea
-
-Ambiguity is reduced by turning hidden assumptions into explicit decisions. A strong candidate does not wait for clarity; they ask questions that resolve the highest-impact unknowns first, document what they assume, and revisit those assumptions when new data appears. The goal is not to eliminate uncertainty but to make enough of it concrete to move. Ownership means driving consensus, not just doing the work yourself. The scope of ambiguity you can handle grows with level: own task for junior, three-plus people for senior, two-plus teams for staff.
-
-## Key points
-
-- Junior-level stories typically involve taking ownership of an underspecified task and driving consensus among a few teammates.
-- Senior-level stories typically involve an ambiguous project requiring three or more people to work on.
-- Staff-level stories typically involve an ambiguous project requiring two or more teams to work on.
-- Ask questions that resolve the highest-impact unknowns before accepting assumptions.
-- Document assumptions and revisit them at checkpoints as new information arrives.
-
-## Your 60-second answer
-
-When I face ambiguity, I start by identifying what is actually unknown and which unknown, if resolved, would unblock the most work. I ask the stakeholder or manager targeted questions about goals, constraints, and success criteria, and I write down my assumptions so the team can correct them. For example, in an underspecified project, I proposed a minimum viable version, got agreement from the people affected, and then iterated as we learned more. The reason this works is that most ambiguity is not total; there are a few decisions that matter, and the rest can be deferred. The trade-off is that moving with explicit assumptions risks building the wrong thing, so I keep decisions reversible where possible and revisit them at checkpoints. Ownership means driving consensus, not just asking for clarity.
-
-## If they dig deeper
-
-**How do you decide what to work on next when there is no clear priority?**
-
-I list the open tasks, then score each by impact and risk. Impact is what user or business goal it moves; risk is what happens if it is wrong or late. I also check dependencies and whether a task will clarify other unknowns. Then I pick the highest leverage task and communicate the reasoning so others can correct it.
-
-**Tell me about a time a project was underspecified and what you did.**
-
-In one project, I was given a vague request to improve a service. I started by interviewing the main stakeholders to understand the actual pain and constraints. I wrote a one-page problem statement with assumptions and a proposed milestone, then got agreement. That let us start on the highest-confidence part while we resolved the rest.
-
-**How would you drive consensus when stakeholders disagree on what 'done' means?**
-
-I would make the disagreement explicit by listing each stakeholder's success criteria and where they conflict. Then I would look for a minimal set of requirements everyone accepts and propose a decision rule, such as deferring disputed features behind a flag or giving priority to the user-facing outcome. If needed, escalate to the decision-maker with a clear trade-off table.
-
-**What do you do when you discover midway that an assumption you made was wrong?**
-
-I treat assumptions as reversible decisions. When one is falsified, I go back to the checkpoint where it was made, communicate the change to stakeholders, and adjust scope or direction. The key is to fail small: schedule assumptions to be tested early, so the cost of changing is low.
-
-**How does your approach to ambiguity change at staff level, when you are coordinating multiple teams?**
-
-At that level the ambiguity is often in ownership and interfaces, not just requirements. I define the problem boundary, identify which teams need to agree on contracts, and set up a lightweight decision log so cross-team assumptions are visible. I also delegate the parts that are unambiguous and spend my time on the unresolved interfaces. The hardest part is not solving the problem yourself; it is maintaining momentum when no one reports to you.
-
-## Worked example
-
-A strong answer sounds like: 'We were asked to make a checkout flow faster, with no target or constraints. I listed the unknowns: current latency, acceptable threshold, and whether we could change the payment provider. I measured p95 at 4 seconds and proposed a goal of under 2 seconds for the card flow. I documented that we would keep the existing provider initially and only revisit if batching calls was not enough. I took that proposal to the product lead and two backend engineers, got agreement, and broke the work into three pieces. We shipped the first piece, measured p95 at 2.8 seconds, and used that data to decide the next step.' The story shows identifying unknowns, attaching numbers, making assumptions explicit, and driving agreement.
-
-## Common traps
-
-- Waiting for a complete spec instead of reducing ambiguity yourself, which signals you need hand-holding.
-- Asking broad questions like 'What do you want?' instead of targeted questions about goals, constraints, and trade-offs.
-- Picking a story where someone else resolved the ambiguity, so the interviewer cannot see your ownership.
-- Claiming you removed all ambiguity, when strong answers show how you managed irreducible uncertainty with checkpoints.
-
-</details>
-
----
-
-## 2. Lock interface and ReentrantLock · flash · Easy
+## 1. Lock interface and ReentrantLock · flash · Easy
 
 *java · gate confidence 0.7*
+
+<sub>to object to this card: `## java-lock-interface-and-reentrantlock` then `match: What is ReentrantLock in Java?`</sub>
 
 **Question**
 
@@ -185,9 +100,11 @@ Suppose a cache refresh task runs on a background thread while request threads r
 
 ---
 
-## 3. Supervised Learning · typed · Medium
+## 2. Supervised Learning · typed · Medium
 
 *ai · gate confidence 0.8*
+
+<sub>to object to this card: `## ai-supervised-learning` then `match: Why is data quality important in supervised learning?`</sub>
 
 **Question**
 
@@ -264,9 +181,11 @@ Consider a test set of 100 emails: 5 are spam (positive) and 95 are not. A model
 
 ---
 
-## 4. Unsupervised Learning · flash · Easy
+## 3. Unsupervised Learning · flash · Easy
 
 *ai · gate confidence 0.85*
+
+<sub>to object to this card: `## ai-unsupervised-learning` then `match: Name the three main tasks of unsupervised learning.`</sub>
 
 **Question**
 
@@ -343,9 +262,11 @@ For a point in a compact cluster, suppose the mean distance to points in its own
 
 ---
 
-## 5. Leadership · flash · Medium
+## 4. Leadership · flash · Medium
 
 *behavioral · gate confidence 0.85*
+
+<sub>to object to this card: `## beh-leadership` then `match: In a behavioral interview about a difficult decision, what s`</sub>
 
 **Question**
 
@@ -423,9 +344,11 @@ A strong answer sounds like: 'As a senior engineer, I saw that [specific cross-t
 
 ---
 
-## 6. Handling feedback · typed · Easy
+## 5. Handling feedback · typed · Easy
 
 *behavioral · gate confidence 0.85*
+
+<sub>to object to this card: `## beh-handling-feedback` then `match: When receiving feedback as a software engineer, what sequenc`</sub>
 
 **Question**
 
@@ -503,9 +426,11 @@ A strong answer sounds like: 'In a previous role, I opened a pull request that a
 
 ---
 
-## 7. CPU Scheduling · typed · Medium
+## 6. CPU Scheduling · typed · Medium
 
 *cs · gate confidence 0.85*
+
+<sub>to object to this card: `## cs-cpu-scheduling` then `match: What is the central tradeoff in CPU scheduling, and which cl`</sub>
 
 **Question**
 
@@ -583,9 +508,11 @@ Take three CPU-bound jobs arriving at time 0 with runtimes P1 = 24 ms, P2 = 3 ms
 
 ---
 
-## 8. Design · typed · Medium
+## 7. Design · typed · Medium
 
 *dsa · gate confidence 0.85*
+
+<sub>to object to this card: `## design` then `match: What is your first step when designing a data structure for `</sub>
 
 **Question**
 
@@ -663,9 +590,11 @@ Design a hit counter for a 300-second window. Keep a double-ended queue of hit t
 
 ---
 
-## 9. Memory leaks · typed · Medium
+## 8. Memory leaks · typed · Medium
 
 *java · gate confidence 0.85*
+
+<sub>to object to this card: `## java-memory-leaks` then `match: What is the key trade-off of garbage collection with respect`</sub>
 
 **Question**
 
@@ -751,9 +680,11 @@ After 500,000 requests, the map has 500,000 entries and none are removed. The GC
 
 ---
 
-## 10. Elevator System Design · mcq · Easy
+## 9. Elevator System Design · mcq · Easy
 
 *lld · gate confidence 0.85*
+
+<sub>to object to this card: `## lld-elevator-system-design` then `match: In a low-level design for an elevator car, which state set e`</sub>
 
 **Question**
 
@@ -838,9 +769,11 @@ Consider one elevator at floor 2 moving up, with an up hall request at 6 and a c
 
 ---
 
-## 11. Factory Method Pattern · flash · Easy
+## 10. Factory Method Pattern · flash · Easy
 
 *lld · gate confidence 0.85*
+
+<sub>to object to this card: `## lld-factory-method-pattern` then `match: What is the defining structure of the Factory Method pattern`</sub>
 
 **Question**
 
@@ -917,9 +850,11 @@ Consider a document application. The abstract class Application declares protect
 
 ---
 
-## 12. DDL/DML/DCL/TCL · flash · Easy
+## 11. DDL/DML/DCL/TCL · flash · Easy
 
 *sql · gate confidence 0.85*
+
+<sub>to object to this card: `## sql-ddl-dml-dcl-tcl` then `match: What do the four SQL command families DDL, DML, DCL, and TCL`</sub>
 
 **Question**
 
@@ -997,9 +932,11 @@ A PostgreSQL example shows both DDL rollback and the concurrent-index exception.
 
 ---
 
-## 13. ROW_NUMBER/RANK/DENSE_RANK · typed · Medium
+## 12. ROW_NUMBER/RANK/DENSE_RANK · typed · Medium
 
 *sql · gate confidence 0.85*
+
+<sub>to object to this card: `## sql-row-number-rank-dense-rank` then `match: How can you express RANK() and DENSE_RANK() in terms of prec`</sub>
 
 **Question**
 
@@ -1076,9 +1013,11 @@ For salaries 90000, 85000, 85000, 75000 ordered descending: ROW_NUMBER gives 1,2
 
 ---
 
-## 14. Idempotency · flash · Easy
+## 13. Idempotency · flash · Easy
 
 *system_design · gate confidence 0.85*
+
+<sub>to object to this card: `## sd-idempotency` then `match: How long should idempotency keys be retained?`</sub>
 
 **Question**
 
@@ -1155,9 +1094,11 @@ A client sends POST /v1/payments with header Idempotency-Key: 0f8fad5b and an am
 
 ---
 
-## 15. Database sharding · typed · Medium
+## 14. Database sharding · typed · Medium
 
 *system_design · gate confidence 0.85*
+
+<sub>to object to this card: `## sd-database-sharding` then `match: How do you choose a sharding key?`</sub>
 
 **Question**
 
@@ -1235,9 +1176,11 @@ Take a users table with sharding key user_id and four shards. With hash-based sh
 
 ---
 
-## 16. Supervised Fine-Tuning of LLM · mcq · Easy
+## 15. Supervised Fine-Tuning of LLM · mcq · Easy
 
 *ai · gate confidence 0.9*
+
+<sub>to object to this card: `## ai-supervised-fine-tuning-of-llm` then `match: Which rank range is typical for LoRA adapters in supervised `</sub>
 
 **Question**
 
@@ -1321,9 +1264,11 @@ Suppose a base model is asked: "How do I reset my password?" and it gives a long
 
 ---
 
-## 17. Deadlocks · flash · Easy
+## 16. Deadlocks · flash · Easy
 
 *cs · gate confidence 0.9*
+
+<sub>to object to this card: `## cs-deadlocks` then `match: Name two common recovery actions after a deadlock is detecte`</sub>
 
 **Question**
 
@@ -1396,9 +1341,11 @@ Suppose a system has four units of each of three resource types A, B, C. Initial
 
 ---
 
-## 18. Matrix / Grid · flash · Easy
+## 17. Matrix / Grid · flash · Easy
 
 *dsa · gate confidence 0.9*
+
+<sub>to object to this card: `## matrix-grid` then `match: For an R x C grid, what are the four-direction neighbors of `</sub>
 
 **Question**
 
@@ -1475,9 +1422,11 @@ Count paths from (0,0) to (2,2) in a 3x3 grid with movement only right and down,
 
 ---
 
-## 19. Intervals · mcq · Hard
+## 18. Intervals · mcq · Hard
 
 *dsa · gate confidence 0.9*
+
+<sub>to object to this card: `## intervals` then `match: For half-open intervals [start, end), what condition should `</sub>
 
 **Question**
 
@@ -1561,9 +1510,11 @@ Take intervals [[1,3],[2,6],[8,10],[15,18]]. Sorting by start keeps them in this
 
 ---
 
-## 20. HashMap internals · output · Medium
+## 19. HashMap internals · output · Medium
 
 *java · gate confidence 0.9*
+
+<sub>to object to this card: `## java-hashmap-internals` then `match: What is the exact output of the following Java code? ```java`</sub>
 
 **Question**
 
@@ -1651,9 +1602,11 @@ Take a HashMap with default capacity 16 and put the keys "Aa" and "BB". Both str
 
 ---
 
-## 21. Movie Ticket Booking System Design · typed · Hard
+## 20. Movie Ticket Booking System Design · typed · Hard
 
 *lld · gate confidence 0.9*
+
+<sub>to object to this card: `## lld-movie-ticket-booking-system-design` then `match: How does the system handle pricing if a seat type's price ch`</sub>
 
 **Question**
 
@@ -1731,9 +1684,11 @@ Assume show S1 in hall H1 with three rows and four seats per row. User A request
 
 ---
 
-## 22. Unique ID generation · output · Easy
+## 21. Unique ID generation · output · Easy
 
 *system_design · gate confidence 0.9*
+
+<sub>to object to this card: `## sd-unique-id-generation` then `match: What is printed by this code? ```python BASE62 = '0123456789`</sub>
 
 **Question**
 
@@ -1822,9 +1777,11 @@ Suppose a ticket server allocates ranges by atomically incrementing a high-water
 
 ---
 
-## 23. Memory Allocation · mcq · Hard
+## 22. Memory Allocation · mcq · Hard
 
 *cs · gate confidence 0.92*
+
+<sub>to object to this card: `## cs-memory-allocation` then `match: What is the consequence of calling free on the original poin`</sub>
 
 **Question**
 
@@ -1907,9 +1864,11 @@ Suppose a simple heap of 1 KB starts as one free block and an allocator places t
 
 ---
 
-## 24. SQL · output · Medium
+## 23. SQL · output · Medium
 
 *ai · gate confidence 0.95*
+
+<sub>to object to this card: `## ai-sql` then `match: Given the tables: customers(id, name): (10, 'Ada'), (20, 'Bo`</sub>
 
 **Question**
 
@@ -1999,9 +1958,11 @@ Two tables: orders(id, customer_id, amount) with rows (1, 10, 100), (2, 20, 50);
 
 ---
 
-## 25. Lambda expressions · mcq · Hard
+## 24. Lambda expressions · mcq · Hard
 
 *java · gate confidence 0.95*
+
+<sub>to object to this card: `## java-lambda-expressions` then `match: A lambda is passed to an overloaded method where two overloa`</sub>
 
 **Question**
 
@@ -2084,6 +2045,94 @@ Consider a list of strings: List<String> names = Arrays.asList("Ada", "Bob", "Ch
 
 ---
 
+## 25. Aggregate functions · mcq · Hard
+
+*sql · gate confidence 0.95*
+
+<sub>to object to this card: `## sql-aggregate-functions` then `match: In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table emplo`</sub>
+
+**Question**
+
+In PostgreSQL with ONLY_FULL_GROUP_BY enabled, a table employees has id INTEGER PRIMARY KEY, dept_id INTEGER, name TEXT. Which query is valid?
+
+**Options**
+
+- SELECT dept_id, name, COUNT(*) FROM employees GROUP BY id;
+- SELECT dept_id, name, COUNT(*) FROM employees GROUP BY dept_id;
+- SELECT id, dept_id, COUNT(*) FROM employees GROUP BY dept_id;
+- SELECT id, name, COUNT(*) FROM employees GROUP BY dept_id;
+
+**Reference answer**
+
+SELECT dept_id, name, COUNT(*) FROM employees GROUP BY id;
+
+**Graded on**
+
+- id is primary key, so dept_id and name are functionally dependent on id
+- grouping by a unique key allows other columns of the same row under SQL:1999
+- grouping by dept_id does not determine id or name
+
+<details><summary>The lesson this came from</summary>
+
+An aggregate function consumes a set of rows—either the whole table or a group produced by GROUP BY—and returns one scalar value for that set. The core ones are COUNT, SUM, AVG, MIN, and MAX. In standard SQL engines, SUM, AVG, MIN, and MAX ignore NULL input values; COUNT has multiple behaviours: COUNT(*) counts all rows, COUNT(column) counts only non-NULL values, and COUNT(DISTINCT column) counts distinct non-NULL values.
+
+## Why interviewers ask this
+
+Aggregate functions are the basic mechanism for reducing row sets, so the interviewer is testing whether you can reason in groups rather than rows. They probe NULL semantics, WHERE versus HAVING placement, and the rules for which columns may appear alongside GROUP BY.
+
+## The core idea
+
+Aggregation is a reduction that turns row sets into single values per group. With no GROUP BY, the whole table is one group. With GROUP BY, rows sharing the grouping keys form buckets, and each bucket emits one row; columns in SELECT must either be grouped, be inside an aggregate, or be functionally dependent on the grouped columns in SQL:1999-compliant engines. WHERE filters individual rows before aggregation, while HAVING filters whole groups after aggregation. Null handling matters every time: an aggregate over an empty or all-NULL set returns NULL, except COUNT returns 0.
+
+## Key points
+
+- Every aggregate returns one scalar per group; without GROUP BY the entire table is treated as a single group.
+- COUNT(*) counts rows, COUNT(col) counts non-NULL values, and COUNT(DISTINCT col) counts distinct non-NULL values.
+- SUM, AVG, MIN, and MAX ignore NULL inputs; AVG divides by the number of non-NULL values, not by COUNT(*).
+- WHERE filters rows before aggregation, while HAVING filters groups after aggregation.
+- Standard SQL since SQL:1999 allows a non-aggregated SELECT column to be omitted from GROUP BY only if it is functionally dependent on the grouped columns; PostgreSQL 9.1+ and MySQL with ONLY_FULL_GROUP_BY enforce this, while SQL Server does not allow the extension.
+
+## Your 60-second answer
+
+An aggregate function collapses a set of rows into one scalar. COUNT(*) returns the number of rows in the set. COUNT(column) counts only non-NULL values, and COUNT(DISTINCT column) counts distinct non-NULL values. SUM, AVG, MIN, and MAX ignore NULL inputs, and AVG divides the sum by the count of non-NULL values. Without GROUP BY, the whole table is one group; with GROUP BY, each group produces one output row, and every selected column must either appear in GROUP BY, be inside an aggregate, or be functionally dependent on the grouping columns in engines that implement the SQL standard rule. HAVING filters after aggregation, WHERE filters before it. The main trade-off is that aggregates discard row detail for summary, and null handling can create surprises—COUNT(*) counts rows with NULLs while COUNT(column) skips them.
+
+## If they dig deeper
+
+**What is the difference between COUNT(*) and COUNT(column)?**
+
+COUNT(*) returns the total number of rows in the group, including rows where every field is NULL. COUNT(column) returns the number of rows where that column is not NULL, and COUNT(DISTINCT column) returns the number of distinct non-NULL values in that column.
+
+**When do you filter with WHERE versus HAVING?**
+
+WHERE filters individual rows before any grouping or aggregation, so it cannot reference aggregate function results. HAVING filters the groups after aggregation and can use conditions such as HAVING SUM(amount) > 1000. Both can appear in the same query.
+
+**Why does SQL reject SELECT dept_id, name, COUNT(*) FROM employees GROUP BY dept_id, and are there exceptions?**
+
+The name column is not a grouping column and not inside an aggregate, so it has no single value per group. Standard SQL since SQL:1999 allows such a column only if it is functionally dependent on the grouped columns—for example, if dept_id is a unique key of the table. PostgreSQL and MySQL with ONLY_FULL_GROUP_BY implement that relaxation; SQL Server still requires every selected column to be grouped or aggregated.
+
+**What does AVG return when a column contains only NULLs or the input set is empty?**
+
+AVG returns NULL when all input values are NULL, because the sum of non-NULL values divided by zero non-NULL rows is undefined in SQL. If a query has no groups and the table is empty, the aggregate also returns NULL, while COUNT returns 0. If the query is grouped, an empty group does not produce an output row.
+
+**Can you nest aggregate functions, like MAX(SUM(salary))?**
+
+No, SQL does not allow directly nesting aggregate functions in the same SELECT or HAVING list because the inner aggregate would need to be computed per group while the outer computes over groups. You can compute the inner aggregate in a subquery or CTE, then apply the outer aggregate to that result.
+
+## Worked example
+
+Consider a sales table with rows (region, amount): ('North', 100), ('North', NULL), ('South', 50), ('South', 150). The query SELECT region, COUNT(*), COUNT(amount), SUM(amount), AVG(amount), MIN(amount), MAX(amount) FROM sales GROUP BY region yields two rows. For North, COUNT(*) is 2 because there are two input rows, COUNT(amount) is 1 because the NULL is ignored, SUM and AVG are both 100, and MIN and MAX are both 100. For South, COUNT(*) is 2, COUNT(amount) is 2, SUM is 200, AVG is 100, MIN is 50, and MAX is 150. The NULL disappears from the numeric aggregates but still contributes to the row count.
+
+## Common traps
+
+- Using HAVING for a row-level condition, such as HAVING salary > 100000, when WHERE should filter rows before aggregation.
+- Assuming AVG divides by COUNT(*) or treats NULLs as zeros; it ignores NULLs entirely.
+- Forgetting that MIN and MAX also ignore NULLs, so MIN over a column with NULLs does not return NULL unless every value is NULL.
+- Selecting a non-grouped column without checking for functional dependency, which fails in strict engines and can return some indeterminate row's value in MySQL without ONLY_FULL_GROUP_BY.
+
+</details>
+
+---
+
 ## Cards the gate rejected
 
 Judge whether it was right. Each was thrown away.
@@ -2107,11 +2156,11 @@ Judge whether it was right. Each was thrown away.
 
 These are the questions as first written. The gate objected, a rewrite pass replaced each one, and the replacement passed - so these are not in the app. They are here because the gate is on trial too: if its objections below look wrong, it is throwing away good work, and if they look right, it is earning its cost.
 
-- **ai-data-structures-and-algorithms** (flash): What is the expected time complexity of hash map get and put operations, and what assumptions are needed for that bound?
-  - Gate said: wrong_format: Explaining both the expected complexity and the underlying assumptions takes more than one crisp sentence.
-
 - **ai-data-structures-and-algorithms** (flash): Why does a binary heap retrieve the minimum or maximum in O(1), while inserting or extracting that element takes O(log n)?
   - Gate said: wrong_format: Answering both parts fully requires more than a single crisp sentence.
+
+- **ai-data-structures-and-algorithms** (flash): What is the expected time complexity of hash map get and put operations, and what assumptions are needed for that bound?
+  - Gate said: wrong_format: Explaining both the expected complexity and the underlying assumptions takes more than one crisp sentence.
 
 - **ai-embedding-models** (flash): Which similarity measures are typically used to compare embedding vectors?
   - Gate said: wrong_format: Asking for multiple similarity measures typically requires a list rather than a single crisp sentence.
@@ -2143,14 +2192,17 @@ These are the questions as first written. The gate objected, a rewrite pass repl
 - **beh-dealing-with-ambiguity** (typed): What is the core idea behind reducing ambiguity on a task?
   - Gate said: a human reviewer objected: What is the core idea behind reducing ambiguity on a task?
 
+- **beh-dealing-with-ambiguity** (mcq): At the senior level, an ambiguous project story should typically involve leading work across what scope of people?
+  - Gate said: a human reviewer objected: At the senior level, an ambiguous project story should typically involve leading
+
 - **beh-delivering-results** (typed): In the middle of a delivery, a load test fails or a deadline slips. What is the strongest response, and how do you decide among cutting scope, adding resources, or moving the date?
   - Gate said: wrong_format: The compound question requires multiple detailed considerations that cannot be adequately answered in one to three sentences.
 
-- **beh-failure-and-learning** (typed): What pattern can signal that you are about to repeat a past mistake?
-  - Gate said: not answerable: The question is too vague and likely refers to a specific framework or heuristic from the source material that cannot be deduced.
-
 - **beh-failure-and-learning** (flash): What four elements make a complete failure answer?
   - Gate said: not answerable: Asking to list four specific elements refers to a specific unseen framework and does not fit a one-sentence flash format.
+
+- **beh-failure-and-learning** (typed): What pattern can signal that you are about to repeat a past mistake?
+  - Gate said: not answerable: The question is too vague and likely refers to a specific framework or heuristic from the source material that cannot be deduced.
 
 - **beh-growth-mindset** (flash): When answering a behavioral interview question about growth mindset, what four elements should the story include to demonstrate that the change stuck?
   - Gate said: not answerable: Asking for an exact list of four specific elements from an unseen framework cannot be answered or graded reliably in a one-sentence flash format.
@@ -2185,6 +2237,9 @@ These are the questions as first written. The gate objected, a rewrite pass repl
 - **cs-file-systems** (flash): What is a hard link, and why can it not cross filesystems?
   - Gate said: wrong_format: Answering both what a hard link is and why it cannot cross filesystems requires more than one crisp sentence.
 
+- **cs-locking-mechanisms** (mcq): Which storage engine uses table-level locking by default?
+  - Gate said: a human reviewer objected: Which storage engine uses table-level locking by default?
+
 - **cs-locking-mechanisms** (typed): What are intent locks and why are they needed?
   - Gate said: a human reviewer objected: What are intent locks and why are they needed?
 
@@ -2206,11 +2261,11 @@ String firstLine() {
 What does javac report when compiling it?
   - Gate said: wrong_format: The exact compiler error message has multiple variations/lines and cannot be graded via exact string match.
 
-- **java-collections-framework** (flash): What iteration order guarantees do HashSet, LinkedHashSet, and TreeSet provide?
-  - Gate said: wrong_format: Explaining the order guarantees for three distinct set implementations exceeds a single crisp sentence.
-
 - **java-collections-framework** (flash): How does PriorityQueue order its elements, and what are its add and poll costs?
   - Gate said: wrong_format: Asking for ordering mechanism plus multiple asymptotic complexities exceeds a single crisp flashcard sentence.
+
+- **java-collections-framework** (flash): What iteration order guarantees do HashSet, LinkedHashSet, and TreeSet provide?
+  - Gate said: wrong_format: Explaining the order guarantees for three distinct set implementations exceeds a single crisp sentence.
 
 - **java-collections-framework** (flash): In the Java Collections Framework, which interfaces extend Collection, and where does Map fit?
   - Gate said: wrong_format: Answering all interfaces extending Collection plus Map's position cannot be crisply answered in a single sentence.
@@ -2264,11 +2319,11 @@ System.out.println(s);
 - **lld-parking-lot-design** (flash): What are the typical parking spot types modeled in a parking garage?
   - Gate said: wrong_format: Enumerating a list of spot types does not fit a single-sentence flash card.
 
-- **lld-ride-sharing-service-design** (typed): What happens in the dispatch flow when a driver does not accept an offer before the timeout expires?
-  - Gate said: a human reviewer objected: What happens in the dispatch flow when a driver does not accept an offer before 
-
 - **lld-ride-sharing-service-design** (flash): Why should driver availability be a separate state rather than being derived only from trip status?
   - Gate said: a human reviewer objected: Why should driver availability be a separate state rather than being derived onl
+
+- **lld-ride-sharing-service-design** (typed): What happens in the dispatch flow when a driver does not accept an offer before the timeout expires?
+  - Gate said: a human reviewer objected: What happens in the dispatch flow when a driver does not accept an offer before 
 
 - **lld-uml-sequence-diagram** (flash): What is a UML sequence diagram, and what do the vertical and horizontal axes represent?
   - Gate said: wrong_format: Asking for definition plus both axes typically requires multiple sentences or clauses beyond a single crisp sentence.
@@ -2294,17 +2349,20 @@ System.out.println(s);
 - **sd-design-a-notification-system** (typed): When would you use a persistent WebSocket connection for in-app notifications instead of APNS/FCM push?
   - Gate said: a human reviewer objected: When would you use a persistent WebSocket connection for in-app notifications in
 
+- **sd-design-case-studies** (typed): Two concurrent requests with the same Idempotency-Key and merchant_id arrive at the payment API. What ensures only one provider call is made?
+  - Gate said: a human reviewer objected: Two concurrent requests with the same Idempotency-Key and merchant_id arrive at 
+
 - **sd-design-case-studies** (typed): How do you mark a payment as completed and prevent a duplicate webhook from double-applying the update?
   - Gate said: a human reviewer objected: How do you mark a payment as completed and prevent a duplicate webhook from doub
-
-- **sd-design-case-studies** (flash): What mechanism is appropriate for counting current active page viewers?
-  - Gate said: not answerable: There are many valid mechanisms (Redis HyperLogLog, sliding window bucket counters, sorted sets) with no single correct answer.
 
 - **sd-design-case-studies** (mcq): How should you shard an idempotency store so that uniqueness checks on idempotency keys are local?
   - Gate said: a competent answer disagrees with the marked option
 
-- **sd-design-case-studies** (typed): Two concurrent requests with the same Idempotency-Key and merchant_id arrive at the payment API. What ensures only one provider call is made?
-  - Gate said: a human reviewer objected: Two concurrent requests with the same Idempotency-Key and merchant_id arrive at 
+- **sd-design-case-studies** (flash): What mechanism is appropriate for counting current active page viewers?
+  - Gate said: not answerable: There are many valid mechanisms (Redis HyperLogLog, sliding window bucket counters, sorted sets) with no single correct answer.
+
+- **sd-jwt** (typed): When a server verifies a JWT, what should it check?
+  - Gate said: a human reviewer objected: When a server verifies a JWT, what should it check?
 
 - **sd-jwt** (mcq): Where should a JWT be stored to prevent JavaScript on the page from reading it?
   - Gate said: a human reviewer objected: Where should a JWT be stored to prevent JavaScript on the page from reading it?
@@ -2360,20 +2418,20 @@ FROM orders;
 - **sql-char-vs-varchar** (flash): What does VARCHAR(n) store compared with CHAR(n)?
   - Gate said: a human reviewer objected: What does VARCHAR(n) store compared with CHAR(n)?
 
-- **sql-constraints** (typed): What happens when you delete or update a parent row referenced by a foreign key, and which referential actions can you declare?
-  - Gate said: wrong_format: Asking to list which referential actions can be declared requires an open-ended enumeration.
-
 - **sql-constraints** (mcq): Which of the following is a separate column requirement often grouped with SQL constraints, rather than one of the common declarative constraints?
   - Gate said: not answerable: NOT NULL is standardly defined as a declarative constraint in SQL, making the question ambiguous and poorly defined.
 
 - **sql-constraints** (typed): What is the difference between a PRIMARY KEY and a FOREIGN KEY?
   - Gate said: a human reviewer objected: What is the difference between a PRIMARY KEY and a FOREIGN KEY?
 
-- **sql-ddl-dml-dcl-tcl** (flash): In SQL, which command family includes CREATE, ALTER, DROP, and TRUNCATE?
-  - Gate said: a human reviewer objected: In SQL, which command family includes CREATE, ALTER, DROP, and TRUNCATE?
+- **sql-constraints** (typed): What happens when you delete or update a parent row referenced by a foreign key, and which referential actions can you declare?
+  - Gate said: wrong_format: Asking to list which referential actions can be declared requires an open-ended enumeration.
 
 - **sql-ddl-dml-dcl-tcl** (mcq): In SQL Server, after ROLLBACK TRANSACTION savepoint_name, what is the state of the outer transaction?
   - Gate said: a human reviewer objected: In SQL Server, after ROLLBACK TRANSACTION savepoint_name, what is the state of t
+
+- **sql-ddl-dml-dcl-tcl** (flash): In SQL, which command family includes CREATE, ALTER, DROP, and TRUNCATE?
+  - Gate said: a human reviewer objected: In SQL, which command family includes CREATE, ALTER, DROP, and TRUNCATE?
 
 - **sql-group-by-and-having** (output): What is the exact output of this SQL query (do not include a row-count footer)?
 ```sql

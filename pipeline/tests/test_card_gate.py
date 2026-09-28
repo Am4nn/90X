@@ -328,3 +328,47 @@ def test_a_real_format_objection_that_mentions_validity_still_rejects():
     rejected = gate([card], [Verdict(index=0, fits_format=False,
                                      reason="this format is not valid for exact-match grading here")])
     assert "wrong_format" in rejected[0][1]
+
+
+def test_an_objection_names_one_card_or_none():
+    """Taking the topic's first card is what broke the first review round: a
+    topic has around ten cards and the sample shows one, so twelve of thirteen
+    objections rewrote a card nobody had complained about and left the offending
+    one publishable. Refusing is better than guessing."""
+    from pipeline.cards.fix import pick
+
+    class Row:
+        def __init__(self, prompt):
+            self.prompt = prompt
+
+    cards = [Row("What is the core idea behind reducing ambiguity?"),
+             Row("At the senior level, what scope of people should the story involve?"),
+             Row("How does handling ambiguity change at staff level?")]
+    assert pick(cards, "At the senior level").prompt.startswith("At the senior")
+    # Whitespace and case are not part of the identity.
+    assert pick(cards, "  at the SENIOR   level ").prompt.startswith("At the senior")
+    # Ambiguous or absent: refuse rather than pick the first.
+    assert pick(cards, "ambiguity") is None
+    assert pick(cards, "not in any card") is None
+    assert pick(cards, "") is None
+    # A topic with exactly one card needs no match line.
+    assert pick(cards[:1], "") is cards[0]
+
+
+def test_an_objection_block_parses_its_match_line(tmp_path):
+    from pipeline.cards.fix import objections
+
+    path = tmp_path / "obj.md"
+    path.write_text(
+        "# Card objections\n\n"
+        "## beh-dealing-with-ambiguity\n\n"
+        "match: At the senior level\n\n"
+        "The levelling ladder is not a universal truth.\n",
+        encoding="utf-8",
+    )
+    found = objections(path)
+    item = found["beh-dealing-with-ambiguity|At the senior level"]
+    assert item.slug == "beh-dealing-with-ambiguity"
+    assert item.match == "At the senior level"
+    assert "levelling ladder" in item.text
+    assert "match:" not in item.text, "the directive must not reach the rewrite prompt"

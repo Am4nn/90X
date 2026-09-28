@@ -130,10 +130,17 @@ def report(con) -> str:
 
     for i, card in enumerate(picked, 1):
         confidence = (json.loads(card["quality"] or "{}") or {}).get("gate_confidence")
+        # The slug and a fragment of the question, so an objection can name this
+        # exact card. Without it, an objection keyed on the topic alone hit
+        # whichever of the topic's ten cards came first - which is how twelve of
+        # thirteen reviewer objections rewrote a card nobody complained about.
+        first_line = " ".join(card["prompt"].split())[:60]
         lines += [
             f"## {i}. {card['topic']} · {card['format']} · {card['difficulty']}",
             "",
             f"*{card['domain']} · gate confidence {confidence if confidence is not None else 'n/a'}*",
+            "",
+            f"<sub>to object to this card: `## {card['slug']}` then `match: {first_line}`</sub>",
             "",
             "**Question**",
             "",

@@ -27,25 +27,45 @@ from .run_lessons import card_id
 
 OBJECTIONS = Path(REPO_DIR) / ".planning" / "card-objections.md"
 HEADING = re.compile(r"^## ([a-z0-9][a-z0-9-]*)\s*$", re.MULTILINE)
+# A quoted fragment of the question, to pick one card out of a topic's ten.
+MATCH = re.compile(r"^match:\s*(.+?)\s*$", re.MULTILINE)
 
 
-def objections(path: Path = OBJECTIONS) -> dict[str, str]:
-    """{topic_slug: objection}, in file order.
+class Objection:
+    """One reviewer complaint, and which card it is about.
 
-    The heading is a topic slug because the review sample carries at most one
-    card per topic, so the slug identifies the card a reviewer is talking about
-    without them having to copy a uuid out of a markdown file.
+    The heading alone was not enough. It is a topic slug, and the first version
+    took the topic's first card - but a topic has around ten, and the review
+    sample shows one of them. So twelve of thirteen objections rewrote a card
+    nobody had complained about and left the offending one live: the levelling
+    ladder the reviewer called out by name was still publishable afterwards.
+
+    A `match:` line carries a fragment of the question, which the review pack
+    now prints beside each card so it can be copied.
     """
+
+    def __init__(self, slug: str, body: str) -> None:
+        self.slug = slug
+        found = MATCH.search(body)
+        self.match = found.group(1).strip().strip('"') if found else ""
+        self.text = MATCH.sub("", body).strip()
+
+
+def objections(path: Path = OBJECTIONS) -> dict[str, Objection]:
+    """{key: Objection}, in file order. The key is the heading plus its match,
+    so one topic can carry an objection about more than one of its cards."""
     if not path.exists():
         return {}
     text = path.read_text(encoding="utf-8")
-    found: dict[str, str] = {}
+    found: dict[str, Objection] = {}
     marks = list(HEADING.finditer(text))
     for i, m in enumerate(marks):
         end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
         body = text[m.end():end].strip()
-        if body:
-            found[m.group(1)] = body
+        if not body:
+            continue
+        item = Objection(m.group(1), body)
+        found[f"{item.slug}|{item.match}"] = item
     return found
 
 
@@ -60,14 +80,13 @@ class Draft:
         self.from_review = bool((json.loads(quality or "{}") or {}).get("from_review"))
 
 
-def drafts_for(con, slugs: list[str]) -> dict[str, Draft]:
-    """The card a reviewer is talking about, per topic.
+def candidates_for(con, slugs: list[str]) -> dict[str, list[Draft]]:
+    """Every card in these topics that an objection could be about.
 
     Rejected cards are in scope, not only drafts: "the gate was wrong to drop
-    this, make it multiple choice" is a normal objection, and the reviewer
-    named the Java equals() contract card as exactly that. Drafts are preferred
-    when a topic has both, because a live card is the one being complained
-    about.
+    this, make it multiple choice" is a normal objection, and the reviewer named
+    the Java equals() contract card as exactly that. Drafts come first, because
+    a live card is the more likely subject of a complaint.
     """
     rows = con.execute(
         f"""select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points, quality
@@ -76,12 +95,26 @@ def drafts_for(con, slugs: list[str]) -> dict[str, Draft]:
             order by topic_slug, case status when 'draft' then 0 else 1 end, id""",
         slugs,
     ).fetchall()
-    # One card per topic in the sample, so the first is the one reviewed. If a
-    # topic ever carries two objections this is where that shows up.
-    out: dict[str, Draft] = {}
+    out: dict[str, list[Draft]] = {}
     for row in rows:
-        out.setdefault(row[1], Draft(row))
+        out.setdefault(row[1], []).append(Draft(row))
     return out
+
+
+def pick(cards: list[Draft], match: str) -> Draft | None:
+    """The one card an objection is about, or None rather than a guess.
+
+    Taking the topic's first card is what broke the first run: a topic has
+    around ten and the review sample shows one, so twelve of thirteen
+    objections rewrote a card nobody had complained about. With no `match:` line
+    there is exactly one card to be sure about; otherwise refuse and say so,
+    because rewriting the wrong card is worse than rewriting none.
+    """
+    if match:
+        needle = " ".join(match.split()).casefold()
+        hits = [c for c in cards if needle in " ".join(c.prompt.split()).casefold()]
+        return hits[0] if len(hits) == 1 else None
+    return cards[0] if len(cards) == 1 else None
 
 
 def replace(con, old: Draft, card, topic: dict, reason: str | None, confidence: float = 0.5) -> None:
@@ -135,45 +168,52 @@ def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTION
 
     Idempotent: a card already carrying `from_review` is the answer to this
     objection, not a new subject for it. Without that, a second run - to retry
-    the one topic whose rewrite returned bad JSON - would rewrite the twelve
-    good replacements against the objections they had already satisfied.
+    one whose rewrite returned bad JSON - would rewrite the replacements against
+    the objections they had already satisfied.
     """
     llm = llm or LLM(con)
     notes = objections(path)
     if only:
-        notes = {k: v for k, v in notes.items() if k in set(only)}
+        notes = {k: v for k, v in notes.items() if v.slug in set(only)}
     if not notes:
         print(f"no objections in {path}", flush=True)
         return 0, 0
-    drafts = drafts_for(con, list(notes))
+    slugs = sorted({v.slug for v in notes.values()})
+    candidates = candidates_for(con, slugs)
     topics = {
         r[0]: {"slug": r[0], "name": r[1], "domain": r[2], "lesson": r[3]}
         for r in con.execute(
             f"""select t.slug, t.name, t.domain, l.body_md from topics t join lessons l on l.topic_slug = t.slug
-                where t.slug in ({', '.join('?' * len(notes))})""",
-            list(notes),
+                where t.slug in ({', '.join('?' * len(slugs))})""",
+            slugs,
         ).fetchall()
     }
 
     fixed = failed = 0
     print(f"{len(notes)} objections to apply", flush=True)
-    for slug, objection in notes.items():
-        old, topic = drafts.get(slug), topics.get(slug)
-        if old is None or topic is None:
-            print(f"  {slug}: no draft card to fix", flush=True)
+    for key, item in notes.items():
+        topic = topics.get(item.slug)
+        cards = candidates.get(item.slug, [])
+        old = pick(cards, item.match) if topic else None
+        if topic is None or old is None:
+            why = ("no lesson for this topic" if topic is None
+                   else f"{len(cards)} cards in this topic and `match:` picked "
+                        f"{'none' if item.match else 'no single one'}")
+            print(f"  {key}: skipped - {why}", flush=True)
+            failed += 1
             continue
         if old.from_review:
-            print(f"  {slug}: already answered by a review rewrite", flush=True)
+            print(f"  {key}: already answered by a review rewrite", flush=True)
             continue
-        # One objection the model cannot answer must not cost the other twelve.
+        # One objection the model cannot answer must not cost the others.
         try:
-            replacements = rewrite(llm, topic, topic["lesson"], [(old, objection)], tier=tier)
+            replacements = rewrite(llm, topic, topic["lesson"], [(old, item.text)], tier=tier)
         except LLMError as e:
-            print(f"  {slug}: the rewrite failed, {e}", flush=True)
+            print(f"  {key}: the rewrite failed, {e}", flush=True)
             failed += 1
             continue
         if not replacements:
-            print(f"  {slug}: the rewrite returned nothing", flush=True)
+            print(f"  {key}: the rewrite returned nothing", flush=True)
             failed += 1
             continue
         card = replacements[0]
@@ -183,9 +223,9 @@ def run(con, llm: LLM | None = None, tier: str = "smart", path: Path = OBJECTION
         replace(con, old, card, topic, reason,
                 gate.confidence_by_card([card], result).get(id(card), 0.5))
         if reason:
-            print(f"  {slug}: replacement still rejected - {reason}", flush=True)
+            print(f"  {key}: replacement still rejected - {reason}", flush=True)
             failed += 1
         else:
-            print(f"  {slug}: fixed", flush=True)
+            print(f"  {key}: fixed", flush=True)
             fixed += 1
     return fixed, failed
