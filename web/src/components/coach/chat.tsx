@@ -181,6 +181,7 @@ export function CoachChat({
 
   // Only warn about leaving once an answer is actually taking a while.
   const [slow, setSlow] = useState(false);
+  const [stopFailed, setStopFailed] = useState(false);
   useEffect(() => {
     if (!busy) return;
     const timer = setTimeout(() => setSlow(true), 4000);
@@ -193,15 +194,20 @@ export function CoachChat({
   // going and save a reply the reader had just said they did not want.
   const halt = async () => {
     await stop();
+    setStopFailed(false);
     try {
-      await fetch("/api/coach/stop", {
+      const response = await fetch("/api/coach/stop", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ threadId }),
         keepalive: true,
       });
+      // Reaching the server is what stops the model. If that did not happen the
+      // reply carries on and is saved, and the reader is entitled to know rather
+      // than watch an answer they cancelled appear anyway.
+      if (!response.ok) setStopFailed(true);
     } catch {
-      // The reply finishes and is saved, which is what used to happen anyway.
+      setStopFailed(true);
     }
   };
 
@@ -217,6 +223,7 @@ export function CoachChat({
     }
     clearError();
     setSlow(false);
+    setStopFailed(false);
     void sendMessage({ text: trimmed });
     setInput("");
   };
@@ -272,6 +279,9 @@ export function CoachChat({
         {busy && <Working />}
         {busy && slow && <KeepOpen />}
         {cutOff && <p className="text-small text-warn">Coach stopped before answering. Ask again.</p>}
+        {stopFailed && (
+          <p className="text-small text-warn">Couldn&apos;t reach the server to stop that. The reply may still finish and appear here.</p>
+        )}
         {endNote && <p className="text-small text-mute">{endNote}</p>}
         {errorText && (
           <p role="alert" className="text-small text-bad">

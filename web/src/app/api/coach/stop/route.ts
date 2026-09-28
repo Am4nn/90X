@@ -7,9 +7,9 @@ import { threadOwner } from "@/lib/coach/threads";
 // The Stop button. A reply no longer stops when the connection drops - closing
 // the app leaves it to finish - so an explicit stop has to say so itself.
 //
-// Answers 204 whatever happens once the thread is the caller's: there is nothing
-// useful for the client to do about a failed stop, and a reply that finishes
-// anyway is the same outcome as before this existed.
+// 204 only when the stop was actually recorded. Answering 204 regardless was a
+// lie the reader would act on: they press Stop, see it accepted, and the answer
+// arrives and is saved anyway with nothing having said it might.
 
 const Body = z.object({ threadId: z.uuid() });
 
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     await requestStop(viewer.id, parsed.data.threadId);
   } catch (e) {
     console.error("coach stop not recorded", e);
+    return new Response(null, { status: 503 });
   }
   return new Response(null, { status: 204 });
 }

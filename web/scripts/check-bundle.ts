@@ -31,11 +31,18 @@ const NEXT = path.join(WEB, ".next");
 const SHARED_CEILING = 292;
 const TOTAL_CEILING = 743;
 
+/** Gzipped size, or a failure. A file the manifest names and the disk does not
+ *  have used to count as zero bytes, so half a build could come in under budget
+ *  and pass. If this cannot read something it was told about, the measurement is
+ *  wrong and saying so is the only useful thing left to do. */
 const gz = (file: string) => {
   try {
-    return statSync(file).isFile() ? gzipSync(readFileSync(file)).byteLength : 0;
-  } catch {
-    return 0;
+    if (!statSync(file).isFile()) throw new Error("not a file");
+    return gzipSync(readFileSync(file)).byteLength;
+  } catch (e) {
+    console.error(`\n  Could not measure ${path.relative(WEB, file)}: ${e instanceof Error ? e.message : e}`);
+    console.error("  The build is incomplete or the manifest is stale; this check cannot report a size.\n");
+    process.exit(1);
   }
 };
 const kb = (bytes: number) => Math.round(bytes / 1024);
