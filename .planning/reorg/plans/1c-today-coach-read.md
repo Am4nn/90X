@@ -20,7 +20,7 @@ Today as a full card above the missions, and gives the Coach line its real mark.
 - `web/e2e/weekly-read.spec.ts`
 
 **Modify**
-- `web/src/app/(app)/today/page.tsx` — render the card; swap the inline "C" for Ren
+- `web/src/app/(app)/today/page.tsx` — render the card (the coach line already uses Ren)
 
 ## Reuse, do not rewrite
 
@@ -80,11 +80,10 @@ card never flashes into view. Guard every `localStorage` access in `try/catch`: 
 in a private window and with site data blocked, and the card must still render correctly
 when it does.
 
-**Ren replaces the inline "C"** at `today/page.tsx` (the
-`grid size-7 … bg-cyan-bg … text-cyan` span holding a literal "C"). Ren is the shared
-character from Curfew and it already exists at `components/coach/ren.tsx` — **consume it,
-do not modify it, do not create your own**. Use it on the read card and on the coach line.
-It does **not** go in the nav; the nav keeps `CoachIcon`.
+**Ren** already exists at `components/coach/ren.tsx`, and the prep PR already put it on
+Today's coach line in place of the inline "C" span — so the import is in the file when you
+start. **Consume it, do not modify it, do not create your own.** Use it on the read card
+too. It does **not** go in the nav; the nav keeps `CoachIcon`.
 
 **Keep exactly as they are:** the day line, `OfflineBanner`, `PendingRequests`, the 90
 `Grid` (mobile and the desktop aside), `ReviveBanner`, the missions section and the

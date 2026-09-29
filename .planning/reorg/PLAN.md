@@ -1,5 +1,9 @@
 # 90x — Simplify "Me" and fix Coach's "Lessons" — Plan
 
+> **This is the oldest document in this folder, and parts of it are superseded.**
+> `DECISIONS.md` is binding where the two disagree, and §11 below records the mock
+> review. Read `plans/README.md` for the precedence order before building anything.
+
 **Branch:** `simplify-me-and-coach` (off latest `main`)
 **Date:** 2026-09-29
 **Status:** Decisions locked via menu; mock phase is next.
@@ -61,7 +65,7 @@ own score, a Markdown summary, and suggested template changes that need Accept.
 
 | # | Decision |
 |---|---|
-| D1 | Add **Friends as a 6th top-level tab**. Tabs become: Today · Feed · Library · Coach · Friends · Me. |
+| D1 | ~~Add **Friends as a 6th top-level tab**.~~ **Superseded** by DECISIONS.md → Navigation: the **desktop sidebar** gains Friends (six entries); the **mobile tab bar stays five** and Friends is reached from Me. Six tabs were too tight. |
 | D2 | **Friends page holds everything friends**: scoreboard, activity feed, invites (send/accept/refuse/dismiss/revoke), unfriend. |
 | D3 | **Coach's weekly read → Today**, highly visible. Present **2–3 mock directions** to choose from (not decided in code yet). |
 | D4 | **Build a real "Lessons" page** under Coach (no more redirect to Library). |
@@ -96,8 +100,10 @@ Me          — readiness + areas, weakest patterns, personal "this week", Plan,
 ### 5.1 Navigation — `web/src/components/shell/nav.tsx`
 - Add `FriendsIcon` to `web/src/components/icons.tsx` (a two-person / users
   icon, matching the existing 24×24 stroke style).
-- Add `{ href: "/friends", label: "Friends", Icon: FriendsIcon }` to `TABS`.
-- Mobile `TabBar`: change `grid-cols-5` → `grid-cols-6`.
+- Add `{ href: "/friends", label: "Friends", Icon: FriendsIcon }` to the **sidebar's**
+  entries.
+- Mobile `TabBar`: **unchanged, `grid-cols-5` stays.** (This line used to say
+  `grid-cols-6`; DECISIONS.md settled on five mobile tabs and it wins.)
 
 ### 5.2 NEW `/friends` — `web/src/app/(app)/friends/page.tsx` (+ `loading.tsx`, `error.tsx`)
 Reuses existing server queries and client components; no new schema.
