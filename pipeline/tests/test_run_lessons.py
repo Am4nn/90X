@@ -1,5 +1,6 @@
 """The generation driver: budget, per-archetype writes, refills, and save."""
 
+import json
 from pathlib import Path
 
 from pipeline import staging
@@ -48,6 +49,20 @@ def test_save_writes_the_archetype_and_answer_columns(tmp_path):
     assert rows[0][0] == "numeric" and rows[0][1] == "complexity" and rows[0][4] == 1
     assert rows[1][0] == "pick_one" and rows[1][1] == "concept" and rows[1][3] == "[0]"
     assert all(r[6] == "draft" and r[7] for r in rows)
+
+
+def test_constraints_are_saved_as_before_object(tmp_path):
+    """Part B's grader reads constraints as {"before": [[a, b], ...]}; the flat
+    list the writer returns must be wrapped before it hits the column."""
+    con = staging.connect(Path(tmp_path) / "s.duckdb")
+    topic = _topic()
+    run_lessons.save(con, topic, [
+        Card(format="order", archetype="sequence", difficulty="Medium",
+             prompt="Put these in order.", answer="1, 2, 3.", key_points=["a", "b"],
+             constraints=[[1, 5], [5, 2]]),
+    ], {"problems": [], "tricks": []})
+    raw = con.execute("select constraints from cards where topic_slug = ?", [topic["slug"]]).fetchone()[0]
+    assert json.loads(raw) == {"before": [[1, 5], [5, 2]]}
 
 
 def test_a_refused_slot_refills_instead_of_aborting(tmp_path):

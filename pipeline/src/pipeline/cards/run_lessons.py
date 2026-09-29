@@ -165,7 +165,9 @@ def save(con, topic: dict, cards: list, hard: dict) -> None:
                 json.dumps(card.options) if card.options else None, card.answer,
                 json.dumps(card.key_points),
                 json.dumps(card.picked) if card.picked else None,
-                json.dumps(card.constraints) if card.constraints else None,
+                # Part B's grader reads constraints as {"before": [[a, b], ...]},
+                # so the flat [[a, b], ...] the writer returns is wrapped here.
+                json.dumps({"before": card.constraints}) if card.constraints else None,
                 json.dumps(card.pairs) if card.pairs else None,
                 card.value, card.tolerance,
                 json.dumps(card.why_step.model_dump()) if card.why_step else None,

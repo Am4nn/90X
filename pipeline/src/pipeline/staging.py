@@ -113,6 +113,8 @@ alter table cards add column if not exists pairs json;
 alter table cards add column if not exists value double;
 alter table cards add column if not exists tolerance double;
 alter table cards add column if not exists why_step json;
+alter table cards add column if not exists observed_attempts integer default 0;
+alter table cards add column if not exists observed_correct integer default 0;
 """
 
 

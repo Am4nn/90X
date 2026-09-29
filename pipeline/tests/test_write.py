@@ -96,6 +96,16 @@ def test_a_number_card_needs_value_and_tolerance():
          value=2e9, tolerance=5e8)
 
 
+def test_an_ordered_card_needs_before_after_pairs():
+    with pytest.raises(ValidationError):
+        Card(format="order", archetype="sequence", difficulty="Medium",
+             prompt="Put these in order.", answer="1, 2.", key_points=["a", "b"],
+             constraints=[[0]])  # a lone index is not a [before, after] pair
+    Card(format="order", archetype="sequence", difficulty="Medium",
+         prompt="Put these in order.", answer="1, 2.", key_points=["a", "b"],
+         constraints=[[0, 1]])
+
+
 def test_a_hard_card_carries_a_why_step():
     card = Card(
         format="pick_one", archetype="concept", difficulty="Hard",

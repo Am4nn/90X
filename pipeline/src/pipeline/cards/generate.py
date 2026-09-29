@@ -43,6 +43,14 @@ class WhyStep(BaseModel):
     correct: int = Field(ge=0)
 
 
+def _is_index(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_index_pair(pair) -> bool:
+    return isinstance(pair, (list, tuple)) and len(pair) == 2 and all(_is_index(i) for i in pair)
+
+
 class Card(BaseModel):
     # `format` now holds a primitive id (pick_one, order, ...); the legacy chunk
     # formats (typed/flash/mcq/output) still parse, but the Feed v2 writer never
@@ -79,12 +87,21 @@ class Card(BaseModel):
         from .archetypes import shape_of
 
         shape = shape_of(self.format)
-        if shape == "chosen" and (not self.picked):
-            raise ValueError("chosen cards need `picked` (the correct indices)")
-        if shape == "ordered" and (not self.constraints):
-            raise ValueError("ordered cards need `constraints` ([before, after] pairs)")
-        if shape == "mapping" and (not self.pairs):
-            raise ValueError("mapping cards need `pairs` ([left, right] pairs)")
+        if shape == "chosen":
+            if not self.picked:
+                raise ValueError("chosen cards need `picked` (the correct indices)")
+            if not all(_is_index(i) for i in self.picked):
+                raise ValueError("`picked` must be a list of integer indices")
+        if shape == "ordered":
+            if not self.constraints:
+                raise ValueError("ordered cards need `constraints` ([before, after] pairs)")
+            if not all(_is_index_pair(p) for p in self.constraints):
+                raise ValueError("`constraints` must be a list of [before, after] index pairs")
+        if shape == "mapping":
+            if not self.pairs:
+                raise ValueError("mapping cards need `pairs` ([left, right] pairs)")
+            if not all(_is_index_pair(p) for p in self.pairs):
+                raise ValueError("`pairs` must be a list of [left, right] index pairs")
         if shape == "number" and (self.value is None or self.tolerance is None):
             raise ValueError("number cards need `value` and `tolerance`")
         return self
