@@ -41,6 +41,8 @@ export async function syncForProblem(slug: string): Promise<{ found: SyncedAttem
     const result = await syncUser(viewer.id);
     revalidatePath(`/library/problem/${clean}`);
     revalidatePath("/me");
+    // A sync can tick today's missions through onCheckins, so Today must refresh too.
+    revalidatePath("/today");
     if (result.status !== "ok") return { error: syncMessage(result.status) };
     return { found: result.created.find((attempt) => attempt.slug === clean) ?? null };
   } catch (e) {
