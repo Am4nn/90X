@@ -24,6 +24,7 @@ const WEB = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REPO = path.join(WEB, "..");
 const WORKFLOW = path.join(REPO, ".github", "workflows", "ci.yml");
 const E2E_DIR = path.join(WEB, "e2e");
+const SHARD_JOB = "e2e-shard";
 
 type Workflow = {
   jobs?: Record<string, { strategy?: { matrix?: { include?: { id?: string; specs?: string }[] } } }>;
@@ -32,8 +33,11 @@ type Workflow = {
 let shards: { id: string; specs: string[] }[];
 try {
   const workflow = parse(readFileSync(WORKFLOW, "utf8")) as Workflow;
-  const include = workflow.jobs?.e2e?.strategy?.matrix?.include;
-  if (!include?.length) throw new Error("the e2e job has no shard matrix");
+  // `e2e-shard` runs them; `e2e` is the gate job that branch protection names, and
+  // it has no matrix. Reading the wrong one is how this check broke the moment the
+  // sharded job was renamed.
+  const include = workflow.jobs?.[SHARD_JOB]?.strategy?.matrix?.include;
+  if (!include?.length) throw new Error(`the ${SHARD_JOB} job has no shard matrix`);
   shards = include.map((row, i) => ({
     id: row.id ?? `#${i + 1}`,
     specs: (row.specs ?? "").split(/\s+/).filter(Boolean),
