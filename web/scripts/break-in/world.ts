@@ -71,14 +71,10 @@ export async function build(): Promise<World> {
           where user_id in (${USERS.admin}, ${USERS.friend}, ${USERS.nonFriend})`,
     );
     await tx.execute(sql`update public.user_approvals set is_admin = true where user_id = ${USERS.admin}`);
-    await tx.execute(
-      sql`update public.profiles set name = ${`Break admin`}, setup_done_at = now() where user_id = ${USERS.admin}`,
-    );
+    await tx.execute(sql`update public.profiles set name = ${`Break admin`}, setup_done_at = now() where user_id = ${USERS.admin}`);
     await tx.execute(sql`insert into public.friendships (user_a, user_b) values (${USERS.admin}, ${USERS.friend})`);
 
-    await tx.execute(
-      sql`insert into public.sources (id, name, domain, role) values (${`brk-${tag}-src`}, 'Break source', 'dsa', 'cards')`,
-    );
+    await tx.execute(sql`insert into public.sources (id, name, domain, role) values (${`brk-${tag}-src`}, 'Break source', 'dsa', 'cards')`);
     await tx.execute(
       sql`insert into public.topics (slug, domain, name, importance, sort) values (${w.problemSlug}, 'dsa', 'Break topic', 1, 999)`,
     );
@@ -86,7 +82,9 @@ export async function build(): Promise<World> {
       sql`insert into public.problems (slug, kind, title, difficulty, pattern_slug, importance, statement_md, source_id)
           values (${w.problemSlug}, 'leetcode', 'Break problem', 'Easy', ${w.problemSlug}, 1, 'statement', ${`brk-${tag}-src`})`,
     );
-    const [batch] = await tx.execute<{ id: string }>(sql`insert into public.card_batches (domain, status) values ('dsa', 'draft') returning id`);
+    const [batch] = await tx.execute<{ id: string }>(
+      sql`insert into public.card_batches (domain, status) values ('dsa', 'draft') returning id`,
+    );
     w.batchId = batch!.id;
     const [card] = await tx.execute<{ id: string }>(
       sql`insert into public.cards (batch_id, topic_slug, format, prompt_md, answer_md, status)
@@ -103,7 +101,9 @@ export async function build(): Promise<World> {
       sql`insert into public.mocks (user_id, type, topic, status, score) values (${USERS.admin}, 'design', 'Break mock', 'done', 80) returning id`,
     );
     w.mockId = mock!.id;
-    await tx.execute(sql`insert into public.mock_details (mock_id, user_id, prompt) values (${w.mockId}, ${USERS.admin}, 'Break transcript')`);
+    await tx.execute(
+      sql`insert into public.mock_details (mock_id, user_id, prompt) values (${w.mockId}, ${USERS.admin}, 'Break transcript')`,
+    );
     const [story] = await tx.execute<{ id: string }>(
       sql`insert into public.stories (user_id, title) values (${USERS.admin}, 'Break story') returning id`,
     );
@@ -112,7 +112,9 @@ export async function build(): Promise<World> {
       sql`insert into public.coach_threads (user_id, kind, title) values (${USERS.admin}, 'chat', 'Break thread') returning id`,
     );
     w.threadId = thread!.id;
-    await tx.execute(sql`insert into public.coach_messages (thread_id, user_id, role, parts) values (${w.threadId}, ${USERS.admin}, 'user', '[]'::jsonb)`);
+    await tx.execute(
+      sql`insert into public.coach_messages (thread_id, user_id, role, parts) values (${w.threadId}, ${USERS.admin}, 'user', '[]'::jsonb)`,
+    );
     const [fact] = await tx.execute<{ id: string }>(
       sql`insert into public.coach_memory (user_id, kind, text) values (${USERS.admin}, 'goal', 'Break goal') returning id`,
     );

@@ -11,9 +11,5 @@ const CONTROL = /\p{Cc}/gu;
 const INVISIBLE = /[\u200b-\u200f\u202a-\u202e\ufeff]/g;
 
 export function sanitizeForPrompt(text: string): string {
-  return text
-    .replace(INVISIBLE, "")
-    .replace(CONTROL, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return text.replace(INVISIBLE, "").replace(CONTROL, " ").replace(/\s+/g, " ").trim();
 }

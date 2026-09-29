@@ -6,13 +6,7 @@
 // HTTP sweep (http.ts) probes each of these signed-out and asserts it never
 // renders. A second list has to be updated by hand, and the completeness check
 // in http.ts fails loudly when it has not been.
-export const ADMIN_ROUTES: string[] = [
-  "/admin",
-  "/admin/users",
-  "/admin/cards",
-  "/admin/cards/flagged",
-  "/admin/mail",
-];
+export const ADMIN_ROUTES: string[] = ["/admin", "/admin/users", "/admin/cards", "/admin/cards/flagged", "/admin/mail"];
 
 // One route with a path parameter each, so the sweep asks for a concrete row too.
 export const ADMIN_PARAM_ROUTES: string[] = [

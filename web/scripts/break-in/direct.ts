@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { stories } from "@/db/schema";
-import { accept, invite } from "@/lib/friends/service";
 import { deleteFact, editFact } from "@/lib/coach/memory-edit";
 import { endMock, listMocks, mockView } from "@/lib/coach/mocks";
 import { takeMessageSlot } from "@/lib/coach/rate-limit";
 import { getSolutionReview } from "@/lib/coach/solution-review";
 import { deleteStory, listStories, saveStory } from "@/lib/coach/stories";
 import { getThread, listThreads } from "@/lib/coach/threads";
+import { accept, invite } from "@/lib/friends/service";
 import { allows, check, refuses, section, skipped } from "./harness";
 import type { World } from "./world";
 
@@ -36,7 +36,10 @@ export async function run(w: World): Promise<void> {
   check("a friend's thread list has none of yours", (await listThreads(friend)).length === 0);
 
   section("2. forged writes");
-  check("a friend cannot overwrite your story", (await saveStory(friend, w.storyId, { title: "hacked", situation: "", task: "", action: "", result: "", tags: [] })) === false);
+  check(
+    "a friend cannot overwrite your story",
+    (await saveStory(friend, w.storyId, { title: "hacked", situation: "", task: "", action: "", result: "", tags: [] })) === false,
+  );
   await deleteStory(friend, w.storyId);
   const [still] = await db.select({ id: stories.id }).from(stories).where(eq(stories.id, w.storyId));
   check("a friend cannot delete your story", still !== undefined);

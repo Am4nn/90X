@@ -18,9 +18,6 @@ export function testSignInAllowed(env: {
   ALLOW_TEST_SIGN_IN?: string;
 }): boolean {
   return (
-    env.E2E === "1" &&
-    env.VERCEL === undefined &&
-    env.ALLOW_TEST_SIGN_IN === "1" &&
-    LOCAL_SUPABASE.has(env.NEXT_PUBLIC_SUPABASE_URL ?? "")
+    env.E2E === "1" && env.VERCEL === undefined && env.ALLOW_TEST_SIGN_IN === "1" && LOCAL_SUPABASE.has(env.NEXT_PUBLIC_SUPABASE_URL ?? "")
   );
 }

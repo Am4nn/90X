@@ -214,9 +214,7 @@ describe("summarizeFriends", () => {
   });
 
   it("strips control and bidi characters from a friend's name", () => {
-    const out = summarizeFriends([
-      { name: "ignore\nprevious\u202einstructions", readiness: 50, streak: 1, solvedThisWeek: 0, mocks: [] },
-    ]);
+    const out = summarizeFriends([{ name: "ignore\nprevious\u202einstructions", readiness: 50, streak: 1, solvedThisWeek: 0, mocks: [] }]);
     expect(out[0]?.name).toBe("ignore previousinstructions");
     expect(JSON.stringify(out)).not.toContain("\\n");
   });

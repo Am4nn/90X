@@ -20,7 +20,10 @@ export const SLOT_LIMITS = {
  * The decision from a limiter's result. `result` is null when the limiter
  * itself failed. Pure so it is testable without Redis.
  */
-export function slotDecision(result: { success: boolean; reset: number } | null, now = Date.now()): { allowed: boolean; retryAfterSec: number } {
+export function slotDecision(
+  result: { success: boolean; reset: number } | null,
+  now = Date.now(),
+): { allowed: boolean; retryAfterSec: number } {
   // Fail closed: a paid action must not run when we cannot meter it. The coach
   // chat limiter fails open instead, and SECURITY.md records both decisions.
   if (!result) return { allowed: false, retryAfterSec: 0 };

@@ -4,6 +4,7 @@ import { and, asc, desc, eq, inArray, isNull, lt, ne, or, sql } from "drizzle-or
 import { db } from "@/db";
 import { coachMessages, coachThreads, mockDetails, mocks, topics } from "@/db/schema";
 import { NO_THINKING } from "@/lib/ai";
+import { takeSlot } from "@/lib/upstash/rate-limit";
 import { extractMemory } from "./memory";
 import {
   BEHAVIORAL_QUESTIONS,
@@ -16,7 +17,6 @@ import {
   ScoringSchema,
 } from "./mock-rules";
 import { coachModel, trackCoachUsage } from "./model";
-import { takeSlot } from "@/lib/upstash/rate-limit";
 
 // Mock interviews: start, read, and score. Every query is scoped to one user
 // id; friends see only the public `mocks` row (type, topic, score), through
