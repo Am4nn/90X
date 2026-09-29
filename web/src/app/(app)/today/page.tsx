@@ -4,9 +4,11 @@ import { button } from "@/components/button-styles";
 import { EmptyState } from "@/components/empty-state";
 import { OfflineBanner } from "@/components/offline/offline-banner";
 import { PageHeader } from "@/components/page-header";
+import { PendingRequests } from "@/components/tracker/friends-ui";
 import { Grid } from "@/components/tracker/grid";
 import { MissionList, ReviveBanner } from "@/components/tracker/missions";
 import { requireViewer } from "@/lib/auth/viewer";
+import { pendingFor } from "@/lib/friends/service";
 import { band, BAND_TEXT } from "@/lib/tracker/readiness";
 import { ensureToday, todayStats } from "@/lib/tracker/service";
 
@@ -78,6 +80,7 @@ export default async function TodayPage() {
   }
 
   const stats = await todayStats(viewer.id, view.today);
+  const pendingReqs = await pendingFor(viewer.email ?? "");
   const open = view.missions.filter((m) => m.status === "open" && !m.isRevive && !m.isExtra);
   const counted = view.missions.filter((m) => m.status !== "coming_soon" && !m.isRevive && !m.isExtra);
   const finished = counted.filter((m) => m.status === "done" || m.status === "skipped").length;
@@ -90,6 +93,8 @@ export default async function TodayPage() {
         Day {view.dayNumber} · {view.streak}-day streak · {view.daysLeft} {view.daysLeft === 1 ? "day" : "days"} left
       </p>
       {offlineBanner}
+
+      <PendingRequests requests={pendingReqs.map((r) => ({ id: r.id, name: r.inviterName }))} />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,340px)] md:gap-8">
         <div className="flex flex-col gap-6">

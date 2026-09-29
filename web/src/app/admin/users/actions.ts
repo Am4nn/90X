@@ -1,9 +1,13 @@
 "use server";
 
+import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/form";
+import { db } from "@/db";
 import { requireViewer } from "@/lib/auth/viewer";
+import { sendEmailBestEffort } from "@/lib/email";
+import { approvalEmail } from "@/lib/email/templates";
 import { createClient } from "@/lib/supabase/server";
 
 const Decision = z.object({ userId: z.uuid(), status: z.enum(["approved", "rejected", "pending"]) });
@@ -26,6 +30,20 @@ export async function decide(_: FormState, form: FormData): Promise<FormState> {
     })
     .eq("user_id", userId);
   if (error) return { error: "Couldn't save that. Try again." };
+
+  if (status !== "pending") {
+    // Send email using the server connection to read auth.users.
+    const rows = (await db.execute(sql`select email from auth.users where id = ${userId}`)) as unknown as { email: string }[];
+    if (rows[0]?.email) {
+      await sendEmailBestEffort({
+        actorId: viewer.id,
+        kind: "approval",
+        email: approvalEmail(rows[0].email, status === "approved"),
+        payload: { target_id: userId, status },
+      });
+    }
+  }
+
   revalidatePath("/admin/users");
   return { ok: true };
 }
