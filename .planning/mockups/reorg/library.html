@@ -11,6 +11,11 @@
   .seg span { padding: 8px 16px; border-radius: 10px; font: 700 13px/1 "Manrope", sans-serif; color: var(--mu); }
   .seg span.on { background: var(--sf2); color: var(--tx); }
 
+  /* Area navigation, as today: a bordered surface container with rounded items. */
+  .areatabs { display: flex; gap: 4px; background: var(--sf); border: 1px solid var(--ln); border-radius: 14px; padding: 4px; overflow: hidden; }
+  .areatabs span { flex: none; padding: 8px 14px; border-radius: 10px; font: 600 13px/1 "Manrope", sans-serif; white-space: nowrap; color: var(--mu); }
+  .areatabs span.on { background: var(--sf2); color: var(--tx); }
+
   .rd { width: 100%; height: auto; display: block; }
   .rd .spine { stroke: var(--ln2); stroke-width: 2; fill: none; }
   .rd .dash { stroke: var(--ln2); stroke-width: 1.6; stroke-dasharray: 3 4; fill: none; }
@@ -65,7 +70,7 @@
       <div class="screen">
         <div class="page">
           <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip on">DSA</span><span class="chip">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
+          <div class="areatabs"><span class="on">DSA</span><span>Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
           <div>
             <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px"><span class="heading">Patterns</span><span class="small">58 of 191 mastered</span></div>
             <div class="card pad">
@@ -114,7 +119,7 @@
         </aside>
         <div class="main">
           <div class="shead"><span class="title">Library</span><span class="btn s sm">Search problems</span></div>
-          <div style="display:flex; gap:8px"><span class="chip on">DSA</span><span class="chip">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">LLD</span><span class="chip">AI</span><span class="chip">Behavioural</span><span class="chip">Competitive</span></div>
+          <div class="areatabs"><span class="on">DSA</span><span>Design</span><span>CS</span><span>Java</span><span>SQL</span><span>LLD</span><span>AI</span><span>Behavioural</span><span>Competitive</span></div>
           <div class="cols2b">
             <div class="stack6">
               <div>
@@ -162,7 +167,7 @@
       <div class="screen">
         <div class="page">
           <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
+          <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
             <div class="seg"><span class="on">Graph</span><span>List</span></div>
             <span class="small">6 of 12 covered</span>
@@ -205,7 +210,7 @@
       <div class="screen">
         <div class="page">
           <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
+          <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
             <div class="seg"><span>Graph</span><span class="on">List</span></div>
             <span class="small">6 of 12 covered</span>
@@ -248,7 +253,7 @@
         </aside>
         <div class="main">
           <div class="shead"><span class="title">Library</span><span class="btn s sm">Search topics</span></div>
-          <div style="display:flex; gap:8px"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">LLD</span><span class="chip">AI</span><span class="chip">Behavioural</span></div>
+          <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span><span>LLD</span><span>AI</span><span>Behavioural</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
             <div class="seg"><span class="on">Graph</span><span>List</span></div>
             <span class="small">6 of 12 covered · tap a topic to open its lesson</span>
