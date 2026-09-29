@@ -47,11 +47,30 @@ function PatternRow({ node, detail }: { node: PatternNode; detail?: string }) {
   );
 }
 
-export default async function LessonsPage() {
+function PatternSearch({ q }: { q: string }) {
+  return (
+    <form action="/coach/lessons" className="flex">
+      <input
+        name="q"
+        defaultValue={q}
+        placeholder="Search patterns"
+        aria-label="Search patterns"
+        className="h-10 w-full rounded-xl border border-line-2 bg-surface px-3.5 text-small text-text outline-none focus:border-cyan md:w-72"
+      />
+    </form>
+  );
+}
+
+const matchesQuery = (name: string, q: string) => name.toLowerCase().includes(q.toLowerCase());
+
+export default async function LessonsPage({ searchParams }: PageProps<"/coach/lessons">) {
   const viewer = await requireViewer();
   const map = await patternMap(viewer.id);
+  const params = await searchParams;
+  const q = typeof params.q === "string" ? params.q.trim() : "";
   const weakest = weakestPatterns(map.patterns, 3);
   const mastered = map.patterns.filter((p) => p.state === "mastered").length;
+  const matches = q ? map.patterns.filter((p) => matchesQuery(p.name, q)) : map.patterns;
 
   const weakestSection =
     weakest.length > 0 ? (
@@ -73,17 +92,19 @@ export default async function LessonsPage() {
   const indexSection = (
     <section className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-display text-heading font-semibold">All patterns</h2>
+        <h2 className="font-display text-heading font-semibold">{q ? `Results for “${q}”` : "All patterns"}</h2>
         <span className="text-small text-mute">
-          {mastered} of {map.patterns.length} mastered
+          {q ? `${matches.length} match${matches.length === 1 ? "" : "es"}` : `${mastered} of ${map.patterns.length} mastered`}
         </span>
       </div>
-      {map.patterns.length > 0 ? (
+      {matches.length > 0 ? (
         <ul aria-label="All patterns" className="flex flex-col rounded-xl border border-line bg-surface">
-          {map.patterns.map((p) => (
+          {matches.map((p) => (
             <PatternRow key={p.slug} node={p} />
           ))}
         </ul>
+      ) : q ? (
+        <EmptyState title="No matches">No pattern matches “{q}”. Try another word.</EmptyState>
       ) : (
         <EmptyState title="No patterns yet">The pattern index is still being written.</EmptyState>
       )}
@@ -94,7 +115,7 @@ export default async function LessonsPage() {
     <>
       <div className="flex flex-col gap-2">
         <BackLink href="/coach">Coach</BackLink>
-        <PageHeader title="Lessons" />
+        <PageHeader title="Lessons" action={<PatternSearch q={q} />} />
         <p className="text-small text-mute">Every pattern has a sourced lesson Coach can teach you.</p>
       </div>
 
