@@ -1,91 +1,56 @@
-# What we did not settle
+# What is still open
 
-Explicitly open, so nobody later reads silence in the other two files as
-agreement. Each one would change the design, which is why none of them were
-guessed at.
+Round 1 left seven. Round 2 (2026-09-30) closed all seven — see DECISIONS.md. What remains is
+plan-level detail, not design disagreement: each one can be decided while writing the plan
+without changing the shape of the thing.
 
-## 1. What stops a card being answerable by someone who knows nothing
+## Closed in round 2
 
-The risk with the highest cost and the lowest visibility. A pick-one card is
-only as good as its wrong answers: three implausible options and the reader
-eliminates by shape — the long one, the one with a number, the one that is not
-like the others — without thinking about the subject at all.
+| # | was | settled as |
+|---|---|---|
+| 1 | what stops a guessable card | blind-answer gate in the pipeline + free structural rules |
+| 2 | how format gets assigned | per-topic budget, one named format per writer call, writer may refuse |
+| 3 | which archetypes are eligible where | the areas column in CATALOGUE.md; behavioural stays exactly as today |
+| 4 | tap-to-place, partial credit, comparability | tap-to-place never drag; **no partial credit**; outcomes unchanged |
+| 5 | two valid answers | the card declares its constraints; the grader checks them |
+| 6 | regeneration | fresh from the lesson to budget; typed retired not deleted; ~$2.30 + ~$1 |
+| 7 | the problem link | not an answer, not a skip; `currentKey` already re-serves the card |
 
-It does not look broken. Beside its lesson the card reads perfectly well. It is
-only trivial in the Feed, where nobody is watching.
+The answer to 5 also changed the architecture: **no model in the loop when a Feed answer is
+marked.** That is now the admission test for every archetype.
 
-The current gate asks *"is this answerable without the lesson in front of you?"*
-That is a different question from *"is this answerable without knowing
-anything?"*, and the second is the one that matters here. Nobody has proposed
-how to check it.
+## Still open, all plan-level
 
-Sketches raised but not chosen:
-- a model answers the card with the topic withheld; if it gets it right, the
-  distractors are too weak
-- structural rules — options within a length band of each other, no option that
-  is the only one of its kind
-- generate distractors from *other* lessons' real claims, so each is something
-  somebody actually believes
+### 1. The blind gate's false-negative rate
 
-## 2. How format gets assigned
+A model shown four options with no context is **right 25% of the time by luck**, so a single
+attempt would reject a quarter of perfectly good cards. Needs one of: an explicit "cannot
+tell" answer and reject only a confident correct answer; or three samples, rejecting at two or
+more correct. The second is three times the cost of a $1 pass, which is still $3. Decide with
+a measurement on 50 cards, not by argument.
 
-Ask a model for a card and you get multiple choice, every time — it is the
-easiest thing to produce. Leave the choice to the writer and the database ends
-up 85% multiple choice with 29 formats in the schema.
+### 2. What "retired" is, in the schema
 
-So something has to assign it. Unsettled:
-- a per-topic budget the pipeline fills, or the format picked first and the
-  writer asked for that specific thing
-- whether the budget is per topic, per area, or per batch
-- what happens when a topic genuinely has no good ordering question — is a
-  strained card worse than an absent one?
+`cards.status` is `live | draft` today. Retiring 1,383 cards needs a third value, which is a
+migration, which means the lead writes it. Also: does a retired card keep its `card_state`
+rows, so a reader's history survives? Probably yes — deleting FSRS history to change a card's
+format would be a real loss.
 
-## 3. Which archetypes are eligible where
+### 3. Budget numbers
 
-[CATALOGUE.md](CATALOGUE.md) suggests areas per archetype, but that is a first
-pass and nobody has checked it against real topics. Estimate is meaningless for
-Java syntax; ordering suits protocols, not behavioural.
+How many cards per topic, and what mix. "2 complexity, 2 counter-example, 1 ordering…" was an
+illustration, not a proposal. Wants looking at against real topic sizes, and it is the kind of
+number that should be easy to change afterwards.
 
-Related and unasked: does behavioural belong in the Feed at all? Almost nothing
-in the catalogue fits it.
+### 4. Item counts per primitive
 
-## 4. Tap-to-place, and what a wrong answer means
+How many pairs in a match, columns in a bucket, steps in an order. Five pairs was an example.
+On a 390px phone this is a layout question as much as a pedagogy one, and it interacts with
+the no-partial-credit decision: eight pairs marked all-or-nothing would be punishing.
 
-Ordering, matching and bucketing all suggest drag-and-drop, and drag inside a
-scrolling page on a phone fights the scroll. Tap-to-place — tap the item, tap
-where it goes — is the same data model and better on the device.
+### 5. The two extra primitives
 
-Not settled, and cheap now but annoying after three UIs exist. Also unsettled:
-
-**Partial credit.** Four of five pairs matched — right or wrong? An ordering
-with two items swapped is nearly right; an MCQ is never nearly right. If partial
-credit exists, every consumer of the answer has to understand it.
-
-**Whether formats are comparable.** Does a wrong ordering mean the same about
-the reader as a wrong multiple choice? FSRS schedules on a right/wrong signal
-and readiness moves on it. If an ordering card is simply harder, the same signal
-means something different, and neither the scheduler nor the dial knows.
-
-## 5. Two valid answers
-
-An ordering card can have two correct orders where steps are independent. A
-matching card can have a term that honestly fits two definitions. Both are as
-broken as a typed card with no key points, and the gate would not notice either.
-
-Nothing proposed. It probably needs a rule per primitive rather than one rule.
-
-## 6. What regenerating 1,383 cards actually costs
-
-Decided that they get regenerated. Not decided:
-- the cost, which nobody has estimated
-- whether it is a conversion per card or a fresh generation from the lesson
-- whether the human review sample has to be redone from scratch, which it
-  probably does, since the formats are new
-- what happens to the review already done on cards that survive
-
-## 7. The link, mechanically
-
-Every DSA card naming a problem links to `/library/problem/<slug>`. Unsettled:
-does following the link count as answering? Does it pause the card, or abandon
-it? A reader who taps through to read the problem and comes back should not have
-lost their place, and nothing currently describes that.
+Numeric keypad and grid toggle, raised in round 2 and not decided. Both need a **fourth answer
+shape** — a number, and a set of cells — which is the real cost. Estimate and Complexity would
+both be better as a keypad than as four options, so this is worth settling before the grader's
+answer types are fixed rather than after.

@@ -97,3 +97,113 @@ Recorded here so they are not rediscovered, and expanded in
 4. **Drag is bad on a phone.** Ordering, matching and bucketing all suggest
    drag-and-drop, which fights the scroll. Tap-to-place is the same data model
    and much better on the device this is actually used on.
+
+---
+
+# Round 2 — 2026-09-30
+
+Seven things were open. Six are now settled, and one of Aman's answers changed the
+architecture rather than just answering the question.
+
+## The one that changed the design: no model in the loop
+
+> "with these deterministic questions we are mostly going away from model in loop for feed
+> except for text/short-text questions if left any. so do think in that direction."
+
+Typed was the only Feed format that needed `gradeWithAi`. Kill typed in the Feed and there
+are no text answers left, so **every Feed answer is marked by a pure function.** What that
+buys, in order of how much it matters:
+
+- **The same answer always gets the same mark.** A model grader can disagree with itself
+  between two readers who typed the same thing, and nobody ever finds out.
+- **It is testable in Vitest** rather than observable only in production.
+- No cost and no latency at answer time.
+
+This becomes the admission test for every archetype — see CATALOGUE.md, round 2. An
+archetype a pure function cannot mark is not a Feed card; it may still be a good mock
+question.
+
+`gradeWithAi` stays in the codebase for the mock and review paths. It leaves the Feed.
+
+## Distractor quality — a blind-answer gate, plus structural rules
+
+Before a card ships, the pipeline shows a model **only the options** — no lesson, no topic,
+no area — and asks it to answer. If it picks the right one, the card was guessable and gets
+rewritten. Roughly $1 across the corpus, judging by what `card-regate` cost.
+
+Plus structural rules, which are free and catch the most common giveaway, elimination by
+shape: options within a length band, no option that is the only one of its kind, no "all of
+the above".
+
+**This is a pipeline check and changes nothing the reader sees.** In particular the detailed
+explanation after an answer — `answerMd` and the key points — stays exactly as it is. The new
+formats need it more, not less: "why was this the right *order*" is less self-evident than
+"why was this the right option".
+
+## Format assignment — a per-topic budget, filled one card at a time
+
+The pipeline decides a topic's mix before writing anything, then asks the writer for one
+named format per call. **The writer never chooses**, because asked for "a card" it returns
+multiple choice every time.
+
+A writer may **refuse**: a topic with no natural sequence says so, and the budget refills
+with another format. A strained ordering card is worse than an absent one.
+
+## Partial credit — none. A card is right or wrong
+
+Four of five pairs matched is wrong. An ordering with two items swapped is wrong.
+
+The reason is downstream: FSRS schedules on a right/wrong signal and readiness moves on it.
+A score would mean every consumer of an answer has to learn what a partial mark means, and
+the dial's meaning would shift under it. The outcome vocabulary
+(`correct | wrong | skipped | new_to_me | known`) does not change.
+
+It costs some fairness on the harder formats, and a five-pair match marked all-or-nothing may
+read as harsh. Accepted.
+
+## Two valid answers — the card declares its constraints
+
+Following the deterministic direction: an ordering card stores **the constraints it claims**,
+not one blessed sequence. `parse < plan`, `plan < execute`, cache-warm independent. The
+grader asks whether the reader's order satisfies them, so every genuinely correct order is
+accepted. Matching gets the mirror rule: a strict one-to-one mapping, checked at write time.
+
+A card whose writer cannot state constraints that make exactly one answer *class* correct is
+rejected. The ambiguity is declared rather than discovered by a reader being marked wrong for
+an answer that was fine.
+
+## Regeneration — fresh from the lesson, to the budget
+
+The 1,383 typed cards are **retired, not deleted**, and new cards are written from the lesson
+in whatever format the budget asks for. Converting a typed prompt carries the shape of having
+been typed into a format that does not suit it.
+
+Cost: card generation was ~$4.70 for 2,808 cards, so roughly **$2.30** for this share, plus
+~$1 for the blind gate. The human review sample is redone from scratch — the old objections
+name prompts that will no longer exist.
+
+## Behavioural — unchanged
+
+> "we can keep them as is and anyways they can be deselected if someone doesnt need them"
+
+Right: `feedAreas` already lets a reader turn it off, so a thin area costs only the people who
+want it. No behavioural cards are generated in the new formats and none are retired.
+
+## Scope — all eight primitives in the first build
+
+Aman asked for everything, and the catalogue grew to 44 archetypes to match. The count is
+affordable because **archetypes are prompts and grading rules; the UI cost is the 8
+primitives**, and that number does not move whether there are 29 archetypes or 44.
+
+## Two things decided here rather than asked
+
+**Tap-to-place, never drag.** Ordering, matching and bucketing all suggest drag-and-drop, and
+drag inside a scrolling page on a phone fights the scroll. Tap the item, tap where it goes —
+same data model, better on the device, and it is keyboard- and screen-reader-reachable, which
+drag is not without real work.
+
+**Following a problem link does not consume the card.** It is not an answer and not a skip.
+This needs no new mechanism: `nextCard` already serves `90x:feed:<uid>:current` before the
+queue, so a reader who taps through to a problem and comes back is served the same card. The
+only requirement is that the Feed does not clear `currentKey` on navigation — worth a test,
+since nothing states it today.

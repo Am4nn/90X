@@ -41,7 +41,7 @@ side has three entries and repeats.
 | 7 | Word bank | tap words into gaps | new |
 | 8 | Self-rate | "knew it / didn't" | **exists** (`flash`) |
 
-## The 29 archetypes
+## The 29 archetypes (round 1 — 15 more in round 2, below)
 
 Areas: **D**SA · **S**ystem design · **C**S fundamentals · **J**ava · **Q** SQL ·
 **B**ehavioural.
@@ -126,3 +126,91 @@ rather than facts a lesson stated.
 `/library/problem/<slug>` already exists. This is not a new feature, it is a
 field on the card and an anchor in the UI, and it is what makes naming a problem
 safe.
+
+---
+
+## Round 2 — the bar, and 15 more
+
+### The bar every archetype now has to clear
+
+Typed was the only Feed format that needed a model to mark it. With typed gone from the
+Feed, **every Feed answer is graded by a pure function**: no model call at answer time, no
+cost, no latency, no variance between two readers who gave the same answer — and the whole
+grader becomes testable in Vitest instead of observable only in production.
+
+That is worth protecting, so it is the admission test for any new archetype:
+
+1. **A pure function can mark it.** If marking needs judgement, it is not a Feed card. It
+   may still be a good mock question or a Coach exchange.
+2. **Exactly one answer class is correct**, and the card declares what makes it so — for
+   ordering, the constraints; for matching, a one-to-one mapping. Not "the writer's favourite
+   sequence".
+3. **The content exists in what we hold.** A lesson, a problem statement, a trick, an
+   EXPLAIN plan. No archetype that can only be filled by a model inventing material.
+4. **It tests something the others do not.** Two archetypes with the same primitive and the
+   same skill are one archetype with two prompts.
+
+Rule 1 is what makes the count cheap. Archetypes are prompts and grading rules; **the UI
+cost is the 8 primitives, and that number does not move.** 44 archetypes cost the same to
+build as 29.
+
+### Pick one — 5 more (19 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Which is not true | holding four claims at once, not recognising one | all | one option is flagged false at write time |
+| Which test catches it | testing sense, which interviews probe and nobody practises | D J Q | the failing test is known when the bug is written |
+| Read the query plan | the skill SQL interviews actually test | Q | we hold real EXPLAIN output; the problem in it is a fact |
+| Error → cause | the vocabulary of debugging, from a real message | J Q C | the message came from a known cause |
+| Impossible bound | knowing what no algorithm can do, not just what one does | D | a stated lower bound is a fact about the problem |
+
+### Pick many — 1 more (3 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Which invariants hold | correctness reasoning at loop level | D C | each claim is true or false of the given loop |
+
+### Order — 2 more (5 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Dependency order | partial order — migrations, builds, deploys | S C Q | the constraints are the answer; several orders pass |
+| Interleaving | the concurrency bug you cannot see by reading one thread | C J | one interleaving produces the stated symptom |
+
+### Match — 2 more (5 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Operation ↔ complexity | the table every DSA interview assumes you know | D J | a one-to-one mapping of facts |
+| API ↔ guarantee | what a primitive actually promises | S | each promise belongs to one primitive |
+
+### Bucket — 1 more (3 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Which layer | where a concern belongs: client, edge, app, store | S | each item has one home under the stated rule |
+
+### Tap in place — 2 more (4 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Tap the insertion point | knowing where a missing line goes, not just that one is missing | D J Q | the line was removed from a known position |
+| Tap the unsafe line | injection and concurrency risks, where they live | J Q S | the unsafe line is the one that was planted |
+
+### Word bank — 2 more (4 total)
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Fill the signature | Java precision without typing | J | the signature is in the source |
+| Fill the clause | SQL precision without typing | Q | the clause is in the source |
+
+### Where that leaves us
+
+**44 archetypes over the same 8 primitives and 3 answer shapes.** Self-rate stays at 1,
+because "do I know this term" has one shape.
+
+The count is not the goal and it is not a target to keep raising. Two things make it worth
+having: a reader who meets a different *kind* of question keeps paying attention, and a
+topic whose budget can be filled from nineteen pick-one archetypes is far less likely to get
+four near-identical cards. Anything that cannot clear the four rules above does not go in,
+however good it sounds in a list.
