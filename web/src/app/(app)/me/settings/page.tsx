@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
+import { BackLink } from "@/components/back-link";
 import { button } from "@/components/button-styles";
 import { SubmitButton } from "@/components/form";
 import { PageHeader } from "@/components/page-header";
@@ -28,7 +29,10 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" />
+      <div className="flex flex-col gap-2">
+        <BackLink href="/me">Me</BackLink>
+        <PageHeader title="Settings" />
+      </div>
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-heading font-semibold">Account</h2>
@@ -66,7 +70,7 @@ export default async function SettingsPage() {
       </Link>
 
       <form action={signOut}>
-        <SubmitButton pendingLabel="Signing out…" className={button()}>
+        <SubmitButton pendingLabel="Signing out…" className={`${button({ variant: "ghost" })} w-full border border-line-2`}>
           Sign out
         </SubmitButton>
       </form>
