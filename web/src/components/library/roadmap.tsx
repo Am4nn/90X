@@ -44,7 +44,7 @@ function RoadmapSection({ roadmap }: { roadmap: Roadmap }) {
   return (
     <details className="rounded-xl border border-line bg-surface" open={roadmap.done > 0}>
       <summary className="flex cursor-pointer items-baseline justify-between gap-3 px-4 py-3.5">
-        <span className="font-display text-heading font-semibold text-text">{roadmapTitle(roadmap.roadmap)}</span>
+        <span className="font-display text-heading font-semibold text-text">{roadmapTitle(roadmap.roadmap)} roadmap</span>
         <span className="shrink-0 text-small text-mute">
           {done} of {nodes.length}
         </span>
@@ -64,7 +64,7 @@ function RoadmapSection({ roadmap }: { roadmap: Roadmap }) {
                   });
                 }}
                 className={`flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md border ${
-                  node.done ? "text-bg border-cyan bg-cyan" : "border-line-2 text-transparent hover:border-cyan"
+                  node.done ? "border-cyan bg-cyan-bg text-cyan" : "border-line-2 text-transparent hover:border-cyan"
                 }`}
               >
                 ✓
