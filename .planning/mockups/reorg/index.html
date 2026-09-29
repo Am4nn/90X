@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x — Me &amp; Coach reorg · mocks</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css">
+<style>
+  .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .tile { background: var(--sf); border: 1px solid var(--ln); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .tile a.title { color: var(--tx); text-decoration: none; }
+  .tile a.title:hover { color: var(--acc); }
+  .tile .arrow { color: var(--mu); font-weight: 700; }
+  .opt { display: flex; gap: 10px; font-size: 13px; color: var(--tx2); }
+  .opt b { color: var(--tx); }
+  .opt .dot { width: 22px; flex: none; font-weight: 700; color: var(--acc); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tabs .t { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--ln); border-radius: 999px; font: 700 12px/1 "Manrope", sans-serif; color: var(--tx2); }
+  .tabs .t.now { background: var(--accbg); border-color: var(--acc); color: var(--acc); }
+  .tabs .t.new { border-color: var(--ln2); color: var(--tx); }
+  .tabs .lbl { font: 700 12px/1 "Manrope", sans-serif; color: var(--mu); letter-spacing: .12em; text-transform: uppercase; margin-right: 4px; }
+  .moving { display: flex; flex-wrap: wrap; gap: 8px; }
+  .move { font-size: 13px; color: var(--tx2); border: 1px solid var(--ln); border-radius: 8px; padding: 6px 10px; }
+  .move b { color: var(--tx); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="display">Me &amp; Coach — reorg mocks</h1>
+</div>
+<p class="lede">The plan (and why) is in <b>.planning/plans/2026-09-29-simplify-me-and-coach.md</b>. This set turns it into screens. Each tile opens one screen with every direction side by side, mobile and desktop. Tell me the letter/number you want for each. Nothing is built until you choose.</p>
+
+<div class="card pad" style="gap:16px; display:flex; flex-direction:column; margin:24px 0 8px">
+  <div class="tabs">
+    <span class="lbl">Tabs now</span>
+    <span class="t">Today</span><span class="t">Feed</span><span class="t">Library</span><span class="t">Coach</span><span class="t">Me</span>
+  </div>
+  <div class="tabs">
+    <span class="lbl">Tabs after</span>
+    <span class="t">Today</span><span class="t">Feed</span><span class="t">Library</span><span class="t">Coach</span><span class="t new">Friends</span><span class="t now">Me</span>
+  </div>
+  <div class="moving">
+    <span class="move"><b>Friends</b> out of Me → its own tab</span>
+    <span class="move"><b>Story bank + Mocks</b> → under Coach</span>
+    <span class="move"><b>Settings</b> (LeetCode, notifications, sign out, account) → sub-page of Me</span>
+    <span class="move"><b>What Coach knows</b> → kept in Coach, also linked from Settings</span>
+    <span class="move"><b>Coach's weekly read</b> → surfaced on Today</span>
+    <span class="move"><b>Lessons</b> → a real Coach page, no Library redirect</span>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:28px">
+
+  <div class="tile">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="today.html">Today — Coach's read</a><span class="arrow">→</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Where the weekly review should live on the day screen.</p>
+    <div class="opt"><span class="dot">A</span><span><b>Full card.</b> Above the missions; score vs your dial, changes, accept inline.</span></div>
+    <div class="opt"><span class="dot">B</span><span><b>Compact strip.</b> One line under the day; opens the full review.</span></div>
+    <div class="opt"><span class="dot">C</span><span><b>The coach's line.</b> The existing coach block speaks the read; no new chrome.</span></div>
+    <span class="small" style="margin-top:auto">3 directions</span>
+  </div>
+
+  <div class="tile">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="me.html">Me — simplified</a><span class="arrow">→</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Readiness, weakest patterns, Plan and a settings gear, nothing else.</p>
+    <div class="opt"><span class="dot">A</span><span><b>With “This week”.</b> A small personal summary (solved, streak, reviews, last mock).</span></div>
+    <div class="opt"><span class="dot">B</span><span><b>Without it.</b> Leanest Me; Today already carries the day's numbers.</span></div>
+    <span class="small" style="margin-top:auto">2 options</span>
+  </div>
+
+  <div class="tile">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="friends.html">Friends — new tab</a><span class="arrow">→</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Scoreboard, activity, invites and unfriend, all in one place.</p>
+    <div class="opt"><span class="dot">A</span><span><b>Comparison leads.</b> Pending → scoreboard → activity → invite.</span></div>
+    <div class="opt"><span class="dot">B</span><span><b>Activity leads.</b> Feed first, scoreboard as a side panel.</span></div>
+    <span class="small" style="margin-top:auto">2 orderings</span>
+  </div>
+
+  <div class="tile">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="coach.html">Coach — modes</a><span class="arrow">→</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Chat, Lessons, Mocks, Story bank. “What Coach knows” stays in the header.</p>
+    <div class="opt"><span class="dot">·</span><span><b>One layout.</b> Confirming the corrected modes menu and the relocated practice links.</span></div>
+    <span class="small" style="margin-top:auto">confirm</span>
+  </div>
+
+  <div class="tile">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="lessons.html">Coach — Lessons page</a><span class="arrow">→</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">The real Lessons page that replaces the Library redirect.</p>
+    <div class="opt"><span class="dot">A</span><span><b>Pick a pattern.</b> Weakest first, one “Teach me” each, full index below.</span></div>
+    <div class="opt"><span class="dot">B</span><span><b>Every lesson.</b> All areas as a browsable catalog.</span></div>
+    <div class="opt"><span class="dot">C</span><span><b>Pattern Map.</b> The spatial map under Coach, with a teach panel.</span></div>
+    <span class="small" style="margin-top:auto">3 directions</span>
+  </div>
+
+  <div class="tile">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="settings.html">Settings</a><span class="arrow">→</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Account, notifications, LeetCode, “What Coach knows”, sign out.</p>
+    <div class="opt"><span class="dot">·</span><span><b>One layout.</b> Confirming the moved blocks and their grouping.</span></div>
+    <span class="small" style="margin-top:auto">confirm</span>
+  </div>
+
+</div>
+
+<p class="caption" style="max-width:78ch">These are composition mocks, not final code. Readiness still shows on both Me and Today; the Plan link stays on both; the accent stays cyan with topic/status colours earned by meaning. Pick a direction per screen and I'll fold the winners into the implementation.</p>
+
+</div>
+</body>
+</html>
