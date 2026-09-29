@@ -62,7 +62,7 @@
 <div class="dochead">
   <h1 class="display">Me &amp; Coach · reorg mocks</h1>
 </div>
-<p class="lede">For each screen: click a choice, and add a <b>note</b> if you want. Then <b>Copy picks + notes</b> and paste it back to me. Nothing is built until you choose. The plan (and why) is in <b>.planning/plans/2026-09-29-simplify-me-and-coach.md</b>.</p>
+<p class="lede">Your choices are locked and shown selected; the rejected directions have been removed from each screen mock. Add a note and <b>Copy picks + notes</b> if you want changes to what's chosen. The plan is in <b>.planning/plans/2026-09-29-simplify-me-and-coach.md</b>.</p>
 
 <div class="card pad" style="gap:16px; display:flex; flex-direction:column; margin:24px 0 8px">
   <div class="tabs">
@@ -157,8 +157,9 @@
 (function () {
   var PICK_KEY = "90x-reorg-picks";
   var NOTE_KEY = "90x-reorg-notes";
-  var picks = {}, notes = {};
-  try { picks = JSON.parse(localStorage.getItem(PICK_KEY) || "{}"); } catch (e) { picks = {}; }
+  var DEFAULTS = { "Today": "A", "Me": "A", "Friends": "A", "Coach modes": "OK", "Lessons": "A", "Settings": "OK" };
+  var picks = Object.assign({}, DEFAULTS), notes = {};
+  try { picks = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(PICK_KEY) || "{}")); } catch (e) { picks = Object.assign({}, DEFAULTS); }
   try { notes = JSON.parse(localStorage.getItem(NOTE_KEY) || "{}"); } catch (e) { notes = {}; }
   var tiles = Array.prototype.slice.call(document.querySelectorAll(".tile"));
 

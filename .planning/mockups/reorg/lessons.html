@@ -27,7 +27,7 @@
   <h1 class="title">Coach — Lessons</h1>
   <a href="index.html">← All screens</a>
 </div>
-<p class="lede">What "Lessons" should actually be, now that it no longer dumps you into the Library. Every pattern has an authored lesson the Coach can teach from; every non-DSA area has topic lessons too. Three ways to present them.</p>
+<p class="lede">Chosen direction: “Pick a pattern to learn”. The real Lessons page, replacing the Library redirect — your weakest patterns first, each with a single “Teach me”. How patterns are ordered (roadmap order vs mastery) is an open question below.</p>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
@@ -41,8 +41,8 @@
 
 <!-- ═══════════════════════════ DIRECTION A ═══════════════════════════ -->
 <section class="choice">
-  <div class="choice-h"><span class="kicker">Direction A · recommended</span><h2 class="heading">“Pick a pattern to learn”</h2></div>
-  <p class="choice-trade">A ranked list of patterns with your mastery, each with a single “Teach me” action — the Coach's core trick. <b>Trade:</b> DSA-first; topic lessons in other areas live one link away in the Library.</p>
+  <div class="choice-h"><span class="kicker">Chosen</span><h2 class="heading">“Pick a pattern to learn”</h2></div>
+  <p class="choice-trade">A ranked list of patterns with your mastery, each with a single “Teach me” action. Open question: should the list follow the roadmap reading order instead of weakest-first?</p>
 
   <div class="frames">
     <!-- A · phone -->
@@ -136,177 +136,7 @@
         </div>
       </div>
     </div>
-    <p class="caption"><b>Direction A.</b> Weakest patterns first with one “Teach me” action each; the full pattern index below; a pointer to non-DSA topic lessons in the Library. Fastest route from “I'm bad at X” to “teach me X”.</p>
-  </div>
-</section>
-
-<!-- ═══════════════════════════ DIRECTION B ═══════════════════════════ -->
-<section class="choice">
-  <div class="choice-h"><span class="kicker">Direction B</span><h2 class="heading">Every lesson, grouped by area</h2></div>
-  <p class="choice-trade">A browsable catalog of all authored lessons across every area, each opening the lesson and offering “Teach me”. <b>Trade:</b> mirrors the Library's breadth and is the most complete; it is a catalog to scan, not a “what should I do” answer.</p>
-
-  <div class="frames">
-    <div class="dev phone" style="width:390px">
-      <div class="screen">
-        <div class="page">
-          <div class="shead"><span class="title">Lessons</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div style="display:flex; gap:8px; overflow:hidden">
-            <span class="chip on">DSA</span><span class="chip">Design</span><span class="chip">CS</span><span class="chip">Java</span>
-          </div>
-          <div>
-            <div class="heading" style="margin-bottom:12px">DSA</div>
-            <div class="card list">
-              <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Graphs</span><div class="small">Traversal, cycles, topological order · 7 min</div></span><span class="acc" style="font-weight:700; white-space:nowrap">Teach me</span></div>
-              <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Dynamic programming</span><div class="small">State, transition, memo vs table · 9 min</div></span><span class="acc" style="font-weight:700; white-space:nowrap">Teach me</span></div>
-              <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Sliding window</span><div class="small">Grow, shrink, and when it fits · 6 min</div></span><span class="acc" style="font-weight:700; white-space:nowrap">Teach me</span></div>
-            </div>
-          </div>
-          <div>
-            <div class="heading" style="margin-bottom:12px">Design</div>
-            <div class="card list">
-              <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Rate limiting</span><div class="small">Token bucket vs leaky bucket · 8 min</div></span><span class="acc" style="font-weight:700; white-space:nowrap">Teach me</span></div>
-              <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Caching strategies</span><div class="small">Eviction, TTL, invalidation · 7 min</div></span><span class="acc" style="font-weight:700; white-space:nowrap">Teach me</span></div>
-            </div>
-          </div>
-          <div>
-            <div class="heading" style="margin-bottom:12px">CS core</div>
-            <div class="card list">
-              <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Concurrency</span><div class="small">Locks, races, memory models · 10 min</div></span><span class="acc" style="font-weight:700; white-space:nowrap">Teach me</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="tabbar">
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
-          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="dev desk">
-      <div class="appdesk">
-        <aside class="side">
-          <div class="logo">90<span>x</span></div>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
-          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
-        </aside>
-        <div class="main">
-          <div class="shead"><span class="title">Lessons</span><span class="btn s sm">Search lessons</span></div>
-          <div style="display:flex; gap:8px"><span class="chip on">DSA</span><span class="chip">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">LLD</span><span class="chip">AI</span><span class="chip">Behavioural</span></div>
-          <div class="cols2e">
-            <div class="stack">
-              <div class="heading">DSA</div>
-              <div class="card list">
-                <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Graphs</span><div class="small">Traversal, cycles, topological order · 7 min</div></span><span class="acc" style="font-weight:700">Teach me</span></div>
-                <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Dynamic programming</span><div class="small">State, transition, memo vs table · 9 min</div></span><span class="acc" style="font-weight:700">Teach me</span></div>
-                <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Sliding window</span><div class="small">Grow, shrink, and when it fits · 6 min</div></span><span class="acc" style="font-weight:700">Teach me</span></div>
-              </div>
-            </div>
-            <div class="stack">
-              <div class="heading">Design &amp; CS</div>
-              <div class="card list">
-                <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Rate limiting</span><div class="small">Token bucket vs leaky bucket · 8 min</div></span><span class="acc" style="font-weight:700">Teach me</span></div>
-                <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Caching strategies</span><div class="small">Eviction, TTL, invalidation · 7 min</div></span><span class="acc" style="font-weight:700">Teach me</span></div>
-                <div class="row" style="align-items:flex-start"><span><span style="font-weight:700">Concurrency</span><div class="small">Locks, races, memory models · 10 min</div></span><span class="acc" style="font-weight:700">Teach me</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p class="caption"><b>Direction B.</b> Area chips across the top, lesson rows grouped below, each opening the topic lesson and offering “Teach me”. Complete and browsable; less of a recommendation engine.</p>
-  </div>
-</section>
-
-<!-- ═══════════════════════════ DIRECTION C ═══════════════════════════ -->
-<section class="choice">
-  <div class="choice-h"><span class="kicker">Direction C</span><h2 class="heading">The Pattern Map, under Coach</h2></div>
-  <p class="choice-trade">Bring the Library's Pattern Map into Coach, lit by your mastery, with the selected pattern and a “Teach me” panel. <b>Trade:</b> the most distinctive, spatial view of what you know; harder to scan than a list and needs horizontal room.</p>
-
-  <div class="frames">
-    <div class="dev phone" style="width:390px">
-      <div class="screen">
-        <div class="page">
-          <div class="shead"><span class="title">Lessons</span><span class="small">58 of 191 mastered</span></div>
-          <div class="card pad">
-            <svg class="map" viewBox="0 0 360 300" aria-label="Pattern map">
-              <path class="edge" d="M60,60 L160,40 M60,60 L90,150 M160,40 L250,70 M90,150 L180,160 M180,160 L250,70 M180,160 L300,150 M250,70 L300,150 M90,150 L60,240 M180,160 L150,250 M300,150 L300,240 M150,250 L300,240"/>
-              <circle class="node mastered" cx="60" cy="60" r="11"/><text class="hot" x="76" y="63">Arrays</text>
-              <circle class="node mastered" cx="160" cy="40" r="11"/><text class="hot" x="176" y="43">Two ptr</text>
-              <circle class="node started" cx="250" cy="70" r="11"/><text x="266" y="73">Window</text>
-              <circle class="node started" cx="90" cy="150" r="11"/><text x="39" y="172">Binary</text>
-              <circle class="node started" cx="180" cy="160" r="11"/><text class="hot" x="196" y="163">Trees</text>
-              <circle class="node weak weak-node" cx="300" cy="150" r="11"/><text class="hot" x="243" y="172" style="text-anchor:end">Graphs</text>
-              <circle class="node weak weak-node" cx="60" cy="240" r="11"/><text x="15" y="266">DP</text>
-              <circle class="node weak weak-node" cx="150" cy="250" r="11"/><text x="166" y="253">Heaps</text>
-              <circle class="node" cx="300" cy="240" r="11"/><text x="248" y="262" style="text-anchor:end">Tries</text>
-            </svg>
-          </div>
-          <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
-            <div style="display:flex; align-items:center; justify-content:space-between"><span style="font-weight:700">Graphs</span><span class="small bad">weak</span></div>
-            <span class="small">12 of 48 solved · topological order, cycle detection · written from LeetCode, roadmap.sh</span>
-            <div style="display:flex; gap:10px"><span class="btn p sm" style="flex:1">Teach me this pattern</span><span class="btn s sm">Open lesson</span></div>
-          </div>
-        </div>
-        <div class="tabbar">
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
-          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="dev desk">
-      <div class="appdesk">
-        <aside class="side">
-          <div class="logo">90<span>x</span></div>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
-          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
-        </aside>
-        <div class="main">
-          <div class="shead"><span class="title">Lessons</span><span class="small">58 of 191 mastered</span></div>
-          <div class="cols2b">
-            <div class="card pad">
-              <svg class="map" viewBox="0 0 560 380" aria-label="Pattern map">
-                <path class="edge" d="M90,80 L260,50 M90,80 L150,200 M260,50 L420,110 M150,200 L300,220 M300,220 L420,110 M300,220 L480,210 M420,110 L480,210 M150,200 L110,330 M300,220 L260,340 M480,210 L470,330 M260,340 L470,330 M420,110 L470,330"/>
-                <circle class="node mastered" cx="90" cy="80" r="16"/><text class="hot" x="112" y="84">Arrays &amp; hashing</text>
-                <circle class="node mastered" cx="260" cy="50" r="16"/><text class="hot" x="282" y="54">Two pointers</text>
-                <circle class="node started" cx="420" cy="110" r="16"/><text x="442" y="114">Sliding window</text>
-                <circle class="node started" cx="150" cy="200" r="16"/><text x="60" y="176">Binary search</text>
-                <circle class="node started" cx="300" cy="220" r="16"/><text class="hot" x="322" y="224">Trees</text>
-                <circle class="node weak weak-node" cx="480" cy="210" r="16"/><text class="hot" x="380" y="236" style="text-anchor:end">Graphs</text>
-                <circle class="node weak weak-node" cx="110" cy="330" r="16"/><text x="45" y="360">Dynamic programming</text>
-                <circle class="node weak weak-node" cx="260" cy="340" r="16"/><text x="230" y="372" style="text-anchor:middle">Heaps</text>
-                <circle class="node" cx="470" cy="330" r="16"/><text x="400" y="360" style="text-anchor:end">Tries</text>
-              </svg>
-            </div>
-            <aside class="stack">
-              <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
-                <div style="display:flex; align-items:center; justify-content:space-between"><span class="heading">Graphs</span><span class="small bad">weak</span></div>
-                <span class="small">12 of 48 solved · topological order, cycle detection</span>
-                <span class="small">Written from LeetCode, roadmap.sh</span>
-                <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px"><span class="btn p">Teach me this pattern</span><span class="btn s">Open the lesson</span></div>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p class="caption"><b>Direction C.</b> The Pattern Map becomes the Lessons surface; the weakest patterns pulse, and selecting one opens a teach panel. The most “90x” of the three; benefits from desktop width.</p>
+    <p class="caption"><b>Chosen.</b> Weakest patterns first with one “Teach me” action each; the full pattern index below; a pointer to non-DSA topic lessons in the Library.</p>
   </div>
 </section>
 

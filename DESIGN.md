@@ -21,6 +21,8 @@ colors:
   status-ready: "#4ADE80"
   status-getting-there: "#FACC15"
   status-not-yet: "#F87171"
+  avatar-a: "#262A45"
+  avatar-b: "#322946"
 typography:
   display:
     fontFamily: "Sora, ui-sans-serif, system-ui, sans-serif"
@@ -183,6 +185,8 @@ Status colours say *how well you're doing*. They colour readiness bands and scor
 - **Hairline** (#1C2029) and **Hairline Strong** (#262B36): card borders and control strokes.
 - **Text** (#E6E9EF), **Text Secondary** (#AEB5C2), **Text Muted** (#7D8594): primary copy,
   secondary copy, and labels/placeholders.
+- **Avatar Indigo** (#262A45) and **Avatar Violet** (#322946): the 20% washes behind a person's
+  initial, so each person keeps a consistent identity tint on the Friends page.
 
 ### Named Rules
 
