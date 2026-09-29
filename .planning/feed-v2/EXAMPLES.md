@@ -8,22 +8,22 @@ Grouped by primitive, so the UI cost is visible: everything in a section shares 
 
 ## Pick one — 14
 
-| archetype | prompt | answer |
-|---|---|---|
-| Concept | A cache-aside read misses. What happens next? | The app reads the store, writes the cache, returns the value |
-| Complexity | `for (i=0;i<n;i++) for (j=i;j<n;j++)` — time? | O(n²) |
-| Which approach | n ≤ 1e5, find any pair summing to k, must be O(n). Which? | A hash set of seen values |
-| What breaks first | 3 app servers, one Postgres primary, 50k writes/s | The primary's write throughput |
-| Output prediction | `System.out.println(0.1 + 0.2 == 0.3);` | `false` |
-| Counter-example | Which input breaks this two-pointer sum on an *unsorted* array? | `[3,1,2]`, target 5 |
-| Trace the value | Binary search over `[1,3,5,7]` for 6. What is `lo` when the loop ends? | 3 |
-| Failure diagnosis | A query was fast; 10× the rows and the index is now unused. Why? | The predicate wraps the column in a function |
-| Threshold | At what point does a B-tree index stop helping a range scan? | When it matches a large share of the table |
-| Consequence of a diff | Two snippets differing only by `<` and `<=` | The loop never terminates on equal bounds |
-| Estimate | 1M users, 2KB of profile each. Storage? | ~2 GB |
-| Missing step | A TCP handshake listed with one step removed | SYN-ACK |
-| Next step | Client sends SYN, server replies SYN-ACK. Then? | The client ACKs |
-| Which invariant | In binary search, which statement stays true every iteration? | If the target exists, it lies within `[lo, hi]` |
+| archetype             | prompt                                                                 | answer                                                       |
+| -----------------------| ------------------------------------------------------------------------| --------------------------------------------------------------|
+| Concept               | A cache-aside read misses. What happens next?                          | The app reads the store, writes the cache, returns the value |
+| Complexity            | `for (i=0;i<n;i++) for (j=i;j<n;j++)` — time?                          | O(n²)                                                        |
+| Which approach        | n ≤ 1e5, find any pair summing to k, must be O(n). Which?              | A hash set of seen values                                    |
+| What breaks first     | 3 app servers, one Postgres primary, 50k writes/s                      | The primary's write throughput                               |
+| Output prediction     | `System.out.println(0.1 + 0.2 == 0.3);`                                | `false`                                                      |
+| Counter-example       | Which input breaks this two-pointer sum on an *unsorted* array?        | `[3,1,2]`, target 5                                          |
+| Trace the value       | Binary search over `[1,3,5,7]` for 6. What is `lo` when the loop ends? | 3                                                            |
+| Failure diagnosis     | A query was fast; 10× the rows and the index is now unused. Why?       | The predicate wraps the column in a function                 |
+| Threshold             | At what point does a B-tree index stop helping a range scan?           | When it matches a large share of the table                   |
+| Consequence of a diff | Two snippets differing only by `<` and `<=`                            | The loop never terminates on equal bounds                    |
+| Estimate              | 1M users, 2KB of profile each. Storage?                                | ~2 GB                                                        |
+| Missing step          | A TCP handshake listed with one step removed                           | SYN-ACK                                                      |
+| Next step             | Client sends SYN, server replies SYN-ACK. Then?                        | The client ACKs                                              |
+| Which invariant       | In binary search, which statement stays true every iteration?          | If the target exists, it lies within `[lo, hi]`              |
 
 ## Pick many — 2
 

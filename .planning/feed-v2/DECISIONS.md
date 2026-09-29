@@ -207,3 +207,34 @@ This needs no new mechanism: `nextCard` already serves `90x:feed:<uid>:current` 
 queue, so a reader who taps through to a problem and comes back is served the same card. The
 only requirement is that the Feed does not clear `currentKey` on navigation — worth a test,
 since nothing states it today.
+
+## Six more primitives — 14 over 5 answer shapes
+
+Aman asked for the two raised in round 2 plus anything else interesting. Six went in;
+three were turned down. The walkthrough is PRIMITIVES.md; the reasoning that matters:
+
+**The primitive count is not the cost. The answer-shape count is.** A shape is understood by
+the grader, the stored attempt and every consumer of an answer. A primitive is one screen.
+Four of the six reuse an existing shape and so add no new grading concept — claim grid and
+grid toggle are a mapping and a chosen set, assemble is an ordered list, pick-then-justify is
+two chosen sets. Only **numeric entry** (a number) and **highlight a span** (start, end) widen
+the contract, from three shapes to five.
+
+Two of them do something nothing else in the catalogue can:
+
+- **Claim grid** forces a judgement on every statement. Pick-many lets a reader quietly skip
+  the options they are unsure of; a true/false grid does not, which is how half-knowledge stops
+  hiding.
+- **Pick, then justify** is the only primitive that detects being right by accident. Four
+  options means 25% from knowing nothing; requiring the reason takes that to 6%, and "right
+  answer, wrong reason" is the most useful thing a card can report.
+
+**Numeric entry is typing, and typing is what we removed from the Feed.** The distinction held
+here: a keypad is three taps with nothing to phrase and no model to mark it, where a typed
+answer was prose that cost money to grade. If it still feels like work when it exists, it is
+the first thing to drop.
+
+Turned down: **connect the edges** (good on a desktop, miserable at 390px), **stepwise
+simulation** (several cards pretending to be one, which breaks one question/one mark), and a
+**slider** (numeric entry with a worse input, and drag fights the page scroll for the same
+reason ordering is tap-to-place).

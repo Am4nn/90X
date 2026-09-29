@@ -28,7 +28,7 @@ Everything a reader does reduces to one of these.
 Match and bucket are the same shape: bucketing is matching where the right-hand
 side has three entries and repeats.
 
-## The 8 primitives
+## The 8 primitives (round 1 — 6 more in PRIMITIVES.md, for 14)
 
 | # | primitive | how you answer | status |
 |---|---|---|---|
