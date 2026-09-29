@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x mocks · Me, simplified</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css?v=2">
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="title">Me — simplified</h1>
+  <a href="index.html">← All screens</a>
+</div>
+<p class="lede">Chosen direction: Me keeps what is yours — readiness (dial, trend, areas), weakest patterns, a personal “This week”, the LeetCode block (sync, totals, time capture), and Plan + Settings in the header. Friends, interview practice, notifications, “What Coach knows” and sign out all move off this page.</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
+<g id="i-feed"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></g>
+<g id="i-lib"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></g>
+<g id="i-coach"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g>
+<g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
+<g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
+<g id="i-cog"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></g>
+</defs></svg>
+
+<!-- ═══════════════════════════ OPTION A ═══════════════════════════ -->
+<section class="choice">
+  <div class="choice-h">
+    <span class="kicker">Chosen</span>
+    <h2 class="heading">With a personal “This week”</h2>
+  </div>
+  <p class="choice-trade">A compact summary of your own week — solved, streak, reviews due and last mock — sits beside the dial. Plan and Settings are explicit header actions. Readiness here and on Today.</p>
+
+  <div class="frames">
+    <!-- A · phone -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div class="shead">
+            <span class="title">Me</span>
+            <span style="display:flex; gap:8px">
+              <span class="btn s sm">Plan</span>
+              <span class="btn s sm"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-cog"/></svg>Settings</span>
+            </span>
+          </div>
+
+          <div class="card"><div class="row"><span style="display:flex; align-items:center; gap:12px"><span class="coachmark" style="background:var(--sf2); color:var(--tx2)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg></span><span><span style="font-weight:700">Friends</span><div class="small">Compare progress and activity</div></span></span><span class="mu">→</span></div></div>
+
+          <div class="card pad" style="gap:18px; display:flex; flex-direction:column">
+            <div style="display:flex; align-items:center; gap:20px">
+              <div class="dial">
+                <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="43" fill="none" stroke="var(--sf2)" stroke-width="7"/><circle cx="50" cy="50" r="43" fill="none" stroke="var(--ok)" stroke-width="7" stroke-linecap="round" stroke-dasharray="184 270" transform="rotate(-90 50 50)"/></svg>
+                <div class="in"><span class="dialnum tabular">68</span><span class="tag">Readiness</span></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <svg viewBox="0 0 160 40" style="height:40px; width:160px" aria-label="Readiness, last 14 days"><path d="M0,28 L25,26 L50,29 L75,22 L100,18 L120,19 L140,13 L160,10" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="small ok" style="font-weight:700">+6 in 14 days</span>
+              </div>
+            </div>
+            <div class="stack" style="gap:12px">
+              <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">DSA</span><span class="bar"><i style="--c:var(--dsa); width:72%"></i></span><span class="n ok">72</span></div>
+              <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">Design</span><span class="bar"><i style="--c:var(--sd); width:54%"></i></span><span class="n warn">54</span></div>
+              <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">CS</span><span class="bar"><i style="--c:var(--cs); width:63%"></i></span><span class="n warn">63</span></div>
+              <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">Java</span><span class="bar"><i style="--c:var(--java); width:41%"></i></span><span class="n bad">41</span></div>
+              <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">SQL</span><span class="bar"><i style="--c:var(--sql); width:58%"></i></span><span class="n warn">58</span></div>
+            </div>
+          </div>
+
+          <!-- THIS WEEK -->
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px"><span class="heading">This week</span><span class="small">Sep 22–28</span></div>
+            <div class="card" style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--ln); overflow:hidden">
+              <div style="background:var(--sf); padding:16px"><div class="small">Solved</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">8</div></div>
+              <div style="background:var(--sf); padding:16px"><div class="small">Streak</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">12<span class="small" style="font-size:13px"> days</span></div></div>
+              <div style="background:var(--sf); padding:16px"><div class="small">Reviews due</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">14</div></div>
+              <div style="background:var(--sf); padding:16px"><div class="small">Last mock</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">71</div></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px"><span class="heading">Weakest patterns</span><span class="small">3 flagged</span></div>
+            <div class="card list">
+              <div class="row"><span style="font-weight:700">Graphs</span><span class="small">41% over 12 tries</span></div>
+              <div class="row"><span style="font-weight:700">Dynamic programming</span><span class="small">48% over 8 tries</span></div>
+              <div class="row"><span style="font-weight:700">Heaps</span><span class="small">52% over 6 tries</span></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px"><span class="heading">LeetCode</span><span class="small">Synced 2h ago</span></div>
+            <div class="card" style="overflow:hidden">
+              <div style="display:grid; grid-template-columns:repeat(3,1fr)">
+                <div style="padding:16px"><div class="small">Easy</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">186</div><div class="small">24 attempted</div></div>
+                <div style="padding:16px; border-left:1px solid var(--ln)"><div class="small">Medium</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">201</div><div class="small">61 attempted</div></div>
+                <div style="padding:16px; border-left:1px solid var(--ln)"><div class="small">Hard</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">25</div><div class="small">40 attempted</div></div>
+              </div>
+              <div class="row hair" style="flex-wrap:wrap; gap:8px"><span class="small" style="width:100%">How long did these take?</span><span class="small" style="width:100%">Word Ladder · solved after 2 tries</span><span class="chip on">30m</span><span class="chip">45m</span><span class="chip">60m+</span></div>
+            </div>
+            <div style="margin-top:12px"><span class="btn s full">Sync now</span></div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- A · desktop -->
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Me</span><span style="display:flex; gap:8px"><span class="btn s sm">Plan</span><span class="btn s sm"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-cog"/></svg>Settings</span></span></div>
+          <div class="cols2b">
+            <div class="stack6">
+              <div class="card pad" style="gap:18px; display:flex; flex-direction:column">
+                <div style="display:flex; align-items:center; gap:24px">
+                  <div class="dial">
+                    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="43" fill="none" stroke="var(--sf2)" stroke-width="7"/><circle cx="50" cy="50" r="43" fill="none" stroke="var(--ok)" stroke-width="7" stroke-linecap="round" stroke-dasharray="184 270" transform="rotate(-90 50 50)"/></svg>
+                    <div class="in"><span class="dialnum tabular">68</span><span class="tag">Readiness</span></div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:10px">
+                    <svg viewBox="0 0 200 44" style="height:44px; width:200px" aria-label="Readiness, last 14 days"><path d="M0,30 L30,28 L60,32 L90,24 L120,19 L150,20 L180,13 L200,9" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="small ok" style="font-weight:700">+6 in 14 days</span>
+                  </div>
+                </div>
+                <div class="stack" style="gap:12px">
+                  <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">DSA</span><span class="bar"><i style="--c:var(--dsa); width:72%"></i></span><span class="n ok">72</span></div>
+                  <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">Design</span><span class="bar"><i style="--c:var(--sd); width:54%"></i></span><span class="n warn">54</span></div>
+                  <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">CS</span><span class="bar"><i style="--c:var(--cs); width:63%"></i></span><span class="n warn">63</span></div>
+                  <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">Java</span><span class="bar"><i style="--c:var(--java); width:41%"></i></span><span class="n bad">41</span></div>
+                  <div class="arearow"><span class="small" style="font-weight:700; color:var(--tx2)">SQL</span><span class="bar"><i style="--c:var(--sql); width:58%"></i></span><span class="n warn">58</span></div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px"><span class="heading">Weakest patterns</span><span class="small">3 flagged</span></div>
+                <div class="card list">
+                  <div class="row"><span style="font-weight:700">Graphs</span><span class="small">41% over 12 tries · <span class="acc" style="font-weight:700">Practise</span></span></div>
+                  <div class="row"><span style="font-weight:700">Dynamic programming</span><span class="small">48% over 8 tries · <span class="acc" style="font-weight:700">Practise</span></span></div>
+                  <div class="row"><span style="font-weight:700">Heaps</span><span class="small">52% over 6 tries · <span class="acc" style="font-weight:700">Practise</span></span></div>
+                </div>
+              </div>
+            </div>
+            <aside class="stack">
+              <div style="display:flex; align-items:baseline; justify-content:space-between"><span class="heading">This week</span><span class="small">Sep 22–28</span></div>
+              <div class="card list">
+                <div class="row"><span class="tx2">Solved</span><span class="tabular" style="font:700 16px/1 Sora,sans-serif">8</span></div>
+                <div class="row"><span class="tx2">Streak</span><span class="tabular" style="font:700 16px/1 Sora,sans-serif">12 days</span></div>
+                <div class="row"><span class="tx2">Reviews due</span><span class="tabular" style="font:700 16px/1 Sora,sans-serif">14</span></div>
+                <div class="row"><span class="tx2">Last mock</span><span class="tabular" style="font:700 16px/1 Sora,sans-serif">71</span></div>
+              </div>
+              <div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px"><span class="heading">LeetCode</span><span class="small">Synced 2h ago</span></div>
+                <div class="card" style="overflow:hidden">
+                  <div style="display:grid; grid-template-columns:repeat(3,1fr)">
+                    <div style="padding:14px 16px"><div class="small">Easy</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">186</div><div class="small">24 attempted</div></div>
+                    <div style="padding:14px 16px; border-left:1px solid var(--ln)"><div class="small">Medium</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">201</div><div class="small">61 attempted</div></div>
+                    <div style="padding:14px 16px; border-left:1px solid var(--ln)"><div class="small">Hard</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">25</div><div class="small">40 attempted</div></div>
+                  </div>
+                  <div class="row hair" style="flex-wrap:wrap; gap:8px"><span class="small" style="width:100%">How long did these take?</span><span class="small" style="width:100%">Word Ladder · solved after 2 tries</span><span class="chip on">30m</span><span class="chip">45m</span><span class="chip">60m+</span></div>
+                </div>
+                <div style="margin-top:12px"><span class="btn s full">Sync now</span></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Option A.</b> Readiness hero on the left; weakest patterns with a “Practise” action; a small personal week summary in the right column on desktop and as a 2×2 card on phone.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

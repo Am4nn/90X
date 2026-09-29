@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x · Me &amp; Coach reorg · mocks</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css?v=2">
+<style>
+  .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+  .tile { background: var(--sf); border: 1px solid var(--ln); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .tile a.title { color: var(--tx); text-decoration: none; }
+  .tile a.title:hover { color: var(--acc); }
+  .tile .arrow { color: var(--mu); font-weight: 700; }
+  .optsel {
+    display: flex; gap: 10px; width: 100%; text-align: left; align-items: flex-start;
+    background: transparent; border: 1px solid transparent; border-radius: 10px;
+    padding: 8px 10px; color: var(--tx2); font: 500 13px/1.45 "Manrope", sans-serif; cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease;
+  }
+  .optsel:hover { background: var(--sf2); }
+  .optsel .dot {
+    flex: none; width: 20px; height: 20px; border-radius: 8px; border: 1.5px solid var(--ln2);
+    display: grid; place-items: center; font: 700 12px/1 "Manrope", sans-serif; color: var(--mu); margin-top: 1px;
+  }
+  .optsel b { color: var(--tx); }
+  .optsel.on { border-color: var(--acc); background: var(--accbg); color: var(--tx); }
+  .optsel.on .dot { background: var(--acc); border-color: var(--acc); color: var(--onacc); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tabs .t { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--ln); border-radius: 999px; font: 700 12px/1 "Manrope", sans-serif; color: var(--tx2); }
+  .tabs .t.now { background: var(--accbg); border-color: var(--acc); color: var(--acc); }
+  .tabs .t.new { border-color: var(--ln2); color: var(--tx); }
+  .tabs .lbl { font: 700 12px/1 "Manrope", sans-serif; color: var(--mu); letter-spacing: .12em; text-transform: uppercase; margin-right: 4px; }
+  .moving { display: flex; flex-wrap: wrap; gap: 8px; }
+  .move { font-size: 13px; color: var(--tx2); border: 1px solid var(--ln); border-radius: 8px; padding: 6px 10px; }
+  .move b { color: var(--tx); }
+  .pickbar {
+    position: sticky; bottom: 16px; margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    background: var(--sf2); border-radius: 14px; padding: 14px 16px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.5);
+  }
+  .pickbar .picks { flex: 1; min-width: 240px; font-size: 13px; color: var(--tx2); }
+  .pickbar .picks b { color: var(--tx); }
+  .pickbar .picks .none { color: var(--mu); }
+  .copied { color: var(--ok); font-weight: 700; }
+  .notewrap { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .notelabel { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 "Manrope", sans-serif; color: var(--mu); }
+  .notebadge { display: none; font: 700 12px/1 "Manrope", sans-serif; color: var(--acc); background: var(--accbg); border-radius: 8px; padding: 3px 8px; }
+  .optnote {
+    width: 100%; min-height: 46px; resize: vertical;
+    background: var(--bg); color: var(--tx); border: 1px solid var(--ln2); border-radius: 12px;
+    padding: 9px 11px; font: 500 13px/1.45 "Manrope", sans-serif; outline: none;
+    transition: border-color 120ms ease;
+  }
+  .optnote::placeholder { color: var(--mu); }
+  .optnote:focus { border-color: var(--acc); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="display">Me &amp; Coach · reorg mocks</h1>
+</div>
+<p class="lede">Your choices are locked and shown selected; the rejected directions have been removed from each screen mock. Add a note and <b>Copy picks + notes</b> if you want changes to what's chosen. The plan is in <b>.planning/reorg/PLAN.md</b>; the decisions are in <b>.planning/reorg/DECISIONS.md</b>.</p>
+
+<div class="card pad" style="gap:16px; display:flex; flex-direction:column; margin:24px 0 8px">
+  <div class="tabs">
+    <span class="lbl">Tabs now</span>
+    <span class="t">Today</span><span class="t">Feed</span><span class="t">Library</span><span class="t">Coach</span><span class="t">Me</span>
+  </div>
+  <div class="tabs">
+    <span class="lbl">Navigation after</span>
+    <span class="t">Today</span><span class="t">Feed</span><span class="t">Library</span><span class="t">Coach</span><span class="t now">Me</span><span class="t new">+ Friends on desktop</span>
+  </div>
+  <div class="moving">
+    <span class="move"><b>Friends</b> out of Me &rarr; its own tab</span>
+    <span class="move"><b>Story bank + Mocks</b> &rarr; under Coach</span>
+    <span class="move"><b>Settings</b> (notifications, account, sign out) &rarr; sub-page of Me; LeetCode moves to Me</span>
+    <span class="move"><b>What Coach knows</b> &rarr; kept in Coach, also linked from Settings</span>
+    <span class="move"><b>Coach's weekly read</b> &rarr; surfaced on Today</span>
+    <span class="move"><b>Lessons</b> &rarr; a real Coach page, no Library redirect</span>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:28px">
+
+  <div class="tile" data-screen="Today">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="today.html" target="_blank">Today · Coach's read</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Where the weekly review should live on the day screen.</p>
+    <button class="optsel" data-val="A"><span class="dot">A</span><span><b>Full card.</b> Above the missions; score vs your dial, changes, accept inline.</span></button>
+    <button class="optsel" data-val="B"><span class="dot">B</span><span><b>Compact strip.</b> One line under the day; opens the full review.</span></button>
+    <button class="optsel" data-val="C"><span class="dot">C</span><span><b>The coach's line.</b> The existing coach block speaks the read; no new chrome.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Me">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="me.html" target="_blank">Me · simplified</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Readiness, weakest patterns, Plan and a settings gear, nothing else.</p>
+    <button class="optsel" data-val="A"><span class="dot">A</span><span><b>With “This week”.</b> A small personal summary (solved, streak, reviews, last mock).</span></button>
+    <button class="optsel" data-val="B"><span class="dot">B</span><span><b>Without it.</b> Leanest Me; Today already carries the day's numbers.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Friends">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="friends.html" target="_blank">Friends · new tab</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Scoreboard, activity, invites and unfriend, all in one place.</p>
+    <button class="optsel" data-val="A"><span class="dot">A</span><span><b>Comparison leads.</b> Pending → scoreboard → activity → invite.</span></button>
+    <button class="optsel" data-val="B"><span class="dot">B</span><span><b>Activity leads.</b> Feed first, scoreboard as a side panel.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Coach modes">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="coach.html" target="_blank">Coach · modes</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Chat, Lessons, Mocks, Story bank. “What Coach knows” stays in the header.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Looks right.</b> Corrected modes menu and the relocated practice links.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Lessons">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="lessons.html" target="_blank">Coach · Lessons page</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">The real Lessons page that replaces the Library redirect.</p>
+    <button class="optsel" data-val="A"><span class="dot">A</span><span><b>Pick a pattern.</b> Weakest first, one “Teach me” each, full index below.</span></button>
+    <button class="optsel" data-val="B"><span class="dot">B</span><span><b>Every lesson.</b> All areas as a browsable catalog.</span></button>
+    <button class="optsel" data-val="C"><span class="dot">C</span><span><b>Pattern Map.</b> The spatial map under Coach, with a teach panel.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Settings">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="settings.html" target="_blank">Settings</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Account, notifications, “What Coach knows”, sign out. (LeetCode now lives on Me.)</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Looks right.</b> The moved blocks and their grouping.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+</div>
+
+<h2 class="heading" style="margin-top:48px">Page redesigns</h2>
+<p class="lede" style="margin-bottom:0">The pages you flagged for a rework, mocked separately from the reorg above. Same rules: pick a direction and add a note.</p>
+
+<div class="grid" style="margin-top:20px">
+
+  <div class="tile" data-screen="Library">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="library.html" target="_blank">Library · roadmap UX</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Today's behaviour by default; a new List / Roadmap toggle switches to the graph.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>List default, toggle to Roadmap.</b> Nothing changes unless you switch.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Problem page">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="problem.html" target="_blank">DSA problem / check-in</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Where a check-in happens, and each outcome leads somewhere.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>LeetCode-first.</b> Open on LeetCode, then Sync, then manual — above the statement.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Plan">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="plan.html" target="_blank">Plan · campaign selection</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">See the plan before you commit to it.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Level, length, time, preview.</b> Manual week editor behind “Adjust the week”.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Chat">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="chat.html" target="_blank">Coach · chat interface</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">The working state, the reply and the composer, given real shape.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Quiet working.</b> One inline line, a muted leave-note, scannable replies.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Coach mocks">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="mocks.html" target="_blank">Coach · Mocks</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Searchable topic picker; behavioural mocks explain the story requirement.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Looks right.</b> Search dropdown + story-bank guidance.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Story bank">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="stories.html" target="_blank">Coach · Story bank</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Out of scope — keep the current tags and actions.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Keep as-is.</b> No changes.</span></button>
+  </div>
+
+  <div class="tile" data-screen="Set up">
+    <div style="display:flex; align-items:baseline; justify-content:space-between">
+      <a class="title heading" href="onboarding.html" target="_blank">Set up — onboarding</a><span class="arrow">↗</span>
+    </div>
+    <p class="small" style="margin:0; color:var(--tx2)">Four calm steps instead of one long form; level included; “Plan” throughout.</p>
+    <button class="optsel" data-val="OK"><span class="dot">✓</span><span><b>Looks right.</b> Welcome → you → level → time + preview.</span></button>
+    <button class="optsel" data-val="change"><span class="dot">!</span><span><b>Needs a change.</b> I'll tell you what.</span></button>
+  </div>
+
+</div>
+
+<div class="pickbar">
+  <span class="picks" id="picks"><span class="none">No picks yet · choose one per screen.</span></span>
+  <button class="btn s sm" id="clear" type="button">Clear</button>
+  <button class="btn p sm" id="copy" type="button">Copy picks + notes</button>
+</div>
+
+<p class="caption" style="max-width:78ch">Composition mocks, not final code. Readiness still shows on both Me and Today; the Plan link stays on both; the accent stays cyan with topic/status colours earned by meaning. Pick a direction per screen and I'll fold the winners into the implementation.</p>
+
+</div>
+
+<script>
+(function () {
+  var PICK_KEY = "90x-reorg-picks";
+  var NOTE_KEY = "90x-reorg-notes";
+  var DEFAULTS = { "Today": "A", "Me": "A", "Friends": "A", "Coach modes": "OK", "Lessons": "A", "Settings": "OK" };
+  var picks = Object.assign({}, DEFAULTS), notes = {};
+  try { picks = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(PICK_KEY) || "{}")); } catch (e) { picks = Object.assign({}, DEFAULTS); }
+  try { notes = JSON.parse(localStorage.getItem(NOTE_KEY) || "{}"); } catch (e) { notes = {}; }
+  var tiles = Array.prototype.slice.call(document.querySelectorAll(".tile"));
+
+  function screenOf(tile) { return tile.getAttribute("data-screen"); }
+  function noteText(screen) { return (notes[screen] || "").trim(); }
+
+  function sync() {
+    var withNotes = 0;
+    tiles.forEach(function (tile) {
+      var screen = screenOf(tile);
+      Array.prototype.forEach.call(tile.querySelectorAll(".optsel"), function (b) {
+        var on = picks[screen] === b.getAttribute("data-val");
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      var has = !!noteText(screen);
+      if (has) withNotes++;
+      var badge = tile.querySelector(".notebadge");
+      if (badge) badge.style.display = has ? "inline-flex" : "none";
+    });
+    var parts = [];
+    tiles.forEach(function (tile) { var s = screenOf(tile); if (picks[s]) parts.push(s + ": " + picks[s]); });
+    var el = document.getElementById("picks");
+    var noteBit = withNotes ? (withNotes + " note" + (withNotes > 1 ? "s" : "")) : "";
+    if (parts.length || withNotes) {
+      el.innerHTML = "<b>" + (parts.join("  ·  ") || "No picks") + "</b>" + (noteBit ? "  ·  " + noteBit : "");
+    } else {
+      el.innerHTML = '<span class="none">No picks yet · choose one per screen and add notes if you like.</span>';
+    }
+  }
+
+  tiles.forEach(function (tile) {
+    var screen = screenOf(tile);
+
+    // Selectable directions.
+    Array.prototype.forEach.call(tile.querySelectorAll(".optsel"), function (b) {
+      b.addEventListener("click", function () {
+        var v = b.getAttribute("data-val");
+        picks[screen] = picks[screen] === v ? null : v;
+        if (!picks[screen]) delete picks[screen];
+        try { localStorage.setItem(PICK_KEY, JSON.stringify(picks)); } catch (e) {}
+        sync();
+      });
+    });
+
+    // A note field on every question.
+    var wrap = document.createElement("label");
+    wrap.className = "notewrap";
+    wrap.innerHTML =
+      '<span class="notelabel">Note <span class="notebadge">added</span></span>' +
+      '<textarea class="optnote" rows="2" placeholder="Add a note for this screen…"></textarea>';
+    var ta = wrap.querySelector("textarea");
+    ta.value = notes[screen] || "";
+    ta.addEventListener("input", function () {
+      if (ta.value.trim()) notes[screen] = ta.value; else delete notes[screen];
+      try { localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); } catch (e) {}
+      sync();
+    });
+
+    // Open the full screen mock.
+    var link = tile.querySelector("a.title");
+    var btn = document.createElement("a");
+    btn.className = "btn s sm";
+    btn.href = link ? link.getAttribute("href") : "#";
+    btn.target = "_blank";
+    btn.rel = "noopener";
+    btn.style.cssText = "align-self:flex-start; margin-top:4px";
+    btn.textContent = "Open all directions ↗";
+    btn.addEventListener("click", function (ev) { ev.stopPropagation(); });
+
+    tile.appendChild(wrap);
+    tile.appendChild(btn);
+
+    tile.style.cursor = "pointer";
+    tile.addEventListener("click", function (ev) {
+      if (ev.target.closest(".optsel") || ev.target.closest("a") || ev.target.closest("button") || ev.target.closest(".notewrap")) return;
+      if (link) window.open(link.getAttribute("href"), "_blank");
+    });
+  });
+
+  document.getElementById("clear").addEventListener("click", function () {
+    picks = {}; notes = {};
+    try { localStorage.removeItem(PICK_KEY); localStorage.removeItem(NOTE_KEY); } catch (e) {}
+    tiles.forEach(function (t) { var ta = t.querySelector(".optnote"); if (ta) ta.value = ""; });
+    sync();
+  });
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var lines = ["90x reorg · my picks"];
+    tiles.forEach(function (tile) {
+      var s = screenOf(tile);
+      var p = picks[s], n = noteText(s);
+      if (!p && !n) return;
+      lines.push("- " + s + ": " + (p || "(no pick)"));
+      if (n) lines.push("    note: " + n.replace(/\s*\n+\s*/g, " / "));
+    });
+    var text = lines.length > 1 ? lines.join("\n") : "No picks or notes yet.";
+    var btn = this;
+    function done() { btn.textContent = "Copied"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = "Copy picks + notes"; btn.classList.remove("copied"); }, 1400); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { window.prompt("Copy your picks + notes:", text); });
+    } else {
+      window.prompt("Copy your picks + notes:", text);
+    }
+  });
+
+  sync();
+})();
+</script>
+</body>
+</html>

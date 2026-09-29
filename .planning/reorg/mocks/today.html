@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x mocks · Today with Coach's read</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css?v=2">
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="title">Today — surfacing the Coach's weekly read</h1>
+  <a href="index.html">← All screens</a>
+</div>
+<p class="lede">Chosen direction: the Coach's weekly read as a full card at the top of Today. The day line, the 90 grid, the readiness strip and the missions are unchanged. Deciding on the suggested plan changes happens on the full review, not here.</p>
+
+<!-- shared icon defs -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
+<g id="i-feed"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></g>
+<g id="i-lib"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></g>
+<g id="i-coach"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g>
+<g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
+<g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
+<g id="i-sliders"><path d="M4 6h8M4 10h12M4 14h6"/><circle cx="15" cy="6" r="1.6"/><circle cx="13" cy="14" r="1.6"/></g>
+<g id="i-x"><path d="M6 6l12 12M18 6L6 18"/></g>
+<radialGradient id="renTab" cx="33%" cy="25%" r="78%">
+  <stop offset="0%" stop-color="#ffffff"/>
+  <stop offset="20%" stop-color="#ffccd8"/>
+  <stop offset="52%" stop-color="#ff5c7f"/>
+  <stop offset="100%" stop-color="#b3153a"/>
+</radialGradient>
+<g id="ren">
+  <circle cx="12" cy="12" r="9.3" fill="url(#renTab)"/>
+  <ellipse cx="8.5" cy="8" rx="3.4" ry="2.3" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.4)"/>
+  <ellipse cx="9.1" cy="12.4" rx="1.45" ry="2" fill="#3a0512" opacity="0.9"/>
+  <ellipse cx="15.2" cy="12.4" rx="1.45" ry="2" fill="#3a0512" opacity="0.9"/>
+</g>
+</defs></svg>
+
+<!-- ═══════════════════════════════ DIRECTION A ═══════════════════════════════ -->
+<section class="choice">
+  <div class="choice-h">
+    <span class="kicker">Chosen</span>
+    <h2 class="heading">Full card, at the top of the day</h2>
+  </div>
+  <p class="choice-trade">The weekly read is promoted to a first-class card above the missions, so a fresh read is the first thing you see. It shows the score, the read and the suggested changes; deciding on them happens on the review page, keeping the day's work one tap away.</p>
+
+  <div class="frames">
+    <!-- A · phone -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div class="shead">
+            <span class="title">Today</span>
+            <span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sliders"/></svg></span>
+          </div>
+          <div class="small" style="margin-top:-8px">Day 34 · 12-day streak · 57 days left</div>
+
+          <!-- COACH'S READ -->
+          <div class="card" style="padding:22px 20px; gap:20px; display:flex; flex-direction:column; border-color:var(--ln2)">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+              <span style="display:flex; align-items:center; gap:12px">
+                <svg viewBox="0 0 24 24" width="30" height="30" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg>
+                <span style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-weight:700">Coach's read</span>
+                  <span class="small" style="font-size:12px">Week of Sep 21</span>
+                </span>
+              </span>
+              <span class="iconbtn" style="width:32px; height:32px" role="button" aria-label="Dismiss until next week"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-x"/></svg></span>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:26px">
+              <div style="display:flex; flex-direction:column; gap:6px">
+                <span class="dialnum ok tabular" style="font-size:42px">74</span>
+                <span class="small">Coach's estimate</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px; padding-bottom:5px">
+                <span class="tabular" style="font:600 22px/1 Sora,sans-serif; color:var(--tx2)">68</span>
+                <span class="small">Your dial</span>
+              </div>
+            </div>
+            <span class="tag" style="--c:var(--ok); align-self:flex-start">+6 this week</span>
+            <p style="margin:0; color:var(--tx2); font-size:15px; line-height:1.6">You held the streak, but leaned on hints for graphs and two design sessions ran long. Next week trades one new pattern for a second timed design rep.</p>
+            <div style="display:flex; flex-direction:column; gap:14px; border-top:1px solid var(--ln); padding-top:18px">
+              <span class="small" style="color:var(--tx2)">2 suggested changes, decided on the review</span>
+              <span class="btn s" style="width:100%">Read the full review →</span>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:10px">
+            <svg viewBox="0 0 24 24" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg>
+            <span class="tx2" style="font-size:15px; padding-top:3px">Course Schedule II is picked for the graph pattern you failed last week.</span>
+          </div>
+
+          <div class="grid90" aria-hidden="true">
+            <i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i>
+            <i class="sq revived"></i><i class="sq done"></i><i class="sq done"></i><i class="sq missed"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i>
+            <i class="sq done"></i><i class="sq done"></i><i class="sq partial"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq today"></i><i class="sq rest"></i><i class="sq rest"></i>
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px">
+              <span class="heading">Missions</span><span class="small">1 of 5 done</span>
+            </div>
+            <div class="card list">
+              <div class="mission"><span class="box done"></span><span class="grow"><span class="nm">Two Sum</span><div class="why">Review · due today</div></span><span class="tag" style="--c:var(--dsa)">DSA</span></div>
+              <div class="mission"><span class="box"></span><span class="grow"><span class="nm">Course Schedule II</span><div class="why">New · graphs, your weakest pattern</div></span><span class="tag" style="--c:var(--dsa)">DSA</span></div>
+              <div class="mission"><span class="box"></span><span class="grow"><span class="nm">Design a rate limiter</span><div class="why">Design topic · 30 min</div></span><span class="tag" style="--c:var(--sd)">Design</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- A · desktop -->
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Today</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sliders"/></svg></span></div>
+          <div class="small" style="margin-top:-14px">Day 34 · 12-day streak · 57 days left</div>
+          <div class="cols2">
+            <div class="stack6">
+              <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--ln2)">
+                <div style="display:flex; align-items:center; justify-content:space-between"><span style="display:flex; align-items:center; gap:10px"><svg viewBox="0 0 24 24" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg><span style="font-weight:700">Coach's read</span></span><span style="display:flex; align-items:center; gap:8px"><span class="small">Week of Sep 21</span><span class="iconbtn" style="width:28px; height:28px" role="button" aria-label="Dismiss until next week"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-x"/></svg></span></span></div>
+                <div style="display:flex; align-items:flex-end; gap:22px">
+                  <div><span class="dialnum ok tabular" style="font-size:40px">74</span><div class="small">Coach's estimate</div></div>
+                  <div><span class="tabular" style="font:600 22px/1 Sora,sans-serif; color:var(--tx2)">68</span><div class="small">Your dial</div></div>
+                  <span class="tag" style="--c:var(--ok); margin-left:auto">+6 this week</span>
+                </div>
+                <p style="margin:0; color:var(--tx2); font-size:15px; max-width:64ch">You held the streak, but leaned on hints for graphs and two design sessions ran long. Next week trades one new pattern for a second timed design rep.</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px"><span class="small" style="color:var(--tx2)">2 suggested changes</span><span class="btn s sm">Read the full review →</span></div>
+              </div>
+              <div style="display:flex; align-items:flex-start; gap:10px"><svg viewBox="0 0 24 24" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg><span class="tx2" style="font-size:15px; padding-top:3px">Course Schedule II is picked for the graph pattern you failed last week.</span></div>
+              <div>
+                <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px"><span class="heading">Missions</span><span class="small">1 of 5 done</span></div>
+                <div class="card list">
+                  <div class="mission"><span class="box done"></span><span class="grow"><span class="nm">Two Sum</span><div class="why">Review · due today</div></span><span class="tag" style="--c:var(--dsa)">DSA</span></div>
+                  <div class="mission"><span class="box"></span><span class="grow"><span class="nm">Course Schedule II</span><div class="why">New · graphs, your weakest pattern</div></span><span class="tag" style="--c:var(--dsa)">DSA</span></div>
+                  <div class="mission"><span class="box"></span><span class="grow"><span class="nm">Design a rate limiter</span><div class="why">Design topic · 30 min</div></span><span class="tag" style="--c:var(--sd)">Design</span></div>
+                </div>
+              </div>
+            </div>
+            <aside class="stack6">
+              <div class="stack" style="gap:10px"><span class="small">90 days</span>
+                <div class="grid90" style="grid-template-columns:repeat(10,1fr)">
+                  <i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i>
+                  <i class="sq revived"></i><i class="sq done"></i><i class="sq done"></i><i class="sq missed"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i>
+                  <i class="sq done"></i><i class="sq done"></i><i class="sq partial"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq done"></i><i class="sq today"></i><i class="sq rest"></i><i class="sq rest"></i>
+                </div>
+              </div>
+              <div class="stats">
+                <div class="stat"><span class="k">Readiness</span><span class="v ok tabular">68</span></div>
+                <div class="stat"><span class="k">Solved</span><span class="v tabular">412</span></div>
+                <div class="stat"><span class="k">Reviews due</span><span class="v tabular">14</span></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Chosen.</b> The read sits above the missions with its own header and the coach score vs your dial. Desktop shows the change list inline; on a phone the card drops the rows, names the count, and gives the score and read more room.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

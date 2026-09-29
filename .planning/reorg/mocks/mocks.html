@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x mocks · Mock interviews</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css?v=2">
+<style>
+  .dd { border: 1px solid var(--ln2); border-radius: 12px; background: var(--sf2); overflow: hidden; margin-top: 8px; }
+  .dd .opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; font-size: 15px; color: var(--tx2); }
+  .dd .opt + .opt { border-top: 1px solid var(--ln); }
+  .dd .opt b { color: var(--acc); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="title">Coach — Mock interviews</h1>
+  <a href="index.html">← All screens</a>
+</div>
+<p class="lede">Two decisions from your notes: the topic picker becomes a <b>searchable input with a dropdown</b> (not a wall of tags), and a behavioural mock tells you <b>why</b> it needs a story when you have none — and keeps the Story bank link once you do.</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
+<g id="i-feed"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></g>
+<g id="i-lib"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></g>
+<g id="i-coach"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g>
+<g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
+<g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
+<g id="i-back"><path d="M15 5l-7 7 7 7"/></g>
+<g id="i-search"><circle cx="11" cy="11" r="7"/><path d="M16 16l4 4"/></g>
+</defs></svg>
+
+<section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
+  <div class="choice-h"><span class="kicker">Chosen</span><h2 class="heading">Search the topic; stories explain themselves</h2></div>
+  <p class="choice-trade">Phone shows the search dropdown and the no-stories behavioural state; desktop shows the same with a story bank in place.</p>
+
+  <div class="frames">
+    <!-- phone -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div style="display:flex; align-items:center; gap:8px"><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-back"/></svg></span><span class="small">Coach</span></div>
+          <div class="title">Mock interviews</div>
+
+          <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
+            <span class="heading">Design mock</span>
+            <span class="small">Search a topic; Coach runs a timed text interview.</span>
+            <div class="input" style="height:44px; display:flex; align-items:center; gap:10px; border-color:var(--acc); color:var(--tx)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg>rate<span class="mu" style="margin-left:auto">▾</span></div>
+            <div class="dd" style="margin-top:0">
+              <div class="opt"><span><b>Rate</b> limiter</span><span class="small">System design</span></div>
+              <div class="opt"><span><b>Rate</b> limiting algorithms</span><span class="small">System design</span></div>
+              <div class="opt"><span>Design a <b>rate</b>-limited API</span><span class="small">System design</span></div>
+            </div>
+            <span class="btn p" style="width:100%">Start design mock</span>
+          </div>
+
+          <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
+            <span class="heading">Behavioural mock</span>
+            <div class="card pad" style="background:var(--bg); gap:10px; display:flex; flex-direction:column">
+              <span style="font-weight:700">Add a story first</span>
+              <span class="small">Behavioural questions ask for your own examples, so a mock has nothing to ask without at least one STAR story. Add one and come back — it takes two minutes.</span>
+              <span class="btn s sm" style="align-self:flex-start">Open Story bank</span>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- desktop -->
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Mock interviews</span><span class="btn g sm">Back to Coach</span></div>
+          <div class="cols2e">
+            <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
+              <span class="heading">Design mock</span>
+              <span class="small">Search a topic; Coach runs a timed text interview.</span>
+              <div class="input" style="height:44px; display:flex; align-items:center; gap:10px; border-color:var(--acc); color:var(--tx)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg>rate<span class="mu" style="margin-left:auto">▾</span></div>
+              <div class="dd" style="margin-top:0">
+                <div class="opt"><span><b>Rate</b> limiter</span><span class="small">System design</span></div>
+                <div class="opt"><span><b>Rate</b> limiting algorithms</span><span class="small">System design</span></div>
+              </div>
+              <span class="btn p">Start design mock</span>
+            </div>
+            <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
+              <span class="heading">Behavioural mock</span>
+              <span class="small">Uses your 6 STAR stories. Coach asks, you answer in text.</span>
+              <span class="btn s">Start behavioural mock</span>
+              <span class="small acc" style="font-weight:700">Manage in Story bank</span>
+            </div>
+          </div>
+          <div>
+            <div class="heading" style="margin-bottom:12px">Past mocks</div>
+            <div class="card list">
+              <div class="row"><span><span style="font-weight:700">Rate limiter</span><div class="small">Design · Sep 26</div></span><span class="tabular ok" style="font-weight:700">82</span></div>
+              <div class="row"><span><span style="font-weight:700">Tell me about a conflict</span><div class="small">Behavioural · Sep 21</div></span><span class="tabular warn" style="font-weight:700">64</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Chosen.</b> One search box with a live dropdown instead of tags; behavioural mocks explain the story requirement and link to the Story bank — before and after you have one.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

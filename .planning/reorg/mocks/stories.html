@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x mocks · Story bank</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css?v=2">
+<style>
+  .prog { height: 8px; border-radius: 999px; background: var(--sf2); overflow: hidden; }
+  .prog > i { display: block; height: 100%; border-radius: 999px; background: var(--acc); }
+  .ptag { border-radius: 999px; background: var(--sf2); padding: 3px 10px; font: 700 12px/1 "Manrope", sans-serif; color: var(--tx2); text-transform: capitalize; }
+  .star dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 13px; }
+  .star dt { color: var(--mu); font-weight: 700; }
+  .star dd { margin: 0; color: var(--tx2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .fld { width: 100%; border: 1px solid var(--ln2); border-radius: 12px; background: var(--bg); padding: 10px 12px; color: var(--tx); font: 500 13px/1.45 "Manrope", sans-serif; }
+  .fld::placeholder { color: var(--mu); }
+  .fldl { font-size: 13px; font-weight: 700; color: var(--tx2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="title">Coach — Story bank (as today)</h1>
+  <a href="index.html">← All screens</a>
+</div>
+<p class="lede">No redesign here — this is today's Story bank on the new shell: each card shows its <b>tags</b> and its <b>Edit / Improve with Coach / Delete</b> actions, and the editor keeps the <b>tag chips</b>. Reachable from Coach.</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
+<g id="i-feed"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></g>
+<g id="i-lib"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></g>
+<g id="i-coach"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g>
+<g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
+<g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
+<g id="i-back"><path d="M15 5l-7 7 7 7"/></g>
+</defs></svg>
+
+<section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
+  <div class="choice-h"><span class="kicker">Unchanged</span><h2 class="heading">Cards with tags and actions</h2></div>
+  <p class="choice-trade">Story card, then the editor. Same content and controls as today, just on the new shell.</p>
+
+  <div class="frames">
+    <!-- phone · cards -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div style="display:flex; align-items:center; gap:8px"><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-back"/></svg></span><span class="small">Coach</span></div>
+          <div><span class="title">Story bank</span><div class="small" style="margin-top:6px">Six to eight STAR stories cover most behavioral questions. Only you can see them.</div></div>
+
+          <div style="display:flex; flex-direction:column; gap:8px">
+            <div style="display:flex; align-items:baseline; justify-content:space-between"><span style="font-weight:700">6 of 8</span><span class="small acc" style="font-weight:700">Practise in a mock</span></div>
+            <div class="prog"><i style="width:75%"></i></div>
+          </div>
+
+          <article class="card pad" style="gap:12px; display:flex; flex-direction:column">
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <span class="heading">A time I disagreed with a teammate</span>
+              <div style="display:flex; flex-wrap:wrap; gap:6px"><span class="ptag">conflict</span><span class="ptag">leadership</span></div>
+            </div>
+            <div class="star">
+              <dl>
+                <dt>S</dt><dd>Two of us wanted different schemas days before a release.</dd>
+                <dt>T</dt><dd>Pick one without blocking the ship date.</dd>
+                <dt>A</dt><dd>Wrote both as a spike, measured write cost, brought numbers to the call.</dd>
+                <dt>R</dt><dd>Shipped the simpler schema; cut a week off the timeline.</dd>
+              </dl>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px">
+              <span class="btn s sm">Edit</span>
+              <span class="btn s sm">Improve with Coach</span>
+              <span class="btn g sm" style="color:var(--tx2)">Delete</span>
+            </div>
+          </article>
+
+          <article class="card pad" style="gap:12px; display:flex; flex-direction:column">
+            <span class="heading">The migration I owned</span>
+            <div style="display:flex; flex-wrap:wrap; gap:6px"><span class="ptag">impact</span></div>
+            <div class="star"><dl><dt>S</dt><dd>Billing schema had to change with zero downtime.</dd><dt>A</dt><dd>Dual-write, backfill, cut over.</dd></dl></div>
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px"><span class="btn s sm">Edit</span><span class="btn s sm">Improve with Coach</span><span class="btn g sm">Delete</span></div>
+          </article>
+
+          <span class="btn p" style="width:100%">Add a story</span>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+    <!-- phone · editor -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div style="display:flex; align-items:center; gap:8px"><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-back"/></svg></span><span class="small">Story bank</span></div>
+          <div class="card pad" style="gap:14px; display:flex; flex-direction:column">
+            <label style="display:flex; flex-direction:column; gap:6px"><span class="fldl">Title</span><div class="fld">Migrated billing without downtime</div></label>
+            <label style="display:flex; flex-direction:column; gap:6px"><span class="fldl">Situation</span><div class="fld" style="min-height:52px; color:var(--mu)">Where and when; the context in two lines.</div></label>
+            <label style="display:flex; flex-direction:column; gap:6px"><span class="fldl">Task</span><div class="fld" style="min-height:52px; color:var(--mu)">What you had to do, and why it was hard.</div></label>
+            <label style="display:flex; flex-direction:column; gap:6px"><span class="fldl">Action</span><div class="fld" style="min-height:82px; color:var(--mu)">What you did (not the team). The longest part.</div></label>
+            <label style="display:flex; flex-direction:column; gap:6px"><span class="fldl">Result</span><div class="fld" style="min-height:52px; color:var(--mu)">What changed, with numbers if you have them.</div></label>
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span class="fldl">Tags</span>
+              <div style="display:flex; flex-wrap:wrap; gap:8px"><span class="chip on">leadership</span><span class="chip on">impact</span><span class="chip">conflict</span><span class="chip">failure</span><span class="chip">ambiguity</span></div>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px"><span class="btn p">Add story</span><span class="btn s">Cancel</span></div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- desktop · cards -->
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Story bank</span><span class="btn g sm">Back to Coach</span></div>
+          <div style="display:flex; flex-direction:column; gap:8px; max-width:560px">
+            <div style="display:flex; align-items:baseline; justify-content:space-between"><span style="font-weight:700">6 of 8</span><span class="small acc" style="font-weight:700">Practise in a mock</span></div>
+            <div class="prog"><i style="width:75%"></i></div>
+          </div>
+          <div class="cols2e">
+            <article class="card pad" style="gap:12px; display:flex; flex-direction:column">
+              <div style="display:flex; flex-direction:column; gap:8px"><span class="heading">A time I disagreed with a teammate</span><div style="display:flex; flex-wrap:wrap; gap:6px"><span class="ptag">conflict</span><span class="ptag">leadership</span></div></div>
+              <div class="star"><dl><dt>S</dt><dd>Two of us wanted different schemas days before a release.</dd><dt>T</dt><dd>Pick one without blocking the ship date.</dd><dt>A</dt><dd>Wrote both as a spike, measured write cost, brought numbers to the call.</dd><dt>R</dt><dd>Shipped the simpler schema; cut a week off.</dd></dl></div>
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px"><span class="btn s sm">Edit</span><span class="btn s sm">Improve with Coach</span><span class="btn g sm">Delete</span></div>
+            </article>
+            <article class="card pad" style="gap:12px; display:flex; flex-direction:column">
+              <div style="display:flex; flex-direction:column; gap:8px"><span class="heading">The migration I owned</span><div style="display:flex; flex-wrap:wrap; gap:6px"><span class="ptag">impact</span></div></div>
+              <div class="star"><dl><dt>S</dt><dd>Billing schema had to change with zero downtime.</dd><dt>A</dt><dd>Dual-write, backfill, cut over.</dd><dt>R</dt><dd>No downtime, 40m window.</dd></dl></div>
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px"><span class="btn s sm">Edit</span><span class="btn s sm">Improve with Coach</span><span class="btn g sm">Delete</span></div>
+            </article>
+          </div>
+          <span class="btn p" style="align-self:flex-start">Add a story</span>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Story bank, as today.</b> Tag pills on each card, the Edit / Improve with Coach / Delete actions, and the tag-chip editor. Nothing here is redesigned — it just sits under Coach.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
