@@ -78,6 +78,15 @@ as $$
   );
 $$;
 
+-- The signed-in user's email. SECURITY DEFINER for the same reason: a policy
+-- cannot read auth.users as the authenticated role — the first CI run failed
+-- with "permission denied for table users" when it tried.
+create function public.current_user_email() returns text
+language sql stable security definer set search_path = ''
+as $$
+  select email from auth.users where id = auth.uid();
+$$;
+
 -- ---------------------------------------------------------------------------
 -- Row-level security for the new tables
 -- ---------------------------------------------------------------------------
@@ -86,8 +95,7 @@ alter table public.friendships enable row level security;
 
 -- You see invites you sent and invites addressed to your own email.
 create policy friend_invites_read on public.friend_invites for select to authenticated
-  using (invited_by = auth.uid()
-         or email = (select email from auth.users where id = auth.uid()));
+  using (invited_by = auth.uid() or email = public.current_user_email());
 
 -- You can send an invite only when you are approved.
 create policy friend_invites_send on public.friend_invites for insert to authenticated
@@ -96,7 +104,7 @@ create policy friend_invites_send on public.friend_invites for insert to authent
 -- You can respond (accept/refuse/dismiss) if the invite is addressed to you,
 -- or revoke if you sent it.
 create policy friend_invites_respond on public.friend_invites for update to authenticated
-  using (email = (select email from auth.users where id = auth.uid()) or invited_by = auth.uid());
+  using (email = public.current_user_email() or invited_by = auth.uid());
 
 -- You see your own friendships and nobody else's.
 create policy friendships_read on public.friendships for select to authenticated

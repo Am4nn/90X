@@ -35,7 +35,7 @@ export const friendInvites = pgTable(
       as: "permissive",
       for: "select",
       to: ["authenticated"],
-      using: sql`invited_by = auth.uid() or email = (select email from auth.users where id = auth.uid())`,
+      using: sql`invited_by = auth.uid() or email = public.current_user_email()`,
     }),
     pgPolicy("friend_invites_send", {
       as: "permissive",
@@ -47,7 +47,7 @@ export const friendInvites = pgTable(
       as: "permissive",
       for: "update",
       to: ["authenticated"],
-      using: sql`email = (select email from auth.users where id = auth.uid()) or invited_by = auth.uid()`,
+      using: sql`email = public.current_user_email() or invited_by = auth.uid()`,
     }),
   ],
 );
