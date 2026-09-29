@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>90x email templates, light and dark</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; --bg:#0a0c10; --line:#1c2029; --line2:#262b36; --text:#e6e9ef; --text2:#aeb5c2; --mute:#7d8594; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--text); }
+  body { font:500 15px/1.55 "Manrope",system-ui,sans-serif; padding:40px 24px 96px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1120px; margin:0 auto; }
+  h1 { font:700 28px/1.1 "Sora",sans-serif; margin:0 0 8px; letter-spacing:-0.02em; }
+  .lede { color:var(--text2); max-width:78ch; margin:0; }
+  .lede b { color:var(--text); }
+  .row { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:22px; align-items:start; }
+  section.mode { margin-top:34px; }
+  .mode-head { display:flex; align-items:baseline; gap:10px; margin:0 0 4px; }
+  .mode-head h2 { font:600 18px/1.3 "Sora",sans-serif; margin:0; }
+  .mode-head span { font:700 12px/1 "Manrope",sans-serif; color:var(--mute); }
+  .mode-note { color:var(--mute); font-size:13px; margin:0 0 18px; max-width:84ch; }
+  .cell { display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .cell-label { font:700 12px/1 "Manrope",sans-serif; color:var(--mute); text-transform:uppercase; letter-spacing:.04em; display:flex; align-items:center; gap:8px; }
+  .cell-label::after { content:""; flex:1; height:1px; background:var(--line); }
+  .shot { border:1px solid var(--line2); border-radius:14px; overflow:hidden; }
+  .shot iframe { display:block; width:100%; border:0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Email templates, light and dark</h1>
+  <p class="lede">
+    Light is the base (dark ink on paper). Dark-mode clients upgrade to the console palette. The sender icon is the
+    90x mark, top-left, on its own, with no duplicated "90x" text.
+  </p>
+  <section class="mode" id="mode-light"></section>
+  <section class="mode" id="mode-dark"></section>
+  <section class="mode" id="mode-outlook"></section>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const NINETY = "M22.22 35.75Q25.30 35.75 27.50 36.76Q29.71 37.76 31.09 39.61Q32.48 41.45 33.15 43.84Q33.81 46.24 33.81 48.97L33.81 50.57Q33.81 57.49 30.28 61Q26.74 64.52 19.87 64.52Q18.46 64.52 17.09 64.44Q15.72 64.36 14.43 64.21L14.43 59.01Q15.69 59.12 17.13 59.21Q18.57 59.31 20.09 59.31Q23.13 59.31 24.88 58.30Q26.63 57.30 27.35 55.28Q28.07 53.27 28.07 50.30L28.07 47.42L29.44 46.50Q29.40 49.35 28.28 51.27Q27.16 53.19 25.19 54.14Q23.21 55.09 20.63 55.09Q17.70 55.09 15.57 53.93Q13.44 52.77 12.30 50.68Q11.16 48.59 11.16 45.74Q11.16 42.74 12.53 40.48Q13.90 38.22 16.39 36.98Q18.88 35.75 22.22 35.75M22.41 40.92Q20.74 40.92 19.58 41.53Q18.42 42.13 17.80 43.18Q17.17 44.22 17.17 45.63Q17.17 47.07 17.78 48.12Q18.38 49.16 19.51 49.75Q20.63 50.34 22.26 50.34Q23.74 50.34 24.98 49.83Q26.21 49.32 26.93 48.27Q27.66 47.23 27.66 45.63Q27.66 44.26 27.07 43.20Q26.48 42.13 25.30 41.53Q24.12 40.92 22.41 40.92M50.38 65.01Q47.07 65.01 44.72 63.93Q42.36 62.84 40.90 60.98Q39.44 59.12 38.73 56.67Q38.03 54.22 38.03 51.48L38.03 49.32Q38.03 45.52 39.36 42.44Q40.69 39.36 43.43 37.54Q46.16 35.71 50.38 35.71Q54.60 35.71 57.31 37.54Q60.03 39.36 61.36 42.44Q62.69 45.52 62.69 49.32L62.69 51.48Q62.69 54.22 61.99 56.67Q61.29 59.12 59.82 60.98Q58.36 62.84 56.02 63.93Q53.69 65.01 50.38 65.01M50.38 59.27Q53.46 59.27 54.96 57.13Q56.46 54.98 56.46 50.46Q56.46 45.67 54.92 43.56Q53.38 41.45 50.38 41.45Q47.30 41.45 45.78 43.56Q44.26 45.67 44.26 50.38Q44.26 54.94 45.76 57.11Q47.26 59.27 50.38 59.27";
+const STROKES = [[71.012,46.464,85.836,61.288],[85.836,46.464,71.012,61.288]];
+// Single quotes only: these go inside double-quoted style="..." attributes.
+const FONT="Sora, Manrope, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+const LIGHT = { scheme:"light", bg:"#f2f4f7", card:"#ffffff", border:"#e4e7ec", ink:"#14161c", body:"#3a4350", sub:"#5a6270", mute:"#6b7280", rule:"#e4e7ec", accent:"#67e8f9", onAccent:"#06222a", ring:"" };
+const DARK  = { scheme:"dark",  bg:"#0a0c10", card:"#0f1218", border:"#1f2429", ink:"#e6e9ef", body:"#c7ccd6", sub:"#aeb5c2", mute:"#8b93a1", rule:"#1f2429", accent:"#67e8f9", onAccent:"#06222a", ring:"0 0 0 1px #262b36" };
+
+const OUTLOOK_CSS =
+  "[data-ogsb] .x-bg,.x-bg[data-ogsb]{background-color:#0a0c10 !important}" +
+  "[data-ogsb] .x-card,.x-card[data-ogsb]{background-color:#0f1218 !important;border-color:#1f2429 !important}" +
+  "[data-ogsc] .x-ink,.x-ink[data-ogsc]{color:#e6e9ef !important}" +
+  "[data-ogsc] .x-body,.x-body[data-ogsc]{color:#c7ccd6 !important}" +
+  "[data-ogsc] .x-sub,.x-sub[data-ogsc]{color:#aeb5c2 !important}" +
+  "[data-ogsc] .x-mute,.x-mute[data-ogsc]{color:#8b93a1 !important}" +
+  "[data-ogsc] .x-rule,.x-rule[data-ogsc]{border-top-color:#1f2429 !important}" +
+  "[data-ogsb] .x-btn,.x-btn[data-ogsb]{background-color:#67e8f9 !important}" +
+  "[data-ogsc] .x-btn-link,.x-btn-link[data-ogsc]{color:#06222a !important}";
+
+function logo(size){
+  const lines = STROKES.map(s=>`<line x1="${s[0]}" y1="${s[1]}" x2="${s[2]}" y2="${s[3]}" stroke="#67e8f9" stroke-width="6" stroke-linecap="round"/>`).join("");
+  return `<svg xmlns="${NS}" width="${size}" height="${size}" viewBox="0 0 100 100" style="display:block"><rect width="100" height="100" rx="22" fill="#0a0c10"/><path d="${NINETY}" fill="#e6e9ef"/>${lines}</svg>`;
+}
+function btn(p,label){
+  return `<table border="0" cellspacing="0" cellpadding="0"><tr><td class="x-btn" align="center" bgcolor="${p.accent}" style="border-radius:8px"><a class="x-btn-link" href="#" style="display:inline-block;padding:12px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:${p.onAccent};text-decoration:none;border-radius:8px">${label}</a></td></tr></table>`;
+}
+function h(p,t){ return `<p class="x-ink" style="margin:0;font-family:${FONT};font-weight:600;font-size:20px;line-height:28px;color:${p.ink}">${t}</p>`; }
+function b(p,t){ return `<p class="x-body" style="margin:12px 0 24px 0;font-family:${FONT};font-size:15px;line-height:24px;color:${p.body}">${t}</p>`; }
+
+function emailDoc(inner,p,extraCss){
+  const ring = p.ring ? `box-shadow:${p.ring};` : "";
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`+
+    `<meta name="color-scheme" content="${p.scheme}"><style>body{margin:0;color-scheme:${p.scheme};}${extraCss||""}</style></head>`+
+    `<body class="x-bg x-ink" style="margin:0;padding:0;background-color:${p.bg};color:${p.ink};font-family:${FONT};-webkit-font-smoothing:antialiased;">`+
+    `<table width="100%" class="x-bg" border="0" cellspacing="0" cellpadding="0" bgcolor="${p.bg}"><tr><td align="center" style="padding:40px 16px;">`+
+    `<table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px;">`+
+    `<tr><td align="left" style="padding:0 4px 20px 4px;"><div class="x-logo" style="display:inline-block;border-radius:8px;${ring}">${logo(36)}</div></td></tr>`+
+    `<tr><td class="x-card" bgcolor="${p.card}" style="padding:32px 32px 36px 32px;border-radius:12px;border:1px solid ${p.border};">${inner}</td></tr>`+
+    `</table></td></tr></table></body></html>`;
+}
+
+function invite(p){ return h(p,"Aman invited you to 90x") + b(p,"Sign in with Google. 90x is invite-only, so your account needs approval first. You can accept the request from your dashboard once it's approved.") + btn(p,"Open 90x") +
+  `<p class="x-sub" style="margin:24px 0 0 0;font-family:${FONT};font-size:13px;line-height:20px;color:${p.sub}">Questions? Reply to this email and someone from 90x will answer.</p>` +
+  `<hr class="x-rule" style="border:none;border-top:1px solid ${p.rule};margin:28px 0 0 0">` +
+  `<p class="x-mute" style="margin:16px 0 0 0;font-family:${FONT};font-size:12px;line-height:18px;color:${p.mute};text-align:center">You're receiving this because someone entered your address on 90x.</p>`; }
+function approved(p){ return h(p,"Your 90x account is approved") + b(p,"Sign in to set up your campaign.") + btn(p,"Open 90x"); }
+function declined(p){ return h(p,"Your 90x account request was declined."); }
+
+// Outlook.com dark mode: it tags recoloured elements instead of running the media query.
+function tagOutlook(d){
+  d.body.setAttribute("data-ogsb","sim");
+  d.querySelectorAll(".x-bg,.x-card,.x-logo,.x-btn").forEach((e)=>e.setAttribute("data-ogsb","sim"));
+  d.querySelectorAll(".x-ink,.x-body,.x-sub,.x-mute,.x-rule,.x-btn-link").forEach((e)=>e.setAttribute("data-ogsc","sim"));
+}
+
+function renderSection(rootId, opts){
+  const sec = document.getElementById(rootId);
+  const head = document.createElement("div"); head.className="mode-head";
+  const h2 = document.createElement("h2"); h2.textContent = opts.heading; head.appendChild(h2);
+  const badge = document.createElement("span"); badge.textContent = opts.badge; head.appendChild(badge);
+  sec.appendChild(head);
+  const note = document.createElement("p"); note.className="mode-note"; note.textContent = opts.note; sec.appendChild(note);
+  const row = document.createElement("div"); row.className="row";
+  for (const v of [
+    { label:"Friend invite", html:invite(opts.p) },
+    { label:"Approval, approved", html:approved(opts.p) },
+    { label:"Approval, declined", html:declined(opts.p) },
+  ]){
+    const cell = document.createElement("div"); cell.className="cell";
+    const label = document.createElement("div"); label.className="cell-label"; label.textContent=v.label;
+    const shot = document.createElement("div"); shot.className="shot";
+    const frame = document.createElement("iframe"); frame.setAttribute("title", opts.heading+" / "+v.label);
+    frame.srcdoc = emailDoc(v.html, opts.p, opts.extraCss);
+    frame.addEventListener("load",()=>{
+      try { if (opts.tag) opts.tag(frame.contentDocument); frame.style.height = frame.contentDocument.documentElement.scrollHeight+"px"; } catch(e){}
+    });
+    shot.appendChild(frame); cell.appendChild(label); cell.appendChild(shot); row.appendChild(cell);
+  }
+  sec.appendChild(row);
+}
+
+renderSection("mode-light", { p:LIGHT, heading:"Light-mode client", badge:"base",
+  note:"The default. Every client gets this if it ignores dark mode: dark ink on light paper." });
+renderSection("mode-dark", { p:DARK, heading:"Dark-mode client", badge:"prefers-color-scheme: dark",
+  note:"What Apple Mail, Gmail and Yahoo show a dark-mode reader. The media query flips the same markup to the console palette." });
+renderSection("mode-outlook", { p:LIGHT, heading:"Outlook.com dark mode", badge:"data-ogsc / data-ogsb",
+  note:"Outlook.com ignores the media query and tags each recoloured element instead. The same palette is re-asserted through those attributes. This panel simulates the tagging.", extraCss:OUTLOOK_CSS, tag:tagOutlook });
+</script>
+</body>
+</html>
