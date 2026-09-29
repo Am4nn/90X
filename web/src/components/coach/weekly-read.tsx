@@ -80,22 +80,27 @@ export function WeeklyRead({ id, weekStart, weekLabel, coachScore, formulaScore,
           {shown && <Ren title="Coach" size={30} />}
           <div className="flex flex-col gap-0.5">
             <h2 className="font-display text-heading font-semibold">Coach&apos;s read</h2>
-            <span className="text-small text-mute">Week of {weekLabel}</span>
+            {/* On a phone the week sits under the title; on desktop it moves up
+                into the header, beside the dismiss button. */}
+            <span className="text-small text-mute md:hidden">Week of {weekLabel}</span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="Dismiss until next week"
-          className={button({ variant: "ghost", size: "icon-sm" })}
-        >
-          <svg viewBox="0 0 20 20" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <path d="M5 5l10 10M15 5L5 15" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="hidden text-small text-mute md:inline">Week of {weekLabel}</span>
+          <button
+            type="button"
+            onClick={dismiss}
+            aria-label="Dismiss until next week"
+            className={button({ variant: "ghost", size: "icon-sm" })}
+          >
+            <svg viewBox="0 0 20 20" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M5 5l10 10M15 5L5 15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-end gap-6">
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
         <div className="flex flex-col gap-1">
           <span className={`tabular font-display text-dial font-bold ${coachScore == null ? "text-mute" : BAND_TEXT[band(coachScore)]}`}>
             {coachScore ?? "—"}
@@ -108,17 +113,25 @@ export function WeeklyRead({ id, weekStart, weekLabel, coachScore, formulaScore,
             <span className="text-small text-mute">Your dial</span>
           </div>
         )}
+        {/* The gap pill is inline at the right of the score row on desktop and
+            stacked left below it on a phone. */}
+        {delta != null && delta !== 0 && (
+          <div className="basis-full md:ml-auto md:basis-auto">
+            <span className={`tag ${delta > 0 ? "text-ok" : "text-bad"}`}>{delta > 0 ? `+${delta}` : delta} this week</span>
+          </div>
+        )}
       </div>
-
-      {delta != null && delta !== 0 && (
-        <span className={`tag self-start ${delta > 0 ? "text-ok" : "text-bad"}`}>{delta > 0 ? `+${delta}` : delta} this week</span>
-      )}
 
       <div className="line-clamp-2 [&>div]:contents">{children}</div>
 
       <div className="flex flex-col gap-3 border-t border-line pt-4 md:flex-row md:items-center md:justify-between">
         {changes.length > 0 ? (
-          <span className="text-small text-mute">{count}, decided on the review</span>
+          <>
+            {/* On a phone the footer names the count and where deciding happens;
+                on desktop it keeps just the count beside a small button. */}
+            <span className="text-small text-mute md:hidden">{count}, decided on the review</span>
+            <span className="hidden text-small text-mute md:inline">{count}</span>
+          </>
         ) : (
           <span className="text-small text-mute">No suggested changes this week</span>
         )}

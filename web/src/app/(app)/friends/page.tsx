@@ -10,7 +10,8 @@ import { friendActivity, friendMocks, scoreboard } from "@/lib/tracker/me";
 export const metadata: Metadata = { title: "Friends" };
 
 // Header actions mirror the mock: a square `+` on phone, a labelled `Invite` on
-// desktop. Both jump to the invite form further down the page.
+// desktop. Both jump to the invite form further down the page. The label is
+// wrapped so `hidden` (below `md`) isn't beaten by the button base's `inline-flex`.
 const inviteAction = (
   <>
     <a href="#invite" aria-label="Invite a friend" className={`${button({ variant: "secondary", size: "icon-sm" })} md:hidden`}>
@@ -27,9 +28,11 @@ const inviteAction = (
         <path d="M12 5v14M5 12h14" />
       </svg>
     </a>
-    <a href="#invite" className={`${button({ variant: "secondary", size: "sm" })} hidden md:inline-flex`}>
-      Invite
-    </a>
+    <span className="hidden md:inline-flex">
+      <a href="#invite" className={button({ variant: "secondary", size: "sm" })}>
+        Invite
+      </a>
+    </span>
   </>
 );
 

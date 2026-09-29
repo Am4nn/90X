@@ -29,7 +29,9 @@ test("the Coach's read card sits above the missions with the score, the read and
   const read = card(page);
   await expect(read).toBeVisible();
   await expect(read.getByRole("heading", { name: "Coach's read" })).toBeVisible();
-  await expect(read.getByText("Week of Sep 14")).toBeVisible();
+  // The week label lives under the title on a phone but moves into the header on
+  // desktop, so the desktop card has one visible copy of it.
+  await expect(read.locator("span:visible", { hasText: "Week of Sep 14" })).toBeVisible();
   // The coach's own score, the formula beside it, and the gap between them.
   await expect(read.getByText("68")).toBeVisible();
   await expect(read.getByText("Your dial")).toBeVisible();
@@ -37,8 +39,9 @@ test("the Coach's read card sits above the missions with the score, the read and
   await expect(read.getByText("+7 this week")).toBeVisible();
   await expect(read.getByText("You held the streak but leaned on hints for graphs.")).toBeVisible();
   // The card no longer lists the changes themselves; the review page does. It
-  // names them as a count and offers one way through to the full review.
-  await expect(read.getByText("2 suggested changes, decided on the review")).toBeVisible();
+  // names them as a count and offers one way through to the full review. On
+  // desktop the footer is just the count beside a small button.
+  await expect(read.getByText("2 suggested changes", { exact: true })).toBeVisible();
   await expect(read.getByText("Monday · Reviews")).toHaveCount(0);
   // Deciding happens on the review page, so there is no Accept anywhere on Today.
   await expect(page.getByRole("button", { name: "Accept" })).toHaveCount(0);
@@ -108,14 +111,19 @@ test("a user with no weekly review sees Today unchanged", async ({ page }) => {
 });
 
 // The card is the same on a phone and a desktop now: it names the count and
-// links to the review, and the changes themselves live on the review page.
+// links to the review, and the changes themselves live on the review page. Only
+// the count's wording differs — the phone adds "decided on the review".
 test("the card shows the count and the full-review link on every breakpoint", { tag: "@mobile" }, async ({ page, isMobile }) => {
   await signInAs(page, "weekly-new@e2e.test");
   const read = card(page);
   await expect(read).toBeVisible();
   await expect(read.getByText("The newer read, and the one the card should show.")).toBeVisible();
 
-  await expect(read.getByText("2 suggested changes, decided on the review")).toBeVisible();
+  if (isMobile) {
+    await expect(read.getByText("2 suggested changes, decided on the review")).toBeVisible();
+  } else {
+    await expect(read.getByText("2 suggested changes", { exact: true })).toBeVisible();
+  }
   await expect(read.getByText("Tuesday · New problems")).toHaveCount(0);
   await expect(read.getByRole("link", { name: /Read the full review/ })).toHaveAttribute("href", `/me/weekly/${REVIEW_NEWER}`);
 

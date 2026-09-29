@@ -16,7 +16,6 @@ export async function generateMetadata({ params }: PageProps<"/library/problem/[
   return { title: slug.replace(/-/g, " ") };
 }
 
-const COACH_LINK = `${button()} flex-1`;
 const RESULT_LABEL: Record<string, string> = { solved: "solved", hints: "solved with hints", failed: "didn't solve" };
 // Lowercase, for the right-aligned "Last:" meta (spec: "Last: hints · 3d ago").
 const LAST_RESULT: Record<string, string> = { solved: "solved", hints: "hints", failed: "missed" };
@@ -142,13 +141,25 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
         </div>
 
         <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
-          <div className="flex gap-2.5">
-            <Link href={`/library/problem/${problem.slug}/review`} className={COACH_LINK}>
-              Review solution
+          <div className="flex flex-col rounded-xl border border-line bg-surface">
+            <Link
+              href={`/library/problem/${problem.slug}/review`}
+              className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-surface-2"
+            >
+              <span className="font-semibold text-text">Review solution</span>
+              <span aria-hidden className="text-mute">
+                →
+              </span>
             </Link>
             {pattern && (
-              <Link href={`/coach?kind=lesson&ref=${pattern.slug}`} className={COACH_LINK}>
-                Learn pattern
+              <Link
+                href={`/coach?kind=lesson&ref=${pattern.slug}`}
+                className="flex items-center justify-between gap-3 border-t border-line px-4 py-3.5 hover:bg-surface-2"
+              >
+                <span className="font-semibold text-text">Learn the pattern</span>
+                <span aria-hidden className="text-mute">
+                  →
+                </span>
               </Link>
             )}
           </div>

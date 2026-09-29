@@ -126,14 +126,20 @@ export default async function LessonsPage({ searchParams }: PageProps<"/coach/le
       {indexSection}
       {weakest.length === 0 && weakestSection}
 
-      <section className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-4 py-3.5">
-        <span className="flex flex-col gap-0.5">
-          <span className="font-semibold text-text">Other areas</span>
-          <span className="text-small text-mute">{OTHER_AREAS}</span>
-        </span>
-        <Link href="/library" className={button({ size: "sm" })}>
-          Library
-        </Link>
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-5">
+          <h2 className="font-display text-heading font-semibold">Other areas</h2>
+          <p className="text-small text-mute">{OTHER_AREAS}</p>
+          <Link href="/library" className={`${button({ size: "sm" })} mt-1 self-start`}>
+            Browse in the Library
+          </Link>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-5">
+          <span className="text-small font-semibold text-text-2">How a lesson works</span>
+          <p className="text-small text-mute">
+            Coach teaches the pattern from grounded sources, works an example with you, then asks follow-ups.
+          </p>
+        </div>
       </section>
     </>
   );
