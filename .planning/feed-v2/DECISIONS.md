@@ -326,3 +326,89 @@ render.
   the cleaner framing and it means ordering and matching get "right answer, wrong reason" free.
 
 **47 archetypes** over 11 primitives and 4 answer shapes.
+
+---
+
+# Round 4 — everything else, settled
+
+Twelve questions, twelve answers. Typed is gone entirely; the Feed is 47 archetypes over 11
+primitives, and the whole corpus is rewritten.
+
+## The corpus
+
+- **All 2,808 cards are replaced**, including the batch Aman approved on 2026-09-28. That
+  approval was of cards written with no format budget, no difficulty rubric and no blind gate;
+  keeping them would leave a corpus where nothing in the data distinguishes a vetted card from
+  an unvetted one, so every future quality question would have to be asked twice.
+- **Size is weighted by `topics.importance`**, not flat. Popular topics carry more cards than
+  obscure ones, landing near **3,000**.
+- **"Equally distributed" means equal within each area's eligible archetypes**, per
+  CATALOGUE.md's areas column. No Estimate card for a Java syntax topic; equal is measured per
+  area, not globally.
+- **Hard content may be written from problem statements and pattern tricks**, not only the
+  lesson. A three-step question needs a concrete situation, and we hold 3,693 problem
+  statements; a lesson's four claims usually cannot support one. This widens which sources
+  count, exactly as the lesson rebuild did — it does not weaken the sourcing rule.
+
+## Difficulty
+
+- **Rubric at write time** (round 3 table), **calibrated from outcomes** at n >= 20.
+- **A session adapts to the reader's rolling accuracy**, targeting roughly 70-85% correct, with
+  `profiles.level` as the starting point.
+- **Plus a reader-facing difficulty toggle that shifts the mix, never filters it.** Choosing
+  "harder" raises the share of Hard in the pool; it does not remove Easy cards, and it does not
+  touch FSRS scheduling.
+- **A why-step on every Hard card.** That takes a Hard card's guess floor from 25% to about 6%,
+  and "right answer, wrong reason" is the most useful thing a card can report.
+
+## The gates
+
+- **Blind gate: three samples, reject at two or more correct.** One attempt would reject a
+  quarter of good cards by luck alone. Three brings a false reject to ~16%, and a false reject
+  only costs a rewrite. ~$3 corpus-wide. **Validate on 50 cards before spending the rest** — if
+  the rejection rate comes back implausible, the gate is wrong, not the corpus.
+- **Human review: two cards per archetype, ~94, once.** The question per card is not "is this
+  correct" — the gates answer that — it is **"does this archetype earn a place"**. Afterwards a
+  ~15-card spot check per batch, plus everything the gates flagged.
+
+## Schema and rollout
+
+- `cards.format` becomes **the primitive**, and **archetype is a separate field**. `typed` is
+  gone; `output` becomes the Output prediction archetype on pick one; `bug` becomes Tap the bug
+  on tap-in-place, which is what it always wanted to be and could not be as a typed answer.
+- `cards.status` gains **`retired`**. That is a migration, so the lead writes it.
+- **FSRS history is kept, orphaned on retired cards.** Not scheduled, still readable. Deleting
+  it would make everybody's readiness dial drop on release day with no explanation, and it is
+  the only record of what people have actually practised.
+- **One release, not a flag** — with the sequencing made safe: new cards publish as `draft`
+  (invisible), the code deploys, and then a single statement flips new to `live` and old to
+  `retired`. The corpus cannot be rendered by code that does not exist yet, which is the
+  mistake that took production down on 2026-09-29.
+- **Parameterised cards: not now.** A stored card is a fact with an answer; a parameterised one
+  is a generator plus a solver, and it breaks FSRS's assumption that a card is a stable thing
+  being remembered. Revisit if repeats actually become the complaint.
+
+## One consequence worth stating, because it follows rather than being chosen
+
+**A Hard card answered correctly with the wrong reason is marked wrong.** That falls out of no
+partial credit plus a required why-step, and the alternative — scoring the answer and ignoring
+the reason — would make the why-step decorative.
+
+It is the harshest rule in the design. It is also the one most likely to be wrong in practice,
+so it is the first thing to look at in the ~94-card review: if the wrong reasons are not
+genuinely plausible, this rule punishes readers for a writing failure rather than a knowledge
+gap.
+
+## Money
+
+| step | estimate |
+|---|---|
+| generate ~3,000 cards in structured formats | ~$5-7 |
+| blind gate, three samples | ~$3 |
+| difficulty rubric pass | ~$1 |
+| repair pass for rejects | ~$1 |
+| **total** | **~$10-12** |
+
+Against $20 newly available. The one number that could move is generation: structured formats
+carry more fields than a prose answer, so a card may cost more than the ~$0.0017 the original
+pass averaged. **Measure on one topic before running 274.**
