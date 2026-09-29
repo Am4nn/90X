@@ -11,10 +11,13 @@
   .seg span { padding: 8px 16px; border-radius: 10px; font: 700 13px/1 "Manrope", sans-serif; color: var(--mu); }
   .seg span.on { background: var(--sf2); color: var(--tx); }
 
-  /* Area navigation, as today: a bordered surface container with rounded items. */
+  /* Area navigation, exactly as today: a bordered surface container with rounded items. */
   .areatabs { display: flex; gap: 4px; background: var(--sf); border: 1px solid var(--ln); border-radius: 14px; padding: 4px; overflow: hidden; }
   .areatabs span { flex: none; padding: 8px 14px; border-radius: 10px; font: 600 13px/1 "Manrope", sans-serif; white-space: nowrap; color: var(--mu); }
   .areatabs span.on { background: var(--sf2); color: var(--tx); }
+
+  /* Today's roadmap accordion, unchanged. */
+  .acc summary { list-style: none; cursor: pointer; }
 
   .rd { width: 100%; height: auto; display: block; }
   .rd .spine { stroke: var(--ln2); stroke-width: 2; fill: none; }
@@ -45,10 +48,10 @@
 <div class="wrap">
 
 <div class="dochead">
-  <h1 class="title">Library · DSA kept, other areas get the roadmap</h1>
+  <h1 class="title">Library — today's behaviour, with a Roadmap toggle</h1>
   <a href="index.html">← All screens</a>
 </div>
-<p class="lede">DSA is unchanged · Pattern Map and problems as today, only a small graph improvement. Every other area gets the roadmap.sh-style graph, with a <b>segmented Graph / List toggle</b>. The area tabs stay exactly as they are.</p>
+<p class="lede">Nothing about the Library changes by default: same area tabs, same Pattern Map, same topic cards and roadmap accordions. A new <b>List / Roadmap</b> toggle sits above the content, <b>defaulting to List</b> (today); switch it to see the roadmap.sh-style graph.</p>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
@@ -60,10 +63,10 @@
 <g id="i-search"><circle cx="11" cy="11" r="7"/><path d="M16 16l4 4"/></g>
 </defs></svg>
 
-<!-- DSA · unchanged -->
+<!-- DSA — exactly today, no toggle needed -->
 <section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
-  <div class="choice-h"><span class="kicker">Unchanged</span><h2 class="heading">DSA · Pattern Map and problems, as today</h2></div>
-  <p class="choice-trade">Same tabs, same map, same problem table. The only touch is a slightly cleaner map (spacing and labels), nothing structural.</p>
+  <div class="choice-h"><span class="kicker">Unchanged</span><h2 class="heading">DSA — Pattern Map and problems, exactly as today</h2></div>
+  <p class="choice-trade">Same tabs, same map, same problem table. No toggle here; DSA has no roadmap.</p>
 
   <div class="frames">
     <div class="dev phone" style="width:390px">
@@ -146,30 +149,71 @@
               </div>
             </div>
             <aside class="stack">
-              <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="small" style="font-weight:700; color:var(--tx2)">The improvement</span><span class="small">Spacing and label placement only, so the map is easier to read on a phone. No structural change.</span></div>
+              <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="small" style="font-weight:700; color:var(--tx2)">No toggle on DSA</span><span class="small">DSA keeps its Pattern Map; the Roadmap toggle appears on the other areas, which have a roadmap.</span></div>
             </aside>
           </div>
         </div>
       </div>
     </div>
-    <p class="caption"><b>DSA, unchanged.</b> The same tabs, Pattern Map and problem table · just a little cleaner. No new structure here.</p>
+    <p class="caption"><b>DSA, exactly today.</b> Same area tabs, Pattern Map and problem table. No changes here.</p>
   </div>
 </section>
 
-<!-- Other areas · roadmap -->
+<!-- Other areas — List default, Roadmap toggle -->
 <section class="choice">
-  <div class="choice-h"><span class="kicker">New</span><h2 class="heading">Every other area · the roadmap graph</h2></div>
-  <p class="choice-trade">Design, CS, Java, SQL, LLD, AI, Behavioural: a roadmap.sh-style spine with dashed branches, and a <b>segmented Graph / List toggle</b> (not tags). Area tabs unchanged.</p>
+  <div class="choice-h"><span class="kicker">New toggle</span><h2 class="heading">Other areas — List (today) with a Roadmap view</h2></div>
+  <p class="choice-trade">Default is <b>List</b>: the topic cards and roadmap accordions you have today. The toggle switches to <b>Roadmap</b>, the graph. Area tabs unchanged.</p>
 
   <div class="frames">
-    <!-- phone · graph -->
+    <!-- phone · list (default) -->
     <div class="dev phone" style="width:390px">
       <div class="screen">
         <div class="page">
           <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
           <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
-            <div class="seg"><span class="on">Graph</span><span>List</span></div>
+            <div class="seg"><span class="on">List</span><span>Roadmap</span></div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div class="card pad" style="gap:10px; display:flex; flex-direction:column">
+              <span class="heading">System Design</span>
+              <span class="small">How large systems are put together.</span>
+              <div style="display:flex; flex-wrap:wrap; gap:8px"><span class="chip">Load balancing</span><span class="chip">Caching</span><span class="chip">Sharding</span></div>
+            </div>
+            <div class="card pad" style="gap:10px; display:flex; flex-direction:column">
+              <span class="heading">Data &amp; Storage</span>
+              <span class="small">Where state lives and how it scales.</span>
+              <div style="display:flex; flex-wrap:wrap; gap:8px"><span class="chip">SQL vs NoSQL</span><span class="chip">Indexing</span></div>
+            </div>
+          </div>
+
+          <div class="card acc">
+            <div class="row" style="padding:14px 18px"><span style="font-weight:700">System Design roadmap</span><span class="small">3 of 8</span></div>
+            <div class="list hair">
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box done"></span></span><span class="tx2" style="text-decoration:line-through; opacity:.6">Load balancing</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box done"></span></span><span class="tx2" style="text-decoration:line-through; opacity:.6">Caching</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box"></span></span><span style="font-weight:700">Consistent hashing</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+    <!-- phone · roadmap -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
+          <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
+          <div style="display:flex; align-items:center; justify-content:space-between">
+            <div class="seg"><span>List</span><span class="on">Roadmap</span></div>
             <span class="small">6 of 12 covered</span>
           </div>
           <div class="card pad">
@@ -205,41 +249,8 @@
         </div>
       </div>
     </div>
-    <!-- phone · list -->
-    <div class="dev phone" style="width:390px">
-      <div class="screen">
-        <div class="page">
-          <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span></div>
-          <div style="display:flex; align-items:center; justify-content:space-between">
-            <div class="seg"><span>Graph</span><span class="on">List</span></div>
-            <span class="small">6 of 12 covered</span>
-          </div>
-          <div>
-            <div class="heading" style="margin-bottom:12px">Design · lessons we have</div>
-            <div class="card list">
-              <div class="row"><span><span style="font-weight:700">Load balancing</span><div class="small">Foundations · 8 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
-              <div class="row"><span><span style="font-weight:700">Caching</span><div class="small">Foundations · 7 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
-              <div class="row"><span><span style="font-weight:700">Consistent hashing</span><div class="small">Foundations · 7 min</div></span><span class="small acc" style="font-weight:700">Read</span></div>
-              <div class="row"><span><span style="font-weight:700">SQL vs NoSQL</span><div class="small">Data · 9 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
-            </div>
-          </div>
-          <div class="card pad" style="gap:6px; display:flex; flex-direction:column">
-            <span class="small" style="font-weight:700; color:var(--tx2)">Not written yet</span>
-            <span class="small">CAP theorem · Backpressure · Sharding · visible on the graph, trackable, lessons coming.</span>
-          </div>
-        </div>
-        <div class="tabbar">
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
-          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- desktop · graph -->
+    <!-- desktop · roadmap -->
     <div class="dev desk">
       <div class="appdesk">
         <aside class="side">
@@ -255,7 +266,7 @@
           <div class="shead"><span class="title">Library</span><span class="btn s sm">Search topics</span></div>
           <div class="areatabs"><span>DSA</span><span class="on">Design</span><span>CS</span><span>Java</span><span>SQL</span><span>LLD</span><span>AI</span><span>Behavioural</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
-            <div class="seg"><span class="on">Graph</span><span>List</span></div>
+            <div class="seg"><span>List</span><span class="on">Roadmap</span></div>
             <span class="small">6 of 12 covered · tap a topic to open its lesson</span>
           </div>
           <div class="card pad">
@@ -291,7 +302,7 @@
         </div>
       </div>
     </div>
-    <p class="caption"><b>Other areas.</b> The roadmap.sh shape in 90x greys: spine, main topics, dashed branches to sub-topics, one highlighted path, coverage ticks. We can be honest about gaps · a dashed branch is a lesson we'll write. The segmented toggle drops to List, the lessons we have today. DSA keeps its own Pattern Map.</p>
+    <p class="caption"><b>Other areas.</b> List is the default and is exactly today: topic cards and roadmap accordions. The toggle reveals the Roadmap graph, where dashed branches are lessons coming soon. Area tabs unchanged.</p>
   </div>
 </section>
 
