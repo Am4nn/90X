@@ -131,6 +131,13 @@ jobs:
         working-directory: web
         run: bun --conditions=react-server scripts/check-friends.ts
 
+      # The Coach's read tools. Was never wired into CI; the friends change
+      # assumed everyone-sees-everyone in get_friend_summary, so this guards the
+      # fix.
+      - name: The Coach sees only its user's rows
+        working-directory: web
+        run: bun --conditions=react-server scripts/check-coach-tools.ts
+
   # Playwright smoke tests (spec §9) against a production build on a throwaway
   # local Supabase. Sign-in goes through /api/test/sign-in, which only answers
   # with E2E=1, off Vercel, and against this local Supabase.
