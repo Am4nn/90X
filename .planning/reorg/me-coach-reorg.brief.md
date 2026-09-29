@@ -5,7 +5,7 @@
 
 ## Rule one: this is an add-on
 
-The mocks in `.planning/mockups/reorg/` are **visual references, not final designs**. Keep every
+The mocks in `.planning/reorg/mocks/` are **visual references, not final designs**. Keep every
 existing behaviour, feature and control. Add and refactor around them. Where a mock differs from
 today's behaviour, **today's behaviour wins unless this brief says otherwise**. Do not rewrite a
 page from scratch; move things, don't delete them, unless listed under "moves off".

@@ -266,7 +266,7 @@ Deliver mocks in `.planning/mockups/` (HTML) following the existing
 
 ## 11. Decisions from the mock review (2026-09-29, binding)
 
-Mocks built in `.planning/mockups/reorg/`; the owner chose a direction per screen and the rejected
+Mocks built in `.planning/reorg/mocks/`; the owner chose a direction per screen and the rejected
 directions were removed. Recorded here as binding.
 
 | Screen | Locked |
@@ -283,7 +283,7 @@ directions were removed. Recorded here as binding.
 time capture. Settings no longer carries LeetCode at all.
 
 **New redesigns, as separate briefs** (not on this branch):
-- `.planning/briefs/dsa-problem-page.md` — the DSA problem / check-in page.
-- `.planning/briefs/plan-campaign-selection.md` — campaign selection on the Plan page.
+- `.planning/reorg/dsa-problem-page.brief.md` — the DSA problem / check-in page.
+- `.planning/reorg/plan.brief.md` — the Plan page and Set up.
 - Library roadmap UX: raised, not yet scoped.
 

@@ -5,7 +5,7 @@
 
 ## Rule one: this is an add-on
 
-The mocks in `.planning/mockups/reorg/` are **visual references, not final designs**. **Library
+The mocks in `.planning/reorg/mocks/` are **visual references, not final designs**. **Library
 keeps today's behaviour as its default** — same area tabs, same Pattern Map for DSA, same topic
 cards and roadmap accordions for the other areas. This brief **adds a toggle**; it does not replace
 anything. If in doubt, leave today's behaviour alone.
