@@ -18,10 +18,42 @@ export async function generateMetadata({ params }: PageProps<"/library/problem/[
 
 const COACH_LINK = `${button()} flex-1`;
 const RESULT_LABEL: Record<string, string> = { solved: "solved", hints: "solved with hints", failed: "didn't solve" };
+// Lowercase, for the right-aligned "Last:" meta (spec: "Last: hints · 3d ago").
+const LAST_RESULT: Record<string, string> = { solved: "solved", hints: "hints", failed: "missed" };
 
 function ago(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
   return days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`;
+}
+
+function compactAgo(iso: string) {
+  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+/** The external-link mark on "Open on LeetCode" (spec §7: one of the shared icons). */
+function ExternalIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M14 5h5v5" />
+      <path d="M19 5l-8 8" />
+      <path d="M18 13v6H5V6h6" />
+    </svg>
+  );
 }
 
 export default async function ProblemPage({ params }: PageProps<"/library/problem/[slug]">) {
@@ -33,6 +65,7 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
   const solutions = (problem.solutions ?? {}) as Record<string, string>;
   const lang = viewer.language && solutions[viewer.language] ? viewer.language : Object.keys(solutions)[0];
   const leetcodeUrl = problem.kind === "leetcode" ? `https://leetcode.com/problems/${problem.slug}/` : problem.url;
+  const last = mine[0] ? `${LAST_RESULT[mine[0].result] ?? mine[0].result} · ${compactAgo(mine[0].createdAt)}` : null;
 
   return (
     <>
@@ -42,9 +75,12 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
           title={problem.title}
           action={
             leetcodeUrl ? (
-              <a href={leetcodeUrl} target="_blank" rel="noreferrer" className={button({ variant: "primary" })}>
-                Open on LeetCode
-              </a>
+              <span className="hidden lg:inline-flex">
+                <a href={leetcodeUrl} target="_blank" rel="noreferrer" className={button({ variant: "primary", size: "sm" })}>
+                  <ExternalIcon />
+                  Open on LeetCode
+                </a>
+              </span>
             ) : undefined
           }
         />
@@ -55,10 +91,36 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
           {problem.premium ? " · Premium" : ""}
           {problem.techniques?.length ? ` · ${problem.techniques.join(", ")}` : ""}
         </p>
+        {/* On a phone the first, obvious action is full-width under the title. */}
+        {leetcodeUrl && (
+          <div className="lg:hidden">
+            <a href={leetcodeUrl} target="_blank" rel="noreferrer" className={`${button({ variant: "primary" })} w-full`}>
+              <ExternalIcon />
+              Open on LeetCode
+            </a>
+          </div>
+        )}
       </div>
 
+      {/* Phone order (spec): Open on LeetCode → Check-in → The idea → statement →
+          Reference solution. The check-in card is the first cell on a phone and
+          the top-right cell on desktop; the reading column spans both rows. */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-start">
-        <div className="flex flex-col gap-6">
+        <div className="lg:col-start-2 lg:row-start-1">
+          <CheckinPanel slug={problem.slug} patternSlug={pattern?.slug ?? null} syncEnabled={syncEnabled()} last={last} />
+        </div>
+
+        <div className="flex flex-col gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+          {tricks.length > 0 && (
+            <section className="rounded-xl border border-line bg-surface p-5">
+              <h2 className="font-display text-heading font-semibold">The idea</h2>
+              <p className="mt-2 text-small text-text-2">
+                {pattern && <span className="font-semibold text-text">{pattern.name}</span>}
+                {pattern && " · "}
+                {tricks.map((t) => t.name).join(", ")}. {tricks.map((t) => t.idea).join(" ")}
+              </p>
+            </section>
+          )}
           {problem.statementMd ? (
             <section className="rounded-xl border border-line bg-surface p-5">
               <Markdown>{problem.statementMd}</Markdown>
@@ -67,17 +129,6 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
             <p className="rounded-xl border border-line bg-surface p-5 text-text-2">
               This is a LeetCode Premium problem. Open it on LeetCode to read the statement.
             </p>
-          )}
-          {tricks.length > 0 && (
-            <section className="flex flex-col gap-3">
-              <h2 className="font-display text-heading font-semibold">Tricks it uses</h2>
-              {tricks.map((t) => (
-                <div key={t.name} className="rounded-xl border border-line bg-surface p-4">
-                  <div className="font-semibold text-text">{t.name}</div>
-                  <p className="mt-1 text-small text-text-2">{t.idea}</p>
-                </div>
-              ))}
-            </section>
           )}
           {lang && (
             <details className="group rounded-xl border border-line bg-surface">
@@ -90,8 +141,7 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
           )}
         </div>
 
-        <aside className="flex flex-col gap-4">
-          <CheckinPanel slug={problem.slug} patternSlug={pattern?.slug ?? null} syncEnabled={syncEnabled()} />
+        <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
           <div className="flex gap-2.5">
             <Link href={`/library/problem/${problem.slug}/review`} className={COACH_LINK}>
               Review solution
@@ -129,7 +179,7 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
               ))}
             </div>
           )}
-        </aside>
+        </div>
       </div>
     </>
   );
