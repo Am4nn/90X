@@ -23,6 +23,7 @@
 // Reads the live GitHub API, so this can go red on a morning when nothing in
 // the repo changed. That is why it is its own job beside `check:deps` rather
 // than part of `check`.
+import type { Dirent } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -54,8 +55,16 @@ interface Use {
 /** Every YAML file that can hold a `uses:`: the workflows, and the composite actions. */
 async function yamlFiles(): Promise<string[]> {
   const found = (await readdir(WORKFLOWS)).filter(isYaml).map((f) => path.join(WORKFLOWS, f));
-  // Absent is fine: a repo need not define any composite action.
-  const dirs = await readdir(ACTIONS, { withFileTypes: true }).catch(() => []);
+  // Absent is fine: a repo need not define any composite action. Anything else —
+  // a permission error, the path being a file — must surface, or this check
+  // silently stops reading the composite actions it exists to cover.
+  let dirs: Dirent[];
+  try {
+    dirs = await readdir(ACTIONS, { withFileTypes: true });
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") dirs = [];
+    else throw e;
+  }
   for (const d of dirs) {
     if (!d.isDirectory()) continue;
     const inner = (await readdir(path.join(ACTIONS, d.name))).filter(isYaml);

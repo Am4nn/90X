@@ -51,11 +51,27 @@ try {
 }
 
 // Playwright takes its positional arguments as substring filters on the path, so
-// a name matches a spec when the spec's filename contains it. Resolved the same
-// way here, or this check would be answering a different question from CI.
-const specs = readdirSync(E2E_DIR)
-  .filter((f) => f.endsWith(".spec.ts"))
-  .toSorted();
+// a name matches a spec when the spec's path contains it. Resolved the same way
+// here, or this check would be answering a different question from CI.
+//
+// The config sets `testDir` but no `testMatch`, so Playwright collects the
+// default `**/*.@(spec|test).?(c|m)[jt]s?(x)`: spec *or* test, TypeScript or
+// JavaScript, at any depth. Matching only the top-level `*.spec.ts` would let a
+// nested spec, a `.test.ts`, or a `.spec.js` ship without ever running — the
+// exact silence this check exists to break.
+const isSpec = (name: string) => /\.(?:spec|test)\.(?:c|m)?[jt]sx?$/.test(name);
+
+function collectSpecs(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...collectSpecs(full));
+    else if (entry.isFile() && isSpec(entry.name)) out.push(path.relative(E2E_DIR, full).replaceAll(path.sep, "/"));
+  }
+  return out;
+}
+
+const specs = collectSpecs(E2E_DIR).toSorted();
 
 console.log("\n  Playwright specs, by the shard that runs them\n");
 
