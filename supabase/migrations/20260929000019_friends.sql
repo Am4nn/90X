@@ -87,17 +87,30 @@ $$;
 -- The signed-in user's email. SECURITY DEFINER for the same reason: a policy
 -- cannot read auth.users as the authenticated role — the first CI run failed
 -- with "permission denied for table users" when it tried.
--- Returns citext, not text, and that is load-bearing. `friend_invites.email` is
--- citext; citext->text is the IMPLICIT cast while text->citext is only
--- ASSIGNMENT, and operator resolution uses implicit casts only. So a text return
--- made `email = public.current_user_email()` resolve to text = text -
--- case-sensitive, which defeats the entire reason the column is citext. An IdP
--- that stores First.Last@Corp.com would then match no invite at all, and
--- check-rls could not see it because every address in it is already lowercase.
-create function public.current_user_email() returns citext
+-- Returns text, and the POLICIES lower() both sides. That combination is
+-- deliberate, and it took two wrong turns to get to.
+--
+-- `friend_invites.email` is citext, so `email = <text>` looks case-insensitive
+-- and is not: citext->text is the IMPLICIT cast, text->citext is only
+-- ASSIGNMENT, and operator resolution uses implicit casts only - so the
+-- comparison resolves to text = text. An IdP storing First.Last@Corp.com would
+-- have matched no invite, and check-rls could not see it because every address
+-- in it is already lowercase.
+--
+-- Returning citext instead fixes the comparison and breaks the function: this is
+-- `set search_path = ''` (as every security definer here is), and an unqualified
+-- `citext` cannot be resolved with no search path. Schema-qualifying it would
+-- mean asserting which schema the extension landed in, which differs between a
+-- fresh `create extension` and a Supabase project that already had it.
+--
+-- So: no type name inside the locked search_path, and the case-folding moved to
+-- the policies where the search path is normal. The cost is that
+-- friend_invites_email_idx cannot serve those predicates; at this size that is
+-- nothing, and correctness is not negotiable against it.
+create function public.current_user_email() returns text
 language sql stable security definer set search_path = ''
 as $$
-  select email::citext from auth.users where id = auth.uid();
+  select email::text from auth.users where id = auth.uid();
 $$;
 
 -- ---------------------------------------------------------------------------
@@ -108,7 +121,7 @@ alter table public.friendships enable row level security;
 
 -- You see invites you sent and invites addressed to your own email.
 create policy friend_invites_read on public.friend_invites for select to authenticated
-  using (invited_by = auth.uid() or email = public.current_user_email());
+  using (invited_by = auth.uid() or lower(email::text) = lower(public.current_user_email()));
 
 -- You can send an invite only when you are approved.
 create policy friend_invites_send on public.friend_invites for insert to authenticated
@@ -118,7 +131,7 @@ create policy friend_invites_send on public.friend_invites for insert to authent
 -- or revoke if you sent it. Column grants below stop a recipient rewriting
 -- invited_by through this policy to forge a friendship with anyone.
 create policy friend_invites_respond on public.friend_invites for update to authenticated
-  using (email = public.current_user_email() or invited_by = auth.uid());
+  using (lower(email::text) = lower(public.current_user_email()) or invited_by = auth.uid());
 
 -- An update may only move status, responded_at and dismissed_at. Without this,
 -- a recipient could set invited_by to another user's id and then accept, making
