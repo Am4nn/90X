@@ -147,9 +147,16 @@ export async function teardown(w: World): Promise<void> {
 
 /** Whether anything the run made is still there. Called after teardown. */
 export async function leftovers(w: World): Promise<number> {
+  // auth.users cascades every user-owned row, so the four ids cover them. The
+  // content rows (which cascade cards, reviews and check-ins) are the rest.
   const [users] = await db.execute<{ n: number }>(
     sql`select count(*)::int as n from auth.users where id in (${w.admin}, ${w.friend}, ${w.nonFriend}, ${w.pending})`,
   );
-  const [content] = await db.execute<{ n: number }>(sql`select count(*)::int as n from public.problems where slug = ${w.problemSlug}`);
+  const [content] = await db.execute<{ n: number }>(sql`
+    select
+      (select count(*)::int from public.problems where slug = ${w.problemSlug}) +
+      (select count(*)::int from public.topics where slug = ${w.problemSlug}) +
+      (select count(*)::int from public.sources where id = ${`brk-${w.tag}-src`}) +
+      (select count(*)::int from public.card_batches where id = ${w.batchId}) as n`);
   return (users?.n ?? 0) + (content?.n ?? 0);
 }

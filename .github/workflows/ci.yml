@@ -304,11 +304,11 @@ jobs:
       - name: Smoke tests
         run: bunx playwright test ${{ matrix.specs }}
 
-      # The break-in HTTP sweep: real requests to the running server, asserting
-      # the security headers, that no route serves a signed-out stranger, and
-      # that the job routes refuse a missing signature.
-      - name: Break in (HTTP)
-        run: bun --conditions=react-server scripts/break-in/run.ts --http-only --http=http://localhost:3000
+      # The break-in suite: the direct round (against the throwaway Supabase and
+      # the Redis this job brings up, so the rate-limit flood actually runs) plus
+      # the HTTP sweep of the running server.
+      - name: Break in
+        run: bun --conditions=react-server scripts/break-in/run.ts --http=http://localhost:3000
 
       - name: Upload the Playwright report
         if: failure()

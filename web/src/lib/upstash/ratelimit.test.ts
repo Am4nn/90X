@@ -17,6 +17,13 @@ describe("slotDecision", () => {
     expect(slotDecision(null, now)).toEqual({ allowed: false, retryAfterSec: 0 });
   });
 
+  it("fails closed when the limiter times out and admits it could not meter", () => {
+    // @upstash/ratelimit returns success:true with reason:"timeout" when Redis
+    // hangs past its 5s timeout. That must be a refusal, or a hung Redis opens
+    // the meter.
+    expect(slotDecision({ success: true, reset: 0, reason: "timeout" }, now)).toEqual({ allowed: false, retryAfterSec: 0 });
+  });
+
   it("never reports a sub-second retry", () => {
     expect(slotDecision({ success: false, reset: now + 200 }, now).retryAfterSec).toBe(1);
   });

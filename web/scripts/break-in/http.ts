@@ -1,4 +1,4 @@
-import { ADMIN_PARAM_ROUTES, ADMIN_ROUTES } from "./admin-surfaces";
+import { ADMIN_PARAM_ROUTES, ADMIN_ROUTES, adminRoutesFromFs } from "./admin-surfaces";
 import { check, section, skipped } from "./harness";
 import type { World } from "./world";
 
@@ -76,15 +76,28 @@ async function sweepSignedOut(base: string): Promise<void> {
   const gate = await get(`${base}/sign-in`);
   check("the sign-in gate itself is served", gate.status === 200, `${gate.status}`);
 
-  // The second list, kept honest by hand: a new admin route must be added here.
-  check("the admin route list is complete", ADMIN_ROUTES.length === 5 && ADMIN_PARAM_ROUTES.length === 2);
+  // The second list, kept honest by the filesystem: a new admin page must be
+  // added to ADMIN_ROUTES / ADMIN_PARAM_ROUTES, or this set comparison fails.
+  const fromFs = adminRoutesFromFs();
+  check(
+    "the admin route list matches the filesystem",
+    [...ADMIN_ROUTES].toSorted().join() === [...fromFs.statics].toSorted().join() && ADMIN_PARAM_ROUTES.length === fromFs.params.length,
+    `listed ${ADMIN_ROUTES.length} static + ${ADMIN_PARAM_ROUTES.length} param; fs has ${fromFs.statics.length} static + ${fromFs.params.length} param`,
+  );
 
-  const routes = [...APP_ROUTES, ...ADMIN_ROUTES, ...ADMIN_PARAM_ROUTES];
   let served = 0;
-  for (const path of routes) {
+  // App routes live under (app)/layout.tsx, whose requireViewer() redirects on
+  // the server. A 200 here means the gate was bypassed.
+  for (const path of APP_ROUTES) {
     const r = await get(base + path);
-    // Signed out, a page either redirects to sign in or refuses. What it must
-    // never do is render a 200 that does not mention the sign-in gate.
+    const rendered = r.status === 200;
+    if (rendered) served += 1;
+    check(`${path} is not served signed out`, !rendered, `${r.status} ${r.location ?? ""}`);
+  }
+  // Admin routes render a client-side sign-in shell (200) rather than a server
+  // redirect, so the test is that they never render admin data.
+  for (const path of [...ADMIN_ROUTES, ...ADMIN_PARAM_ROUTES]) {
+    const r = await get(base + path);
     const rendered = r.status === 200 && !r.body.includes("/sign-in");
     if (rendered) served += 1;
     check(`${path} is not served signed out`, !rendered, `${r.status} ${r.location ?? ""}`);

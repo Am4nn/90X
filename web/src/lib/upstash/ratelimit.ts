@@ -18,15 +18,19 @@ export const SLOT_LIMITS = {
 
 /**
  * The decision from a limiter's result. `result` is null when the limiter
- * itself failed. Pure so it is testable without Redis.
+ * itself failed. `reason` is @upstash/ratelimit's own signal for why the result
+ * is what it is; `"timeout"` means it could not reach Redis, which must be a
+ * refusal, not a pass. Pure so it is testable without Redis.
  */
 export function slotDecision(
-  result: { success: boolean; reset: number } | null,
+  result: { success: boolean; reset?: number; reason?: string } | null,
   now = Date.now(),
 ): { allowed: boolean; retryAfterSec: number } {
-  // Fail closed: a paid action must not run when we cannot meter it. The coach
+  // Fail closed: a paid action must not run when we cannot meter it. A hung
+  // Redis makes @upstash/ratelimit answer success:true with reason "timeout",
+  // which is exactly the case that must refuse rather than pass. The coach
   // chat limiter fails open instead, and SECURITY.md records both decisions.
-  if (!result) return { allowed: false, retryAfterSec: 0 };
+  if (!result || result.reason === "timeout") return { allowed: false, retryAfterSec: 0 };
   if (result.success) return { allowed: true, retryAfterSec: 0 };
-  return { allowed: false, retryAfterSec: Math.max(1, Math.ceil((result.reset - now) / 1000)) };
+  return { allowed: false, retryAfterSec: Math.max(1, Math.ceil(((result.reset ?? now) - now) / 1000)) };
 }

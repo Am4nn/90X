@@ -23,4 +23,9 @@ describe("Markdown", () => {
     const html = render("[docs](https://example.com)");
     expect(html).toContain("https://example.com");
   });
+
+  it("strips the src from a non-https image, so a tracking pixel never loads", () => {
+    const html = render("![tracker](http://tracker.example/p.png)");
+    expect(html).not.toContain("http://tracker.example");
+  });
 });
