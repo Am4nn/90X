@@ -87,7 +87,7 @@ function Node({ branch, current, onToggle }: { branch: GraphBranch; current?: bo
         aria-label={node.done ? `Mark ${node.label} as not covered` : `Mark ${node.label} as covered`}
         onClick={() => onToggle(node.id, !node.done)}
         className={`flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md border ${
-          node.done ? "border-cyan bg-cyan text-on-cyan" : "border-line-2 text-transparent hover:border-cyan"
+          node.done ? "border-cyan bg-cyan-bg text-cyan" : "border-line-2 text-transparent hover:border-cyan"
         }`}
       >
         ✓
