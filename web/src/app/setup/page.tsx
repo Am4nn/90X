@@ -2,23 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/brand";
-import { CoachIcon, FeedIcon, FriendsIcon, LibraryIcon, MeIcon, TodayIcon } from "@/components/icons";
+import { SIDEBAR } from "@/components/shell/nav-items";
 import { requireViewer } from "@/lib/auth/viewer";
 import { createClient } from "@/lib/supabase/server";
 import { SetupForm } from "./setup-form";
 
 export const metadata: Metadata = { title: "Set up" };
-
-// The desktop shell for onboarding: the six app sections with Set up active
-// (mock §onboarding). Set up itself is not a link — you are already on it.
-const SHELL = [
-  { href: "/today", label: "Today", Icon: TodayIcon },
-  { href: "/feed", label: "Feed", Icon: FeedIcon },
-  { href: "/library", label: "Library", Icon: LibraryIcon },
-  { href: "/coach", label: "Coach", Icon: CoachIcon },
-  { href: "/friends", label: "Friends", Icon: FriendsIcon },
-  { href: "/me", label: "Me", Icon: MeIcon },
-] as const;
 
 export default async function SetupPage() {
   const viewer = await requireViewer({ allowSetup: true });
@@ -37,7 +26,7 @@ export default async function SetupPage() {
           <span aria-hidden className="size-5" />
           Set up
         </span>
-        {SHELL.map(({ href, label, Icon }) => (
+        {SIDEBAR.map(({ href, label, Icon }) => (
           <Link
             key={href}
             href={href}

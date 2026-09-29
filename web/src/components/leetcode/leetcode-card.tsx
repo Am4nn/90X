@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { setMinutes, syncNow } from "@/app/actions/sync";
 import { button, chip } from "@/components/button-styles";
+import { relative } from "@/lib/format/time";
 
 // The LeetCode block on Me, always open (spec §6.6): a status line, the
 // Easy/Medium/Hard totals, the "how long did these take?" time chips for synced
@@ -21,15 +22,6 @@ const SYNC_MESSAGES = {
 type Totals = { accepted: Record<string, number>; failed: Record<string, number> };
 type Status = { lastSuccessAt: string | null; unavailable: boolean; totals: Totals | null };
 type PendingCheckin = { id: string; title: string; result: string; attempts: number | null; suggested: number | null };
-
-function relative(iso: string): string {
-  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 function statusLine(status: Status | null): string {
   if (!status) return "Not synced yet";

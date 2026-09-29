@@ -8,6 +8,7 @@ import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
 import { syncEnabled } from "@/lib/activity/service";
 import { requireViewer } from "@/lib/auth/viewer";
+import { ago, relative } from "@/lib/format/time";
 import { problemDetail } from "@/lib/library/queries";
 import { LANGUAGE_LABEL } from "@/lib/setup";
 
@@ -19,20 +20,6 @@ export async function generateMetadata({ params }: PageProps<"/library/problem/[
 const RESULT_LABEL: Record<string, string> = { solved: "solved", hints: "solved with hints", failed: "didn't solve" };
 // Lowercase, for the right-aligned "Last:" meta (spec: "Last: hints · 3d ago").
 const LAST_RESULT: Record<string, string> = { solved: "solved", hints: "hints", failed: "missed" };
-
-function ago(iso: string) {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-  return days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`;
-}
-
-function compactAgo(iso: string) {
-  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 /** The external-link mark on "Open on LeetCode" (spec §7: one of the shared icons). */
 function ExternalIcon() {
@@ -64,7 +51,7 @@ export default async function ProblemPage({ params }: PageProps<"/library/proble
   const solutions = (problem.solutions ?? {}) as Record<string, string>;
   const lang = viewer.language && solutions[viewer.language] ? viewer.language : Object.keys(solutions)[0];
   const leetcodeUrl = problem.kind === "leetcode" ? `https://leetcode.com/problems/${problem.slug}/` : problem.url;
-  const last = mine[0] ? `${LAST_RESULT[mine[0].result] ?? mine[0].result} · ${compactAgo(mine[0].createdAt)}` : null;
+  const last = mine[0] ? `${LAST_RESULT[mine[0].result] ?? mine[0].result} · ${relative(mine[0].createdAt)}` : null;
 
   return (
     <>

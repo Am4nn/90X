@@ -7,24 +7,14 @@ import { button } from "@/components/button-styles";
 import { ChipGroup } from "@/components/chip-group";
 import { EmptyState } from "@/components/empty-state";
 import { FormMessage, type FormState, SubmitButton } from "@/components/form";
+import { Section } from "@/components/section";
 import { BEHAVIORAL_QUESTIONS } from "@/lib/coach/mock-rules";
 import { searchTopics, topicLabel } from "@/lib/coach/topic-search";
 
 const STORY_BANK = "/me/stories";
 // Every design topic is a system-design topic (designTopics filters the domain).
 const AREA_LABEL = "System design";
-
-function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <section className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-5">
-      <div>
-        <h2 className="font-display text-heading font-semibold">{title}</h2>
-        {hint && <p className="text-small text-mute">{hint}</p>}
-      </div>
-      {children}
-    </section>
-  );
-}
+const CARD_CLASS = "flex flex-col gap-4 rounded-xl border border-line bg-surface p-5";
 
 /** Bolds the typed substring in a label, the dropdown's matched-text highlight. */
 function Highlight({ label, query }: { label: string; query: string }) {
@@ -189,7 +179,7 @@ export function DesignMockForm({ topics }: { topics: string[] }) {
   const [state, action] = useActionState<FormState, FormData>(startMockAction, {});
   const first = topics[0];
   return (
-    <Card title="Design mock" hint="Search a topic; Coach runs a timed text interview.">
+    <Section className={CARD_CLASS} title="Design mock" hint="Search a topic; Coach runs a timed text interview.">
       {first ? (
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="type" value="design" />
@@ -200,14 +190,18 @@ export function DesignMockForm({ topics }: { topics: string[] }) {
       ) : (
         <EmptyState title="No design topics yet">System design topics appear once the content is published.</EmptyState>
       )}
-    </Card>
+    </Section>
   );
 }
 
 export function BehavioralMockForm({ stories }: { stories: number }) {
   const [state, action] = useActionState<FormState, FormData>(startMockAction, {});
   return (
-    <Card title="Behavioural mock" hint={stories ? "Uses your 6 STAR stories. Coach asks, you answer in text." : undefined}>
+    <Section
+      className={CARD_CLASS}
+      title="Behavioural mock"
+      hint={stories ? "Uses your 6 STAR stories. Coach asks, you answer in text." : undefined}
+    >
       {stories ? (
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="type" value="behavioral" />
@@ -237,6 +231,6 @@ export function BehavioralMockForm({ stories }: { stories: number }) {
           </Link>
         </div>
       )}
-    </Card>
+    </Section>
   );
 }
