@@ -155,7 +155,8 @@ jobs:
   #
   # fail-fast is off: one shard failing tells you about that shard, and cancelling
   # the other to save a minute throws away what you would look at next.
-  e2e:
+  e2e-shard:
+    name: e2e ${{ matrix.id }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -263,6 +264,27 @@ jobs:
             web/next.log
             web/fake-model.log
           retention-days: 7
+
+  # One check named `e2e`, whatever the shards are called.
+  #
+  # `main`'s branch protection requires a check named `e2e`. Sharding renamed the
+  # real ones to "e2e feed" and "e2e coach", so nothing reported `e2e` any more
+  # and the PR sat on "Expected - Waiting for status to be reported" forever,
+  # unmergeable. Naming both shards in branch protection would fix it once and
+  # break again the next time the matrix changes; this cannot.
+  #
+  # `if: always()` so it runs even when a shard fails, and the result is compared
+  # explicitly because a skipped or cancelled dependency is not a pass.
+  e2e:
+    needs: e2e-shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every shard passed
+        run: |
+          echo "shards: ${{ needs.e2e-shard.result }}"
+          [ "${{ needs.e2e-shard.result }}" = "success" ] || exit 1
 
   pipeline:
     runs-on: ubuntu-latest
