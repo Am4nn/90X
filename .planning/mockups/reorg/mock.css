@@ -326,7 +326,7 @@ table.board .me { color: var(--acc); }
 /* ────────────────────────────────────────────────────────────────────────
    MOCK SCAFFOLDING — not part of the app design.
    ──────────────────────────────────────────────────────────────────────── */
-.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 28px 96px; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 40px 28px 96px; }
 
 .dochead { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 8px; }
 .dochead h1 { margin: 0; }
