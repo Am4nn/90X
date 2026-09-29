@@ -103,11 +103,22 @@ CI **and both reviewers clean on the same commit**, then squash-merge.
 2. **Build the friend graph** — `.planning/briefs/friends.md`, written and
    reviewed, waiting on a session. Today every approved user sees every other
    approved user. Needs no model.
-3. **Read the Sentry error.** `SENTRY_READ_TOKEN` is in `web/.env.local`
-   (scopes `event:read`, `project:read`, `org:read`). Pull
-   `https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/issues/`.
-   One real production error was captured and, as far as this file knows, has
-   still never been looked at — **check before assuming that is still true.**
+3. **Sentry is read, and there is nothing to fix.** Checked 2026-09-29 with
+   `SENTRY_READ_TOKEN` against `sgsits-92/90x-web`. Four issues, not the one this
+   file used to claim, and all four are stale or already fixed:
+
+   - `90X-WEB-1` (checkins/problems query, `/today`) — already **resolved**.
+   - `90X-WEB-2` and `90X-WEB-3` (`/library`, `select count(*) from documents`) —
+     dated 2026-09-27, **before** `20260928000014_drop_documents.sql`. Nothing in
+     `web/src` queries `documents` any more: the only mentions left are a test
+     name and the generated `database.types.ts`. The content rebuild fixed these.
+   - `90X-WEB-4` (`InvalidNodeTypeError: selectNode on Range`, `/today`) — one
+     occurrence, one user, a browser DOM error rather than ours. Watch whether it
+     recurs; a single `Range` failure is usually an extension or a text selection
+     across a re-render, and there is nothing to change on one sample.
+
+   So: nothing open here. Re-read it after the next release rather than trusting
+   this paragraph.
 
 ## Waiting on Aman (he has said that is fine)
 
