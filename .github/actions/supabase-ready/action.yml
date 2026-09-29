@@ -14,6 +14,9 @@ description: Wait for a backgrounded `supabase start` to finish, and record the 
 # Writes /tmp/supabase.env for callers that need the URL and keys, and asserts
 # the values are non-empty - because an empty env file was exactly the symptom
 # last time, and a check that cannot see its own failure mode is decoration.
+#
+# It used to also `docker save` the images for a cache. That cache was measured
+# and lost, so both halves are gone.
 
 runs:
   using: composite
@@ -51,26 +54,3 @@ runs:
         fi
         echo "API_URL=$API_URL"
 
-    # Saved here, not in `supabase-stack`, because this is the first moment the
-    # images are known to have worked. Only when the directory is empty, which is
-    # what a cache miss looks like from here; `actions/cache` in `supabase-stack`
-    # uploads it in its own post-job step.
-    - name: Keep the images for next time
-      shell: bash
-      run: |
-        mkdir -p "$HOME/.cache/supabase-images"
-        shopt -s nullglob
-        existing=("$HOME"/.cache/supabase-images/*.tar)
-        if [ ${#existing[@]} -gt 0 ]; then
-          echo "${#existing[@]} image(s) already cached, nothing to save"
-          exit 0
-        fi
-        docker image ls --format '{{.Repository}}:{{.Tag}}' \
-          | grep -E 'supabase|postgres' | grep -v '<none>' | sort -u > /tmp/images.txt
-        cat /tmp/images.txt
-        while read -r image; do
-          [ -n "$image" ] || continue
-          name=$(echo "$image" | tr '/:' '__')
-          docker save "$image" -o "$HOME/.cache/supabase-images/$name.tar" || echo "could not save $image"
-        done < /tmp/images.txt
-        du -sh "$HOME/.cache/supabase-images" || true

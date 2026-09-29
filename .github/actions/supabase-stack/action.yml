@@ -1,32 +1,21 @@
 name: Supabase stack
-description: Start a throwaway local Supabase in the background, with its Docker images cached.
+description: Start a throwaway local Supabase in the background, so callers can install while it comes up.
 
-# `supabase start` was 82 seconds and two jobs each paid it, which made it the
-# largest single cost in the pipeline - larger than the Playwright suite it was
-# there to support.
+# `supabase start` is ~82s and two jobs each pay it, which makes it the largest
+# single cost in the pipeline - larger than the Playwright suite it exists to
+# support. This backgrounds it so the caller's installs overlap it instead of
+# queueing behind it, and `supabase-ready` is the wait.
 #
-# Two things are done about it.
+# It does NOT cache the Docker images any more. That was tried and measured, and
+# it lost: restoring ~1GB of cache and `docker load`ing it took the database job
+# to 124s against 82s for simply pulling. GitHub's cache is not faster than a
+# registry for payloads this size. Keyed differently or split per image it might
+# come out ahead, but the honest number from the run that mattered was worse, so
+# it is gone rather than left in with a comment claiming a saving it did not make.
 #
-# The images are cached. Most of those 82 seconds is pulling postgres, gotrue,
-# postgrest and the gateway from a registry; the migrations themselves are about
-# a third of it, measured against `supabase db reset` re-applying all of them in
-# ~35s. The cache key is the CLI version and config.toml, because those are what
-# decide which images and which tags are wanted - not the migrations, which
-# change constantly and change no image at all.
-#
-# `actions/cache` uploads the directory in its own post-job step, so nothing here
-# saves it explicitly; `supabase-ready` fills the directory once the stack is up,
-# which is the only moment the images are known to work. An earlier version had a
-# save step in this file gated on an input both callers set to false, so the cache
-# would never have been written and the whole exercise would have been comments.
-#
-# The start is always backgrounded and this action never waits. Callers do their
-# installs and then use `supabase-ready`. There is no `wait` input: one path
-# through means one path to be wrong.
-#
-# If the cache is stale or a tarball is truncated, nothing breaks - `supabase
-# start` pulls what is missing, exactly as before. That is why the load cannot
-# fail the job.
+# The migrations are about a third of the 82s, measured against `supabase db
+# reset` re-applying all of them in ~35s, so even a perfect image cache could
+# only ever have taken back the other two thirds.
 
 runs:
   using: composite
@@ -34,33 +23,6 @@ runs:
     - uses: supabase/setup-cli@v3
       with:
         version: latest
-
-    # The CLI version is in the key because a new CLI wants new image tags.
-    - name: What the CLI version is
-      id: cli
-      shell: bash
-      run: echo "v=$(supabase --version | tr -d '\n' | tr -c '[:alnum:].' '-')" >> "$GITHUB_OUTPUT"
-
-    - uses: actions/cache@v6
-      with:
-        path: ~/.cache/supabase-images
-        key: supabase-images-${{ runner.os }}-${{ steps.cli.outputs.v }}-${{ hashFiles('supabase/config.toml') }}
-
-    # `|| echo` rather than `|| exit`: a half-written tarball must cost a pull,
-    # not the job.
-    - name: Load the cached images
-      shell: bash
-      run: |
-        shopt -s nullglob
-        loaded=0
-        for f in "$HOME"/.cache/supabase-images/*.tar; do
-          if docker load -i "$f" > /dev/null 2>&1; then
-            loaded=$((loaded + 1))
-          else
-            echo "could not load $(basename "$f"), it will be pulled"
-          fi
-        done
-        echo "loaded $loaded cached image(s)"
 
     # The wrapper writes the start's exit code to /tmp/supabase.rc when it
     # finishes. `supabase-ready` waits on that file: steps run in separate
@@ -72,6 +34,4 @@ runs:
       shell: bash
       run: |
         rm -f /tmp/supabase.rc
-        nohup bash -c 'supabase start \
-          -x studio,imgproxy,inbucket,mailpit,storage-api,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta \
-          > /tmp/supabase.log 2>&1; echo $? > /tmp/supabase.rc' > /dev/null 2>&1 &
+        nohup bash -c 'supabase start           -x studio,imgproxy,inbucket,mailpit,storage-api,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta           > /tmp/supabase.log 2>&1; echo $? > /tmp/supabase.rc' > /dev/null 2>&1 &
