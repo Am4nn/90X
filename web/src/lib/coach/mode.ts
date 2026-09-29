@@ -27,7 +27,7 @@ export type Mode = {
   system: (ctx: ModeContext) => Promise<string>;
   /** Tools the model may call in this thread. Read tools run freely; action tools must only PROPOSE (see brief E). */
   tools?: (ctx: ModeContext) => ToolSet;
-  /** Upper bound on tool-call steps per user message (spec §6.8: at most 5). */
+  /** Upper bound on tool-call steps per user message (spec §6.8: at most 8). */
   maxSteps?: number;
 };
 
