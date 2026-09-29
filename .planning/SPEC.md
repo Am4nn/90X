@@ -35,8 +35,8 @@ Out of scope for the MVP: voice mocks, in-app code editor (LeetCode is used), de
 
 | Area | Decision |
 |---|---|
-| Users | Invite-only, as in Curfew: anyone can sign in with Google, which creates a pending account; an admin approves or rejects it in `/admin`. Pending users see only a waiting screen. No email lists in env. Everyone approved sees everyone's public progress |
-| Privacy | Friends see scores, streaks, check-ins (without notes), mock scores. Private to the owner: check-in notes, coach chats, coach memory, solution reviews, stories |
+| Users | Invite-only, as in Curfew: anyone can sign in with Google, which creates a pending account; an admin approves or rejects it in `/admin`. Pending users see only a waiting screen. No email lists in env. Approved users see each other only once they are friends |
+| Privacy | A friend is someone you invited and who accepted, or who invited you. Friends see scores, streaks, check-ins (without notes), mock scores, and each other's name and avatar only. Private to the owner: check-in notes, coach chats, coach memory, solution reviews, stories, and profile columns beyond name and avatar |
 | Coach isolation | Each user's coach is theirs alone. It can see what its user can see (including friends' public stats); no other user's coach can read that user's memory, chats or reviews |
 | Campaign length | 30/60/90 or custom; can change anytime. Grid redraws, remaining days replan |
 | Missed day | Square marked missed, streak resets, end date fixed. Unfinished review slots carry over; new-item slots are re-picked. Slot counts never grow to catch up |
