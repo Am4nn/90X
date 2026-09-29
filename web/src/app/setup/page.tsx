@@ -29,7 +29,7 @@ export default async function SetupPage() {
   const { data: profile } = await supabase.from("profiles").select("name").eq("user_id", viewer.id).single();
   return (
     <div className="flex min-h-dvh">
-      <aside className="sticky top-0 hidden h-dvh w-[220px] shrink-0 flex-col gap-1.5 border-r border-line px-3.5 py-6 md:flex">
+      <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-1.5 border-r border-line px-3.5 py-6 md:flex">
         <Link href="/today" prefetch={false} className="px-2.5 pb-5">
           <Logo />
         </Link>

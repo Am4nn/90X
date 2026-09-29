@@ -42,12 +42,12 @@ const input = "h-11 rounded-xl border border-line-2 bg-surface px-3.5 text-text 
  *  ones are filled. */
 function Dots({ total, current }: { total: number; current: number }) {
   return (
-    <ol aria-label="Set up steps" className="flex items-center gap-[7px]">
+    <ol aria-label="Set up steps" className="flex items-center gap-2">
       {Array.from({ length: total }, (_, i) => (
         <li
           key={i}
           aria-current={i === current - 1 ? "step" : undefined}
-          className={`h-[7px] rounded-full ${i < current ? "w-[22px] bg-cyan" : "w-[7px] bg-line-2"}`}
+          className={`h-2 rounded-full ${i < current ? "w-6 bg-cyan" : "w-2 bg-line-2"}`}
         >
           <span className="sr-only">Step {i + 1}</span>
         </li>
