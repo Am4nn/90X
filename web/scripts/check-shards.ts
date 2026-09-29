@@ -26,6 +26,26 @@ const WORKFLOW = path.join(REPO, ".github", "workflows", "ci.yml");
 const E2E_DIR = path.join(WEB, "e2e");
 const SHARD_JOB = "e2e-shard";
 
+// Shard names whose spec file does not exist yet, because the branch that writes it
+// is still open. Registering them up front is what keeps eight parallel branches
+// out of ci.yml: a branch that had to add its own name would collide with the seven
+// others, and a branch that forgot would ship a spec no shard runs - the exact
+// silence this check exists to break.
+//
+// This list is the cost of that, and it is deliberately a list and not a flag: every
+// name here is a promise with an owner, and the reorg wave empties it. A name that
+// outlives its branch is a spec nobody wrote, which is worth seeing.
+const PENDING = new Set([
+  "me-reorg", // unit 1a: shell, Friends, Me, Settings
+  "lessons", // unit 1b: Coach modes and the Lessons page
+  "weekly-read", // unit 1c: the Coach read on Today
+  "chat-state", // unit 1d: the chat working state
+  "roadmap", // unit 2: the Library roadmap view
+  "problem-page", // unit 3: the DSA problem page
+  "plan-setup", // unit 4: Plan and Set up
+  "mock-picker", // unit 5: the mock picker
+]);
+
 type Workflow = {
   jobs?: Record<string, { strategy?: { matrix?: { include?: { id?: string; specs?: string }[] } } }>;
 };
@@ -77,11 +97,15 @@ console.log("\n  Playwright specs, by the shard that runs them\n");
 
 const runners = new Map<string, string[]>(specs.map((s) => [s, []]));
 const matchesNothing: { shard: string; name: string }[] = [];
+const pending: { shard: string; name: string }[] = [];
 
 for (const shard of shards) {
   for (const name of shard.specs) {
     const hit = specs.filter((s) => s.includes(name));
-    if (!hit.length) matchesNothing.push({ shard: shard.id, name });
+    if (!hit.length) {
+      if (PENDING.has(name)) pending.push({ shard: shard.id, name });
+      else matchesNothing.push({ shard: shard.id, name });
+    }
     for (const s of hit) runners.get(s)?.push(shard.id);
   }
 }
@@ -97,6 +121,8 @@ for (const [spec, by] of runners) {
 
 const problems: string[] = [];
 if (unrun.length) problems.push(`no shard runs ${unrun.join(", ")} — those tests would never run, and CI would be green`);
+for (const { shard, name } of pending) console.log(`    ${name.padEnd(24)}${shard} — pending, its branch has not merged`);
+
 for (const { shard, name } of matchesNothing)
   problems.push(`shard "${shard}" names "${name}", which matches no spec — renamed or deleted?`);
 if (twice.length) problems.push(`two shards both run ${twice.join("; ")} — paid for twice, sharded once`);

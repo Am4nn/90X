@@ -38,8 +38,26 @@ const NEXT = path.join(WEB, ".next");
 // each carry an error boundary, and those boundaries are what moved it. The
 // README requires one per page segment, and error handling is not the thing to
 // trade away for 6 KB.
-const SHARED_CEILING = 252;
-const TOTAL_CEILING = 715;
+// Both raised for the reorg wave, and this one is different from the raises above:
+// it is headroom for work that has not landed yet, not a measurement of work that
+// has. Measured on main at the time: shared 252, total 715 - sitting exactly on both
+// ceilings, so the first new route in any of the eight branches would have failed
+// this check, and eight branches raising a ceiling each is how a merge queue starts
+// arguing with itself.
+//
+// The wave adds four routes (/friends, /me/settings, /coach/lessons, and the stepped
+// Set up) with a loading and error boundary each, plus about six new client
+// components - a collapsible LeetCode card, the weekly-read card, a segmented
+// control, a roadmap graph, a week preview and a combobox. The last two raises price
+// a small route file at roughly 2.5 KB and a client component at 4 to 6, which puts
+// the wave near 50. 60 is that with room to be wrong, and the shared bootstrap gets
+// 10 because new routes nudge it even when they add no library.
+//
+// This is a loan, not a budget. When the wave has merged, the lead measures main and
+// sets both numbers to what it actually costs - which is what the slack note below
+// will be asking for the whole time.
+const SHARED_CEILING = 262;
+const TOTAL_CEILING = 775;
 
 /** Gzipped size, or a failure. A file the manifest names and the disk does not
  *  have used to count as zero bytes, so half a build could come in under budget
