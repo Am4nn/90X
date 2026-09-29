@@ -16,6 +16,7 @@ import {
   ScoringSchema,
 } from "./mock-rules";
 import { coachModel, trackCoachUsage } from "./model";
+import { takeSlot } from "@/lib/upstash/rate-limit";
 
 // Mock interviews: start, read, and score. Every query is scoped to one user
 // id; friends see only the public `mocks` row (type, topic, score), through
@@ -165,6 +166,12 @@ export async function endMock(userId: string, mockId: string): Promise<EndResult
   const mock = await mockView(userId, mockId);
   if (!mock) return { error: "That mock isn't yours or doesn't exist." };
   if (mock.status !== "running") return { ok: true, scored: mock.score != null };
+
+  const slot = await takeSlot(userId, "mock");
+  if (!slot.allowed) {
+    const minutes = Math.max(1, Math.ceil(slot.retryAfterSec / 60));
+    return { error: `That's a lot of mocks in a short time. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.` };
+  }
 
   const now = new Date();
   const [claimed] = await db
