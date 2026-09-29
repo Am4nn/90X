@@ -115,6 +115,7 @@ export default async function TodayPage() {
         <div className="flex flex-col gap-6">
           {review && (
             <WeeklyRead
+              key={review.weekStart}
               id={review.id}
               weekStart={review.weekStart}
               weekLabel={reviewWeek}
