@@ -160,3 +160,60 @@ set, assemble is an ordered list, pick-then-justify is two chosen sets.
 **Numeric entry and highlight-a-span are the only two that widen the contract.** If the build
 needs trimming, trim those two — and note that numeric entry is also the one that most improves
 existing archetypes, so the trim is not free.
+
+---
+
+## The final set — 11 primitives, 4 answer shapes
+
+Aman kept five of the six new ones (**highlight a span is out**, so the span shape goes with
+it), then asked whether any of the thirteen should be cut. Two should, and in both cases
+because they were not distinct interactions — they were special cases of something else on the
+list.
+
+**Cut: pick many.** Its three archetypes rehome with nothing lost and two of them improved.
+*All that apply* is a **claim grid** done properly: "select the true ones" lets a reader
+silently skip every option they are unsure about, and the grid makes them commit on each.
+*Odd one out* is a **pick one** — one item selected, it was only ever grouped here by
+association. *Which invariants hold* is a claim grid. Pick many's only remaining argument was
+that it is a lighter interaction, and "lighter" here means "lets you dodge the hard rows".
+
+**Merged: word bank into assemble.** The same interaction at two difficulty settings, both
+storing an ordered list. A word bank is assemble with most of the answer pre-filled. One
+primitive with a template: empty is assemble, mostly-full is a word bank. One screen, one
+grading function, and **difficulty becomes a property of the card rather than a fork in the
+codebase** — so the pipeline can dial it per topic without a new format.
+
+| # | primitive | shape | status |
+|---|---|---|---|
+| 1 | Pick one | chosen set | exists (`mcq`) |
+| 2 | Order | ordered list | new |
+| 3 | Match | mapping | new |
+| 4 | Bucket | mapping | new |
+| 5 | Tap in place | chosen set | partly (`bug`, as typed) |
+| 6 | Self-rate | — | exists (`flash`) |
+| 7 | Assemble *(templated)* | ordered list | new |
+| 8 | Numeric entry | **number** | new |
+| 9 | Claim grid | mapping | new |
+| 10 | Grid toggle | chosen set | new |
+| 11 | Pick, then justify | chosen set ×2 | new, **build last** |
+
+**44 archetypes, all rehomed. Four answer shapes**, one of them new.
+
+### Two things kept on purpose
+
+**Bucket is technically a constrained grid toggle** — an M×N grid with exactly one tick per
+row — and it stays a separate screen anyway, because a five-item bucket list works at 390px
+and a 5×3 grid does not. Share the grading function, not the UI.
+
+**Self-rate has no right answer**, which makes it look like the odd one out. It stays: it is
+free, it already exists, and "do I know this term" is a different question from "can I answer
+about it".
+
+### Pick-then-justify is last for a reason
+
+It may not be a primitive at all. It is two pick-ones chained, which makes it a **card-level**
+feature — *any card may have a follow-up step* — and framed that way it would give "right
+order, wrong reason" for free on ordering and matching too. That is the better design and it
+touches the card contract rather than adding a screen, so it goes last, once the shape of an
+attempt has settled. The value is worth waiting for: it is the only thing in the catalogue that
+takes a lucky 25% down to 6%.

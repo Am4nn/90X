@@ -65,7 +65,12 @@ Areas: **D**SA · **S**ystem design · **C**S fundamentals · **J**ava · **Q** 
 | Next step | the same, forward | D S C | "Given these three steps, what comes next?" |
 | Which invariant | correctness reasoning | D | "Which of these stays true through the loop?" |
 
-### Pick many — 2
+### Pick many — 2 — **rehomed, see PRIMITIVES.md final set**
+
+Pick many was cut. *All that apply* becomes a **claim grid** (a forced true/false on every
+row, instead of letting the reader skip the ones they are unsure of). *Odd one out* is a
+**pick one** — it always was, one item selected. Both archetypes survive; neither loses
+anything.
 
 | archetype | tests | areas |
 |---|---|---|
@@ -102,7 +107,11 @@ Areas: **D**SA · **S**ystem design · **C**S fundamentals · **J**ava · **Q** 
 | Tap the bug | debugging, on a phone | D J Q |
 | Tap the bottleneck | reading a plan or a diagram | S Q |
 
-### Word bank — 2
+### Word bank — 2 — **now templated Assemble cards**
+
+Word bank merged into Assemble: one primitive, one grading function, with the template
+carrying the difficulty. A mostly-filled template is a word bank; an empty one is an
+assemble. Both archetypes stay.
 
 | archetype | tests | areas |
 |---|---|---|
@@ -164,7 +173,7 @@ build as 29.
 | Error → cause | the vocabulary of debugging, from a real message | J Q C | the message came from a known cause |
 | Impossible bound | knowing what no algorithm can do, not just what one does | D | a stated lower bound is a fact about the problem |
 
-### Pick many — 1 more (3 total)
+### Pick many — 1 more, now a claim grid
 
 | archetype | tests | areas | why a pure function can mark it |
 |---|---|---|---|
@@ -197,7 +206,7 @@ build as 29.
 | Tap the insertion point | knowing where a missing line goes, not just that one is missing | D J Q | the line was removed from a known position |
 | Tap the unsafe line | injection and concurrency risks, where they live | J Q S | the unsafe line is the one that was planted |
 
-### Word bank — 2 more (4 total)
+### Word bank — 2 more, now templated Assemble cards
 
 | archetype | tests | areas | why a pure function can mark it |
 |---|---|---|---|
