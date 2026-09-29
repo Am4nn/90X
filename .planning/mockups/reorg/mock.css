@@ -358,8 +358,8 @@ table.board .me { color: var(--acc); }
   flex: none;
   padding: 8px;
 }
-.dev.phone { width: 390px; }
-.dev.desk { width: 100%; min-width: 640px; flex: 1 1 640px; }
+.dev.phone { width: 390px; order: 2; }
+.dev.desk { width: 100%; min-width: 0; flex: 1 1 100%; order: 1; }
 .dev .screen { display: flex; flex-direction: column; }
 .dev.phone .screen { height: 760px; }
 .dev.desk .screen { min-height: 620px; }
@@ -367,6 +367,7 @@ table.board .me { color: var(--acc); }
 .caption {
   flex: none;
   width: 100%;
+  order: 3;
   color: var(--mu);
   font-size: 13px;
   margin: 10px 0 0;
@@ -427,3 +428,7 @@ table.board .me { color: var(--acc); }
 @media (max-width: 900px) {
   .cols2, .cols2b, .cols2e { grid-template-columns: 1fr; }
 }
+
+/* Grid children default to min-width:auto and can push a grid track wider than
+   its share; keep the tracks honest so a two-column frame never collapses. */
+.cols2 > *, .cols2b > *, .cols2e > * { min-width: 0; }
