@@ -31,13 +31,44 @@ def is_card_worthy(doc: dict) -> bool:
     return len(doc.get("body") or "") >= MIN_SECTION_CHARS and not NOT_CARD_WORTHY.search(doc.get("title") or "")
 
 
+class WhyStep(BaseModel):
+    """A Hard card's second chosen answer: the reason, picked from options.
+
+    `options` are plausible reasons somebody actually gives; `correct` is the
+    0-based index of the real one. A correct answer with a wrong reason is a
+    wrong card, so wrong reasons must not be implausible.
+    """
+
+    options: list[str] = Field(min_length=2, max_length=4)
+    correct: int = Field(ge=0)
+
+
+def _is_index(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_index_pair(pair) -> bool:
+    return isinstance(pair, (list, tuple)) and len(pair) == 2 and all(_is_index(i) for i in pair)
+
+
 class Card(BaseModel):
-    format: Literal["typed", "flash", "mcq", "output"]
+    # `format` now holds a primitive id (pick_one, order, ...); the legacy chunk
+    # formats (typed/flash/mcq/output) still parse, but the Feed v2 writer never
+    # emits them. See the Feed v2 migration: cards.format becomes the primitive.
+    format: str
+    archetype: str | None = None
     prompt: str = Field(min_length=10)
     answer: str = Field(min_length=1)
     key_points: list[str] = Field(min_length=2, max_length=4)
     options: list[str] | None = None
     difficulty: Literal["Easy", "Medium", "Hard"]
+    # Per-shape answer columns, matching public.cards from the Feed v2 migration.
+    picked: list[int] | None = None          # chosen: the correct indices
+    constraints: list[list[int]] | None = None  # ordered: [before, after] pairs
+    pairs: list[list[int]] | None = None     # mapping: [left, right] pairs
+    value: float | None = None               # number: the expected value
+    tolerance: float | None = None           # number: allowed absolute error
+    why_step: WhyStep | None = None          # Hard cards: second chosen answer
 
     @model_validator(mode="after")
     def _mcq(self):
@@ -46,6 +77,33 @@ class Card(BaseModel):
                 raise ValueError("mcq cards need exactly 4 options")
             if self.answer not in self.options:
                 raise ValueError("mcq answer must be one of the options")
+        return self
+
+    @model_validator(mode="after")
+    def _answer_shape(self):
+        # A card whose format is a primitive must carry the answer columns of
+        # its shape. Legacy formats have no shape and are not checked, which is
+        # how the old chunk path (for_problem/for_document) keeps working.
+        from .archetypes import shape_of
+
+        shape = shape_of(self.format)
+        if shape == "chosen":
+            if not self.picked:
+                raise ValueError("chosen cards need `picked` (the correct indices)")
+            if not all(_is_index(i) for i in self.picked):
+                raise ValueError("`picked` must be a list of integer indices")
+        if shape == "ordered":
+            if not self.constraints:
+                raise ValueError("ordered cards need `constraints` ([before, after] pairs)")
+            if not all(_is_index_pair(p) for p in self.constraints):
+                raise ValueError("`constraints` must be a list of [before, after] index pairs")
+        if shape == "mapping":
+            if not self.pairs:
+                raise ValueError("mapping cards need `pairs` ([left, right] pairs)")
+            if not all(_is_index_pair(p) for p in self.pairs):
+                raise ValueError("`pairs` must be a list of [left, right] index pairs")
+        if shape == "number" and (self.value is None or self.tolerance is None):
+            raise ValueError("number cards need `value` and `tolerance`")
         return self
 
 

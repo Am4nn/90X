@@ -40,6 +40,8 @@ def main() -> None:
     lc.add_argument("--limit", type=int, help="at most N topics")
     lc.add_argument("--redo", action="store_true", help="regenerate topics that already have lesson cards")
     lc.add_argument("--tier", default="smart")
+    tr = sub.add_parser("trial", help="Gate 1: generate one topic and measure the cost per card")
+    tr.add_argument("--tier", default="smart")
     cn = sub.add_parser("consistency", help="find claims that contradict across lessons in an area (AI)")
     cn.add_argument("domains", nargs="*", help="only these areas")
     cn.add_argument("--fix", action="store_true", help="rewrite the lesson each contradiction names")
