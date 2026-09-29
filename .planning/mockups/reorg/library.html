@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90x mocks · Library</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="mock.css?v=2">
+<style>
+  .rail { position: relative; padding-left: 24px; }
+  .rail::before { content: ""; position: absolute; left: 5px; top: 16px; bottom: 16px; width: 2px; background: var(--ln); }
+  .rnode { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; }
+  .rnode::before { content: ""; position: absolute; left: -24px; top: 13px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--ln2); }
+  .rnode.done::before { background: var(--acc); box-shadow: none; }
+  .rnode.now::before { background: var(--bg); box-shadow: inset 0 0 0 2.5px var(--acc); outline: 4px solid var(--accbg); }
+  .prog { height: 6px; border-radius: 999px; background: var(--sf2); overflow: hidden; }
+  .prog > i { display: block; height: 100%; border-radius: 999px; background: var(--acc); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dochead">
+  <h1 class="title">Library — roadmap UX</h1>
+  <a href="index.html">← All screens</a>
+</div>
+<p class="lede">The Library's roadmap is a stack of collapsing accordions with checkboxes — hard to read, hard to know where you are. Two directions for a roadmap you can actually move through. The Pattern Map and the problem list are unchanged.</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
+<g id="i-feed"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 21h8"/></g>
+<g id="i-lib"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></g>
+<g id="i-coach"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g>
+<g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
+<g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
+<g id="i-search"><circle cx="11" cy="11" r="7"/><path d="M16 16l4 4"/></g>
+</defs></svg>
+
+<!-- A ─────────────────────────────────────────────────────────── -->
+<section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
+  <div class="choice-h"><span class="kicker">Direction A</span><h2 class="heading">Roadmap as the spine, with progress</h2></div>
+  <p class="choice-trade">Sections carry their own progress bar, and the open one shows its nodes as a checklist with lesson links. <b>Trade:</b> closest to today's model, just legible; still list-shaped.</p>
+
+  <div class="frames">
+    <!-- phone -->
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
+          <div style="display:flex; gap:8px; overflow:hidden">
+            <span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span>
+          </div>
+
+          <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
+            <div style="display:flex; align-items:baseline; justify-content:space-between"><span class="heading">Design roadmap</span><span class="small">6 of 24 covered</span></div>
+            <div class="prog"><i style="width:25%"></i></div>
+            <span class="small">Everything Design covers, in reading order. Tick what you already know.</span>
+          </div>
+
+          <div class="card list">
+            <div class="row" style="padding:12px 18px"><span class="tx2" style="font-weight:700">Foundations</span><span class="small">8 · 3 covered</span></div>
+            <div class="row" style="padding:12px 18px"><span class="tx2" style="font-weight:700">Scalability</span><span class="small">9 · 2 covered</span></div>
+            <div class="row" style="padding:12px 18px"><span class="tx2" style="font-weight:700">Data &amp; storage</span><span class="small">7 · 1 covered</span></div>
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px"><span class="heading">Foundations</span><span class="small">3 of 8</span></div>
+            <div class="card list">
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box done"></span></span><span class="tx2" style="text-decoration:line-through; opacity:.6">Load balancing</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box done"></span></span><span class="tx2" style="text-decoration:line-through; opacity:.6">Caching basics</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box"></span></span><span style="font-weight:700">Consistent hashing</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+              <div class="row" style="padding:12px 18px"><span style="display:flex; align-items:center; gap:12px"><span class="mission" style="padding:0"><span class="box"></span></span><span style="font-weight:700">CAP theorem</span></span><span class="small acc" style="font-weight:700">Lesson</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+    <!-- desktop -->
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Library</span><span class="btn s sm">Search topics</span></div>
+          <div style="display:flex; gap:8px"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">LLD</span><span class="chip">AI</span><span class="chip">Behavioural</span></div>
+          <div class="cols2b">
+            <div class="stack6">
+              <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
+                <div style="display:flex; align-items:baseline; justify-content:space-between"><span class="heading">Design roadmap</span><span class="small">6 of 24 covered</span></div>
+                <div class="prog"><i style="width:25%"></i></div>
+              </div>
+              <div class="card list">
+                <div class="row"><span style="font-weight:700">Foundations</span><span class="small">3 of 8</span></div>
+                <div class="row"><span class="tx2">Load balancing</span><span class="small acc" style="font-weight:700">Lesson</span></div>
+                <div class="row"><span class="tx2">Caching basics</span><span class="small acc" style="font-weight:700">Lesson</span></div>
+                <div class="row"><span style="font-weight:700">Consistent hashing</span><span class="small acc" style="font-weight:700">Lesson</span></div>
+                <div class="row"><span style="font-weight:700">CAP theorem</span><span class="small acc" style="font-weight:700">Lesson</span></div>
+                <div class="row"><span style="font-weight:700">Scalability</span><span class="small">2 of 9</span></div>
+                <div class="row"><span style="font-weight:700">Data &amp; storage</span><span class="small">1 of 7</span></div>
+              </div>
+            </div>
+            <aside class="stack">
+              <div class="card pad" style="gap:10px; display:flex; flex-direction:column">
+                <span class="heading">Topics</span>
+                <div class="small">Design · CS · Java · SQL · LLD · AI · Behavioural</div>
+                <span class="btn s sm" style="margin-top:4px">Open a topic</span>
+              </div>
+              <div class="card pad" style="gap:6px; display:flex; flex-direction:column">
+                <span class="small" style="color:var(--tx2); font-weight:700">Ticking a node</span>
+                <span class="small">Marks it covered for your readiness. It changes nothing else.</span>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Direction A.</b> Progress header, section bars, and the open section as a checklist. Familiar, but the roadmap finally reads as progress rather than a pile of accordions.</p>
+  </div>
+</section>
+
+<!-- B ─────────────────────────────────────────────────────────── -->
+<section class="choice">
+  <div class="choice-h"><span class="kicker">Direction B</span><h2 class="heading">Guided path: where you are, what's next</h2></div>
+  <p class="choice-trade">A vertical rail with the next uncovered node called out at the top, and done nodes filled. <b>Trade:</b> the strongest “keep going” read; a long roadmap needs good collapse.</p>
+
+  <div class="frames">
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
+          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span></div>
+
+          <div class="card pad" style="gap:12px; display:flex; flex-direction:column; border-color:var(--ln2)">
+            <span class="small" style="letter-spacing:.12em; text-transform:uppercase; font-weight:700">Next up</span>
+            <span class="heading">Consistent hashing</span>
+            <span class="small">Foundations · 7 min read · a lesson Coach can teach</span>
+            <div style="display:flex; gap:10px"><span class="btn p" style="flex:1">Start lesson</span><span class="btn s">Covered</span></div>
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px"><span class="heading">Design roadmap</span><span class="small">6 of 24</span></div>
+            <div class="card pad">
+              <div class="rail">
+                <div class="rnode done"><span style="font-weight:700">Load balancing</span></div>
+                <div class="rnode done"><span style="font-weight:700">Caching basics</span></div>
+                <div class="rnode now"><span><span style="font-weight:700">Consistent hashing</span><div class="small">You are here</div></span></div>
+                <div class="rnode"><span class="tx2">CAP theorem</span></div>
+                <div class="rnode"><span class="tx2">Consistency models</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Library</span><span class="btn s sm">Search topics</span></div>
+          <div style="display:flex; gap:8px"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
+          <div class="cols2b">
+            <div class="card pad">
+              <div class="rail">
+                <div class="rnode done"><span style="font-weight:700">Load balancing</span></div>
+                <div class="rnode done"><span style="font-weight:700">Caching basics</span></div>
+                <div class="rnode now"><span><span style="font-weight:700">Consistent hashing</span><div class="small">You are here</div></span></div>
+                <div class="rnode"><span class="tx2">CAP theorem</span></div>
+                <div class="rnode"><span class="tx2">Consistency models</span></div>
+                <div class="rnode"><span class="tx2">Sharding</span></div>
+                <div class="rnode"><span class="tx2">Replication</span></div>
+              </div>
+            </div>
+            <aside class="stack">
+              <div class="card pad" style="gap:12px; display:flex; flex-direction:column; border-color:var(--ln2)">
+                <span class="small" style="letter-spacing:.12em; text-transform:uppercase; font-weight:700">Next up</span>
+                <span class="heading">Consistent hashing</span>
+                <span class="small">Foundations · 7 min read</span>
+                <div style="display:flex; flex-direction:column; gap:10px"><span class="btn p">Start lesson</span><span class="btn s">Mark covered</span></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Direction B.</b> The roadmap as a path you're on: done nodes filled, the current one ringed, the next lesson one tap away. Best “keep going” read; needs collapse for long sections.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
