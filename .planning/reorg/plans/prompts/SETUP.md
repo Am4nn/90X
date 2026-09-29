@@ -24,6 +24,8 @@ Everything below is needed because **`/api/test/sign-in` refuses to answer unles
 three of these hold** (see `web/src/lib/auth/test-sign-in.ts`):
 
 - `E2E=1`
+- `ALLOW_TEST_SIGN_IN=1` — an explicit opt-in added by the security hardening, on top of
+  the other three, so a stray `E2E=1` alone cannot open the route
 - `VERCEL` unset
 - `NEXT_PUBLIC_SUPABASE_URL` is the local CLI stack — and it is **inlined at build time**,
   so a build made against the hosted project can never mint a session, however you run it
@@ -64,6 +66,7 @@ AI_BASE_URL=http://localhost:8078/v1
 AI_MODEL_FAST=fake-fast
 AI_MODEL_SMART=fake-smart
 E2E=1
+ALLOW_TEST_SIGN_IN=1
 EOF
 bun run scripts/seed-e2e.ts
 ```
@@ -73,7 +76,7 @@ To run the suite you also need the fake model and the app:
 ```bash
 bun run e2e/fake-model.ts &                  # 8078; the Coach specs read its request log
 bun run build
-E2E=1 bun run start &                        # 3000
+E2E=1 ALLOW_TEST_SIGN_IN=1 bun run start &                        # 3000
 bunx playwright test e2e/<your-spec>.spec.ts --project=desktop --retries=0
 ```
 
