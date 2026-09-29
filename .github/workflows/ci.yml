@@ -104,21 +104,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # `wait: false`, so the stack comes up while the dependencies install
-      # rather than after them.
+      # Backgrounded, so the stack comes up while the dependencies install rather
+      # than after them. `supabase-ready` below is the wait.
       - uses: ./.github/actions/supabase-stack
-        with:
-          wait: "false"
 
       - uses: ./.github/actions/web-setup
 
-      - name: Wait for Supabase
-        run: |
-          for i in $(seq 1 120); do
-            supabase status -o env >/dev/null 2>&1 && exit 0
-            sleep 2
-          done
-          echo "supabase never became ready"; cat /tmp/supabase.log; exit 1
+      - uses: ./.github/actions/supabase-ready
 
       - name: Migrating again changes nothing
         run: supabase db reset
@@ -207,11 +199,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # `wait: false`: the stack pulls and migrates while the dependencies and
-      # Chromium install, instead of after them.
+      # Backgrounded: the stack pulls and migrates while the dependencies and
+      # Chromium install, instead of after them. `supabase-ready` below is the wait.
       - uses: ./.github/actions/supabase-stack
-        with:
-          wait: "false"
 
       - uses: ./.github/actions/web-setup
         with:
@@ -225,14 +215,7 @@ jobs:
             next-e2e-${{ runner.os }}-${{ hashFiles('web/bun.lock') }}-
             next-e2e-${{ runner.os }}-
 
-      - name: Wait for Supabase
-        working-directory: .
-        run: |
-          for i in $(seq 1 120); do
-            supabase status -o env > /tmp/supabase.env 2>/dev/null && exit 0
-            sleep 2
-          done
-          echo "supabase never became ready"; cat /tmp/supabase.log; exit 1
+      - uses: ./.github/actions/supabase-ready
 
       # The local stack's well-known demo keys, not secrets. The build cannot move
       # above the wait: Next inlines NEXT_PUBLIC_* at build time and these are

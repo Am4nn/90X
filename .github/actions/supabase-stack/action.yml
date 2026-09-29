@@ -1,5 +1,5 @@
 name: Supabase stack
-description: Start a throwaway local Supabase, with its Docker images cached, in the background.
+description: Start a throwaway local Supabase in the background, with its Docker images cached.
 
 # `supabase start` was 82 seconds and two jobs each paid it, which made it the
 # largest single cost in the pipeline - larger than the Playwright suite it was
@@ -9,30 +9,24 @@ description: Start a throwaway local Supabase, with its Docker images cached, in
 #
 # The images are cached. Most of those 82 seconds is pulling postgres, gotrue,
 # postgrest and the gateway from a registry; the migrations themselves are about
-# a third of it (measured against `supabase db reset`, which re-applies all of
-# them in ~35s). `docker save` after a cold start, `docker load` before a warm
-# one. Keyed on the CLI version and config.toml, because those are what decide
-# which images and which tags are wanted - not on the migrations, which change
-# constantly and do not change the images at all.
+# a third of it, measured against `supabase db reset` re-applying all of them in
+# ~35s. The cache key is the CLI version and config.toml, because those are what
+# decide which images and which tags are wanted - not the migrations, which
+# change constantly and change no image at all.
 #
-# And the start is backgrounded, so the caller can install dependencies while it
-# comes up instead of after it. The caller waits with the `wait` input, or by
-# running its own `supabase status` poll if it has other work to interleave.
+# `actions/cache` uploads the directory in its own post-job step, so nothing here
+# saves it explicitly; `supabase-ready` fills the directory once the stack is up,
+# which is the only moment the images are known to work. An earlier version had a
+# save step in this file gated on an input both callers set to false, so the cache
+# would never have been written and the whole exercise would have been comments.
 #
-# If the cache is stale or the load fails, nothing breaks: `supabase start`
-# simply pulls what is missing, exactly as it did before. That is why the load
-# step cannot fail the job.
-
-inputs:
-  wait:
-    description: Block until the stack answers before finishing.
-    required: false
-    default: "true"
-
-outputs:
-  cache-hit:
-    description: Whether the image cache was restored.
-    value: ${{ steps.images.outputs.cache-hit }}
+# The start is always backgrounded and this action never waits. Callers do their
+# installs and then use `supabase-ready`. There is no `wait` input: one path
+# through means one path to be wrong.
+#
+# If the cache is stale or a tarball is truncated, nothing breaks - `supabase
+# start` pulls what is missing, exactly as before. That is why the load cannot
+# fail the job.
 
 runs:
   using: composite
@@ -41,70 +35,43 @@ runs:
       with:
         version: latest
 
-    # The CLI version goes in the key because a new CLI wants new image tags, and
-    # config.toml because it decides which services exist at all.
+    # The CLI version is in the key because a new CLI wants new image tags.
     - name: What the CLI version is
       id: cli
       shell: bash
       run: echo "v=$(supabase --version | tr -d '\n' | tr -c '[:alnum:].' '-')" >> "$GITHUB_OUTPUT"
 
-    - id: images
-      uses: actions/cache@v6
+    - uses: actions/cache@v6
       with:
         path: ~/.cache/supabase-images
         key: supabase-images-${{ runner.os }}-${{ steps.cli.outputs.v }}-${{ hashFiles('supabase/config.toml') }}
 
-    # `|| true` on the load: a truncated or half-written tarball must cost a pull,
-    # not the job. The pipe through `docker load` is quiet on success.
+    # `|| echo` rather than `|| exit`: a half-written tarball must cost a pull,
+    # not the job.
     - name: Load the cached images
-      if: steps.images.outputs.cache-hit == 'true'
       shell: bash
       run: |
-        for f in ~/.cache/supabase-images/*.tar; do
-          [ -f "$f" ] || continue
-          docker load -i "$f" > /dev/null 2>&1 || echo "could not load $(basename "$f"), it will be pulled"
+        shopt -s nullglob
+        loaded=0
+        for f in "$HOME"/.cache/supabase-images/*.tar; do
+          if docker load -i "$f" > /dev/null 2>&1; then
+            loaded=$((loaded + 1))
+          else
+            echo "could not load $(basename "$f"), it will be pulled"
+          fi
         done
-        docker image ls --format '{{.Repository}}:{{.Tag}}' | sort | head -20
+        echo "loaded $loaded cached image(s)"
 
+    # The wrapper writes the start's exit code to /tmp/supabase.rc when it
+    # finishes. `supabase-ready` waits on that file: steps run in separate
+    # shells, so a plain `wait` on the PID is not available to the reader, and
+    # polling `supabase status` is not a substitute - it exits 0 with empty
+    # values when nothing is running, which is how the first version of this
+    # returned in 0s and left every NEXT_PUBLIC_* blank.
     - name: Start Postgres and auth, apply every migration
       shell: bash
       run: |
-        nohup supabase start \
+        rm -f /tmp/supabase.rc
+        nohup bash -c 'supabase start \
           -x studio,imgproxy,inbucket,mailpit,storage-api,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta \
-          > /tmp/supabase.log 2>&1 &
-        echo $! > /tmp/supabase.pid
-
-    # `supabase status -o env` is what every caller needs next, so succeeding at
-    # it IS the readiness condition - there is no separate probe to drift out of
-    # step with it. The log is printed on failure because a backgrounded start
-    # that dies otherwise leaves only a timeout to explain itself.
-    - name: Wait for Supabase
-      if: inputs.wait == 'true'
-      shell: bash
-      run: |
-        for i in $(seq 1 120); do
-          if supabase status -o env > /tmp/supabase.env 2>/dev/null; then
-            echo "ready after $((i * 2))s"
-            exit 0
-          fi
-          sleep 2
-        done
-        echo "supabase never became ready"; cat /tmp/supabase.log; exit 1
-
-    # Saved only on a miss, and only once the stack is up, so the tarballs are of
-    # images that actually worked. Excludes the throwaway containers' own layers
-    # by listing images rather than containers.
-    - name: Save the images for next time
-      if: inputs.wait == 'true' && steps.images.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        mkdir -p ~/.cache/supabase-images
-        docker image ls --format '{{.Repository}}:{{.Tag}}' \
-          | grep -E 'supabase|postgres' | grep -v '<none>' | sort -u > /tmp/images.txt
-        cat /tmp/images.txt
-        while read -r image; do
-          [ -n "$image" ] || continue
-          name=$(echo "$image" | tr '/:' '__')
-          docker save "$image" -o "$HOME/.cache/supabase-images/$name.tar" || echo "could not save $image"
-        done < /tmp/images.txt
-        du -sh ~/.cache/supabase-images || true
+          > /tmp/supabase.log 2>&1; echo $? > /tmp/supabase.rc' > /dev/null 2>&1 &
