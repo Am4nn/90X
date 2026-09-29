@@ -3,10 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>90x mocks · Library — roadmap</title>
+<title>90x mocks · Library</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="mock.css?v=2">
 <style>
+  .seg { display: inline-flex; gap: 4px; background: var(--sf); border: 1px solid var(--ln); border-radius: 12px; padding: 4px; }
+  .seg span { padding: 8px 16px; border-radius: 10px; font: 700 13px/1 "Manrope", sans-serif; color: var(--mu); }
+  .seg span.on { background: var(--sf2); color: var(--tx); }
+
   .rd { width: 100%; height: auto; display: block; }
   .rd .spine { stroke: var(--ln2); stroke-width: 2; fill: none; }
   .rd .dash { stroke: var(--ln2); stroke-width: 1.6; stroke-dasharray: 3 4; fill: none; }
@@ -18,18 +22,28 @@
   .rd .sub text { fill: var(--tx2); font: 500 12px "Manrope", sans-serif; }
   .rd .grp rect { fill: none; stroke: var(--ln2); }
   .rd .tick { fill: var(--acc); font: 700 12px "Sora", sans-serif; }
-  .rdscroll { overflow-x: auto; }
-  .rdscroll .rd { min-width: 700px; }
+
+  .map { width: 100%; height: auto; display: block; }
+  .map .edge { stroke: var(--ln); stroke-width: 1.4; fill: none; }
+  .map .node { fill: var(--sf2); stroke: var(--ln2); stroke-width: 1.6; }
+  .map .node.mastered { fill: var(--accbg); stroke: var(--acc); }
+  .map .node.started { fill: var(--sf2); stroke: var(--tx2); }
+  .map .node.weak { fill: color-mix(in srgb, var(--bad) 14%, var(--sf)); stroke: var(--bad); }
+  .map text { font: 600 12px "Manrope", sans-serif; fill: var(--mu); }
+  .map text.hot { fill: var(--tx); }
+  @keyframes pulse { 0%,100% { opacity:.4 } 50% { opacity:.95 } }
+  .map .weak-node { animation: pulse 2.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .map .weak-node { animation: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <div class="dochead">
-  <h1 class="title">Library — the roadmap</h1>
+  <h1 class="title">Library · DSA kept, other areas get the roadmap</h1>
   <a href="index.html">← All screens</a>
 </div>
-<p class="lede">The roadmap.sh feel, in our dark palette: a spine of main topics, dashed branches out to sub-topics, one path highlighted, coverage ticked. A <b>Graph / List</b> toggle keeps today's lesson list one tap away.</p>
+<p class="lede">DSA is unchanged · Pattern Map and problems as today, only a small graph improvement. Every other area gets the roadmap.sh-style graph, with a <b>segmented Graph / List toggle</b>. The area tabs stay exactly as they are.</p>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
@@ -41,9 +55,106 @@
 <g id="i-search"><circle cx="11" cy="11" r="7"/><path d="M16 16l4 4"/></g>
 </defs></svg>
 
+<!-- DSA · unchanged -->
 <section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
-  <div class="choice-h"><span class="kicker">Direction</span><h2 class="heading">roadmap.sh feel, Graph / List toggle</h2></div>
-  <p class="choice-trade">Graph view first (phone simplified, desktop full), then the List view the toggle switches to.</p>
+  <div class="choice-h"><span class="kicker">Unchanged</span><h2 class="heading">DSA · Pattern Map and problems, as today</h2></div>
+  <p class="choice-trade">Same tabs, same map, same problem table. The only touch is a slightly cleaner map (spacing and labels), nothing structural.</p>
+
+  <div class="frames">
+    <div class="dev phone" style="width:390px">
+      <div class="screen">
+        <div class="page">
+          <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
+          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip on">DSA</span><span class="chip">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px"><span class="heading">Patterns</span><span class="small">58 of 191 mastered</span></div>
+            <div class="card pad">
+              <svg class="map" viewBox="0 0 340 200" aria-label="Pattern map">
+                <path class="edge" d="M60,50 L150,30 M60,50 L90,120 M150,30 L250,60 M90,120 L180,140 M180,140 L250,60 M180,140 L290,130 M250,60 L290,130 M90,120 L70,180 M180,140 L230,180"/>
+                <circle class="node mastered" cx="60" cy="50" r="9"/><text class="hot" x="74" y="53">Arrays</text>
+                <circle class="node mastered" cx="150" cy="30" r="9"/><text class="hot" x="164" y="33">Two ptr</text>
+                <circle class="node started" cx="250" cy="60" r="9"/><text x="264" y="63">Window</text>
+                <circle class="node started" cx="90" cy="120" r="9"/><text x="40" y="143">Binary</text>
+                <circle class="node started" cx="180" cy="140" r="9"/><text class="hot" x="194" y="143">Trees</text>
+                <circle class="node weak weak-node" cx="290" cy="130" r="9"/><text x="238" y="153" style="text-anchor:end">Graphs</text>
+                <circle class="node weak weak-node" cx="70" cy="180" r="9"/><text x="84" y="183">DP</text>
+                <circle class="node" cx="230" cy="180" r="9"/><text x="244" y="183">Tries</text>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px"><span class="heading">Graphs</span><span class="small">12 of 48 solved</span></div>
+            <div class="card list">
+              <div class="row" style="padding:12px 18px"><span><span style="font-weight:700">Course Schedule II</span><div class="small">Medium · 12 companies</div></span><span class="small warn">hints</span></div>
+              <div class="row" style="padding:12px 18px"><span><span style="font-weight:700">Word Ladder</span><div class="small">Hard · 9 companies</div></span><span class="small">—</span></div>
+              <div class="row" style="padding:12px 18px"><span><span style="font-weight:700">Number of Islands</span><div class="small">Medium · 21 companies</div></span><span class="small ok">solved</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev desk">
+      <div class="appdesk">
+        <aside class="side">
+          <div class="logo">90<span>x</span></div>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
+          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
+          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
+        </aside>
+        <div class="main">
+          <div class="shead"><span class="title">Library</span><span class="btn s sm">Search problems</span></div>
+          <div style="display:flex; gap:8px"><span class="chip on">DSA</span><span class="chip">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">LLD</span><span class="chip">AI</span><span class="chip">Behavioural</span><span class="chip">Competitive</span></div>
+          <div class="cols2b">
+            <div class="stack6">
+              <div>
+                <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px"><span class="heading">Patterns</span><span class="small">58 of 191 mastered</span></div>
+                <div class="card pad"><svg class="map" viewBox="0 0 420 220" aria-label="Pattern map">
+                  <path class="edge" d="M70,60 L180,30 M70,60 L110,140 M180,30 L300,60 M110,140 L220,160 M220,160 L300,60 M220,160 L360,150 M300,60 L360,150 M110,140 L90,200 M220,160 L280,200"/>
+                  <circle class="node mastered" cx="70" cy="60" r="11"/><text class="hot" x="86" y="64">Arrays &amp; hashing</text>
+                  <circle class="node mastered" cx="180" cy="30" r="11"/><text class="hot" x="196" y="34">Two pointers</text>
+                  <circle class="node started" cx="300" cy="60" r="11"/><text x="316" y="64">Sliding window</text>
+                  <circle class="node started" cx="110" cy="140" r="11"/><text x="50" y="120">Binary search</text>
+                  <circle class="node started" cx="220" cy="160" r="11"/><text class="hot" x="236" y="164">Trees</text>
+                  <circle class="node weak weak-node" cx="360" cy="150" r="11"/><text x="300" y="176" style="text-anchor:end">Graphs</text>
+                  <circle class="node weak weak-node" cx="90" cy="200" r="11"/><text x="106" y="204">DP</text>
+                  <circle class="node" cx="280" cy="200" r="11"/><text x="296" y="204">Tries</text>
+                </svg></div>
+              </div>
+              <div>
+                <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px"><span class="heading">Graphs</span><span class="small">12 of 48 solved</span></div>
+                <div class="card list">
+                  <div class="row"><span><span style="font-weight:700">Course Schedule II</span><div class="small">Medium · 12 companies</div></span><span class="small warn">hints</span></div>
+                  <div class="row"><span><span style="font-weight:700">Word Ladder</span><div class="small">Hard · 9 companies</div></span><span class="small">—</span></div>
+                  <div class="row"><span><span style="font-weight:700">Number of Islands</span><div class="small">Medium · 21 companies</div></span><span class="small ok">solved</span></div>
+                </div>
+              </div>
+            </div>
+            <aside class="stack">
+              <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="small" style="font-weight:700; color:var(--tx2)">The improvement</span><span class="small">Spacing and label placement only, so the map is easier to read on a phone. No structural change.</span></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>DSA, unchanged.</b> The same tabs, Pattern Map and problem table · just a little cleaner. No new structure here.</p>
+  </div>
+</section>
+
+<!-- Other areas · roadmap -->
+<section class="choice">
+  <div class="choice-h"><span class="kicker">New</span><h2 class="heading">Every other area · the roadmap graph</h2></div>
+  <p class="choice-trade">Design, CS, Java, SQL, LLD, AI, Behavioural: a roadmap.sh-style spine with dashed branches, and a <b>segmented Graph / List toggle</b> (not tags). Area tabs unchanged.</p>
 
   <div class="frames">
     <!-- phone · graph -->
@@ -51,35 +162,29 @@
       <div class="screen">
         <div class="page">
           <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span></div>
+          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
-            <div style="display:flex; gap:8px"><span class="chip on">Graph</span><span class="chip">List</span></div>
+            <div class="seg"><span class="on">Graph</span><span>List</span></div>
             <span class="small">6 of 12 covered</span>
           </div>
-
           <div class="card pad">
-            <svg class="rd" viewBox="0 0 340 470" aria-label="Design roadmap">
-              <path class="spine" d="M170 26 V458"/>
+            <svg class="rd" viewBox="0 0 340 400" aria-label="Design roadmap">
+              <path class="spine" d="M170 26 V388"/>
               <g class="mn"><rect x="70" y="26" width="200" height="34" rx="8"/><text x="170" y="47" text-anchor="middle">Introduction</text></g>
               <path class="dash" d="M270 43 H300"/>
               <g class="sub"><rect x="230" y="26" width="100" height="34" rx="8"/><text x="280" y="47" text-anchor="middle">What is it?</text></g>
-              <g class="mn"><rect x="70" y="78" width="200" height="34" rx="8"/><text x="170" y="99" text-anchor="middle">Scalability</text><text class="tick" x="252" y="100">✓</text></g>
-              <g class="mn"><rect x="70" y="130" width="200" height="34" rx="8"/><text x="170" y="151" text-anchor="middle">Latency vs Throughput</text></g>
-              <g class="mn cur"><rect x="70" y="182" width="200" height="34" rx="8"/><text x="170" y="203" text-anchor="middle">Availability vs Consistency</text></g>
-              <path class="dash" d="M70 199 H40"/>
-              <g class="sub"><rect x="10" y="176" width="30" height="46" rx="6"/></g>
-              <g class="mn"><rect x="70" y="234" width="200" height="34" rx="8"/><text x="170" y="255" text-anchor="middle">Consistency Patterns</text></g>
-              <g class="mn"><rect x="70" y="286" width="200" height="34" rx="8"/><text x="170" y="307" text-anchor="middle">Availability Patterns</text></g>
-              <path class="dash" d="M270 303 H300"/>
-              <g class="sub"><rect x="230" y="278" width="100" height="52" rx="8"/><text x="280" y="299" text-anchor="middle">Fail-Over</text><text x="280" y="315" text-anchor="middle">Replication</text></g>
-              <g class="mn"><rect x="70" y="350" width="200" height="34" rx="8"/><text x="170" y="371" text-anchor="middle">Background Jobs</text></g>
-              <g class="mn"><rect x="70" y="402" width="200" height="34" rx="8"/><text x="170" y="423" text-anchor="middle">Load Balancers</text></g>
-              <path class="dash" d="M270 419 H300"/>
-              <g class="sub"><rect x="230" y="394" width="100" height="52" rx="8"/><text x="280" y="415" text-anchor="middle">LB vs Proxy</text><text x="280" y="431" text-anchor="middle">L7 / L4</text></g>
+              <g class="mn"><rect x="70" y="82" width="200" height="34" rx="8"/><text x="170" y="103" text-anchor="middle">Scalability</text><text class="tick" x="252" y="104">✓</text></g>
+              <g class="mn"><rect x="70" y="138" width="200" height="34" rx="8"/><text x="170" y="159" text-anchor="middle">Latency vs Throughput</text></g>
+              <g class="mn cur"><rect x="70" y="194" width="200" height="34" rx="8"/><text x="170" y="215" text-anchor="middle">Avail. vs Consistency</text></g>
+              <path class="dash" d="M70 211 H40"/>
+              <g class="sub"><rect x="10" y="194" width="30" height="34" rx="6"/></g>
+              <g class="mn"><rect x="70" y="250" width="200" height="34" rx="8"/><text x="170" y="271" text-anchor="middle">Consistency Patterns</text></g>
+              <g class="mn"><rect x="70" y="306" width="200" height="34" rx="8"/><text x="170" y="327" text-anchor="middle">Availability Patterns</text></g>
+              <path class="dash" d="M270 323 H300"/>
+              <g class="sub"><rect x="230" y="298" width="100" height="52" rx="8"/><text x="280" y="319" text-anchor="middle">Fail-Over</text><text x="280" y="335" text-anchor="middle">Replication</text></g>
+              <g class="mn"><rect x="70" y="362" width="200" height="34" rx="8"/><text x="170" y="383" text-anchor="middle">Background Jobs</text></g>
             </svg>
           </div>
-          <span class="small">Tap a topic to open its lesson; tap the cut node to see what branches off it.</span>
-
           <div class="card pad" style="gap:12px; display:flex; flex-direction:column; border-color:var(--ln2)">
             <span class="heading">Availability vs Consistency</span>
             <span class="small">7 min lesson · written from systemdesign.io</span>
@@ -91,7 +196,6 @@
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
           <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
         </div>
       </div>
@@ -101,25 +205,23 @@
       <div class="screen">
         <div class="page">
           <div class="shead"><span class="title">Library</span><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></span></div>
-          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span></div>
+          <div style="display:flex; gap:8px; overflow:hidden"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
-            <div style="display:flex; gap:8px"><span class="chip">Graph</span><span class="chip on">List</span></div>
+            <div class="seg"><span>Graph</span><span class="on">List</span></div>
             <span class="small">6 of 12 covered</span>
           </div>
-
           <div>
-            <div class="heading" style="margin-bottom:12px">Design — lessons we have</div>
+            <div class="heading" style="margin-bottom:12px">Design · lessons we have</div>
             <div class="card list">
               <div class="row"><span><span style="font-weight:700">Load balancing</span><div class="small">Foundations · 8 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
               <div class="row"><span><span style="font-weight:700">Caching</span><div class="small">Foundations · 7 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
               <div class="row"><span><span style="font-weight:700">Consistent hashing</span><div class="small">Foundations · 7 min</div></span><span class="small acc" style="font-weight:700">Read</span></div>
               <div class="row"><span><span style="font-weight:700">SQL vs NoSQL</span><div class="small">Data · 9 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
-              <div class="row"><span><span style="font-weight:700">Rate limiting</span><div class="small">Scalability · 8 min</div></span><span class="ok" style="font-weight:700">✓</span></div>
             </div>
           </div>
           <div class="card pad" style="gap:6px; display:flex; flex-direction:column">
             <span class="small" style="font-weight:700; color:var(--tx2)">Not written yet</span>
-            <span class="small">CAP theorem · Backpressure · Sharding — trackable on the graph, lessons coming.</span>
+            <span class="small">CAP theorem · Backpressure · Sharding · visible on the graph, trackable, lessons coming.</span>
           </div>
         </div>
         <div class="tabbar">
@@ -127,14 +229,11 @@
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
           <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="frames" style="margin-top:28px">
     <!-- desktop · graph -->
     <div class="dev desk">
       <div class="appdesk">
@@ -148,11 +247,11 @@
           <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
         </aside>
         <div class="main">
-          <div class="shead"><span class="title">Library</span><span class="btn s sm">Search</span></div>
+          <div class="shead"><span class="title">Library</span><span class="btn s sm">Search topics</span></div>
           <div style="display:flex; gap:8px"><span class="chip">DSA</span><span class="chip on">Design</span><span class="chip">CS</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">LLD</span><span class="chip">AI</span><span class="chip">Behavioural</span></div>
           <div style="display:flex; align-items:center; justify-content:space-between">
-            <div style="display:flex; gap:8px"><span class="chip on">Graph</span><span class="chip">List</span></div>
-            <span class="small">6 of 12 covered · tap any topic to open its lesson</span>
+            <div class="seg"><span class="on">Graph</span><span>List</span></div>
+            <span class="small">6 of 12 covered · tap a topic to open its lesson</span>
           </div>
           <div class="card pad">
             <svg class="rd" viewBox="0 0 760 560" aria-label="Design roadmap">
@@ -161,8 +260,6 @@
               <path class="dash" d="M470 47 H520"/>
               <g class="sub"><rect x="520" y="30" width="220" height="34" rx="8"/><text x="630" y="51" text-anchor="middle">What is System Design?</text></g>
               <g class="sub"><rect x="520" y="72" width="220" height="34" rx="8"/><text x="630" y="93" text-anchor="middle">How to approach it?</text></g>
-              <path class="dash" d="M520 89 H470 V47 M520 89 H470"/>
-
               <g class="mn"><rect x="290" y="86" width="180" height="34" rx="8"/><text x="380" y="107" text-anchor="middle">Performance vs Scalability</text></g>
               <g class="mn"><rect x="290" y="138" width="180" height="34" rx="8"/><text x="380" y="159" text-anchor="middle">Latency vs Throughput</text></g>
               <g class="mn cur"><rect x="290" y="190" width="180" height="34" rx="8"/><text x="380" y="211" text-anchor="middle">Availability vs Consistency</text></g>
@@ -189,7 +286,7 @@
         </div>
       </div>
     </div>
-    <p class="caption"><b>Graph.</b> The roadmap.sh shape — spine, main topics, dashed branches to sub-topics, one highlighted path, a tick for coverage — rendered in 90x greys with the accent for the node you're on. Dashes mean a lesson is coming. The toggle drops to the List view for the lessons we have today.</p>
+    <p class="caption"><b>Other areas.</b> The roadmap.sh shape in 90x greys: spine, main topics, dashed branches to sub-topics, one highlighted path, coverage ticks. We can be honest about gaps · a dashed branch is a lesson we'll write. The segmented toggle drops to List, the lessons we have today. DSA keeps its own Pattern Map.</p>
   </div>
 </section>
 
