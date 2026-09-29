@@ -306,8 +306,8 @@ export function PlanEditor({
   const [we, setWe] = useState(weekend);
   const minutes = { weekday: Number(wd), weekend: Number(we) };
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_20rem] md:items-start md:gap-8">
-      <div className="flex flex-col gap-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_22rem] md:items-start md:gap-8">
+      <div className="flex flex-col gap-6 md:col-start-1 md:row-start-1">
         <form action={levelAction} className="flex flex-col gap-3">
           <ChipGroup
             name="level"
@@ -337,13 +337,19 @@ export function PlanEditor({
             <FormMessage state={weekState} />
           </div>
         </form>
+      </div>
+      {/* Before the editor in the DOM, so the week reads straight after the
+          choices on a phone; the right column on a desktop. */}
+      <div className="md:col-start-2 md:row-span-2 md:row-start-1">
+        <WeekPreview
+          templates={proposeTemplate(minutes.weekday, minutes.weekend, chosen)}
+          budgets={minutes}
+          note="Rebuild the week to apply"
+        />
+      </div>
+      <div className="md:col-start-1 md:row-start-2">
         <AdjustTheWeek initial={templates} />
       </div>
-      <WeekPreview
-        templates={proposeTemplate(minutes.weekday, minutes.weekend, chosen)}
-        budgets={minutes}
-        note="Rebuild the week to apply"
-      />
     </div>
   );
 }
