@@ -27,53 +27,53 @@ Grouped by primitive, so the UI cost is visible: everything in a section shares 
 
 ## Pick many — 2
 
-| archetype | prompt | answer |
-|---|---|---|
+| archetype      | prompt                                           | answer                                                |
+| ----------------| --------------------------------------------------| -------------------------------------------------------|
 | All that apply | Which are true of a hash map at load factor 0.9? | Collisions are frequent · lookups degrade toward O(n) |
-| Odd one out | quicksort · mergesort · heapsort · counting sort | Counting sort — the only one not comparison-based |
+| Odd one out    | quicksort · mergesort · heapsort · counting sort | Counting sort — the only one not comparison-based     |
 
 ## Order — 3
 
-| archetype | prompt | answer |
-|---|---|---|
-| Sequence | Put the steps of a TLS handshake in order | ClientHello → ServerHello → certificate → key exchange → Finished |
-| Rank by a metric | Rank by growth: O(n log n) · O(log n) · O(n²) · O(n) | log n → n → n log n → n² |
-| Timeline | When is the browser cache consulted, among DNS, TCP and TLS? | Before DNS |
+| archetype        | prompt                                                       | answer                                                            |
+| ------------------| --------------------------------------------------------------| -------------------------------------------------------------------|
+| Sequence         | Put the steps of a TLS handshake in order                    | ClientHello → ServerHello → certificate → key exchange → Finished |
+| Rank by a metric | Rank by growth: O(n log n) · O(log n) · O(n²) · O(n)         | log n → n → n log n → n²                                          |
+| Timeline         | When is the browser cache consulted, among DNS, TCP and TLS? | Before DNS                                                        |
 
 ## Match — 3
 
-| archetype | prompt | answer |
-|---|---|---|
-| Term ↔ meaning | Match A, C, I, D to their meanings | Atomicity ↔ all-or-nothing, and so on |
-| Error ↔ cause | Match each Java exception to what causes it | `ConcurrentModificationException` ↔ mutating a collection while iterating it |
-| Pattern ↔ signal | Match each problem cue to the technique it suggests | "sorted array, find a pair" ↔ two pointers |
+| archetype        | prompt                                              | answer                                                                       |
+| ------------------| -----------------------------------------------------| ------------------------------------------------------------------------------|
+| Term ↔ meaning   | Match A, C, I, D to their meanings                  | Atomicity ↔ all-or-nothing, and so on                                        |
+| Error ↔ cause    | Match each Java exception to what causes it         | `ConcurrentModificationException` ↔ mutating a collection while iterating it |
+| Pattern ↔ signal | Match each problem cue to the technique it suggests | "sorted array, find a pair" ↔ two pointers                                   |
 
 ## Bucket — 2
 
-| archetype | prompt | answer |
-|---|---|---|
-| Two-way | Sort these SQL functions: deterministic or not | `upper()` deterministic · `now()` not |
-| Three-way | Sort these HTTP codes: redirect · client error · server error | 301 · 404 · 503 |
+| archetype | prompt                                                        | answer                                |
+| -----------| ---------------------------------------------------------------| ---------------------------------------|
+| Two-way   | Sort these SQL functions: deterministic or not                | `upper()` deterministic · `now()` not |
+| Three-way | Sort these HTTP codes: redirect · client error · server error | 301 · 404 · 503                       |
 
 ## Tap in place — 2
 
-| archetype | prompt | answer |
-|---|---|---|
-| Tap the bug | A loop written `i <= arr.length`. Tap the line that is wrong. | that line |
-| Tap the bottleneck | An EXPLAIN plan. Tap the line costing the most. | the `Seq Scan` |
+| archetype          | prompt                                                        | answer         |
+| --------------------| ---------------------------------------------------------------| ----------------|
+| Tap the bug        | A loop written `i <= arr.length`. Tap the line that is wrong. | that line      |
+| Tap the bottleneck | An EXPLAIN plan. Tap the line costing the most.               | the `Seq Scan` |
 
 ## Word bank — 2
 
-| archetype | prompt | answer |
-|---|---|---|
-| Fill a code blank | `Map<String, ___> counts = new HashMap<>();` | `Integer` |
-| Fill a definition | A ___ index stores keys in sorted order and supports range scans. | B-tree |
+| archetype         | prompt                                                            | answer    |
+| -------------------| -------------------------------------------------------------------| -----------|
+| Fill a code blank | `Map<String, ___> counts = new HashMap<>();`                      | `Integer` |
+| Fill a definition | A ___ index stores keys in sorted order and supports range scans. | B-tree    |
 
 ## Self-rate — 1
 
-| archetype | prompt | answer |
-|---|---|---|
-| Flash | Idempotency | knew it / didn't |
+| archetype | prompt      | answer           |
+| -----------| -------------| ------------------|
+| Flash     | Idempotency | knew it / didn't |
 
 ## What this shows
 

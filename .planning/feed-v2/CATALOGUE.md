@@ -223,3 +223,22 @@ having: a reader who meets a different *kind* of question keeps paying attention
 topic whose budget can be filled from nineteen pick-one archetypes is far less likely to get
 four near-identical cards. Anything that cannot clear the four rules above does not go in,
 however good it sounds in a list.
+
+---
+
+## Round 3 additions — grid toggle gets its archetypes
+
+| archetype | tests | areas | why a pure function can mark it |
+|---|---|---|---|
+| Complexity table | the table every DSA interview assumes you know | D J | each cell is a fact |
+| Isolation behaviour | which anomaly each isolation level permits | Q | defined by the standard |
+| Method semantics | safe, idempotent, cacheable, per HTTP method | S | defined by the spec |
+
+**Moved to numeric entry** (still available as pick one — same archetype, two primitives):
+Estimate, Complexity, Impossible bound, Trace the value. A keypad tests the calculation; four
+options test elimination.
+
+**Pick-then-justify is a modifier, not an archetype.** Any card may carry a why-step, which
+gives ordering and matching "right answer, wrong reason" for free.
+
+**47 archetypes, 11 primitives, 4 answer shapes.**

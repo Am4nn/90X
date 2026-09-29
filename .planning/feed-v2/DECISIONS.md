@@ -238,3 +238,91 @@ Turned down: **connect the edges** (good on a desktop, miserable at 390px), **st
 simulation** (several cards pretending to be one, which breaks one question/one mark), and a
 **slider** (numeric entry with a worse input, and drag fights the page scroll for the same
 reason ordering is tap-to-place).
+
+---
+
+# Round 3 — "too easy", and difficulty as a real thing
+
+A reviewer said the current Feed is too easy: the questions they saw did not make them think.
+Measured before arguing, and the measurement changed the conclusion.
+
+## What the database says
+
+```
+attempts, all time:  4 wrong · 3 skipped  (7 total)
+live cards: 129      typed 66 · flash 32 · mcq 29 · output 2
+```
+
+**"Too easy" cannot be a usage claim — there are seven attempts in the whole database.** It is
+a judgement from reading the cards, and read that way it is right, for reasons nobody had
+named:
+
+- **A quarter of the live Feed is flashcards**, 28 of 32 labelled Easy, and flash is
+  self-rated: there is no wrong answer. Take out the 66 typed cards that are leaving and the
+  part of the live Feed that actually tests anybody is 29 multiple-choice cards.
+- **A four-option card has a 25% floor** and nothing notices a reader riding it.
+- **`cards.difficulty` is a text label the writer assigned itself**, never checked against
+  whether anyone got the card wrong. An opinion stored as data, with no loop closing it.
+
+## The finding that matters: the hard cards are the typed ones
+
+```
+Hard:    typed 20 · mcq 5 · output 0 · flash 0
+Medium:  typed 44 · mcq 13 · output 1 · flash 4
+Easy:    typed  2 · mcq 11 · output 1 · flash 28
+```
+
+**25 of the 26 Hard cards are typed**, and typed is the format Feed v2 removes. Done naively,
+this redesign would delete almost all the hard content and leave a Feed of 11 Easy multiple
+choice and 28 Easy flashcards — making the complaint it was meant to answer worse.
+
+So difficulty is not a polish item to handle after the formats. It is a constraint on the
+regeneration.
+
+## Difficulty gets a rubric now and calibration later
+
+Aman chose both, and they fit together: the rubric gives an immediate, consistent estimate,
+and observed outcomes correct it once there is volume to correct it with.
+
+**The rubric**, applied by the pipeline at write time, against stated criteria rather than
+vibes:
+
+| | Easy | Medium | Hard |
+|---|---|---|---|
+| reasoning steps | 1 | 2 | 3+ |
+| a stated constraint changes the answer | no | sometimes | yes |
+| spans more than one fact | no | no | yes |
+| distractors encode real misconceptions | not required | yes | yes |
+| needs a calculation | no | maybe | yes |
+
+**The calibration**, once a card has enough attempts: above 85% correct it is Easy whatever the
+writer thought, and it gets flagged for review; below 25% it is probably broken or ambiguous
+rather than hard, and gets flagged too. Selection uses the observed rate once n ≥ 20 and the
+rubric until then. With 7 attempts in the database this job does nothing on day one, which is
+fine — it is the loop that has been missing, not the number.
+
+## Two levers, because neither exists today
+
+1. **Generate for difficulty.** The per-topic budget carries a difficulty target, not only a
+   format mix. Without it regeneration reproduces whatever the writer finds easiest to write,
+   which is Easy.
+2. **Select for difficulty.** Nothing in the Feed picks by difficulty; it serves what FSRS
+   surfaces. A session wants a deliberate mix.
+
+And **cap flash**. It is the cheapest single fix: a Feed that is a quarter self-rated cards
+feels like review because it is.
+
+## The three empty primitives are filled
+
+Numeric entry, grid toggle and pick-then-justify had no archetypes — screens with nothing to
+render.
+
+- **Estimate, Complexity, Impossible bound and Trace the value move to numeric entry**, where
+  a keypad tests calculation instead of elimination. They stay available as pick-one too: same
+  archetype, two primitives, and the pipeline picks.
+- **Grid toggle gets three new archetypes**: the complexity table, SQL isolation behaviour,
+  HTTP method semantics. All three are two-dimensional facts that bucketing flattens.
+- **Pick-then-justify is a modifier, not an archetype.** Any card may carry a why-step. That is
+  the cleaner framing and it means ordering and matching get "right answer, wrong reason" free.
+
+**47 archetypes** over 11 primitives and 4 answer shapes.
