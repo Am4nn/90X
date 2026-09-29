@@ -40,10 +40,8 @@ const PENDING = new Set([
   "lessons", // unit 1b: Coach modes and the Lessons page
   "weekly-read", // unit 1c: the Coach read on Today
   "chat-state", // unit 1d: the chat working state
-  "roadmap", // unit 2: the Library roadmap view
   "problem-page", // unit 3: the DSA problem page
   "plan-setup", // unit 4: Plan and Set up
-  "mock-picker", // unit 5: the mock picker
 ]);
 
 type Workflow = {
