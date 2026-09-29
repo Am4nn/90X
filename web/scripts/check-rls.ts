@@ -418,6 +418,22 @@ try {
     })();
     expect("a reversed pair (user_a > user_b) is rejected", reversed === "blocked");
 
+    // Since 20260929000023 the write grants are gone too, so a client write now
+    // fails on a privilege it does not hold before RLS is even consulted. The
+    // reversed-pair test above runs as the owner on purpose; this is the
+    // authenticated side of the same door.
+    const friendshipsWrites = one(
+      await tx`select
+        has_table_privilege('authenticated', 'public.friendships', 'insert') as ins,
+        has_table_privilege('authenticated', 'public.friendships', 'update') as upd,
+        has_table_privilege('authenticated', 'public.friendships', 'delete') as del`,
+    );
+    expect(
+      "authenticated has no write grant on friendships, so a forged pair fails on privilege too",
+      friendshipsWrites.ins === false && friendshipsWrites.upd === false && friendshipsWrites.del === false,
+      JSON.stringify(friendshipsWrites),
+    );
+
     throw ROLLBACK;
   });
 } catch (e) {
