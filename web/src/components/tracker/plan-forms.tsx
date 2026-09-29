@@ -33,7 +33,7 @@ const LENGTHS = [30, 60, 90];
 const secondary = button();
 
 /** How much a level changes, said once so both flows explain it the same way. */
-const LEVEL_HINT = "Sets the mix of missions and the difficulty of the problems you start on.";
+const LEVEL_HINT = "Leans the mix of your week and the difficulty of the problems you start on.";
 
 function LengthChips({
   length,
