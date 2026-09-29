@@ -104,6 +104,15 @@ create table if not exists llm_calls (
     cost_usd double, off_peak boolean
 );
 alter table llm_calls add column if not exists tokens_reasoning int default 0;
+-- Feed v2: a card carries its archetype and its deterministic answer. These
+-- mirror public.cards (part A's migration); `format` holds the primitive id.
+alter table cards add column if not exists archetype text;
+alter table cards add column if not exists picked json;
+alter table cards add column if not exists constraints json;
+alter table cards add column if not exists pairs json;
+alter table cards add column if not exists value double;
+alter table cards add column if not exists tolerance double;
+alter table cards add column if not exists why_step json;
 """
 
 
