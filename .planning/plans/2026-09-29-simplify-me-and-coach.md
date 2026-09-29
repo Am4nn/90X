@@ -261,3 +261,28 @@ for these screens, with **multiple directions where flagged** so I can choose:
 
 Deliver mocks in `.planning/mockups/` (HTML) following the existing
 `desktop-*` / `mobile-*` convention.
+
+---
+
+## 11. Decisions from the mock review (2026-09-29, binding)
+
+Mocks built in `.planning/mockups/reorg/`; the owner chose a direction per screen and the rejected
+directions were removed. Recorded here as binding.
+
+| Screen | Locked |
+|---|---|
+| Today | **Full card** for Coach's read, above the missions. **No inline Accept** — accept/decline lives on the weekly review. Card gets a **dismiss ✕** that holds until next week. |
+| Me | Keeps readiness (dial, trend, areas), weakest patterns, personal “This week”, a **LeetCode status line**, and explicit **Plan + Settings** header buttons. |
+| Friends | **Comparison leads**: pending → scoreboard → activity → invites. A little more colour: status colour on readiness/results and an identity tint per person — restrained, no slop. |
+| Coach modes | Chat · Lessons · Mocks · Story bank; “What Coach knows” stays in the header. |
+| Lessons | **Pick a pattern**, **weakest-first** (not roadmap order). |
+| Settings | Account · Notifications · LeetCode controls · What Coach knows · Sign out. |
+| Coach mark | **Ren**, the shared character from Curfew, rendered in 90x greys (DESIGN.md → Signature Components). |
+
+**LeetCode placement:** status line on Me, controls (Sync, totals, time capture) in Settings.
+
+**New redesigns, as separate briefs** (not on this branch):
+- `.planning/briefs/dsa-problem-page.md` — the DSA problem / check-in page.
+- `.planning/briefs/plan-campaign-selection.md` — campaign selection on the Plan page.
+- Library roadmap UX: raised, not yet scoped.
+
