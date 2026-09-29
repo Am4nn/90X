@@ -76,21 +76,11 @@ serious bugs were caught.
 A brief may describe a sibling project's code, because a cloud session cannot
 read one. `.planning/briefs/friends.md` does this at length for Curfew.
 
-## Work in flight
+## Recently shipped
 
-Branch **`source-grounding`**, cut from `main` at `eed4f49`. Not yet a PR.
-
-| Commit | What |
-|---|---|
-| `66c9a2d` | Lessons read the whole downloaded corpus, including problem statements |
-| `bde3992` | `queueFirst` — the Coach stops writing the Feed's queue by hand |
-| `80fbf56` | Slot and language label maps, coach prompt naming |
-| `315b23d` | A coverage floor, and 40 KB off every cold start |
-| `9d4c2db` | A follow-up may set the scene before it asks |
-| `914d9a4` | A brief for the friend graph |
-
-Every local gate passed at `315b23d`. Before the PR: re-run them, then wait for
-CI **and both reviewers clean on the same commit**, then squash-merge.
+`main` at `dbfacb4`. PR #23 (source grounding, the Coach writing lessons), #24
+(CI speed) and #25 (friends) are all merged, and migrations 19, 20 and 21 are
+applied and recorded.
 
 ## Do this next, in order
 
@@ -100,9 +90,6 @@ CI **and both reviewers clean on the same commit**, then squash-merge.
    the current text. It is not exhaustive either: an area is read in overlapping
    windows of eight, so two lessons far apart in the sort order are never
    compared.
-2. **Build the friend graph** — `.planning/briefs/friends.md`, written and
-   reviewed, waiting on a session. Today every approved user sees every other
-   approved user. Needs no model.
 3. **Sentry is read, and there is nothing to fix.** Checked 2026-09-29 with
    `SENTRY_READ_TOKEN` against `sgsits-92/90x-web`. Four issues, not the one this
    file used to claim, and all four are stale or already fixed:
@@ -217,13 +204,23 @@ Result over 274 topics, $8.61:
     `update lessons set body_md = '' where topic_slug = 'beh-teamwork'`.
 - **Cross-lesson consistency is stale and not exhaustive** — see "Do this next".
 
-- **Every approved user can see every other approved user.** There is no friend
-  graph; `lib/tracker/me.ts:42` says "You and every approved friend" and means
-  every approved user. Three leaks come with it: `profiles_read` hands a friend
-  the whole profile row including `leetcode_username` and notification
-  preferences; `notifyFriends` (`lib/push.ts:65`) pushes every check-in to every
-  opted-in user; `friendActivity` returns full names beside a scoreboard showing
-  first names. `.planning/briefs/friends.md` fixes all of it.
+- **Friends is live, and non-friends are not discoverable.** Verified on
+  production as an approved non-friend: 0 rows in `profiles`, `checkins`,
+  `campaigns`, `days`, `readiness_snapshots` and `mocks`, and `permission denied`
+  on `lessons.written_by`. The three leaks that came with the old
+  everyone-sees-everyone model are closed: `profiles` is down to column grants on
+  `(user_id, name, avatar_url)`, `notifyFriends` is scoped to friends, and names
+  are first-name only everywhere.
+  - **Scoreboards are empty until people invite each other.** That is the "start
+    empty" choice, not a bug. No backfill was done and none should be.
+  - **Invite email needs `RESEND_API_KEY` and `EMAIL_FROM` in Vercel.** Without
+    them the feature still works for anyone who already has an account: the
+    invite row is the request, `sendEmailBestEffort` swallows the configuration
+    error, and the card appears on their dashboard.
+  - A column grant is a **code change** and ships with the code, never before it.
+    Migration 20 revokes profile columns that the previous `viewer.ts` read
+    through the Supabase client, and applying it ahead of the deploy took
+    production down until the deploy landed. Same for 21 and `lessons`.
 - **The 292 KB shared bootstrap has not been broken down.** `check:bundle`
   measures and ratchets it, and removing Sentry Session Replay took 40 KB off
   (`web/src/instrumentation-client.ts` documents exactly how to restore it and
