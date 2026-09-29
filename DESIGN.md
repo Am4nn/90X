@@ -298,9 +298,9 @@ there are no thick or coloured side-borders. No clipping, no geometric masks.
 
 - **Coach mark:** **Ren** — the character shared with our sibling app Curfew, taken from its
   tab-bar icon: a shaded sphere with two eyes, lit red (#FF5C7F → #B3153A) over white. It stands
-  wherever the Coach speaks and in the Coach nav tab, in place of a generic initial or chat
-  bubble. This is the one intentional colour outside the topic/status roles, because it marks an
-  identity rather than a state.
+  wherever the Coach speaks, in place of a generic initial. The Coach **nav tab keeps the app's own
+  chat-bubble icon**, so the nav stays one consistent icon set. Ren's red is the one intentional
+  colour outside the topic/status roles, because it marks an identity rather than a state.
 - **Readiness Dial:** a 128px ring stroked in the band's status colour, the number set at the
   `dial` size (Sora, tabular), "Readiness" tag beneath. Zero renders as "—", never a stray dot.
 - **90 Grid:** one square per campaign day; done/revived squares carry a cyan X that stamps in
