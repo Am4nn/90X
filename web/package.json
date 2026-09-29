@@ -37,7 +37,8 @@
     "check:cycles": "dpdm --no-warning --no-tree --exit-code circular:1 --transform \"src/**/*.ts\" \"src/**/*.tsx\"",
     "test:coverage": "vitest run --coverage",
     "check:coverage": "vitest run --coverage && bun run scripts/check-coverage.ts",
-    "check:shards": "bun run scripts/check-shards.ts"
+    "check:shards": "bun run scripts/check-shards.ts",
+    "break-in": "dotenv -e .env.local -- bun --conditions=react-server scripts/break-in/run.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",
