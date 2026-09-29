@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { inboundEmails, lastSeenMailAt, markMailSeen } from "@/lib/admin/mail";
+import { isUnread } from "@/lib/admin/mail-time";
 import { requireViewer } from "@/lib/auth/viewer";
 import { AdminNav, backToApp } from "../admin-nav";
 
@@ -36,7 +37,7 @@ export default async function AdminMailPage() {
       ) : (
         <div className="divide-y divide-line rounded-xl border border-line bg-surface">
           {emails.map((e) => {
-            const unread = !seenAt || e.createdAt > seenAt;
+            const unread = isUnread(e.createdAt, seenAt);
             return (
               <Link
                 key={e.id}

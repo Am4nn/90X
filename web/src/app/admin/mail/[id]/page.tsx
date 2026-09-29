@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { button } from "@/components/button-styles";
 import { PageHeader } from "@/components/page-header";
 import { inboundEmail } from "@/lib/admin/mail";
+import { formatUtc } from "@/lib/admin/mail-time";
 import { requireViewer } from "@/lib/auth/viewer";
 import { AdminNav } from "../../admin-nav";
 
@@ -28,7 +29,7 @@ export default async function AdminMailMessagePage({ params }: PageProps<"/admin
   const meta: [string, string][] = [
     ["From", mail.from],
     ["To", mail.to.join(", ") || "unknown"],
-    ["Date", mail.createdAt ? `${new Date(mail.createdAt).toISOString().replace("T", " ").slice(0, 16)} UTC` : "unknown"],
+    ["Date", formatUtc(mail.createdAt)],
   ];
 
   return (

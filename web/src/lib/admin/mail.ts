@@ -1,6 +1,7 @@
 import "server-only";
 import { key } from "@/lib/upstash/keys";
 import { redis } from "@/lib/upstash/redis";
+import { newestFirst } from "./mail-time";
 
 // Mail sent TO the app, read straight from Resend.
 //
@@ -82,7 +83,7 @@ export async function inboundEmails(): Promise<InboundEmail[] | null> {
   return rows
     .filter((r): r is Record<string, unknown> => typeof r === "object" && r !== null)
     .map(asEmail)
-    .toSorted((a, b) => b.createdAt.localeCompare(a.createdAt));
+    .toSorted(newestFirst);
 }
 
 export async function inboundEmail(id: string): Promise<InboundDetail | null> {
@@ -121,9 +122,4 @@ export async function markMailSeen(userId: string): Promise<void> {
   } catch (e) {
     console.error("could not record that mail was seen", e);
   }
-}
-
-export function unreadOf(emails: InboundEmail[], seenAt: string | null): number {
-  if (!seenAt) return emails.length;
-  return emails.filter((e) => e.createdAt > seenAt).length;
 }

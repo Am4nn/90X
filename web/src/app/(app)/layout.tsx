@@ -14,7 +14,14 @@ export const metadata: Metadata = { robots: { index: false } };
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const viewer = await requireViewer();
-  const badges = viewer.isAdmin ? await adminBadges(viewer.id) : null;
+  // The badge is decoration on a link. If its query fails the admin still needs
+  // every page in the app, so log it and render the link without a count.
+  const badges = viewer.isAdmin
+    ? await adminBadges(viewer.id).catch((e: unknown) => {
+        console.error("admin badges unavailable", e);
+        return null;
+      })
+    : null;
   const adminLink = viewer.isAdmin ? (
     <Link href="/admin" className={`${button({ size: "sm" })} w-full`}>
       <AdminIcon className="size-4 text-mute" />

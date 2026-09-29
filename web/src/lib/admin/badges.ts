@@ -1,7 +1,8 @@
 import "server-only";
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { inboundEmails, lastSeenMailAt, unreadOf } from "./mail";
+import { inboundEmails, lastSeenMailAt } from "./mail";
+import { unreadOf } from "./mail-time";
 
 // The two numbers on the Admin link.
 //
