@@ -71,7 +71,7 @@ test("changing the time or the level moves the preview without a reload", async 
   expect(page.url()).toBe(url);
 });
 
-test("the day-by-day editor is folded away until it is asked for, then saves as before", async ({ page }) => {
+test("the day-by-day editor is folded away until it is asked for, then autosaves", async ({ page }) => {
   await signIn(page, "plan-editor", { next: "/me/plan" });
 
   await expect(editor(page)).toHaveCount(0);
@@ -81,7 +81,8 @@ test("the day-by-day editor is folded away until it is asked for, then saves as 
   await expect(monday).toHaveText("1");
   await editor(page).getByRole("button", { name: "More New on Mon" }).click();
   await expect(monday).toHaveText("2");
-  await page.getByRole("button", { name: "Save plan" }).click();
+  // Autosave: there is no "Save plan" button; the change saves itself (debounced)
+  // and the editor's own note confirms it landed.
   await expect(page.getByText("Saved. Applies from tomorrow.")).toBeVisible();
 
   // Persistence from a second page in the same context, never by reloading this

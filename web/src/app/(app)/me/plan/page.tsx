@@ -49,10 +49,13 @@ export default async function PlanPage() {
       .from(profiles)
       .where(eq(profiles.userId, viewer.id)),
   ]);
+  // The mock's only "Done" is the desktop ghost; phones get back via the tab bar.
   const back = (
-    <Link href="/me" className={button({ size: "sm" })}>
-      Done
-    </Link>
+    <span className="hidden md:inline-flex">
+      <Link href="/me" className={button({ variant: "ghost", size: "sm" })}>
+        Done
+      </Link>
+    </span>
   );
 
   const today = localDate(profile?.timezone ?? "UTC");
