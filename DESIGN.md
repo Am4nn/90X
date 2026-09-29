@@ -296,6 +296,10 @@ there are no thick or coloured side-borders. No clipping, no geometric masks.
 
 ### Signature Components
 
+- **Coach mark:** **Ren** — the character shared with our sibling app Curfew: a shaded sphere with
+  a resting face, rendered in 90x's greys (Text → Text Secondary → Muted → Hairline Strong). It
+  stands wherever the Coach speaks, in place of a generic initial. Mood lives in the face, never in
+  colour alone; the mark carries no outer bloom.
 - **Readiness Dial:** a 128px ring stroked in the band's status colour, the number set at the
   `dial` size (Sora, tabular), "Readiness" tag beneath. Zero renders as "—", never a stray dot.
 - **90 Grid:** one square per campaign day; done/revived squares carry a cyan X that stamps in

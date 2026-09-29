@@ -25,6 +25,36 @@
 <g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
 <g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
 <g id="i-sliders"><path d="M4 6h8M4 10h12M4 14h6"/><circle cx="15" cy="6" r="1.6"/><circle cx="13" cy="14" r="1.6"/></g>
+<g id="i-x"><path d="M6 6l12 12M18 6L6 18"/></g>
+<radialGradient id="renSkin" cx="33%" cy="25%" r="78%">
+  <stop offset="0%" stop-color="#e6e9ef"/>
+  <stop offset="30%" stop-color="#aeb5c2"/>
+  <stop offset="62%" stop-color="#7d8594"/>
+  <stop offset="100%" stop-color="#262b36"/>
+</radialGradient>
+<radialGradient id="renRim" cx="50%" cy="50%" r="50%">
+  <stop offset="56%" stop-color="#0a0c10" stop-opacity="0"/>
+  <stop offset="84%" stop-color="#0a0c10" stop-opacity="0.30"/>
+  <stop offset="100%" stop-color="#0a0c10" stop-opacity="0.54"/>
+</radialGradient>
+<radialGradient id="renBounce" cx="73%" cy="87%" r="30%">
+  <stop offset="0%" stop-color="#e6e9ef" stop-opacity="0.20"/>
+  <stop offset="100%" stop-color="#e6e9ef" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="renSpec" cx="31%" cy="23%" r="34%">
+  <stop offset="0%" stop-color="#e6e9ef" stop-opacity="0.92"/>
+  <stop offset="17%" stop-color="#e6e9ef" stop-opacity="0.30"/>
+  <stop offset="100%" stop-color="#e6e9ef" stop-opacity="0"/>
+</radialGradient>
+<g id="ren">
+  <circle cx="58" cy="58" r="58" fill="url(#renSkin)"/>
+  <circle cx="58" cy="58" r="58" fill="url(#renRim)"/>
+  <circle cx="58" cy="58" r="58" fill="url(#renBounce)"/>
+  <circle cx="58" cy="58" r="58" fill="url(#renSpec)"/>
+  <ellipse cx="43" cy="52" rx="5.4" ry="6.6" fill="#0a0c10"/>
+  <ellipse cx="73" cy="52" rx="5.4" ry="6.6" fill="#0a0c10"/>
+  <path d="M48 68q10 8 20 0" fill="none" stroke="#0a0c10" stroke-width="3.6" stroke-linecap="round"/>
+</g>
 </defs></svg>
 
 <!-- ═══════════════════════════════ DIRECTION A ═══════════════════════════════ -->
@@ -50,10 +80,13 @@
           <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--ln2)">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
               <span style="display:flex; align-items:center; gap:10px">
-                <span class="coachmark">C</span>
+                <svg viewBox="0 0 116 116" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg>
                 <span style="font-weight:700">Coach's read</span>
               </span>
-              <span class="tag" style="--c:var(--mu); background:none; color:var(--mu); padding:0">Week of Sep 21</span>
+              <span style="display:flex; align-items:center; gap:8px">
+                <span class="tag" style="--c:var(--mu); background:none; color:var(--mu); padding:0">Week of Sep 21</span>
+                <span class="iconbtn" style="width:28px; height:28px" role="button" aria-label="Dismiss until next week"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-x"/></svg></span>
+              </span>
             </div>
             <div style="display:flex; align-items:flex-end; gap:18px">
               <div style="display:flex; flex-direction:column; gap:4px">
@@ -78,7 +111,7 @@
           </div>
 
           <div style="display:flex; align-items:flex-start; gap:10px">
-            <span class="coachmark">C</span>
+            <svg viewBox="0 0 116 116" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg>
             <span class="tx2" style="font-size:15px; padding-top:3px">Course Schedule II is picked for the graph pattern you failed last week.</span>
           </div>
 
@@ -128,7 +161,7 @@
           <div class="cols2">
             <div class="stack6">
               <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--ln2)">
-                <div style="display:flex; align-items:center; justify-content:space-between"><span style="display:flex; align-items:center; gap:10px"><span class="coachmark">C</span><span style="font-weight:700">Coach's read</span></span><span class="small">Week of Sep 21</span></div>
+                <div style="display:flex; align-items:center; justify-content:space-between"><span style="display:flex; align-items:center; gap:10px"><svg viewBox="0 0 116 116" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg><span style="font-weight:700">Coach's read</span></span><span style="display:flex; align-items:center; gap:8px"><span class="small">Week of Sep 21</span><span class="iconbtn" style="width:28px; height:28px" role="button" aria-label="Dismiss until next week"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-x"/></svg></span></span></div>
                 <div style="display:flex; align-items:flex-end; gap:22px">
                   <div><span class="dialnum ok tabular" style="font-size:40px">74</span><div class="small">Coach's estimate</div></div>
                   <div><span class="tabular" style="font:600 22px/1 Sora,sans-serif; color:var(--tx2)">68</span><div class="small">Your dial</div></div>
@@ -137,7 +170,7 @@
                 <p style="margin:0; color:var(--tx2); font-size:15px; max-width:64ch">You held the streak, but leaned on hints for graphs and two design sessions ran long. Next week trades one new pattern for a second timed design rep.</p>
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:10px"><span class="small" style="color:var(--tx2)">2 suggested changes</span><span class="btn s sm">Read the full review →</span></div>
               </div>
-              <div style="display:flex; align-items:flex-start; gap:10px"><span class="coachmark">C</span><span class="tx2" style="font-size:15px; padding-top:3px">Course Schedule II is picked for the graph pattern you failed last week.</span></div>
+              <div style="display:flex; align-items:flex-start; gap:10px"><svg viewBox="0 0 116 116" width="28" height="28" role="img" aria-label="Coach" style="flex:none"><use href="#ren"/></svg><span class="tx2" style="font-size:15px; padding-top:3px">Course Schedule II is picked for the graph pattern you failed last week.</span></div>
               <div>
                 <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px"><span class="heading">Missions</span><span class="small">1 of 5 done</span></div>
                 <div class="card list">
