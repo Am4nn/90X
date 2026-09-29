@@ -46,7 +46,9 @@ export function LeetCodeCard({ status, pendingTime }: { status: Status | null; p
         aria-controls="leetcode-card-body"
         className="flex items-center justify-between gap-4 px-4 py-3.5 text-left"
       >
-        <span className="text-small text-mute">
+        {/* `relative()` reads the clock, so the server's "3m ago" can differ from
+            the client's at a minute boundary; the mismatch is text-only and harmless. */}
+        <span suppressHydrationWarning className="text-small text-mute">
           {statusLine(status)}
           {solved != null && <span className="text-text-2"> · {solved} solved</span>}
         </span>
