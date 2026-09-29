@@ -114,20 +114,19 @@ export async function invite(inviterId: string, rawEmail: string, q: Db = db): P
     if (await areFriends(inviterId, row.id, q)) throw new Error("You are already friends.");
   }
 
-  // Cap pending invites per sender.
-  const [capRow] = await q
-    .select({ n: count() })
-    .from(friendInvites)
-    .where(and(eq(friendInvites.invitedBy, inviterId), eq(friendInvites.status, "pending")));
-  if ((capRow?.n ?? 0) >= INVITE_CAP) {
-    throw new Error(`You have ${INVITE_CAP} pending invites. Revoke one before sending another.`);
-  }
-
-  const [row] = await q
-    .insert(friendInvites)
-    .values({ email, invitedBy: inviterId })
-    .onConflictDoNothing()
-    .returning({ id: friendInvites.id });
+  // Cap and insert in one transaction, under a lock on the sender's profile row,
+  // so two concurrent invites cannot both read 19 and then both insert.
+  const [row] = await q.transaction(async (tx) => {
+    await tx.execute(sql`select 1 from public.profiles where user_id = ${inviterId} for update`);
+    const [capRow] = await tx
+      .select({ n: count() })
+      .from(friendInvites)
+      .where(and(eq(friendInvites.invitedBy, inviterId), eq(friendInvites.status, "pending")));
+    if ((capRow?.n ?? 0) >= INVITE_CAP) {
+      throw new Error(`You have ${INVITE_CAP} pending invites. Revoke one before sending another.`);
+    }
+    return tx.insert(friendInvites).values({ email, invitedBy: inviterId }).onConflictDoNothing().returning({ id: friendInvites.id });
+  });
   if (!row) return; // Already invited: silent no-op.
 
   const [me] = await q.select({ name: profiles.name }).from(profiles).where(eq(profiles.userId, inviterId));
@@ -139,13 +138,27 @@ export async function invite(inviterId: string, rawEmail: string, q: Db = db): P
   });
 }
 
-/** Loads an invite by id, or throws. Shared so every mutation reports the same
- * "not found" and "no longer pending" reasons. */
-async function requirePendingInvite(inviteId: string, q: Db) {
-  const [inv] = await q.select().from(friendInvites).where(eq(friendInvites.id, inviteId));
+/** Loads an invite by id, or throws. With `lock`, takes a row lock so a
+ * concurrent respond waits instead of racing. */
+async function requirePendingInvite(inviteId: string, q: Db, lock = false) {
+  const [inv] = lock
+    ? await q.select().from(friendInvites).where(eq(friendInvites.id, inviteId)).for("update")
+    : await q.select().from(friendInvites).where(eq(friendInvites.id, inviteId));
   if (!inv) throw new Error("Invite not found.");
   if (inv.status !== "pending") throw new Error("Invite is no longer pending.");
   return inv;
+}
+
+/** Moves a still-pending invite's fields. A concurrent refuse or revoke that
+ * already changed the row loses: this matches nothing and throws, so accept
+ * cannot overwrite a revocation and still create the friendship. */
+async function updatePendingInvite(inviteId: string, fields: Partial<typeof friendInvites.$inferInsert>, q: Db): Promise<void> {
+  const updated = await q
+    .update(friendInvites)
+    .set(fields)
+    .where(and(eq(friendInvites.id, inviteId), eq(friendInvites.status, "pending")))
+    .returning({ id: friendInvites.id });
+  if (!updated.length) throw new Error("Invite is no longer pending.");
 }
 
 /**
@@ -155,9 +168,9 @@ async function requirePendingInvite(inviteId: string, q: Db) {
  */
 export async function accept(inviteId: string, userId: string, userEmail: string, q: Db = db): Promise<void> {
   await q.transaction(async (tx) => {
-    const inv = await requirePendingInvite(inviteId, tx);
+    const inv = await requirePendingInvite(inviteId, tx, true);
     if (inv.email.toLowerCase() !== userEmail.toLowerCase()) throw new Error("Invite is for a different email.");
-    await tx.update(friendInvites).set({ status: "accepted", respondedAt: new Date().toISOString() }).where(eq(friendInvites.id, inviteId));
+    await updatePendingInvite(inviteId, { status: "accepted", respondedAt: new Date().toISOString() }, tx);
     const [lo, hi] = orderedPair(inv.invitedBy, userId);
     await tx.insert(friendships).values({ userA: lo, userB: hi, fromInvite: inviteId }).onConflictDoNothing();
   });
@@ -169,7 +182,7 @@ export async function accept(inviteId: string, userId: string, userEmail: string
 export async function refuse(inviteId: string, userEmail: string, q: Db = db): Promise<void> {
   const inv = await requirePendingInvite(inviteId, q);
   if (inv.email.toLowerCase() !== userEmail.toLowerCase()) throw new Error("Invite is for a different email.");
-  await q.update(friendInvites).set({ status: "revoked", respondedAt: new Date().toISOString() }).where(eq(friendInvites.id, inviteId));
+  await updatePendingInvite(inviteId, { status: "revoked", respondedAt: new Date().toISOString() }, q);
 }
 
 /**
@@ -180,7 +193,7 @@ export async function refuse(inviteId: string, userEmail: string, q: Db = db): P
 export async function dismiss(inviteId: string, userEmail: string, q: Db = db): Promise<void> {
   const inv = await requirePendingInvite(inviteId, q);
   if (inv.email.toLowerCase() !== userEmail.toLowerCase()) throw new Error("Invite is for a different email.");
-  await q.update(friendInvites).set({ dismissedAt: new Date().toISOString() }).where(eq(friendInvites.id, inviteId));
+  await updatePendingInvite(inviteId, { dismissedAt: new Date().toISOString() }, q);
 }
 
 /**
@@ -189,7 +202,7 @@ export async function dismiss(inviteId: string, userEmail: string, q: Db = db): 
 export async function revoke(inviteId: string, inviterId: string, q: Db = db): Promise<void> {
   const inv = await requirePendingInvite(inviteId, q);
   if (inv.invitedBy !== inviterId) throw new Error("That is not your invite.");
-  await q.update(friendInvites).set({ status: "revoked", respondedAt: new Date().toISOString() }).where(eq(friendInvites.id, inviteId));
+  await updatePendingInvite(inviteId, { status: "revoked", respondedAt: new Date().toISOString() }, q);
 }
 
 /**

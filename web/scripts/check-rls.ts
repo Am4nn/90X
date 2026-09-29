@@ -124,6 +124,8 @@ try {
     expect("friend cannot read the note", friendNote.length === 0);
     const pendingRows = await as(tx, ids.p, () => tx`select * from public.checkins where user_id = ${ids.a}`);
     expect("pending user reads no check-ins even with a friendship row", pendingRows.length === 0);
+    const pendingProfile = await as(tx, ids.p, () => tx`select name from public.profiles where user_id = ${ids.a}`);
+    expect("a pending friend reads no profile", pendingProfile.length === 0);
     const noView = await tx`select count(*)::int as n from pg_views where schemaname = 'public' and viewname = 'checkins_public'`;
     expect("definer-rights view is gone", one(noView).n === 0);
     const forge = await as(tx, ids.b, async () => {

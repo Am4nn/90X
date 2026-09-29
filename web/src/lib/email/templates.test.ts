@@ -11,10 +11,13 @@ describe("friendInviteEmail", () => {
     expect(email.text).toContain("Sign in with Google");
   });
 
-  it("escapes an attacker-controlled inviter name in the HTML", () => {
-    const email = friendInviteEmail("friend@example.test", `Bob <script>alert("x")</script>`);
+  it("escapes an attacker-controlled inviter name in the HTML, not in text or subject", () => {
+    const email = friendInviteEmail("friend@example.test", `A & B <script>alert("x")</script>`);
     expect(email.html).not.toContain("<script>");
     expect(email.html).toContain("&lt;script&gt;");
+    // Plain text and the subject carry the raw name, not HTML entities.
+    expect(email.text).toContain(`A & B <script>alert("x")</script> invited you to 90x.`);
+    expect(email.subject).toBe(`A & B <script>alert("x")</script> invited you to 90x`);
   });
 });
 

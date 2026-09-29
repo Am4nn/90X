@@ -35,7 +35,10 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 
 export default async function TodayPage() {
   const viewer = await requireViewer();
-  const view = await ensureToday(viewer.id);
+  const [view, pendingReqs] = await Promise.all([ensureToday(viewer.id), pendingFor(viewer.email ?? "")]);
+  // One card per pending invite, in every state — a user with no campaign, or a
+  // finished one, still receives requests here.
+  const pending = <PendingRequests requests={pendingReqs.map((r) => ({ id: r.id, name: r.inviterName }))} />;
   // Stamped into the page, so an offline copy served by the service worker can say how old it is.
   const offlineBanner = <OfflineBanner renderedAt={new Date().toISOString()} />;
 
@@ -44,6 +47,7 @@ export default async function TodayPage() {
       <>
         <PageHeader title="Today" />
         {offlineBanner}
+        {pending}
         <EmptyState
           title="No campaign yet"
           action={
@@ -64,6 +68,7 @@ export default async function TodayPage() {
       <>
         <PageHeader title="Today" action={planLink} />
         {offlineBanner}
+        {pending}
         <EmptyState
           title={`Campaign complete: ${done} of ${view.grid.length} days done`}
           action={
@@ -80,7 +85,6 @@ export default async function TodayPage() {
   }
 
   const stats = await todayStats(viewer.id, view.today);
-  const pendingReqs = await pendingFor(viewer.email ?? "");
   const open = view.missions.filter((m) => m.status === "open" && !m.isRevive && !m.isExtra);
   const counted = view.missions.filter((m) => m.status !== "coming_soon" && !m.isRevive && !m.isExtra);
   const finished = counted.filter((m) => m.status === "done" || m.status === "skipped").length;
@@ -94,7 +98,7 @@ export default async function TodayPage() {
       </p>
       {offlineBanner}
 
-      <PendingRequests requests={pendingReqs.map((r) => ({ id: r.id, name: r.inviterName }))} />
+      {pending}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,340px)] md:gap-8">
         <div className="flex flex-col gap-6">

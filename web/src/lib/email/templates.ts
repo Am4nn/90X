@@ -40,7 +40,7 @@ const layout = (content: string) => `
 
 export function friendInviteEmail(to: string, inviterName: string): EmailInput {
   const safeName = escapeHtml(inviterName);
-  const text = `${safeName} invited you to 90x.\n\nOpen 90x: ${siteUrl()}\n\nSign in with Google. Once your account is approved, accept the request from your dashboard.\n\n90x is invite-only. You received this because someone entered your address.`;
+  const text = `${inviterName} invited you to 90x.\n\nOpen 90x: ${siteUrl()}\n\nSign in with Google. Once your account is approved, accept the request from your dashboard.\n\n90x is invite-only. You received this because someone entered your address.`;
 
   const html = layout(`
     <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 24px;">
@@ -62,7 +62,7 @@ export function friendInviteEmail(to: string, inviterName: string): EmailInput {
     </p>
   `);
 
-  return { to, subject: `${safeName} invited you to 90x`, html, text };
+  return { to, subject: `${inviterName} invited you to 90x`, html, text };
 }
 
 export function approvalEmail(to: string, approved: boolean): EmailInput {

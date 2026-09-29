@@ -6,6 +6,11 @@ import { db } from "@/db";
 import { friendInvites, friendships } from "@/db/friends-schema";
 import { accept, dismiss, friendIds, invite, INVITE_CAP, pendingFor, refuse, revoke, sentBy, unfriend } from "@/lib/friends/service";
 
+// A check must never send real email: with these unset, sendEmail throws and
+// sendEmailBestEffort swallows it, so a rolled-back invite leaves no trace.
+delete process.env.RESEND_API_KEY;
+delete process.env.EMAIL_FROM;
+
 const failures: string[] = [];
 function expect(name: string, ok: boolean, detail = "") {
   console.log(`${ok ? "ok  " : "FAIL"} ${name}${detail ? `  (${detail})` : ""}`);

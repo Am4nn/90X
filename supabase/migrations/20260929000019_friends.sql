@@ -102,9 +102,16 @@ create policy friend_invites_send on public.friend_invites for insert to authent
   with check (invited_by = auth.uid() and public.is_approved());
 
 -- You can respond (accept/refuse/dismiss) if the invite is addressed to you,
--- or revoke if you sent it.
+-- or revoke if you sent it. Column grants below stop a recipient rewriting
+-- invited_by through this policy to forge a friendship with anyone.
 create policy friend_invites_respond on public.friend_invites for update to authenticated
   using (email = public.current_user_email() or invited_by = auth.uid());
+
+-- An update may only move status, responded_at and dismissed_at. Without this,
+-- a recipient could set invited_by to another user's id and then accept, making
+-- a friendship with someone who never invited them.
+revoke update on public.friend_invites from authenticated;
+grant update (status, responded_at, dismissed_at) on public.friend_invites to authenticated;
 
 -- You see your own friendships and nobody else's.
 create policy friendships_read on public.friendships for select to authenticated
@@ -140,13 +147,13 @@ drop policy if exists mocks_read_approved on public.mocks;
 create policy mocks_read_approved on public.mocks for select to authenticated
   using (public.is_approved() and public.is_friend(user_id));
 
--- profiles_read is different: friendship is sufficient (no is_approved()
--- required for the friend case, because is_friend() already filters to rows
--- the viewer explicitly accepted). The owner's own row is covered by the
--- user_id = auth.uid() branch.
+-- profiles_read is different: the owner's own row is readable whatever their
+-- approval, because the pending and setup screens need it. A friend's row still
+-- needs is_approved(), so a de-approved former friend does not keep reading
+-- names and avatars.
 drop policy if exists profiles_read on public.profiles;
 create policy profiles_read on public.profiles for select to authenticated
-  using (user_id = auth.uid() or public.is_friend(user_id));
+  using (user_id = auth.uid() or (public.is_approved() and public.is_friend(user_id)));
 
 -- ---------------------------------------------------------------------------
 -- Fix profiles over-exposure with column grants.
