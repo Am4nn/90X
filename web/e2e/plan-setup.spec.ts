@@ -108,7 +108,7 @@ test("Set up walks its steps, keeps every field, and lands on a running plan", a
 
   // You: name, target role, DSA language.
   await expect(page.getByRole("heading", { name: "Prep that plans your day, then checks it." })).toBeHidden();
-  await page.getByLabel("Name").fill("Aman");
+  await page.getByLabel("Name", { exact: true }).fill("Aman");
   await chip(page, "Target role", "Frontend engineer").click();
   await chip(page, "Language for DSA", "Python").click();
   await page.getByRole("button", { name: "Continue" }).click();
@@ -128,9 +128,11 @@ test("Set up walks its steps, keeps every field, and lands on a running plan", a
   await expect(page.getByLabel("Time zone")).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
 
-  // LeetCode is optional and last.
+  // LeetCode is optional and last. The switch is an sr-only checkbox, so the
+  // label is what a person clicks.
   await page.getByLabel("LeetCode username (optional, for syncing your solves)").fill("am4nn");
-  await page.getByLabel("I have LeetCode Premium").click();
+  await page.getByText("I have LeetCode Premium", { exact: true }).click();
+  await expect(page.getByLabel("I have LeetCode Premium")).toBeChecked();
   await page.getByRole("button", { name: "Start my plan" }).click();
 
   // It redirects to Today exactly as it always did, with a plan to work.
