@@ -170,6 +170,12 @@ export async function accept(inviteId: string, userId: string, userEmail: string
   await q.transaction(async (tx) => {
     const inv = await requirePendingInvite(inviteId, tx, true);
     if (inv.email.toLowerCase() !== userEmail.toLowerCase()) throw new Error("Invite is for a different email.");
+    // Nobody can accept their own invite: `invite()` refuses a self-invite and
+    // the email check above blocks the rest, so this is unreachable today. It is
+    // here because the failure without it is a 500 from the `user_a < user_b`
+    // constraint - orderedPair(x, x) is (x, x) - and a guard that turns an
+    // unreachable crash into a sentence costs one line.
+    if (inv.invitedBy === userId) throw new Error("You cannot accept your own invite.");
     await updatePendingInvite(inviteId, { status: "accepted", respondedAt: new Date().toISOString() }, tx);
     const [lo, hi] = orderedPair(inv.invitedBy, userId);
     await tx.insert(friendships).values({ userA: lo, userB: hi, fromInvite: inviteId }).onConflictDoNothing();

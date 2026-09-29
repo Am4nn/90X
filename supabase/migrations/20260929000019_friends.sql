@@ -6,12 +6,18 @@
 -- Three things were also over-sharing and are fixed here:
 --   1. profiles_read returned the whole profile row (leetcode_username,
 --      notifications, campaign_days, timezone, role, language) to any
---      approved user. Only name and avatar_url are for others.
+--      approved user. Only name and avatar_url are for others. The column
+--      grants that close this are in the next migration, for deploy-order
+--      reasons written down there.
 --   2. notifyFriends was a broadcast to every approved user.
 --   3. friendActivity / problemDetail returned unsplit full names.
 --
--- UNAPPLIED: the lead must run `supabase db push` (or apply this file against
--- the production database) before merging the PR.
+-- UNAPPLIED. Apply this file BEFORE merging: everything in it is
+-- backwards-compatible, because the policies here only bind the `authenticated`
+-- role and the app's own queries run over the server connection, which bypasses
+-- RLS. The one part that is NOT backwards-compatible - revoking columns on
+-- `profiles` - was moved to 20260929000020_profiles_columns.sql, which must be
+-- applied AFTER the deploy. See that file for why.
 -- ===========================================================================
 
 create extension if not exists citext;
@@ -154,27 +160,6 @@ create policy mocks_read_approved on public.mocks for select to authenticated
 drop policy if exists profiles_read on public.profiles;
 create policy profiles_read on public.profiles for select to authenticated
   using (user_id = auth.uid() or (public.is_approved() and public.is_friend(user_id)));
-
--- ---------------------------------------------------------------------------
--- Fix profiles over-exposure with column grants.
---
--- Rationale for column grants over a profiles_public view:
---   Column grants are the minimal change: the schema stays flat and Drizzle's
---   SELECT * on the base table continues to work on the server connection
---   (which bypasses RLS). The risk is a future SELECT * in a path that runs
---   as the authenticated role — check:rls adds a guard for that. The
---   alternative (a profiles_public view with security_invoker = true) adds a
---   schema object and requires every friend-facing query to be pointed at the
---   view, which is more changes for the same outcome.
---
--- After these grants, a client (authenticated role) can only read:
---   user_id, name, avatar_url.
--- The app's server connection (the postgres role behind Drizzle) bypasses RLS
--- and column grants, so it still reads every column for viewer.ts, setup and
--- push notifications.
--- ---------------------------------------------------------------------------
-revoke select on public.profiles from authenticated;
-grant select (user_id, name, avatar_url) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- No backfill. The owner chose to start empty: nobody is anyone's friend on
