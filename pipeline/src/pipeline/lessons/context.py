@@ -2,9 +2,11 @@
 
 Two hard cases decide the design. `cs-http-https` has 162 documents and
 179K characters, far more than a prompt can hold, so documents are ranked by
-how well they match the topic and each is truncated. `beh-teamwork` has none
-at all, so the lesson falls back to roadmap notes and then to the model's own
-knowledge - a behavioural topic never needed a corpus.
+how well they match the topic and each is truncated. `beh-teamwork` has none at
+all - and a lesson with no material is not written, because `run.NoSource`
+refuses rather than letting the model answer from memory. So the job here is to
+find everything we actually downloaded that bears on a topic, which for a while
+meant only the documents somebody had mapped to it.
 """
 
 import re
@@ -19,6 +21,10 @@ MAX_CHARS = 14_000
 MAX_DOCS = 8
 MAX_DOC_CHARS = 2_500
 MAX_ROADMAP_NODES = 4
+# Problem statements, for a DSA pattern. Shorter than a document because six of
+# them should illustrate the pattern, not fill the whole prompt.
+MAX_PROBLEMS = 6
+MAX_PROBLEM_CHARS = 1_600
 STOP = {"and", "or", "the", "a", "an", "of", "in", "to", "vs", "with", "for", "on"}
 
 
@@ -54,14 +60,32 @@ def rank(candidates: list[tuple[frozenset, object]], target: set[str]) -> list[o
     return [item for _, _, item in scored]
 
 
-def for_topic(topic: dict, documents: list[dict]) -> tuple[str, list[str]]:
-    """Returns the prompt context and the source ids that went into it."""
+def for_topic(
+    topic: dict,
+    documents: list[dict],
+    spare: list[dict] | None = None,
+    problems: list[dict] | None = None,
+) -> tuple[str, list[str]]:
+    """Returns the prompt context and the source ids that went into it.
+
+    Four kinds of material, in the order they earn their place:
+
+    1. Roadmap notes - short, clean and authoritative, so they anchor the lesson
+       even when the scraped material around them is a mess.
+    2. Documents assigned to this topic. Somebody mapped them on purpose.
+    3. For a DSA pattern, the statements of the problems in it. These are the
+       best material we hold for a pattern and no lesson read one until now:
+       `sliding-window` was written from a single roadmap paragraph while 150
+       real problem statements sat in the same database.
+    4. Documents assigned to no topic at all, when the name overlaps. 2,346 of
+       5,290 downloaded documents have no topic, so nearly half the corpus was
+       invisible to every lesson. `rank` returns only what overlaps, so nothing
+       lands here by coincidence.
+    """
     target = words(topic["name"]) | words(topic.get("description") or "")
     parts: list[str] = []
     refs: list[str] = []
 
-    # Roadmap notes first: short, clean and authoritative, so they anchor the
-    # lesson even when the scraped material around them is a mess.
     for path in rank([(k, p) for k, p in roadmap_nodes()], target)[:MAX_ROADMAP_NODES]:
         parts.append(node_text(path))
         refs.append(f"roadmap-sh:{path.stem}")
@@ -70,6 +94,23 @@ def for_topic(topic: dict, documents: list[dict]) -> tuple[str, list[str]]:
     # A topic whose documents all miss the name still deserves its own material.
     chosen = (ranked or documents)[:MAX_DOCS]
     for doc in chosen:
+        body = (doc["body_md"] or "").strip()
+        parts.append(f"{doc['title']}\n{body[:MAX_DOC_CHARS]}")
+        refs.append(doc["id"])
+
+    for problem in (problems or [])[:MAX_PROBLEMS]:
+        statement = (problem["statement_md"] or "").strip()
+        if not statement:
+            continue
+        parts.append(f"Problem: {problem['title']} ({problem['difficulty']})\n{statement[:MAX_PROBLEM_CHARS]}")
+        # Keyed by the problem's own source so `publish._sources_of` credits it;
+        # a made-up prefix like "problem:" resolves to nothing and the reader's
+        # "Written from" line silently loses the source.
+        refs.append(f"{problem['source_id']}:{problem['slug']}")
+
+    # Only ever filler: no fallback to unranked, so a topic with nothing
+    # overlapping gets nothing rather than something arbitrary.
+    for doc in rank([(words(d["title"]), d) for d in (spare or [])], target)[: MAX_DOCS - len(chosen)]:
         body = (doc["body_md"] or "").strip()
         parts.append(f"{doc['title']}\n{body[:MAX_DOC_CHARS]}")
         refs.append(doc["id"])

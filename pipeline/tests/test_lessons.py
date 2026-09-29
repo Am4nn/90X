@@ -70,6 +70,38 @@ def test_accepts_a_question_followed_by_an_instruction():
     ]) == []
 
 
+def test_a_document_store_is_subject_matter_not_a_citation():
+    """sd-nosql-types wrote "The document store adds richer queries" and was
+    rejected for referring to source the reader cannot see. Document stores are
+    one of the NoSQL types the lesson is about. Same mistake as reading
+    List<Integer> as markup: the bare noun is too common to accuse."""
+    body = GOOD_BODY + ("\n\nThe document store adds richer queries but needs indexes. "
+                        "A document database nests fields inside one record. " * 12)
+    assert checks.check(body, ["What breaks under load?", "Why?", "Compare the two."]) == []
+
+
+def test_still_catches_a_document_being_cited():
+    problems = checks.check(GOOD_BODY + "\n\nAccording to the document, writes are cheap.",
+                            ["What breaks under load?", "Why?", "Compare the two."])
+    assert any("cannot see" in p for p in problems)
+    problems = checks.check(GOOD_BODY + "\n\nThe document describes three tradeoffs.",
+                            ["What breaks under load?", "Why?", "Compare the two."])
+    assert any("cannot see" in p for p in problems)
+
+
+def test_accepts_setup_before_the_ask():
+    """Interviewers set the scene and then ask, more often than they open with
+    the question. Requiring every sentence to be a prompt threw away
+    lld-polymorphism and sd-sql-vs-nosql on the re-grounding run: the first
+    rejected for a leading statement, the second because "use" was missing from
+    the imperative verbs."""
+    assert checks.check(GOOD_BODY, [
+        "Your team has a method with a long chain of instanceof checks. How would you refactor it?",
+        "Can a NoSQL system with quorum reads be considered CP under CAP? Use Cassandra as an example.",
+        "Traffic tripled overnight. The cache is cold. What do you look at first?",
+    ]) == []
+
+
 def test_rejects_an_answer_hiding_behind_a_question():
     """The whole field is rendered as what the interviewer says, so a
     declarative second sentence shows the reader the answer. Accepting a
@@ -310,3 +342,54 @@ def test_a_lesson_is_never_written_without_a_source(tmp_path):
     with pytest.raises(lesson_run.NoSource) as caught:
         lesson_run.one(NoLLM(), con, topic, documents=[])
     assert "no source material" in str(caught.value)
+
+
+def test_a_pattern_is_grounded_in_its_problems():
+    """`sliding-window` was written from one roadmap paragraph while 150 real
+    problem statements sat in the same database. The statements are source now,
+    and they are credited to the source they were downloaded from - a made-up
+    "problem:" prefix resolves to nothing in `publish._sources_of` and loses the
+    credit silently."""
+    from pipeline.lessons.context import for_topic
+
+    topic = {"slug": "sliding-window", "name": "Sliding Window", "domain": "dsa", "description": ""}
+    problems = [
+        {"slug": "longest-substring", "title": "Longest Substring Without Repeating Characters",
+         "difficulty": "Medium", "statement_md": "Given a string s, find the length of the longest " * 20,
+         "source_id": "leetcode-detailed"},
+    ]
+    context, refs = for_topic(topic, [], problems=problems)
+    assert "Longest Substring Without Repeating Characters" in context
+    assert "leetcode-detailed:longest-substring" in refs
+    assert not any(r.startswith("problem:") for r in refs)
+
+
+def test_an_unassigned_document_is_used_only_when_it_overlaps():
+    """2,346 of 5,290 documents have no topic, so nearly half the corpus was
+    invisible. They are filler, not candidates for anything: a topic with nothing
+    overlapping must get nothing rather than something arbitrary, which is the
+    fallback the assigned documents have and these must not."""
+    from pipeline.lessons.context import for_topic
+
+    topic = {"slug": "sd-consistent-hashing", "name": "Consistent hashing", "domain": "system_design",
+             "description": ""}
+    spare = [
+        {"id": "system-design-101:hashing", "title": "Consistent hashing explained",
+         "body_md": "A hash ring maps keys to nodes. " * 30},
+        {"id": "java-basics:threads", "title": "Java thread lifecycle", "body_md": "Threads. " * 60},
+    ]
+    context, refs = for_topic(topic, [], spare=spare)
+    assert "system-design-101:hashing" in refs, "an overlapping unassigned document is material"
+    assert "java-basics:threads" not in refs, "an unrelated one is not"
+
+
+def test_unassigned_documents_do_not_displace_assigned_ones():
+    """Somebody mapped the assigned ones on purpose; the rest are filler."""
+    from pipeline.lessons.context import for_topic
+
+    topic = {"slug": "cs-dns", "name": "DNS", "domain": "cs", "description": ""}
+    assigned = [{"id": f"tech-interview-handbook:dns-{i}", "title": f"DNS part {i}",
+                 "body_md": "How DNS resolves a name. " * 20} for i in range(8)]
+    spare = [{"id": "spare:dns-extra", "title": "DNS caching", "body_md": "TTLs. " * 40}]
+    _, refs = for_topic(topic, assigned, spare=spare)
+    assert "spare:dns-extra" not in refs, "MAX_DOCS was already filled by assigned documents"

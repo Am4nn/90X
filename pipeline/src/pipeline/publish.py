@@ -26,6 +26,31 @@ TABLES = [
 JSON_COLUMNS = {"companies", "solutions", "snippets", "practice", "source_refs"}
 ARRAY_COLUMNS = {"topic_slugs", "tags", "techniques", "problem_slugs"}
 
+# Publishing converges: whatever staging no longer has is deleted. That is right
+# for every row the pipeline owns and wrong for the rows it does not. A lesson
+# the Coach wrote on demand was never in staging, so to that delete it looks
+# like an orphan, and the next publish would quietly remove it. Extra predicates
+# that spare rows this pipeline did not write.
+#
+# `topics` needs one too, and for a less obvious reason: lessons.topic_slug is
+# `on delete cascade`, so dropping a topic the taxonomy no longer lists takes its
+# Coach-written lesson with it and the lessons exemption never gets a say. A
+# topic somebody is reading a lesson on stays until that lesson is dealt with;
+# keeping a stale taxonomy row is visible and recoverable, and silently deleting
+# someone's lesson is neither.
+NOT_OURS = {
+    "lessons": "and t.written_by is null",
+    "topics": ("and not exists (select 1 from public.lessons l "
+               "where l.topic_slug = t.slug and l.written_by is not null)"),
+}
+
+# On the way back in, the pipeline takes ownership again. Without this, a Coach
+# lesson written for a topic whose staging lesson had not yet been published
+# would be overwritten by pipeline text that kept `written_by` set - so the
+# pipeline's own words would be credited to a user and, worse, exempted from
+# every future delete by the rule above.
+RECLAIM = {"lessons": ["written_by = null"]}
+
 
 def _source_rows(con) -> list[tuple]:
     """sources.py entries plus any source id used by staging rows."""
@@ -122,9 +147,9 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = Fa
         cur = pg.cursor()
         for table, keys, columns in TABLES:
             rows = [tuple(_prepare(v, c) for v, c in zip(r, columns)) for r in _staging_rows(con, table, columns)]
-            updates = [c for c in columns if c not in keys]
+            updates = [f"{c} = excluded.{c}" for c in columns if c not in keys] + RECLAIM.get(table, [])
             conflict = f"on conflict ({', '.join(keys)}) " + (
-                f"do update set {', '.join(f'{c} = excluded.{c}' for c in updates)}" if updates else "do nothing")
+                f"do update set {', '.join(updates)}" if updates else "do nothing")
             placeholders = ", ".join(f"%s::jsonb" if c in JSON_COLUMNS else "%s" for c in columns)
             cur.executemany(f"insert into public.{table} ({', '.join(columns)}) values ({placeholders}) {conflict}", rows)
             # Remove rows that no longer exist in staging.
@@ -132,7 +157,8 @@ def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = Fa
             cur.executemany(f"insert into _keep values ({', '.join('%s' for _ in keys)})",
                             [tuple(str(r[columns.index(k)]) for k in keys) for r in rows])
             cur.execute(f"""delete from public.{table} t where not exists (
-                select 1 from _keep k where {' and '.join(f't.{k}::text = k.{k}' for k in keys)})""")
+                select 1 from _keep k where {' and '.join(f't.{k}::text = k.{k}' for k in keys)})
+                {NOT_OURS.get(table, '')}""")
             deleted = cur.rowcount
             cur.execute("drop table _keep")
             counts[table] = (len(rows), deleted)
