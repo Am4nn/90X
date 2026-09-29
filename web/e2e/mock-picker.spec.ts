@@ -25,6 +25,31 @@ test("typing filters the topics, choosing one fills the box, and the mock starts
   await expect(page).toHaveURL(MOCK_THREAD);
 });
 
+test("the box shows the short label and the form posts the full topic name", async ({ page }) => {
+  await signIn(page, "mock-label", { next: "/coach/mocks" });
+  const box = picker(page);
+
+  // "design" matches the raw names, not the labels shown in the list.
+  await box.fill("design");
+  await expect(page.getByRole("option")).toHaveCount(2);
+
+  await box.fill("url");
+  const only = page.getByRole("option");
+  await expect(only).toHaveCount(1);
+  await expect(only).toHaveText("URL shortener");
+  await only.click();
+
+  // The visible value is the short label; the hidden field carries the full name, and
+  // startMock refuses anything that is not in designTopics() - so reaching the thread is
+  // the proof that the full name was posted and not the label.
+  await expect(box).toHaveValue("URL shortener");
+  await start(page).click();
+  await expect(page).toHaveURL(MOCK_THREAD);
+
+  await page.goto("/coach/mocks");
+  await expect(page.getByRole("link", { name: /Design a URL shortener/ })).toBeVisible();
+});
+
 test("a search with no match says so, and leaving the box restores the chosen topic", async ({ page }) => {
   await signIn(page, "mock-none", { next: "/coach/mocks" });
   const box = picker(page);
