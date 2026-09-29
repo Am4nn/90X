@@ -31,10 +31,10 @@ test("an account that was never asked about its level plans exactly as before", 
   // is honest about what the planner is doing rather than showing a blank.
   await expect(level(page).getByRole("radio", { name: "Some practice" })).toHaveAttribute("aria-checked", "true");
 
-  // 120 minutes with no level is the round-robin this app has always produced:
-  // one of each slot. A level that leaked into the default would change this.
-  await expect(week(page)).toContainText("1 problem · 1 review · 1 topic · 1 card set");
-  await expect(week(page)).toContainText("120 min on a weekday, 180 min at the weekend.");
+  // The e2e fixture signs in at 95 minutes (a problem, a review and a topic,
+  // no card slot), and the page must show that real value, not a chip fallback.
+  await expect(week(page)).toContainText("1 problem · 1 review · 1 topic");
+  await expect(week(page)).toContainText("95 min on a weekday, 95 min at the weekend.");
 
   // The day-by-day editor is still all of it, and the length is still live.
   await expect(page.getByText(/Day 1 of 90/)).toBeVisible();

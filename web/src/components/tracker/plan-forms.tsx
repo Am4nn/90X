@@ -276,7 +276,10 @@ function AdjustTheWeek({ initial }: { initial: Templates }) {
         <span>Adjust the week</span>
         <span className="text-small font-normal text-mute">{open ? "Hide" : "Mon–Sun by hand"}</span>
       </button>
-      {open && <TemplateEditor initial={initial} />}
+      {/* Keyed by the template content so a "Rebuild the week" remounts the
+          editor with the fresh week instead of leaving a stale copy that a
+          later "Save plan" would write back over the rebuild. */}
+      {open && <TemplateEditor key={JSON.stringify(initial)} initial={initial} />}
     </section>
   );
 }
@@ -329,6 +332,7 @@ export function PlanEditor({
         <form action={weekAction} className="flex flex-col gap-3">
           <ChipGroup name="weekday" label="Time on a weekday" options={BUDGETS} defaultValue={weekday} value={wd} onChange={setWd} />
           <ChipGroup name="weekend" label="Time at the weekend" options={BUDGETS} defaultValue={weekend} value={we} onChange={setWe} />
+          <input type="hidden" name="level" value={chosen} />
           <p className="text-small text-mute">Rebuilds this week from these times. Adjust it by hand afterwards.</p>
           <div className="flex flex-wrap items-center gap-3">
             <SubmitButton pendingLabel="Rebuilding…" className={secondary}>

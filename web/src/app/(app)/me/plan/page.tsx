@@ -7,7 +7,6 @@ import { FocusForm, PlanEditor, StartPlanForm } from "@/components/tracker/plan-
 import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import { requireViewer } from "@/lib/auth/viewer";
-import { BUDGETS } from "@/lib/setup";
 import { activeCampaign, topCompanies } from "@/lib/tracker/campaign";
 import { daysBetween, localDate } from "@/lib/tracker/dates";
 import { asLevel } from "@/lib/tracker/level";
@@ -27,11 +26,12 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   );
 }
 
-/** A budget the chips can actually show. Anything else (a value from before the
- *  chips existed) falls back to the same default the form started with, rather
- *  than showing four unselected chips. */
+/** The stored time, shown as-is even when it isn't a chip (a value from before
+ *  the chips existed, or the e2e fixture's 95): a fallback would misstate the
+ *  real plan and let Rebuild silently rewrite it. Only a missing value uses the
+ *  default. */
 function budgetOr(value: number | null | undefined, fallback: string) {
-  return BUDGETS.some((b) => Number(b.value) === value) ? String(value) : fallback;
+  return value == null ? fallback : String(value);
 }
 
 export default async function PlanPage() {

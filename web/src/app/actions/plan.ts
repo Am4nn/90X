@@ -60,9 +60,15 @@ export async function setLevelAction(_: FormState, form: FormData): Promise<Form
  *  but did not save must not change the week behind their back. */
 export async function setWeekAction(_: FormState, form: FormData): Promise<FormState> {
   const viewer = await requireViewer();
-  const parsed = z.object({ weekday: minutes, weekend: minutes }).safeParse({ weekday: form.get("weekday"), weekend: form.get("weekend") });
+  const parsed = z
+    .object({ weekday: minutes, weekend: minutes, level: level.optional() })
+    .safeParse({ weekday: form.get("weekday"), weekend: form.get("weekend"), level: form.get("level") });
   if (!parsed.success) return { error: "Pick a time for a weekday and the weekend." };
   return guarded(async () => {
+    // Rebuild with the level the preview is showing, so what the reader previews
+    // is what they get; an old client that posts no level falls back to the
+    // saved one.
+    if (parsed.data.level) return setWeek(viewer.id, parsed.data.weekday, parsed.data.weekend, parsed.data.level);
     const [profile] = await db.select({ level: profiles.level }).from(profiles).where(eq(profiles.userId, viewer.id));
     return setWeek(viewer.id, parsed.data.weekday, parsed.data.weekend, asLevel(profile?.level));
   }, "Week rebuilt from your times.");
