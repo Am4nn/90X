@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, index, pgPolicy, pgTable, text, timestamp, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { check, index, pgPolicy, pgTable, text, timestamp, uniqueIndex, primaryKey, uuid } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 // Hand-written schema for the friends tables added in 20260929000019_friends.sql.
@@ -30,7 +30,7 @@ export const friendInvites = pgTable(
       .on(table.email)
       .where(sql`status = 'pending'`),
     check("friend_invites_status_check", sql`status in ('pending', 'accepted', 'revoked')`),
-    check("friend_invites_responded_check", sql`(status = 'pending') = (responded_at is null)`),
+    check("friend_invites_check", sql`(status = 'pending') = (responded_at is null)`),
     pgPolicy("friend_invites_read", {
       as: "permissive",
       for: "select",
@@ -65,7 +65,7 @@ export const friendships = pgTable(
     fromInvite: uuid("from_invite").references(() => friendInvites.id, { onDelete: "set null" }),
   },
   (table) => [
-    unique("friendships_pkey").on(table.userA, table.userB),
+    primaryKey({ columns: [table.userA, table.userB], name: "friendships_pkey" }),
     check("friendships_order_check", sql`user_a < user_b`),
     pgPolicy("friendships_read", {
       as: "permissive",

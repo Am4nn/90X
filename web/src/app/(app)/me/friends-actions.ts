@@ -14,6 +14,32 @@ function field(form: FormData, name: string): string | null {
   return typeof value === "string" && value ? value : null;
 }
 
+/**
+ * The service throws curated sentences for the cases a person can cause. Anything
+ * else is a driver or Postgres failure, and returning its text put things like
+ * "connection terminated unexpectedly" - or a constraint name - in the UI. Every
+ * other action in the app returns a fixed line (see admin/users/actions.ts), so
+ * these do too, and the real error goes to the log.
+ */
+const EXPECTED = new Set([
+  "Enter an email.",
+  "That does not look like an email.",
+  "You cannot invite yourself.",
+  "You are already friends.",
+  "You cannot accept your own invite.",
+  "Invite is for a different email.",
+  "Invite is no longer available.",
+  "You have invited that address enough times. Ask them another way.",
+]);
+
+function friendlyError(e: unknown): string {
+  const message = e instanceof Error ? e.message : "";
+  if (EXPECTED.has(message)) return message;
+  // The two with a number in them are generated, so they cannot be set members.
+  if (/^You have \d+ pending invites\./.test(message)) return message;
+  return "That didn't work. Try again.";
+}
+
 export async function sendInviteAction(_: FormState, form: FormData): Promise<FormState> {
   const viewer = await requireViewer();
   const rawEmail = form.get("email");
@@ -25,7 +51,7 @@ export async function sendInviteAction(_: FormState, form: FormData): Promise<Fo
     await invite(viewer.id, parsed.data);
   } catch (e) {
     console.error("send invite failed", e);
-    return { error: (e as Error).message };
+    return { error: friendlyError(e) };
   }
   revalidatePath("/me");
   revalidatePath("/today");
@@ -49,7 +75,7 @@ async function respond(kind: "accept" | "refuse" | "dismiss", form: FormData): P
     else await dismiss(inviteId, email);
   } catch (e) {
     console.error(`${kind} invite failed`, e);
-    return { error: (e as Error).message };
+    return { error: friendlyError(e) };
   }
   revalidatePath("/me");
   revalidatePath("/today");
@@ -76,7 +102,7 @@ export async function revokeAction(_: FormState, form: FormData): Promise<FormSt
     await revoke(inviteId, viewer.id);
   } catch (e) {
     console.error("revoke invite failed", e);
-    return { error: (e as Error).message };
+    return { error: friendlyError(e) };
   }
   revalidatePath("/me");
   return { ok: true };
@@ -90,7 +116,7 @@ export async function unfriendAction(_: FormState, form: FormData): Promise<Form
     await unfriend(viewer.id, otherId);
   } catch (e) {
     console.error("unfriend failed", e);
-    return { error: (e as Error).message };
+    return { error: friendlyError(e) };
   }
   revalidatePath("/me");
   revalidatePath("/today");

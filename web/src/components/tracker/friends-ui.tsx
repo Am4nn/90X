@@ -47,6 +47,9 @@ export function InviteForm({ sent, yourName }: { sent: SentInvite[]; yourName: s
         <div className="flex items-center gap-3">
           <input
             type="email"
+            // Placeholder is not an accessible name. /me is not in the axe scan,
+            // so nothing in CI would have said so.
+            aria-label="Friend's email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="friend@example.com"

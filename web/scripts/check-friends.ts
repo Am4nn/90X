@@ -4,7 +4,19 @@
 import { count, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { friendInvites, friendships } from "@/db/friends-schema";
-import { accept, dismiss, friendIds, invite, INVITE_CAP, pendingFor, refuse, revoke, sentBy, unfriend } from "@/lib/friends/service";
+import {
+  accept,
+  dismiss,
+  friendIds,
+  invite,
+  INVITE_CAP,
+  INVITES_PER_ADDRESS,
+  pendingFor,
+  refuse,
+  revoke,
+  sentBy,
+  unfriend,
+} from "@/lib/friends/service";
 
 // A check must never send real email: with these unset, sendEmail throws and
 // sendEmailBestEffort swallows it, so a rolled-back invite leaves no trace.
@@ -108,6 +120,31 @@ try {
     const toRevoke = await pendingFor("friend-f3@example.test", tx);
     await revoke(toRevoke[0]!.id, u1, tx);
     expect("revoke marks it revoked", (await sentBy(u1, tx)).find((i) => i.id === toRevoke[0]!.id)?.status === "revoked");
+
+    // A re-invite puts a dismissed invite back in front of the recipient. Before
+    // this, dismiss left status 'pending' so the unique index swallowed the
+    // re-invite, no email went, and the UI still said "Invite sent." - a dead
+    // end that reported success.
+    await invite(u1, "revive@example.test", tx);
+    const toDismiss = await pendingFor("revive@example.test", tx);
+    await dismiss(toDismiss[0]!.id, "revive@example.test", tx);
+    expect("a dismissed invite is not listed", (await pendingFor("revive@example.test", tx)).length === 0);
+    await invite(u1, "revive@example.test", tx);
+    expect("re-inviting un-dismisses it, so the recipient sees it again", (await pendingFor("revive@example.test", tx)).length === 1);
+
+    // Refusing and revoking both free a cap slot, so the per-sender cap alone let
+    // invite -> revoke -> invite send unbounded mail to one address.
+    for (let i = 0; i < INVITES_PER_ADDRESS; i++) {
+      const open = await pendingFor("spammed@example.test", tx);
+      if (open[0]) await revoke(open[0].id, u1, tx);
+      await invite(u1, "spammed@example.test", tx).catch(() => {});
+    }
+    const spamFail = await invite(u1, "spammed@example.test", tx).catch((e) => (e as Error).message);
+    expect(
+      `one address takes at most ${INVITES_PER_ADDRESS} invites from one sender`,
+      spamFail === "You have invited that address enough times. Ask them another way.",
+      String(spamFail),
+    );
 
     // The cap refuses past 20 pending invites per sender.
     for (let i = 0; i < INVITE_CAP; i++) {

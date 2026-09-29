@@ -87,10 +87,17 @@ $$;
 -- The signed-in user's email. SECURITY DEFINER for the same reason: a policy
 -- cannot read auth.users as the authenticated role — the first CI run failed
 -- with "permission denied for table users" when it tried.
-create function public.current_user_email() returns text
+-- Returns citext, not text, and that is load-bearing. `friend_invites.email` is
+-- citext; citext->text is the IMPLICIT cast while text->citext is only
+-- ASSIGNMENT, and operator resolution uses implicit casts only. So a text return
+-- made `email = public.current_user_email()` resolve to text = text -
+-- case-sensitive, which defeats the entire reason the column is citext. An IdP
+-- that stores First.Last@Corp.com would then match no invite at all, and
+-- check-rls could not see it because every address in it is already lowercase.
+create function public.current_user_email() returns citext
 language sql stable security definer set search_path = ''
 as $$
-  select email from auth.users where id = auth.uid();
+  select email::citext from auth.users where id = auth.uid();
 $$;
 
 -- ---------------------------------------------------------------------------

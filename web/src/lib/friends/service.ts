@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, eq, isNull, sql } from "drizzle-orm";
+import { and, count, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { friendInvites, friendships, profiles } from "@/db/schema";
 import { sendEmailBestEffort } from "@/lib/email";
@@ -12,6 +12,11 @@ import { collectFriendIds, orderedPair } from "./pairs";
 // group to a pair. The invite row IS the request; the email is a nudge.
 
 /** Maximum pending invites a single sender may have at once. */
+/** How many invites one sender may ever send to one address, refusals included.
+ *  A refused invite must not simply be re-sendable forever: the recipient has no
+ *  other way to stop it, because refusing is what frees the cap slot. */
+export const INVITES_PER_ADDRESS = 3;
+
 export const INVITE_CAP = 20;
 
 // ---------------------------------------------------------------------------
@@ -37,7 +42,28 @@ export async function pendingFor(email: string, q: Db = db): Promise<PendingInvi
     })
     .from(friendInvites)
     .innerJoin(profiles, eq(profiles.userId, friendInvites.invitedBy))
-    .where(and(eq(friendInvites.email, email.toLowerCase()), eq(friendInvites.status, "pending"), isNull(friendInvites.dismissedAt)))
+    .where(
+      and(
+        eq(friendInvites.email, email.toLowerCase()),
+        eq(friendInvites.status, "pending"),
+        isNull(friendInvites.dismissedAt),
+        // Two people can invite each other before either accepts. Once one is
+        // accepted they are friends, and the other invite would still read "X
+        // wants to compare progress" about somebody already on the scoreboard -
+        // and accepting it would silently no-op on the friendships conflict.
+        //
+        // The recipient's id comes from the address rather than a new parameter:
+        // this runs on the server connection, so there is no auth.uid() to read,
+        // and threading a viewer id through would change every call site for a
+        // card that is only cosmetically wrong.
+        sql`not exists (
+          select 1 from public.friendships f, auth.users u
+          where lower(u.email) = ${friendInvites.email}
+            and f.user_a = least(${friendInvites.invitedBy}, u.id)
+            and f.user_b = greatest(${friendInvites.invitedBy}, u.id)
+        )`,
+      ),
+    )
     .orderBy(friendInvites.createdAt);
   return rows;
 }
@@ -125,16 +151,54 @@ export async function invite(inviterId: string, rawEmail: string, q: Db = db): P
     if ((capRow?.n ?? 0) >= INVITE_CAP) {
       throw new Error(`You have ${INVITE_CAP} pending invites. Revoke one before sending another.`);
     }
+    // INVITE_CAP bounds how many invites are open at once, which is not the same
+    // as how many emails one address can be sent. `refuse` and `revoke` both
+    // take the row out of the partial unique index and free a cap slot, so
+    // invite -> revoke -> invite was an unbounded mailer pointed at any address,
+    // from a verified domain, with nothing the recipient could do about it.
+    const [toThisAddress] = await tx
+      .select({ n: count() })
+      .from(friendInvites)
+      .where(and(eq(friendInvites.invitedBy, inviterId), eq(friendInvites.email, email)));
+    if ((toThisAddress?.n ?? 0) >= INVITES_PER_ADDRESS) {
+      throw new Error("You have invited that address enough times. Ask them another way.");
+    }
     return tx.insert(friendInvites).values({ email, invitedBy: inviterId }).onConflictDoNothing().returning({ id: friendInvites.id });
   });
-  if (!row) return; // Already invited: silent no-op.
+  if (!row) {
+    // A pending row already exists. If the recipient dismissed it, it is
+    // invisible to them and invisible to this insert, so a re-invite did nothing
+    // at all while the UI said "Invite sent." - a dead end that reported
+    // success, recoverable only by the sender noticing a stale row and revoking
+    // it. A re-invite is exactly the signal to put it back in front of them.
+    const [revived] = await q
+      .update(friendInvites)
+      .set({ dismissedAt: null })
+      .where(
+        and(
+          eq(friendInvites.invitedBy, inviterId),
+          eq(friendInvites.email, email),
+          eq(friendInvites.status, "pending"),
+          isNotNull(friendInvites.dismissedAt),
+        ),
+      )
+      .returning({ id: friendInvites.id });
+    if (!revived) return; // Genuinely still pending and visible: nothing to do.
+    await notifyInvitee(inviterId, email, revived.id, q);
+    return;
+  }
 
+  await notifyInvitee(inviterId, email, row.id, q);
+}
+
+/** The invite email, for both a fresh invite and a re-invite that un-dismissed one. */
+async function notifyInvitee(inviterId: string, email: string, inviteId: string, q: Db): Promise<void> {
   const [me] = await q.select({ name: profiles.name }).from(profiles).where(eq(profiles.userId, inviterId));
   await sendEmailBestEffort({
     actorId: inviterId,
     kind: "invite",
     email: friendInviteEmail(email, me?.name ?? "Someone"),
-    payload: { invite_id: row.id },
+    payload: { invite_id: inviteId },
   });
 }
 
