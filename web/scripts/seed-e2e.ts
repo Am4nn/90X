@@ -7,7 +7,19 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { cardBatches, cards, lessons, patternTricks, problems, roadmapNodes, sources, topicLinks, topics, usersInAuth, weeklyReviews } from "@/db/schema";
+import {
+  cardBatches,
+  cards,
+  lessons,
+  patternTricks,
+  problems,
+  roadmapNodes,
+  sources,
+  topicLinks,
+  topics,
+  usersInAuth,
+  weeklyReviews,
+} from "@/db/schema";
 import {
   LESSON,
   DRAFT_BATCH,
