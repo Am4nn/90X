@@ -41,13 +41,17 @@ test("a tick made in the Roadmap view survives a reload", async ({ page }) => {
   await signIn(page, "roadmap", { next: "/library?area=system_design&view=roadmap" });
   const tick = page.getByRole("button", { name: /^Mark .* as covered$/ }).first();
   const name = (await tick.getAttribute("aria-label")) ?? "";
+  // The tick is optimistic: the row flips before tickRoadmapNodeAction returns, and a
+  // reload that beats the write aborts the action's own POST, so the tick is lost and
+  // reloading again cannot bring it back. Waiting for that POST is the difference
+  // between asserting the write happened and asserting the button changed colour.
+  const written = page.waitForResponse((r) => r.request().method() === "POST" && r.ok());
   await tick.click();
   const ticked = page.getByRole("button", { name: name.replace("as covered", "as not covered") });
   await expect(ticked).toHaveAttribute("aria-pressed", "true");
-  await expect(async () => {
-    await page.reload();
-    await expect(ticked).toHaveAttribute("aria-pressed", "true");
-  }).toPass();
+  await written;
+  await page.reload();
+  await expect(ticked).toHaveAttribute("aria-pressed", "true");
 });
 
 test("DSA has no toggle and keeps its Pattern Map", async ({ page }) => {
