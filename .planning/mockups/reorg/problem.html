@@ -6,18 +6,15 @@
 <title>90x mocks · Problem page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="mock.css?v=2">
-<style>
-  .actionbar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--ln); background: var(--bg); }
-</style>
 </head>
 <body>
 <div class="wrap">
 
 <div class="dochead">
-  <h1 class="title">DSA problem — check-in and read</h1>
+  <h1 class="title">DSA problem, check-in and read</h1>
   <a href="index.html">← All screens</a>
 </div>
-<p class="lede">Where a check-in actually happens, and the least-designed page in the app. Two directions: act at the bottom while you read, or act up front before the statement. Either way, each outcome leads somewhere and your history comes first.</p>
+<p class="lede">LeetCode-first: <b>Open on LeetCode</b> is the first, obvious action, then a <b>Sync with LeetCode</b> button that logs the attempt for you (so no one can fudge it), with manual check-in as the fallback and a note always there. All of it above the statement on a phone.</p>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
@@ -27,39 +24,35 @@
 <g id="i-friends"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16.5 5.6a3 3 0 0 1 0 5.6"/><path d="M18 14.6A6 6 0 0 1 21.5 20"/></g>
 <g id="i-me"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
 <g id="i-back"><path d="M15 5l-7 7 7 7"/></g>
-<g id="i-up"><path d="M6 15l6-6 6 6"/></g>
+<g id="i-ext"><path d="M14 5h5v5M19 5l-8 8M18 13v6H5V6h6"/></g>
+<g id="i-sync"><path d="M20 11a8 8 0 0 0-14-4M4 13a8 8 0 0 0 14 4"/><path d="M6 4v3h3M18 20v-3h-3"/></g>
 </defs></svg>
 
 <section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
-  <div class="choice-h"><span class="kicker">Direction A</span><h2 class="heading">Read first, act at the bottom</h2></div>
-  <p class="choice-trade">The idea and the statement lead; a sticky bar carries the three outcomes, always reachable. <b>Trade:</b> two bars at the foot on a phone (check-in over tabs).</p>
+  <div class="choice-h"><span class="kicker">Chosen</span><h2 class="heading">Open, sync, or check in, before the reading</h2></div>
+  <p class="choice-trade">Two states on a phone: before you sync, and after. The desktop puts the read on the left and the LeetCode-first panel on the right.</p>
 
   <div class="frames">
-    <!-- A · phone -->
+    <!-- phone · before sync -->
     <div class="dev phone" style="width:390px">
       <div class="screen">
         <div class="page">
           <div style="display:flex; align-items:center; gap:8px"><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-back"/></svg></span><span class="small">Graphs</span></div>
-          <div>
-            <span class="title">Course Schedule II</span>
-            <div class="small" style="margin-top:6px">LeetCode 210 · Medium · graphs, topological sort</div>
-          </div>
-          <div class="card"><div class="row"><span class="tx2" style="font-size:14px">You solved this with hints <b class="tx2">3 days ago</b> in 24m</span></div></div>
+          <div><span class="title">Course Schedule II</span><div class="small" style="margin-top:6px">LeetCode 210 · Medium · graphs, topological sort</div></div>
 
-          <div>
-            <div class="heading" style="margin-bottom:12px">The idea</div>
-            <div class="card list">
-              <div class="row"><span><span style="font-weight:700">Graphs</span><div class="small">Pattern this problem is testing</div></span><span class="small">Lesson</span></div>
-              <div class="row"><span><span style="font-weight:700">Topological sort</span><div class="small">Kahn's algorithm on in-degrees</div></span><span class="small">Trick</span></div>
-            </div>
+          <span class="btn p" style="width:100%"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-ext"/></svg>Open on LeetCode</span>
+
+          <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--ln2)">
+            <div style="display:flex; align-items:baseline; justify-content:space-between"><span class="heading">Check in</span><span class="small">Last: hints · 3d ago</span></div>
+            <span class="btn s" style="width:100%"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sync"/></svg>Sync with LeetCode</span>
+            <span class="small">Pulls your submission, solved, time taken, hints, so the log is real. Or check in by hand.</span>
+            <div style="display:flex; gap:8px"><span class="btn s sm" style="flex:1">Solved</span><span class="btn s sm" style="flex:1">Hints</span><span class="btn s sm" style="flex:1">Missed</span></div>
+            <div class="input" style="height:auto; padding:11px 13px; color:var(--mu)">Add a note…</div>
           </div>
 
-          <div class="card pad"><p style="margin:0; color:var(--tx2); font-size:14px">There are a total of <b class="tx">numCourses</b> courses you have to take, labelled 0 to numCourses−1. Given prerequisite pairs, return the ordering to finish all courses, or an empty array if impossible.</p></div>
-
+          <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="heading">The idea</span><span class="tx2" style="font-size:14px"><b class="tx">Graphs</b> · topological sort, Kahn's algorithm on in-degrees. A cycle means no ordering exists.</span></div>
+          <div class="card pad"><p style="margin:0; color:var(--tx2); font-size:14px">There are a total of <b class="tx">numCourses</b> courses. Given prerequisite pairs, return the ordering to finish all courses, or an empty array if impossible.</p></div>
           <div class="card row" style="padding:14px 18px"><span style="font-weight:700">Reference solution</span><span class="small">Java · tap to show</span></div>
-        </div>
-        <div class="actionbar">
-          <span class="btn p sm" style="flex:1">Solved</span><span class="btn s sm" style="flex:1">With hints</span><span class="btn s sm" style="flex:1">Didn't solve</span>
         </div>
         <div class="tabbar">
           <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
@@ -71,69 +64,28 @@
         </div>
       </div>
     </div>
-    <!-- A · desktop -->
-    <div class="dev desk">
-      <div class="appdesk">
-        <aside class="side">
-          <div class="logo">90<span>x</span></div>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-today"/></svg>Today</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-feed"/></svg>Feed</span>
-          <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lib"/></svg>Library</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coach"/></svg>Coach</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
-          <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
-        </aside>
-        <div class="main">
-          <div style="display:flex; align-items:baseline; justify-content:space-between"><span class="title">Course Schedule II</span><span class="small">LeetCode 210 · Medium</span></div>
-          <div class="cols2b">
-            <div class="stack6">
-              <div class="card pad" style="gap:10px; display:flex; flex-direction:column"><span class="heading">The idea</span><span class="tx2">Graphs, with <b class="tx">topological sort</b> — Kahn's algorithm on in-degrees. A cycle means no ordering exists.</span></div>
-              <div class="card pad"><p style="margin:0; color:var(--tx2); font-size:14px">There are a total of <b class="tx">numCourses</b> courses. Given prerequisite pairs, return the ordering to finish all courses, or an empty array if impossible.</p></div>
-              <div class="card row" style="padding:14px 18px"><span style="font-weight:700">Reference solution</span><span class="small">Java · tap to show</span></div>
-            </div>
-            <aside class="stack">
-              <div class="card pad" style="gap:12px; display:flex; flex-direction:column">
-                <span class="heading">Log this attempt</span>
-                <span class="small">You solved it with hints 3 days ago in 24m.</span>
-                <span class="btn p">Solved</span>
-                <span class="btn s">Solved with hints</span>
-                <span class="btn s">Didn't solve</span>
-              </div>
-              <div class="card list">
-                <div class="row"><span style="font-weight:700">Review solution</span><span class="mu">→</span></div>
-                <div class="row"><span style="font-weight:700">Learn the pattern</span><span class="mu">→</span></div>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p class="caption"><b>Direction A.</b> Reading leads; the log is a sticky bar on a phone and the top of the right column on desktop. The reference solution stays a reveal.</p>
-  </div>
-</section>
-
-<section class="choice">
-  <div class="choice-h"><span class="kicker">Direction B</span><h2 class="heading">Act up front</h2></div>
-  <p class="choice-trade">The log is the first card, above the statement — you record after solving, then read. <b>Trade:</b> pushes the problem down; best when you arrive having already solved it.</p>
-
-  <div class="frames">
+    <!-- phone · after sync -->
     <div class="dev phone" style="width:390px">
       <div class="screen">
         <div class="page">
           <div style="display:flex; align-items:center; gap:8px"><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-back"/></svg></span><span class="small">Graphs</span></div>
-          <div><span class="title">Course Schedule II</span><div class="small" style="margin-top:6px">LeetCode 210 · Medium</div></div>
+          <div><span class="title">Course Schedule II</span><div class="small" style="margin-top:6px">LeetCode 210 · Medium · graphs, topological sort</div></div>
 
-          <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--ln2)">
-            <span class="heading">How did it go?</span>
-            <div style="display:flex; flex-direction:column; gap:10px">
-              <span class="btn p">Solved</span>
-              <span class="btn s">Solved with hints</span>
-              <span class="btn s">Didn't solve</span>
+          <span class="btn p" style="width:100%"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-ext"/></svg>Open on LeetCode</span>
+
+          <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--acc)">
+            <div style="display:flex; align-items:center; justify-content:space-between"><span style="display:flex; align-items:center; gap:8px"><span class="ok" style="font-weight:700">✓</span><span class="heading">Checked in by LeetCode</span></span><span class="small">just now</span></div>
+            <div style="display:flex; gap:10px"><span class="tag" style="--c:var(--ok)">Solved</span><span class="tag" style="--c:var(--mu)">24m</span><span class="tag" style="--c:var(--mu)">2 tries</span></div>
+            <div>
+              <div class="small" style="margin-bottom:8px">Time taken</div>
+              <div style="display:flex; gap:8px"><span class="chip">15m</span><span class="chip on">30m</span><span class="chip">45m</span><span class="chip">60m+</span></div>
             </div>
-            <span class="small">Last time: solved with hints, 3 days ago, 24m.</span>
+            <div style="display:flex; align-items:center; justify-content:space-between"><span class="small">Used hints?</span><span class="switch"></span></div>
+            <div class="input" style="height:auto; padding:11px 13px; color:var(--tx); border-color:var(--acc)">Kahn's, forgot to seed queue with all in-degree-0 nodes.</div>
+            <span class="small acc" style="font-weight:700">Add to your log</span>
           </div>
 
-          <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="heading">The idea</span><span class="tx2" style="font-size:14px">Graphs · topological sort — Kahn's algorithm on in-degrees. A cycle means no ordering exists.</span></div>
+          <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="heading">The idea</span><span class="tx2" style="font-size:14px"><b class="tx">Graphs</b> · topological sort, Kahn's algorithm on in-degrees.</span></div>
           <div class="card pad"><p style="margin:0; color:var(--tx2); font-size:14px">There are a total of <b class="tx">numCourses</b> courses. Given prerequisite pairs, return the ordering to finish all courses, or an empty array if impossible.</p></div>
           <div class="card row" style="padding:14px 18px"><span style="font-weight:700">Reference solution</span><span class="small">Java · tap to show</span></div>
         </div>
@@ -148,6 +100,7 @@
       </div>
     </div>
 
+    <!-- desktop -->
     <div class="dev desk">
       <div class="appdesk">
         <aside class="side">
@@ -160,29 +113,29 @@
           <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
         </aside>
         <div class="main">
-          <div style="display:flex; align-items:baseline; justify-content:space-between"><span class="title">Course Schedule II</span><span class="small">LeetCode 210 · Medium</span></div>
+          <div class="shead"><span class="title">Course Schedule II</span><span class="btn p sm"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-ext"/></svg>Open on LeetCode</span></div>
+          <div class="small" style="margin-top:-14px">LeetCode 210 · Medium · graphs, topological sort</div>
           <div class="cols2b">
             <div class="stack6">
-              <div class="card pad" style="gap:12px; display:flex; flex-direction:column; border-color:var(--ln2)">
-                <span class="heading">How did it go?</span>
-                <div style="display:flex; gap:10px"><span class="btn p sm">Solved</span><span class="btn s sm">With hints</span><span class="btn s sm">Didn't solve</span></div>
-                <span class="small">Last time: solved with hints, 3 days ago, 24m.</span>
-              </div>
-              <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="heading">The idea</span><span class="tx2">Graphs · topological sort — Kahn's algorithm on in-degrees.</span></div>
+              <div class="card pad" style="gap:8px; display:flex; flex-direction:column"><span class="heading">The idea</span><span class="tx2">Graphs · topological sort, Kahn's algorithm on in-degrees.</span></div>
               <div class="card pad"><p style="margin:0; color:var(--tx2); font-size:14px">There are a total of <b class="tx">numCourses</b> courses. Given prerequisite pairs, return the ordering to finish all courses, or an empty array if impossible.</p></div>
+              <div class="card row" style="padding:14px 18px"><span style="font-weight:700">Reference solution</span><span class="small">Java · tap to show</span></div>
+              <div class="card list"><div class="row"><span style="font-weight:700">Review solution</span><span class="mu">→</span></div><div class="row"><span style="font-weight:700">Learn the pattern</span><span class="mu">→</span></div></div>
             </div>
             <aside class="stack">
-              <div class="card row" style="padding:14px 18px"><span style="font-weight:700">Reference solution</span><span class="small">Java</span></div>
-              <div class="card list">
-                <div class="row"><span style="font-weight:700">Review solution</span><span class="mu">→</span></div>
-                <div class="row"><span style="font-weight:700">Learn the pattern</span><span class="mu">→</span></div>
+              <div class="card pad" style="gap:14px; display:flex; flex-direction:column; border-color:var(--ln2)">
+                <span class="heading">Check in</span>
+                <span class="btn s"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sync"/></svg>Sync with LeetCode</span>
+                <span class="small">Pulls your submission, solved, time, hints. Or check in by hand.</span>
+                <div style="display:flex; gap:8px"><span class="btn s sm" style="flex:1">Solved</span><span class="btn s sm" style="flex:1">Hints</span><span class="btn s sm" style="flex:1">Missed</span></div>
+                <div class="input" style="height:auto; padding:11px 13px; color:var(--mu)">Add a note…</div>
               </div>
             </aside>
           </div>
         </div>
       </div>
     </div>
-    <p class="caption"><b>Direction B.</b> The log card leads on both viewports; you record first, then read. Clearest when you arrive from a solve, weaker when you come to study.</p>
+    <p class="caption"><b>Chosen.</b> Open on LeetCode is the first action; Sync logs the attempt and keeps time, hints and a note editable; manual check-in is the fallback. All above the statement on a phone.</p>
   </div>
 </section>
 
