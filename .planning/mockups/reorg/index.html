@@ -43,6 +43,17 @@
   .pickbar .picks b { color: var(--tx); }
   .pickbar .picks .none { color: var(--mu); }
   .copied { color: var(--ok); font-weight: 700; }
+  .notewrap { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .notelabel { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 "Manrope", sans-serif; color: var(--mu); }
+  .notebadge { display: none; font: 700 12px/1 "Manrope", sans-serif; color: var(--acc); background: var(--accbg); border-radius: 8px; padding: 3px 8px; }
+  .optnote {
+    width: 100%; min-height: 46px; resize: vertical;
+    background: var(--bg); color: var(--tx); border: 1px solid var(--ln2); border-radius: 12px;
+    padding: 9px 11px; font: 500 13px/1.45 "Manrope", sans-serif; outline: none;
+    transition: border-color 120ms ease;
+  }
+  .optnote::placeholder { color: var(--mu); }
+  .optnote:focus { border-color: var(--acc); }
 </style>
 </head>
 <body>
@@ -51,7 +62,7 @@
 <div class="dochead">
   <h1 class="display">Me &amp; Coach · reorg mocks</h1>
 </div>
-<p class="lede">Click a choice on each screen below, then <b>Copy picks</b> and paste it back to me. Nothing is built until you choose. The plan (and why) is in <b>.planning/plans/2026-09-29-simplify-me-and-coach.md</b>.</p>
+<p class="lede">For each screen: click a choice, and add a <b>note</b> if you want. Then <b>Copy picks + notes</b> and paste it back to me. Nothing is built until you choose. The plan (and why) is in <b>.planning/plans/2026-09-29-simplify-me-and-coach.md</b>.</p>
 
 <div class="card pad" style="gap:16px; display:flex; flex-direction:column; margin:24px 0 8px">
   <div class="tabs">
@@ -135,7 +146,7 @@
 <div class="pickbar">
   <span class="picks" id="picks"><span class="none">No picks yet — choose one per screen.</span></span>
   <button class="btn s sm" id="clear" type="button">Clear</button>
-  <button class="btn p sm" id="copy" type="button">Copy picks</button>
+  <button class="btn p sm" id="copy" type="button">Copy picks + notes</button>
 </div>
 
 <p class="caption" style="max-width:78ch">Composition mocks, not final code. Readiness still shows on both Me and Today; the Plan link stays on both; the accent stays cyan with topic/status colours earned by meaning. Pick a direction per screen and I'll fold the winners into the implementation.</p>
@@ -144,79 +155,113 @@
 
 <script>
 (function () {
-  var KEY = "90x-reorg-picks";
-  var picks = {};
-  try { picks = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { picks = {}; }
+  var PICK_KEY = "90x-reorg-picks";
+  var NOTE_KEY = "90x-reorg-notes";
+  var picks = {}, notes = {};
+  try { picks = JSON.parse(localStorage.getItem(PICK_KEY) || "{}"); } catch (e) { picks = {}; }
+  try { notes = JSON.parse(localStorage.getItem(NOTE_KEY) || "{}"); } catch (e) { notes = {}; }
   var tiles = Array.prototype.slice.call(document.querySelectorAll(".tile"));
 
+  function screenOf(tile) { return tile.getAttribute("data-screen"); }
+  function noteText(screen) { return (notes[screen] || "").trim(); }
+
   function sync() {
+    var withNotes = 0;
     tiles.forEach(function (tile) {
-      var screen = tile.getAttribute("data-screen");
+      var screen = screenOf(tile);
       Array.prototype.forEach.call(tile.querySelectorAll(".optsel"), function (b) {
-        b.classList.toggle("on", picks[screen] === b.getAttribute("data-val"));
-        b.setAttribute("aria-pressed", picks[screen] === b.getAttribute("data-val") ? "true" : "false");
+        var on = picks[screen] === b.getAttribute("data-val");
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
       });
+      var has = !!noteText(screen);
+      if (has) withNotes++;
+      var badge = tile.querySelector(".notebadge");
+      if (badge) badge.style.display = has ? "inline-flex" : "none";
     });
     var parts = [];
-    tiles.forEach(function (tile) {
-      var screen = tile.getAttribute("data-screen");
-      if (picks[screen]) parts.push(screen + ": " + picks[screen]);
-    });
-    document.getElementById("picks").innerHTML =
-      parts.length ? "<b>" + parts.join("  ·  ") + "</b>" : '<span class="none">No picks yet — choose one per screen.</span>';
+    tiles.forEach(function (tile) { var s = screenOf(tile); if (picks[s]) parts.push(s + ": " + picks[s]); });
+    var el = document.getElementById("picks");
+    var noteBit = withNotes ? (withNotes + " note" + (withNotes > 1 ? "s" : "")) : "";
+    if (parts.length || withNotes) {
+      el.innerHTML = "<b>" + (parts.join("  ·  ") || "No picks") + "</b>" + (noteBit ? "  ·  " + noteBit : "");
+    } else {
+      el.innerHTML = '<span class="none">No picks yet — choose one per screen and add notes if you like.</span>';
+    }
   }
 
   tiles.forEach(function (tile) {
-    var screen = tile.getAttribute("data-screen");
+    var screen = screenOf(tile);
+
+    // Selectable directions.
     Array.prototype.forEach.call(tile.querySelectorAll(".optsel"), function (b) {
       b.addEventListener("click", function () {
-        picks[screen] = picks[screen] === b.getAttribute("data-val") ? null : b.getAttribute("data-val");
+        var v = b.getAttribute("data-val");
+        picks[screen] = picks[screen] === v ? null : v;
         if (!picks[screen]) delete picks[screen];
-        try { localStorage.setItem(KEY, JSON.stringify(picks)); } catch (e) {}
+        try { localStorage.setItem(PICK_KEY, JSON.stringify(picks)); } catch (e) {}
         sync();
       });
     });
-  });
 
-  // Make each tile open its screen mock in a new tab, and add an explicit button.
-  tiles.forEach(function (tile) {
+    // A note field on every question.
+    var wrap = document.createElement("label");
+    wrap.className = "notewrap";
+    wrap.innerHTML =
+      '<span class="notelabel">Note <span class="notebadge">added</span></span>' +
+      '<textarea class="optnote" rows="2" placeholder="Add a note for this screen…"></textarea>';
+    var ta = wrap.querySelector("textarea");
+    ta.value = notes[screen] || "";
+    ta.addEventListener("input", function () {
+      if (ta.value.trim()) notes[screen] = ta.value; else delete notes[screen];
+      try { localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); } catch (e) {}
+      sync();
+    });
+
+    // Open the full screen mock.
     var link = tile.querySelector("a.title");
-    if (!link) return;
     var btn = document.createElement("a");
     btn.className = "btn s sm";
-    btn.href = link.getAttribute("href");
+    btn.href = link ? link.getAttribute("href") : "#";
     btn.target = "_blank";
     btn.rel = "noopener";
     btn.style.cssText = "align-self:flex-start; margin-top:4px";
     btn.textContent = "Open all directions ↗";
     btn.addEventListener("click", function (ev) { ev.stopPropagation(); });
+
+    tile.appendChild(wrap);
     tile.appendChild(btn);
+
     tile.style.cursor = "pointer";
     tile.addEventListener("click", function (ev) {
-      if (ev.target.closest(".optsel") || ev.target.closest("a") || ev.target.closest("button")) return;
-      window.open(link.getAttribute("href"), "_blank");
+      if (ev.target.closest(".optsel") || ev.target.closest("a") || ev.target.closest("button") || ev.target.closest(".notewrap")) return;
+      if (link) window.open(link.getAttribute("href"), "_blank");
     });
   });
 
   document.getElementById("clear").addEventListener("click", function () {
-    picks = {};
-    try { localStorage.removeItem(KEY); } catch (e) {}
+    picks = {}; notes = {};
+    try { localStorage.removeItem(PICK_KEY); localStorage.removeItem(NOTE_KEY); } catch (e) {}
+    tiles.forEach(function (t) { var ta = t.querySelector(".optnote"); if (ta) ta.value = ""; });
     sync();
   });
 
   document.getElementById("copy").addEventListener("click", function () {
-    var parts = [];
+    var lines = ["90x reorg — my picks"];
     tiles.forEach(function (tile) {
-      var screen = tile.getAttribute("data-screen");
-      if (picks[screen]) parts.push(screen + ": " + picks[screen]);
+      var s = screenOf(tile);
+      var p = picks[s], n = noteText(s);
+      if (!p && !n) return;
+      lines.push("- " + s + ": " + (p || "(no pick)"));
+      if (n) lines.push("    note: " + n.replace(/\s*\n+\s*/g, " / "));
     });
-    var text = parts.length ? "90x reorg picks — " + parts.join(", ") : "No picks yet.";
+    var text = lines.length > 1 ? lines.join("\n") : "No picks or notes yet.";
     var btn = this;
-    function done() { btn.textContent = "Copied"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = "Copy picks"; btn.classList.remove("copied"); }, 1400); }
+    function done() { btn.textContent = "Copied"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = "Copy picks + notes"; btn.classList.remove("copied"); }, 1400); }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { window.prompt("Copy your picks:", text); });
+      navigator.clipboard.writeText(text).then(done, function () { window.prompt("Copy your picks + notes:", text); });
     } else {
-      window.prompt("Copy your picks:", text);
+      window.prompt("Copy your picks + notes:", text);
     }
   });
 
