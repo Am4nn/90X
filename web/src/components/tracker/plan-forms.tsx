@@ -189,6 +189,26 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (v: numb
 
 function TemplateEditor({ initial }: { initial: Templates }) {
   const [state, action] = useActionState<FormState, FormData>(setTemplatesAction, {});
+  return (
+    <form action={action} className="flex flex-col gap-4">
+      {/* The working copy is keyed by its initial value so a "Rebuild the week"
+          resets it to the rebuilt week, while this form keeps its own save note
+          through that remount (a remount here would clear "Saved."). */}
+      <EditorBody key={JSON.stringify(initial)} initial={initial} />
+      <p className="text-small text-mute">A card slot is 10 answers in the Feed. Each day also needs a problem, review or topic.</p>
+      <div className="flex items-center gap-3">
+        <SubmitButton pendingLabel="Saving…" className={secondary}>
+          Save plan
+        </SubmitButton>
+        <FormMessage state={state} />
+      </div>
+    </form>
+  );
+}
+
+/** The day-by-day working copy. Keyed by its initial value so a rebuild resets
+ *  it; editing a stepper changes only this component's own state. */
+function EditorBody({ initial }: { initial: Templates }) {
   const [templates, setTemplates] = useState(initial);
   const set = (day: Weekday, slot: SlotType, v: number) =>
     setTemplates((t) => {
@@ -198,7 +218,7 @@ function TemplateEditor({ initial }: { initial: Templates }) {
     });
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <>
       <input type="hidden" name="templates" value={JSON.stringify(templates)} />
       {/* Phones: one card per day, since four steppers across don't fit. */}
       <ul className="flex flex-col divide-y divide-line rounded-xl border border-line bg-surface md:hidden">
@@ -251,14 +271,7 @@ function TemplateEditor({ initial }: { initial: Templates }) {
           </tbody>
         </table>
       </div>
-      <p className="text-small text-mute">A card slot is 10 answers in the Feed. Each day also needs a problem, review or topic.</p>
-      <div className="flex items-center gap-3">
-        <SubmitButton pendingLabel="Saving…" className={secondary}>
-          Save plan
-        </SubmitButton>
-        <FormMessage state={state} />
-      </div>
-    </form>
+    </>
   );
 }
 
@@ -276,10 +289,7 @@ function AdjustTheWeek({ initial }: { initial: Templates }) {
         <span>Adjust the week</span>
         <span className="text-small font-normal text-mute">{open ? "Hide" : "Mon–Sun by hand"}</span>
       </button>
-      {/* Keyed by the template content so a "Rebuild the week" remounts the
-          editor with the fresh week instead of leaving a stale copy that a
-          later "Save plan" would write back over the rebuild. */}
-      {open && <TemplateEditor key={JSON.stringify(initial)} initial={initial} />}
+      {open && <TemplateEditor initial={initial} />}
     </section>
   );
 }
