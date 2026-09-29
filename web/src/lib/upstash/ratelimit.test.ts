@@ -1,39 +1,38 @@
 import { describe, expect, it } from "vitest";
-import { SLOT_LIMITS, slotDecision } from "./ratelimit";
-
-describe("slotDecision", () => {
-  const now = 1_700_000_000_000;
-
-  it("allows within the window", () => {
-    expect(slotDecision({ success: true, reset: now + 60_000 }, now)).toEqual({ allowed: true, retryAfterSec: 0 });
-  });
-
-  it("refuses past the window and reports the wait", () => {
-    expect(slotDecision({ success: false, reset: now + 60_000 }, now)).toEqual({ allowed: false, retryAfterSec: 60 });
-  });
-
-  it("fails closed when the limiter itself failed", () => {
-    // A paid action must not run when we cannot meter it (decision, not accident).
-    expect(slotDecision(null, now)).toEqual({ allowed: false, retryAfterSec: 0 });
-  });
-
-  it("fails closed when the limiter times out and admits it could not meter", () => {
-    // @upstash/ratelimit returns success:true with reason:"timeout" when Redis
-    // hangs past its 5s timeout. That must be a refusal, or a hung Redis opens
-    // the meter.
-    expect(slotDecision({ success: true, reset: 0, reason: "timeout" }, now)).toEqual({ allowed: false, retryAfterSec: 0 });
-  });
-
-  it("never reports a sub-second retry", () => {
-    expect(slotDecision({ success: false, reset: now + 200 }, now).retryAfterSec).toBe(1);
-  });
-});
+import { rateCheck } from "@/lib/coach/chat-rules";
+import { SLOT_LIMITS, type SlotKind } from "./ratelimit";
 
 describe("SLOT_LIMITS", () => {
   it("has a ceiling for every paid action", () => {
     expect(Object.keys(SLOT_LIMITS).toSorted()).toEqual(["grade", "mock", "review"]);
     for (const kind of Object.values(SLOT_LIMITS)) {
-      expect(kind.tokens).toBeGreaterThan(0);
+      expect(kind.limit).toBeGreaterThan(0);
+      expect(kind.windowMs).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("the paid-action ceiling, via the shared sliding window", () => {
+  const now = 1_700_000_000_000;
+  const kind: SlotKind = "review";
+
+  it("allows within the window and stores the new stamp", () => {
+    const out = rateCheck([], now, SLOT_LIMITS[kind]);
+    expect(out.allowed).toBe(true);
+    expect(out.stamps).toEqual([now]);
+  });
+
+  it("refuses past the ceiling and reports the wait", () => {
+    const full = Array.from({ length: SLOT_LIMITS[kind].limit }, (_, i) => now - (i + 1) * 1000);
+    const out = rateCheck(full, now, SLOT_LIMITS[kind]);
+    expect(out.allowed).toBe(false);
+    expect(out.retryAfterSec).toBeGreaterThan(0);
+  });
+
+  it("lets a stamp older than the window fall away", () => {
+    const stale = now - SLOT_LIMITS[kind].windowMs - 1000;
+    const out = rateCheck([stale], now, SLOT_LIMITS[kind]);
+    expect(out.allowed).toBe(true);
+    expect(out.stamps).toEqual([now]);
   });
 });
