@@ -279,7 +279,8 @@ directions were removed. Recorded here as binding.
 | Settings | Account · Notifications · LeetCode controls · What Coach knows · Sign out. |
 | Coach mark | **Ren**, the shared character from Curfew, rendered in 90x greys (DESIGN.md → Signature Components). |
 
-**LeetCode placement:** status line on Me, controls (Sync, totals, time capture) in Settings.
+**LeetCode placement:** entirely on **Me** — sync status, the easy/medium/hard totals and the
+time capture. Settings no longer carries LeetCode at all.
 
 **New redesigns, as separate briefs** (not on this branch):
 - `.planning/briefs/dsa-problem-page.md` — the DSA problem / check-in page.

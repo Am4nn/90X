@@ -14,7 +14,7 @@
   <h1 class="title">Settings — a sub-page of Me</h1>
   <a href="index.html">← All screens</a>
 </div>
-<p class="lede">Everything that cluttered Me but isn't about readiness: account, notifications, LeetCode sync, the “What Coach knows” link, and sign out. Reached from a gear in the Me header.</p>
+<p class="lede">Everything that cluttered Me but isn't about readiness: account, notifications, the “What Coach knows” link, and sign out. LeetCode now lives on Me. Reached from the Settings button in the Me header.</p>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <g id="i-today"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></g>
@@ -29,7 +29,7 @@
 
 <section class="choice" style="border-top:0; margin-top:24px; padding-top:8px">
   <div class="choice-h"><span class="kicker">Layout</span><h2 class="heading">Grouped sections, one page</h2></div>
-  <p class="choice-trade">Account, notifications, LeetCode, Coach, and sign out as labelled cards. On desktop the groups lay out in two columns; on phone they stack.</p>
+  <p class="choice-trade">Account, notifications, Coach, and sign out as labelled cards. One column on both phone and desktop — the page is short now that LeetCode has moved to Me.</p>
 
   <div class="frames">
     <!-- phone -->
@@ -61,20 +61,6 @@
             </div>
           </div>
 
-          <div>
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px"><span class="heading">LeetCode</span><span class="small">Synced recently</span></div>
-            <div class="card" style="overflow:hidden">
-              <div style="display:grid; grid-template-columns:repeat(3,1fr)">
-                <div style="padding:14px 16px"><div class="small">Easy</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">186</div><div class="small">24 attempted</div></div>
-                <div style="padding:14px 16px; border-left:1px solid var(--ln)"><div class="small">Medium</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">201</div><div class="small">61 attempted</div></div>
-                <div style="padding:14px 16px; border-left:1px solid var(--ln)"><div class="small">Hard</div><div class="tabular" style="font:700 22px/1.2 Sora,sans-serif">25</div><div class="small">40 attempted</div></div>
-              </div>
-              <div class="row hair"><span class="small">How long did these take?</span></div>
-              <div class="row hair" style="flex-wrap:wrap; gap:8px"><span class="small" style="width:100%">Word Ladder · solved after 2 tries</span><span class="chip on" style="--c:var(--acc)">30m</span><span class="chip">45m</span><span class="chip">60m+</span></div>
-            </div>
-            <div style="margin-top:12px"><span class="btn s full"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sync"/></svg>Sync now</span></div>
-          </div>
-
           <div class="card list">
             <div class="row"><span style="font-weight:700">What Coach knows</span><span class="mu">→</span></div>
           </div>
@@ -103,52 +89,36 @@
           <span class="navi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-friends"/></svg>Friends</span>
           <span class="navi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-me"/></svg>Me</span>
         </aside>
-        <div class="main">
+        <div class="main narrow">
           <div class="shead"><span style="display:flex; align-items:center; gap:10px"><span class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-back"/></svg></span><span class="title">Settings</span></span><span class="btn g sm">Done</span></div>
-          <div class="cols2e">
-            <div class="stack6">
-              <div>
-                <div class="heading" style="margin-bottom:12px">Account</div>
-                <div class="card list">
-                  <div class="row"><span class="tx2">Name</span><span style="font-weight:700">Aman Arya</span></div>
-                  <div class="row"><span class="tx2">Email</span><span style="font-weight:700">125aryaaman@gmail.com</span></div>
-                  <div class="row"><span class="tx2">Timezone</span><span style="font-weight:700">Asia/Kolkata</span></div>
-                </div>
-              </div>
-              <div>
-                <div class="heading" style="margin-bottom:12px">LeetCode</div>
-                <div class="card" style="overflow:hidden">
-                  <div style="display:grid; grid-template-columns:repeat(3,1fr)">
-                    <div style="padding:16px"><div class="small">Easy</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">186</div><div class="small">24 attempted</div></div>
-                    <div style="padding:16px; border-left:1px solid var(--ln)"><div class="small">Medium</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">201</div><div class="small">61 attempted</div></div>
-                    <div style="padding:16px; border-left:1px solid var(--ln)"><div class="small">Hard</div><div class="tabular" style="font:700 22px/1.3 Sora,sans-serif">25</div><div class="small">40 attempted</div></div>
-                  </div>
-                  <div class="row hair" style="flex-wrap:wrap; gap:8px"><span class="small" style="width:100%">How long did these take?</span><span class="small" style="width:100%">Word Ladder · solved after 2 tries</span><span class="chip on">30m</span><span class="chip">45m</span><span class="chip">60m+</span></div>
-                </div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px"><span class="small">Synced recently</span><span class="btn s sm"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sync"/></svg>Sync now</span></div>
-              </div>
-            </div>
-            <div class="stack6">
-              <div>
-                <div class="heading" style="margin-bottom:12px">Notifications</div>
-                <div class="card list">
-                  <div class="row"><span style="font-weight:700">Push notifications</span><span class="switch on"></span></div>
-                  <div class="row"><span style="font-weight:700">Morning plan</span><span class="tag" style="--c:var(--acc); background:var(--accbg)">7:30 AM</span></div>
-                  <div class="row"><span style="font-weight:700">Evening streak</span><span class="switch on"></span></div>
-                  <div class="row"><span style="font-weight:700">Friend activity</span><span class="switch"></span></div>
-                  <div class="row"><span style="font-weight:700">Weekly review</span><span class="switch on"></span></div>
-                </div>
-              </div>
+          <div class="stack6">
+            <div>
+              <div class="heading" style="margin-bottom:12px">Account</div>
               <div class="card list">
-                <div class="row"><span style="font-weight:700">What Coach knows</span><span class="mu">→</span></div>
+                <div class="row"><span class="tx2">Name</span><span style="font-weight:700">Aman Arya</span></div>
+                <div class="row"><span class="tx2">Email</span><span style="font-weight:700">125aryaaman@gmail.com</span></div>
+                <div class="row"><span class="tx2">Timezone</span><span style="font-weight:700">Asia/Kolkata</span></div>
               </div>
-              <span class="btn g full" style="border:1px solid var(--ln2)">Sign out</span>
             </div>
+            <div>
+              <div class="heading" style="margin-bottom:12px">Notifications</div>
+              <div class="card list">
+                <div class="row"><span style="font-weight:700">Push notifications</span><span class="switch on"></span></div>
+                <div class="row"><span style="font-weight:700">Morning plan</span><span class="tag" style="--c:var(--acc); background:var(--accbg)">7:30 AM</span></div>
+                <div class="row"><span style="font-weight:700">Evening streak</span><span class="switch on"></span></div>
+                <div class="row"><span style="font-weight:700">Friend activity</span><span class="switch"></span></div>
+                <div class="row"><span style="font-weight:700">Weekly review</span><span class="switch on"></span></div>
+              </div>
+            </div>
+            <div class="card list">
+              <div class="row"><span style="font-weight:700">What Coach knows</span><span class="mu">→</span></div>
+            </div>
+            <span class="btn g full" style="border:1px solid var(--ln2)">Sign out</span>
           </div>
         </div>
       </div>
     </div>
-    <p class="caption"><b>Settings.</b> Account, notifications, LeetCode, “What Coach knows”, and sign out. Two columns on desktop, one stack on phone; sign out is the last, quiet action.</p>
+    <p class="caption"><b>Settings.</b> Account, notifications, “What Coach knows”, and sign out. One column on both phone and desktop; sign out is the last, quiet action.</p>
   </div>
 </section>
 
