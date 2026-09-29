@@ -1,0 +1,110 @@
+name: Supabase stack
+description: Start a throwaway local Supabase, with its Docker images cached, in the background.
+
+# `supabase start` was 82 seconds and two jobs each paid it, which made it the
+# largest single cost in the pipeline - larger than the Playwright suite it was
+# there to support.
+#
+# Two things are done about it.
+#
+# The images are cached. Most of those 82 seconds is pulling postgres, gotrue,
+# postgrest and the gateway from a registry; the migrations themselves are about
+# a third of it (measured against `supabase db reset`, which re-applies all of
+# them in ~35s). `docker save` after a cold start, `docker load` before a warm
+# one. Keyed on the CLI version and config.toml, because those are what decide
+# which images and which tags are wanted - not on the migrations, which change
+# constantly and do not change the images at all.
+#
+# And the start is backgrounded, so the caller can install dependencies while it
+# comes up instead of after it. The caller waits with the `wait` input, or by
+# running its own `supabase status` poll if it has other work to interleave.
+#
+# If the cache is stale or the load fails, nothing breaks: `supabase start`
+# simply pulls what is missing, exactly as it did before. That is why the load
+# step cannot fail the job.
+
+inputs:
+  wait:
+    description: Block until the stack answers before finishing.
+    required: false
+    default: "true"
+
+outputs:
+  cache-hit:
+    description: Whether the image cache was restored.
+    value: ${{ steps.images.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - uses: supabase/setup-cli@v3
+      with:
+        version: latest
+
+    # The CLI version goes in the key because a new CLI wants new image tags, and
+    # config.toml because it decides which services exist at all.
+    - name: What the CLI version is
+      id: cli
+      shell: bash
+      run: echo "v=$(supabase --version | tr -d '\n' | tr -c '[:alnum:].' '-')" >> "$GITHUB_OUTPUT"
+
+    - id: images
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/supabase-images
+        key: supabase-images-${{ runner.os }}-${{ steps.cli.outputs.v }}-${{ hashFiles('supabase/config.toml') }}
+
+    # `|| true` on the load: a truncated or half-written tarball must cost a pull,
+    # not the job. The pipe through `docker load` is quiet on success.
+    - name: Load the cached images
+      if: steps.images.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        for f in ~/.cache/supabase-images/*.tar; do
+          [ -f "$f" ] || continue
+          docker load -i "$f" > /dev/null 2>&1 || echo "could not load $(basename "$f"), it will be pulled"
+        done
+        docker image ls --format '{{.Repository}}:{{.Tag}}' | sort | head -20
+
+    - name: Start Postgres and auth, apply every migration
+      shell: bash
+      run: |
+        nohup supabase start \
+          -x studio,imgproxy,inbucket,mailpit,storage-api,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta \
+          > /tmp/supabase.log 2>&1 &
+        echo $! > /tmp/supabase.pid
+
+    # `supabase status -o env` is what every caller needs next, so succeeding at
+    # it IS the readiness condition - there is no separate probe to drift out of
+    # step with it. The log is printed on failure because a backgrounded start
+    # that dies otherwise leaves only a timeout to explain itself.
+    - name: Wait for Supabase
+      if: inputs.wait == 'true'
+      shell: bash
+      run: |
+        for i in $(seq 1 120); do
+          if supabase status -o env > /tmp/supabase.env 2>/dev/null; then
+            echo "ready after $((i * 2))s"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "supabase never became ready"; cat /tmp/supabase.log; exit 1
+
+    # Saved only on a miss, and only once the stack is up, so the tarballs are of
+    # images that actually worked. Excludes the throwaway containers' own layers
+    # by listing images rather than containers.
+    - name: Save the images for next time
+      if: inputs.wait == 'true' && steps.images.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/.cache/supabase-images
+        docker image ls --format '{{.Repository}}:{{.Tag}}' \
+          | grep -E 'supabase|postgres' | grep -v '<none>' | sort -u > /tmp/images.txt
+        cat /tmp/images.txt
+        while read -r image; do
+          [ -n "$image" ] || continue
+          name=$(echo "$image" | tr '/:' '__')
+          docker save "$image" -o "$HOME/.cache/supabase-images/$name.tar" || echo "could not save $image"
+        done < /tmp/images.txt
+        du -sh ~/.cache/supabase-images || true
