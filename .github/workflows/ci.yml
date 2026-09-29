@@ -76,6 +76,11 @@ jobs:
       - name: Every browser spec is run by some shard
         run: bun run check:shards
 
+      # The archetype registry is a single JSON both the pipeline and the app read;
+      # the app's typed module must not drift from it. Skips until Part A lands.
+      - name: The generated archetype module matches archetypes.json
+        run: bun run check:archetypes
+
       # The build never connects to anything, so dummy values are enough.
       # Never put real secrets here.
       - name: Build
@@ -201,6 +206,15 @@ jobs:
               lessons
               roadmap
               mock-picker
+              tapspot
+              ordering
+              pairing
+              bucketing
+              assembling
+              claimgrid
+              keypad
+              gridtoggle
+              whystep
           - id: coach
             specs: >-
               coach
