@@ -180,7 +180,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Accept a part as done only when
 
 - its PR is open against `main` and every CI check passes, and
-- no test passed on a retry (open the `e2e feed` / `e2e coach` / `e2e feedv2` job log and grep
+- no test passed on a retry (open the `e2e feed` / `e2e coach` job log and grep
   for `retry #`), and
 - the agent reported: every gate's result, the measured token count and bundle KB, how many
   times it ran its spec, its decisions with what each costs if wrong, and anything unverified.
