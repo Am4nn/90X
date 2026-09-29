@@ -178,6 +178,26 @@
     });
   });
 
+  // Make each tile open its screen mock in a new tab, and add an explicit button.
+  tiles.forEach(function (tile) {
+    var link = tile.querySelector("a.title");
+    if (!link) return;
+    var btn = document.createElement("a");
+    btn.className = "btn s sm";
+    btn.href = link.getAttribute("href");
+    btn.target = "_blank";
+    btn.rel = "noopener";
+    btn.style.cssText = "align-self:flex-start; margin-top:4px";
+    btn.textContent = "Open all directions ↗";
+    btn.addEventListener("click", function (ev) { ev.stopPropagation(); });
+    tile.appendChild(btn);
+    tile.style.cursor = "pointer";
+    tile.addEventListener("click", function (ev) {
+      if (ev.target.closest(".optsel") || ev.target.closest("a") || ev.target.closest("button")) return;
+      window.open(link.getAttribute("href"), "_blank");
+    });
+  });
+
   document.getElementById("clear").addEventListener("click", function () {
     picks = {};
     try { localStorage.removeItem(KEY); } catch (e) {}
