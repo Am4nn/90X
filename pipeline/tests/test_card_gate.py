@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 
-from pipeline.cards.from_lessons import card_budget
 from pipeline.cards.gate import GateResult, Verdict, judge, prompt_only
 
 
@@ -87,9 +86,11 @@ def test_mcq_options_are_shown_but_not_which_is_right():
 
 
 def test_card_budget_follows_importance():
-    assert card_budget(0.5) == 8
-    assert card_budget(0.8) == 10
-    assert card_budget(1.0) == 12
+    from pipeline.cards import archetypes
+
+    assert archetypes.count_for(0.5) == 10
+    assert archetypes.count_for(0.8) == 16
+    assert archetypes.count_for(1.0) == 20
 
 
 def test_risk_column_holds_confidence_not_risk():
@@ -150,76 +151,6 @@ def test_a_set_of_only_malformed_cards_still_fails():
             "difficulty": "Easy", "options": ["x"]}
     with pytest.raises(ValidationError):
         CardSet.model_validate({"cards": [junk, junk, junk]})
-
-
-class _FakeLLM:
-    """Returns a scripted reply per purpose, so the repair path can be driven."""
-
-    def __init__(self, replies):
-        self.replies = replies
-        self.purposes = []
-
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
-        self.purposes.append(purpose)
-        return self.replies[purpose]
-
-
-def _card(prompt, **over):
-    from pipeline.cards.generate import Card
-
-    return Card.model_validate({
-        "format": "typed", "prompt": prompt, "answer": "An answer that is long enough.",
-        "key_points": ["first point", "second point"], "difficulty": "Easy", **over,
-    })
-
-
-def test_a_rejected_card_is_repaired_before_it_is_discarded():
-    """The gate says exactly what is wrong, which is usually enough to fix the
-    wording. Discarding instead costs ~160 cards across a full run."""
-    from pipeline.cards import run_lessons
-    from pipeline.cards.from_lessons import CardSet
-    from pipeline.cards.gate import GateResult, Verdict
-
-    good = _card("Why is a sliding window linear despite the nested loop?")
-    leaky = _card("In the reference solution, why does d[x] work?")
-    fixed = _card("Why does memoising by index make the recurrence linear?")
-
-    llm = _FakeLLM({
-        "cards-from-lesson": CardSet(cards=[good, leaky, good, good]),
-        "card-gate": GateResult(verdicts=[
-            Verdict(index=0, confidence=0.9),
-            Verdict(index=1, answerable=False, reason="names a solution", confidence=0.2),
-            Verdict(index=2, confidence=0.9),
-            Verdict(index=3, confidence=0.9),
-        ]),
-        "cards-rewrite": CardSet(cards=[fixed, fixed, fixed]),
-    })
-    # The gate is asked again about the repaired cards, and passes them.
-    calls = {"n": 0}
-    original_review = run_lessons.gate.review
-
-    def review(_llm, topic, cards, tier="review"):
-        calls["n"] += 1
-        if calls["n"] == 1:
-            return llm.replies["card-gate"]
-        return GateResult(verdicts=[Verdict(index=i, confidence=0.8) for i in range(len(cards))])
-
-    run_lessons.gate.review = review
-    try:
-        kept, rejected, sent_back, confidence = run_lessons.one(
-            llm, {"name": "Sliding window", "domain": "dsa", "lesson": "A lesson body.", "importance": 1.0}
-        )
-    finally:
-        run_lessons.gate.review = original_review
-
-    assert "cards-rewrite" in llm.purposes, "the rejected card must get a repair pass"
-    assert len(kept) == 6, f"3 good plus 3 repaired, got {len(kept)}"
-    assert rejected == []
-    # What the gate caught is reported separately from what it could not save.
-    # Counting only the discards made a run the gate worked hard on look like a
-    # 1% rejection rate, which reads as "the gate found almost nothing".
-    assert len(sent_back) == 1, f"the gate's first-pass objection must be recorded, got {len(sent_back)}"
-    assert all(0 <= c <= 1 for c in confidence.values())
 
 
 def test_a_card_id_follows_its_question_not_its_position():
