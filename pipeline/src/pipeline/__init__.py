@@ -42,6 +42,8 @@ def main() -> None:
     lc.add_argument("--tier", default="smart")
     tr = sub.add_parser("trial", help="Gate 1: generate one topic and measure the cost per card")
     tr.add_argument("--tier", default="smart")
+    tr.add_argument("--writer-thinking", action="store_true",
+                    help="turn the writer's DeepSeek thinking on for this run (the on/off experiment)")
     g2 = sub.add_parser("gate2", help="Gate 2: blind gate over 50 cards, report the rejection rate, stop")
     g2.add_argument("--n", type=int, default=50, help="cards to run the blind gate over")
     g2.add_argument("--tier", default="fast")

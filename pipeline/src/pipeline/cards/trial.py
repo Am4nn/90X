@@ -35,7 +35,7 @@ def tokens(con) -> tuple[int, int, int]:
     ).fetchone()
 
 
-def run(con, tier: str = "smart") -> None:
+def run(con, tier: str = "smart", thinking: bool = False) -> None:
     llm = LLM(con)
     topic = pick_topic(con)
     if topic is None:
@@ -48,9 +48,9 @@ def run(con, tier: str = "smart") -> None:
 
     with run_lessons.lock_for(con):
         hard = run_lessons.hard_sources(con, topic["slug"], topic["domain"])
-    print(f"writing {len(slots)} slots...", flush=True)
+    print(f"writing {len(slots)} slots (writer thinking {'on' if thinking else 'off'})...", flush=True)
     cards, refused = run_lessons.write_topic(llm, topic, topic["lesson"], slots, run_lessons.hard_text(hard), tier,
-                                             progress=True)
+                                             progress=True, thinking=thinking)
     with run_lessons.lock_for(con):
         run_lessons.save(con, topic, cards, hard)
         spent = spend_usd(con) - before_spend

@@ -421,11 +421,16 @@ each step states its choice rather than inheriting a default.
 
 | step | tier | thinking | why |
 |---|---|---|---|
-| card writer | smart | **off** | the open question — keep off for now and measure it. |
+| card writer | smart | **off** | measured 2026-09-30: thinking on gave the same blind-gate rejection at ~4.7x the cost (see below). |
 | blind gate | fast | **off** | correctness, not cost. A model reasoning for thousands of tokens is a far stronger guesser than a reader skimming four options on a phone; with thinking on it becomes a false-positive machine, and every false rejection costs a smart repair pass. |
 | difficulty rubric | — (pure code) | off | classification against stated criteria; it makes no model call at all. |
 | answerability gate | smart | off | classification against stated criteria. |
 | repair pass | smart | **on** | it is diagnosing *why* a card failed. |
+
+The writer on/off question is settled: on `arrays-hashing`, thinking on and off produced the same
+blind-gate rejection (55% each, gate on smart with thinking off), while thinking on cost ~4.7x per
+card ($0.0135 vs $0.0029, both off-peak) and ~17x the wall-clock. Thinking on does not write better
+distractors and does not earn back its tokens in avoided repair passes — the writer stays off.
 
 The one that matters is the blind gate. It reads like a cost-saving, so the next person who
 touches it may be tempted to turn thinking on to make it "better". Do not: a stronger guesser

@@ -220,18 +220,22 @@ def _user(topic: dict, lesson_md: str, slot: CardSlot, arch: archetypes.Archetyp
 
 
 def write_one(
-    llm, topic: dict, lesson_md: str, slot: CardSlot, hard_material: str = "", tier: str = "smart"
+    llm, topic: dict, lesson_md: str, slot: CardSlot, hard_material: str = "", tier: str = "smart",
+    thinking: bool = False,
 ) -> Card | Refusal:
     """Write one card for one named archetype, or refuse. Never raises for a
     refusal or for a reply that does not validate — only for a provider or
-    budget failure the caller must stop on."""
+    budget failure the caller must stop on.
+
+    `thinking` is off by default: generation is from stated content, not
+    diagnosis. Whether a Hard card writes better with it on is an open question
+    (DECISIONS.md); the experiment that answers it runs through the
+    `trial --writer-thinking` flag.
+    """
     arch = archetypes.by_id(slot.archetype)
     try:
-        # The writer keeps thinking off for now — it generates from stated
-        # content rather than diagnosing anything (see DECISIONS.md, the open
-        # question of whether a Hard card would write better with it on).
         result = llm.complete_json(SYSTEM, _user(topic, lesson_md, slot, arch, hard_material), WriteResult,
-                                   tier=tier, purpose="cards-write", thinking=False)
+                                   tier=tier, purpose="cards-write", thinking=thinking)
     except BudgetExceeded:
         # The spend cap is a hard stop for the whole run, not a card to refill.
         raise

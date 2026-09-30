@@ -198,3 +198,12 @@ def test_a_budget_failure_still_propagates():
     slot = CardSlot("concept", "pick_one", "Easy")
     with pytest.raises(write.BudgetExceeded):
         write.write_one(_Budget(), TOPIC, LESSON, slot, tier="smart")
+
+
+def test_write_one_passes_thinking_through():
+    llm = FakeLLM(write.WriteResult(refused="nope"))
+    slot = CardSlot("concept", "pick_one", "Easy")
+    write.write_one(llm, TOPIC, LESSON, slot, tier="smart", thinking=True)
+    assert llm.calls[0]["thinking"] is True
+    write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    assert llm.calls[1]["thinking"] is False

@@ -111,13 +111,13 @@ def _refill_order(slot: CardSlot, eligible: list[archetypes.Archetype]) -> list[
 
 
 def write_topic(llm, topic: dict, lesson_md: str, slots: list[CardSlot], hard_material: str,
-                tier: str = "smart", progress: bool = False) -> tuple[list, list]:
+                tier: str = "smart", progress: bool = False, thinking: bool = False) -> tuple[list, list]:
     """Write a topic's budget, refilling refusals with the next eligible
     archetype. Returns (cards, refused_slots)."""
     eligible = archetypes.eligible(topic["domain"])
     written, refused = [], []
     for i, slot in enumerate(slots):
-        card = _write_with_refill(llm, topic, lesson_md, slot, hard_material, tier, eligible)
+        card = _write_with_refill(llm, topic, lesson_md, slot, hard_material, tier, eligible, thinking)
         if card is None:
             refused.append(slot)
             if progress:
@@ -130,12 +130,13 @@ def write_topic(llm, topic: dict, lesson_md: str, slots: list[CardSlot], hard_ma
 
 
 def _write_with_refill(llm, topic: dict, lesson_md: str, slot: CardSlot, hard_material: str,
-                       tier: str, eligible: list[archetypes.Archetype]):
+                       tier: str, eligible: list[archetypes.Archetype], thinking: bool = False):
     # Hard material is for Hard cards; an Easy card should not read problems.
     mat = hard_material if slot.difficulty == "Hard" else ""
     for a in _refill_order(slot, eligible):
         primitive = slot.primitive if a.id == slot.archetype else archetypes.pick_primitive(a, 0)
-        result = write.write_one(llm, topic, lesson_md, CardSlot(a.id, primitive, slot.difficulty), mat, tier)
+        result = write.write_one(llm, topic, lesson_md, CardSlot(a.id, primitive, slot.difficulty), mat, tier,
+                                 thinking=thinking)
         if isinstance(result, write.Card):
             return result
     return None
