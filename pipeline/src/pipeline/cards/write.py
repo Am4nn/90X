@@ -21,8 +21,10 @@ The answer contract is the four shapes from `archetypes.json`:
 - number   (numeric)                              -> `value` + `tolerance`
 - none     (self_rate)                            -> no answer columns
 
-`constraints` and `pairs` are indices into the items the prompt shows, so the
-grader can check the reader's order/mapping without parsing prose.
+`options` carries the items the reader sees, in the canonical per-shape encoding
+from `web/src/lib/feed/options.ts`; `constraints` and `pairs` are indices into
+those items, so the grader can check the reader's order/mapping without parsing
+prose.
 """
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
@@ -51,56 +53,69 @@ If this topic genuinely has no natural card of this archetype, return `refused` 
 `answer` is the explanation shown after the reader answers — 1-3 sentences, including why the right answer is right. `key_points` are 2-4 short, independently checkable points. Write in plain, direct English."""
 
 # What the reader does and what the answer columns must hold, per primitive.
+# `options` carries the display items in the canonical shape the app renders
+# (web/src/lib/feed/options.ts), so a list-shaped card stores a string[] and a
+# match/bucket/assemble/grid card stores its object.
 PRIMITIVE_INSTRUCTIONS = {
     "pick_one": (
-        "PICK ONE. Ask a question with exactly one right answer. Give exactly 4 `options` and set "
-        "`picked` to the single 0-based index of the correct option. Every wrong option must be a "
-        "mistake a candidate actually makes — the off-by-one, the confused pair, the neighbouring "
-        "concept. An option nobody would pick is padding."
+        "PICK ONE. Ask a question with exactly one right answer. Put the 4 answer choices in "
+        "`options` as a list of strings, and set `picked` to the single 0-based index of the "
+        "correct one. Every wrong option must be a mistake a candidate actually makes - the "
+        "off-by-one, the confused pair, the neighbouring concept. An option nobody would pick "
+        "is padding."
     ),
     "order": (
-        "ORDER. List N items to put in order, as a numbered list, and ask for the order. Set "
-        "`constraints` to a list of [before, after] pairs of 0-based indices that define every correct "
-        "order: every correct order satisfies all of them, and any order satisfying them is correct. "
-        "If the order is fully determined, chain the adjacent pairs. Do not state a constraint the "
-        "material does not support."
+        "ORDER. Put the N items to order in `options` as a list of strings, one item per entry, "
+        "in the prompt order (do not sort them). Ask for the correct order. Set `constraints` "
+        "to a list of [before, after] pairs of 0-based indices into `options` that define every "
+        "correct order: every correct order satisfies all of them, and any order satisfying them "
+        "is correct. If the order is fully determined, chain the adjacent pairs. Do not state a "
+        "constraint the material does not support."
     ),
     "match": (
-        "MATCH. List a left column and a right column, and ask the reader to pair them. Set `pairs` to "
-        "the one-to-one [[left, right], ...] mapping of 0-based indices. Every left item pairs to "
-        "exactly one right item."
+        "MATCH. Put the left column in `options.left` and the right column in `options.right`, "
+        "each a list of strings in display order, and ask the reader to pair them. Set `pairs` "
+        "to the one-to-one [[left, right], ...] mapping of 0-based indices. Every left item "
+        "pairs to exactly one right item."
     ),
     "bucket": (
-        "BUCKET. List items and a small set of named buckets, and ask the reader to sort the items. "
-        "Set `pairs` to [[item, bucket], ...] of 0-based indices; the same bucket may repeat across "
-        "items. Each item has exactly one home under the rule you state."
+        "BUCKET. Put the items in `options.items` and the named buckets in `options.columns`, "
+        "each a list of strings, and ask the reader to sort the items. Set `pairs` to "
+        "[[item, column], ...] of 0-based indices; the same column may repeat across items. "
+        "Each item has exactly one home under the rule you state."
     ),
     "tap_in_place": (
-        "TAP IN PLACE. Show a short snippet, plan or diagram with numbered lines and ask which line or "
-        "token is the answer (the bug, the bottleneck, the missing insertion point, the unsafe line). "
-        "Set `picked` to the single 0-based index of that line or token."
+        "TAP IN PLACE. Put the snippet, plan or diagram's lines in `options` as a list of "
+        "strings, one string per numbered line, in order, and ask which line or token is the "
+        "answer (the bug, the bottleneck, the missing insertion point, the unsafe line). Set "
+        "`picked` to the single 0-based index of that line or token."
     ),
     "self_rate": (
-        "SELF-RATE (flash). Name one term or fact and ask the reader to self-rate knew-it/didn't. "
-        "`answer` is the one-sentence fact. Leave `options`, `picked`, `constraints`, `pairs` and "
-        "`value` empty."
+        "SELF-RATE (flash). Name one term or fact and ask the reader to self-rate knew-it/"
+        "didn't. `answer` is the one-sentence fact. Leave `options`, `picked`, `constraints`, "
+        "`pairs`, `value` and `tolerance` empty."
     ),
     "assemble": (
-        "ASSEMBLE. Give a pool of tokens and ask the reader to assemble a line (a SQL clause, a method "
-        "signature, a definition). Set `constraints` to [before, after] pairs of 0-based token indices "
+        "ASSEMBLE. Put the token pool in `options.tokens` as a list of strings and, where the "
+        "line has pre-filled slots, `options.fixed` as one entry per token - the token index "
+        "that slot is fixed to, or null for a gap the reader fills (omit `fixed` to leave every "
+        "slot a gap). Ask the reader to assemble a line (a SQL clause, a method signature, a "
+        "definition). Set `constraints` to [before, after] pairs of 0-based token indices "
         "defining the correct sequence; for a fully determined line, chain the adjacent pairs."
     ),
     "numeric": (
-        "NUMERIC. Ask for a number — a complexity, a storage size, a row count, a lower bound. Set "
-        "`value` to the expected number and `tolerance` to the allowed absolute error (exact for a "
-        "count, an order of magnitude for an estimate). Leave `options` empty."
+        "NUMERIC. Ask for a number - a complexity, a storage size, a row count, a lower bound. "
+        "Set `value` to the expected number and `tolerance` to the allowed absolute error "
+        "(exact for a count, an order of magnitude for an estimate). Leave `options` empty."
     ),
     "claim_grid": (
-        "CLAIM GRID. List 3-4 statements about one topic and ask the reader to mark each true or false. "
-        "Set `pairs` to [[statement, 0|1], ...] where 1 means true and 0 means false."
+        "CLAIM GRID. Put the 3-4 statements in `options` as a list of strings, one statement "
+        "per entry, and ask the reader to mark each true or false. Set `pairs` to "
+        "[[statement, 0|1], ...] where 1 means true and 0 means false."
     ),
     "grid_toggle": (
-        "GRID TOGGLE. Describe a small table (rows and columns, at most 3x3) and ask which cells hold. "
+        "GRID TOGGLE. Put the row labels in `options.rows` and the column labels in "
+        "`options.columns`, each a list of strings (at most 3x3), and ask which cells hold. "
         "Set `picked` to the 0-based cell indices, row-major, that are correct."
     ),
 }
@@ -112,20 +127,56 @@ class Refusal(BaseModel):
     reason: str = Field(min_length=1)
 
 
+# Generous output caps, one set across difficulties: a Hard card's explanation
+# and a tap-in-place or assemble snippet can run long, and the writer is not
+# the quality gate (the gate rejects a rambling answer later). These only stop
+# the truly pathological case — a reply that has clearly run away. A reply over
+# a cap fails validation, so the card is refused and the slot refills; it is
+# never truncated mid-sentence.
+PROMPT_MAX = 3000
+ANSWER_MAX = 2000
+KEY_POINT_MAX = 500
+OPTION_MAX = 800
+
+
+def _option_strings(options) -> list[str]:
+    """Every string the reader sees as an option, from either encoding."""
+    if isinstance(options, list):
+        return [o for o in options if isinstance(o, str)]
+    if isinstance(options, dict):
+        out: list[str] = []
+        for key in ("left", "right", "items", "columns", "tokens", "rows"):
+            value = options.get(key)
+            if isinstance(value, list):
+                out += [x for x in value if isinstance(x, str)]
+        return out
+    return []
+
+
 class CardDraft(BaseModel):
     """What the model fills. `format`, `archetype` and `difficulty` are stamped
     by the pipeline, so they are deliberately absent from this model."""
 
-    prompt: str = Field(min_length=10)
-    answer: str = Field(min_length=1)
+    prompt: str = Field(min_length=10, max_length=PROMPT_MAX)
+    answer: str = Field(min_length=1, max_length=ANSWER_MAX)
     key_points: list[str] = Field(min_length=2, max_length=4)
-    options: list[str] | None = None
+    options: list[str] | dict | None = None
     picked: list[int] | None = None
     constraints: list[list[int]] | None = None
     pairs: list[list[int]] | None = None
     value: float | None = None
     tolerance: float | None = None
     why_step: WhyStep | None = None
+
+    @model_validator(mode="after")
+    def _length_guards(self):
+        for pt in self.key_points:
+            if len(pt) > KEY_POINT_MAX:
+                raise ValueError(f"a key point is {len(pt)} chars (cap {KEY_POINT_MAX})")
+        for option in _option_strings(self.options):
+            if len(option) > OPTION_MAX:
+                raise ValueError(f"an option is {len(option)} chars (cap {OPTION_MAX})")
+        return self
 
 
 class WriteResult(BaseModel):
@@ -141,16 +192,21 @@ class WriteResult(BaseModel):
 
 def _user(topic: dict, lesson_md: str, slot: CardSlot, arch: archetypes.Archetype, hard_material: str) -> str:
     instruction = PRIMITIVE_INSTRUCTIONS[slot.primitive]
+    # The lesson is the one stable prefix across a topic's cards, so it goes
+    # first. DeepSeek context-caches the prompt prefix, and putting the
+    # per-card variable content (topic, archetype, primitive, difficulty,
+    # instructions, hard material) before it would defeat that cache. Keep the
+    # lesson immediately after the system prompt, then everything per-card.
     lines = [
+        "Lesson:",
+        lesson_md,
+        "",
         f"Topic: {topic['name']} ({topic['domain']})",
         f"Archetype: {arch.label} ({slot.archetype})",
         f"Primitive: {slot.primitive}",
         f"Target difficulty: {slot.difficulty}",
         "",
         instruction,
-        "",
-        "Lesson:",
-        lesson_md,
     ]
     if hard_material:
         lines += ["", "Additional source material you may use (problem statements and pattern tricks):", hard_material]

@@ -69,10 +69,15 @@ _CHECKS = (_all_or_none, _sole_of_kind, _length_outlier)
 def problems(card) -> list[str]:
     """The structural reasons a card is guessable by shape. Empty means it is not.
 
-    A card with no option list (typed, flash, order, numeric, ...) has no options
-    to eliminate by shape and is not checked.
+    Only a pick-one card (or the legacy mcq) has options a reader can eliminate
+    by shape. Order, tap-in-place and claim-grid also store a flat string list,
+    but their entries are steps, lines or statements rather than rival answers,
+    so the giveaway does not apply; match/bucket/assemble/grid store an object,
+    not a flat list, and are skipped too.
     """
-    options = getattr(card, "options", None) or []
-    if not options:
+    options = getattr(card, "options", None)
+    if not isinstance(options, list) or not options:
+        return []
+    if getattr(card, "format", "pick_one") not in ("pick_one", "mcq"):
         return []
     return [msg for check in _CHECKS if (msg := check(options))]

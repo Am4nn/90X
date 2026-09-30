@@ -69,12 +69,14 @@ class CardSlot:
 class Registry:
     archetypes: tuple[Archetype, ...]
     shapes: dict[str, str | None]
+    options_shapes: dict[str, str | None]
 
 
 @lru_cache(maxsize=1)
 def registry() -> Registry:
     data = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     shapes = {p["id"]: p.get("shape") for p in data["primitives"]}
+    options_shapes = {p["id"]: p.get("optionsShape") for p in data["primitives"]}
     archetypes = tuple(
         Archetype(
             id=a["id"],
@@ -86,7 +88,7 @@ def registry() -> Registry:
         )
         for a in data["archetypes"]
     )
-    return Registry(archetypes=archetypes, shapes=shapes)
+    return Registry(archetypes=archetypes, shapes=shapes, options_shapes=options_shapes)
 
 
 def by_id(archetype_id: str) -> Archetype:
@@ -100,6 +102,16 @@ def shape_of(primitive: str) -> str | None:
     chunk format (`typed`, `mcq`, ...) is not a primitive and also has none.
     """
     return registry().shapes.get(primitive)
+
+
+def options_shape_of(primitive: str) -> str | None:
+    """How a primitive's `options` are encoded, or None when it has none.
+
+    The value is the registry's `optionsShape`: `list` (a flat string[]),
+    `match` ({left, right}), `bucket` ({items, columns}), `assemble`
+    ({tokens, fixed}), `grid` ({rows, columns}), or `none` (numeric/self_rate).
+    """
+    return registry().options_shapes.get(primitive)
 
 
 def eligible(area: str) -> list[Archetype]:

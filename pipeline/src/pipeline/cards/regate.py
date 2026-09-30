@@ -122,7 +122,7 @@ def apply(con, cards: list[Draft], rejected: list[tuple[object, str]], confidenc
     return recovered, newly_rejected
 
 
-def run(con, only: list[str] | None = None, tier: str = "review", llm: LLM | None = None) -> dict:
+def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None = None) -> dict:
     llm = llm or LLM(con)
     todo = topics_with_cards(con, only)
     db = lock_for(con)

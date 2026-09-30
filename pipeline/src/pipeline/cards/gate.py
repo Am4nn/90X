@@ -115,9 +115,7 @@ def prompt_only(card) -> str:
     return "\n".join(lines)
 
 
-def review(llm, topic: dict, cards: list, tier: str = "review") -> GateResult:
-    if tier not in llm.models:
-        tier = "smart"
+def review(llm, topic: dict, cards: list, tier: str = "smart") -> GateResult:
     body = "\n\n".join(f"[{i}]\n{prompt_only(c)}" for i, c in enumerate(cards))
     user = f"Topic: {topic['name']} ({topic['domain']})\n\n{body}"
     return llm.complete_json(SYSTEM, user, GateResult, tier=tier, purpose="card-gate")

@@ -44,7 +44,7 @@ def pick_cards(con, n: int = TRIAL_CARDS) -> list[Draft]:
     return [Draft(r) for r in rows]
 
 
-def run(con, llm: LLM | None = None, n: int = TRIAL_CARDS, tier: str = "smart") -> dict:
+def run(con, llm: LLM | None = None, n: int = TRIAL_CARDS, tier: str = "fast") -> dict:
     """Report the blind-gate rejection rate over n cards. Writes nothing."""
     llm = llm or LLM(con)
     cards = pick_cards(con, n)

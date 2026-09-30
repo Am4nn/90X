@@ -100,10 +100,10 @@ def test_an_ordered_card_needs_before_after_pairs():
     with pytest.raises(ValidationError):
         Card(format="order", archetype="sequence", difficulty="Medium",
              prompt="Put these in order.", answer="1, 2.", key_points=["a", "b"],
-             constraints=[[0]])  # a lone index is not a [before, after] pair
+             options=["A", "B"], constraints=[[0]])  # a lone index is not a [before, after] pair
     Card(format="order", archetype="sequence", difficulty="Medium",
          prompt="Put these in order.", answer="1, 2.", key_points=["a", "b"],
-         constraints=[[0, 1]])
+         options=["A", "B"], constraints=[[0, 1]])
 
 
 def test_a_hard_card_carries_a_why_step():
@@ -115,3 +115,53 @@ def test_a_hard_card_carries_a_why_step():
         why_step=WhyStep(options=["rehashing rebalances", "nothing grows", "buckets never change"], correct=0),
     )
     assert card.why_step.correct == 0
+
+
+def test_the_lesson_prefix_comes_before_the_per_card_content():
+    llm = FakeLLM(write.WriteResult(refused="nope"))
+    slot = CardSlot("concept", "pick_one", "Easy")
+    write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    user = llm.calls[0]["user"]
+    assert user.index("Lesson:") < user.index("Archetype:"), "the lesson must be the stable prefix"
+    assert LESSON in user
+
+
+def test_the_writer_stamps_per_shape_options():
+    draft = write.CardDraft(
+        prompt="Match each term to its meaning.",
+        answer="Atomicity is all-or-nothing.",
+        key_points=["all or nothing", "single unit"],
+        options={"left": ["A", "C"], "right": ["Atomicity", "Consistency"]},
+        pairs=[[0, 0], [1, 1]],
+    )
+    llm = FakeLLM(write.WriteResult(draft=draft))
+    slot = CardSlot("term-meaning", "match", "Medium")
+    result = write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    assert isinstance(result, Card)
+    assert result.options == {"left": ["A", "C"], "right": ["Atomicity", "Consistency"]}
+    assert result.pairs == [[0, 0], [1, 1]]
+
+
+def test_options_that_mismatch_the_shape_become_a_refusal():
+    # A match card whose options are a flat list cannot render as left/right, so
+    # it is refused rather than stored blank.
+    bad = _draft()  # options: list[str], picked: [int] -> pick_one shape
+    llm = FakeLLM(write.WriteResult(draft=write.CardDraft(**bad)))
+    slot = CardSlot("term-meaning", "match", "Medium")
+    result = write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    assert isinstance(result, write.Refusal)
+    assert "malformed" in result.reason
+
+
+def test_output_guards_reject_pathological_lengths():
+    base = dict(prompt="Which structure gives O(1) lookup?", answer="A hash map.",
+                key_points=["hashing spreads keys", "buckets stay short"],
+                options=["A", "B", "C", "D"], picked=[0])
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "answer": "x" * (write.ANSWER_MAX + 1)})
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "key_points": ["a", "x" * (write.KEY_POINT_MAX + 1)]})
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "options": ["A", "B", "C", "x" * (write.OPTION_MAX + 1)]})
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "prompt": "x" * (write.PROMPT_MAX + 1)})

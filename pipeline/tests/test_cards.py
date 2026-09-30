@@ -68,6 +68,29 @@ def test_reviewer_prompt_allows_standard_knowledge():
     assert "well-established" in check.SYSTEM
 
 
+def test_options_match_the_shape():
+    # list: a flat string[] for pick_one/order/tap_in_place/claim_grid.
+    assert generate.options_error("pick_one", ["A", "B", "C", "D"]) is None
+    assert generate.options_error("pick_one", None) is not None
+    assert generate.options_error("pick_one", {"left": ["A"]}) is not None
+    # match: { left, right }.
+    assert generate.options_error("match", {"left": ["A"], "right": ["B"]}) is None
+    assert generate.options_error("match", ["A", "B"]) is not None
+    # bucket: { items, columns }.
+    assert generate.options_error("bucket", {"items": ["A"], "columns": ["X"]}) is None
+    # assemble: { tokens, fixed }, fixed[i] is a token index or null.
+    assert generate.options_error("assemble", {"tokens": ["a", "b"], "fixed": [None, 0]}) is None
+    assert generate.options_error("assemble", {"tokens": ["a", "b"], "fixed": [5]}) is not None
+    # grid: { rows, columns }.
+    assert generate.options_error("grid_toggle", {"rows": ["a"], "columns": ["b"]}) is None
+    # none: numeric and self_rate store no options.
+    assert generate.options_error("numeric", None) is None
+    assert generate.options_error("self_rate", None) is None
+    assert generate.options_error("numeric", ["A"]) is not None
+    # legacy formats have no optionsShape and are not checked here.
+    assert generate.options_error("typed", None) is None
+
+
 class SetReviewer:
     def __init__(self, verdicts):
         self.verdicts, self.calls = verdicts, []

@@ -19,7 +19,7 @@ never reach the model: fold the source text in and the gate is defeated.
 from pydantic import BaseModel, Field
 
 from ..llm import LLMError
-from .archetypes import shape_of
+from .archetypes import options_shape_of, shape_of
 
 SAMPLES = 3
 REJECT_AT = 2
@@ -70,18 +70,33 @@ def shape(card) -> str | None:
     return s
 
 
+def _numbered(items) -> str:
+    return "\n".join(f"{i}. {o}" for i, o in enumerate(items or []))
+
+
 def view(card) -> str:
     """The answer choices and nothing else — never the question, lesson, topic
     or area.
 
-    A pick-one card stores its options separately, so the model sees exactly
-    those, numbered. Every other primitive keeps its items inside the prompt,
-    so the reader's view is the prompt; the source text still never reaches
-    the model either way.
+    The choices are the `options` in their canonical per-shape encoding: a flat
+    list for pick_one/order/tap_in_place/claim_grid (and legacy mcq), an object
+    for match/bucket/assemble/grid. A numeric card stores no choices, so its
+    question is the reader's view; the source text still never reaches the model
+    either way.
     """
-    options = getattr(card, "options", None) or []
-    if options:
-        return "Options:\n" + "\n".join(f"{i}. {o}" for i, o in enumerate(options))
+    options = getattr(card, "options", None)
+    if isinstance(options, list) and options:
+        return "Options:\n" + _numbered(options)
+    if isinstance(options, dict):
+        shape = options_shape_of(getattr(card, "format", None))
+        if shape == "match":
+            return "Left:\n" + _numbered(options.get("left")) + "\nRight:\n" + _numbered(options.get("right"))
+        if shape == "bucket":
+            return "Items:\n" + _numbered(options.get("items")) + "\nBuckets:\n" + _numbered(options.get("columns"))
+        if shape == "assemble":
+            return "Tokens:\n" + _numbered(options.get("tokens"))
+        if shape == "grid":
+            return "Rows:\n" + _numbered(options.get("rows")) + "\nColumns:\n" + _numbered(options.get("columns"))
     return card.prompt
 
 
@@ -129,7 +144,7 @@ def correct(card, guess: Guess) -> bool:
     return False
 
 
-def judge_card(llm, card, tier: str = "smart") -> int:
+def judge_card(llm, card, tier: str = "fast") -> int:
     """How many of SAMPLES samples answered correctly (0..SAMPLES).
 
     A sample the model fails to answer (bad JSON, provider error) is not
@@ -153,7 +168,7 @@ def _user(card) -> str:
     return f"{view(card)}\n\n{_INSTRUCTIONS[shape(card)]}"
 
 
-def review(llm, cards: list, tier: str = "smart") -> list[BlindVerdict]:
+def review(llm, cards: list, tier: str = "fast") -> list[BlindVerdict]:
     """One blind verdict per card, three samples each."""
     return [BlindVerdict(index=i, correct=judge_card(llm, card, tier)) for i, card in enumerate(cards)]
 

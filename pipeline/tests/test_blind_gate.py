@@ -92,6 +92,7 @@ def test_an_ordered_card_is_correct_only_when_constraints_hold():
         "format": "order", "archetype": "sequence", "difficulty": "Medium",
         "prompt": "Put these in order: 1. A  2. B  3. C",
         "answer": "A, then B, then C.", "key_points": ["a", "b"],
+        "options": ["A", "B", "C"],
         "constraints": [[0, 1], [1, 2]],
     })
     assert blind_gate.correct(card, Guess(order=[0, 1, 2]))
@@ -114,6 +115,7 @@ def test_a_mapping_card_checks_pairs():
         "format": "match", "archetype": "term-meaning", "difficulty": "Medium",
         "prompt": "Match A, C, I, D to their meanings.",
         "answer": "A is Atomicity.", "key_points": ["a", "b"],
+        "options": {"left": ["A", "C", "I", "D"], "right": ["Atomicity", "Consistency", "Isolation", "Durability"]},
         "pairs": [[0, 2], [1, 0], [2, 1], [3, 3]],
     })
     assert blind_gate.correct(card, Guess(pairs=[[0, 2], [1, 0], [2, 1], [3, 3]]))
