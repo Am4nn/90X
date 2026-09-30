@@ -1,0 +1,193 @@
+"""Write one card for one named archetype, or refuse.
+
+The writer is asked for exactly one archetype (and, for a dual-primitive
+archetype, the pipeline's chosen primitive) and returns exactly one card — never
+a different format, never several cards. It may refuse: a topic with no natural
+sequence, say, has none, and a strained card is worse than an absent one. A
+refusal is a valid return, not an error, and the budget refills the slot with
+another archetype.
+
+The writer fills content only. The pipeline stamps `format` (the primitive),
+`archetype` and `difficulty` on every card — the writer never chooses any of
+them. This is enforced in code, not asked of the model: asked for "a card" it
+returns multiple choice every time (DECISIONS round 2), and asked to fill
+`format` it sometimes writes the archetype id instead of the primitive.
+
+The answer contract is the four shapes from `archetypes.json`:
+
+- chosen   (pick_one, tap_in_place, grid_toggle)  -> `picked`: correct indices
+- ordered  (order, assemble)                      -> `constraints`: [before, after] pairs
+- mapping  (match, bucket, claim_grid)            -> `pairs`: [left, right] pairs
+- number   (numeric)                              -> `value` + `tolerance`
+- none     (self_rate)                            -> no answer columns
+
+`constraints` and `pairs` are indices into the items the prompt shows, so the
+grader can check the reader's order/mapping without parsing prose.
+"""
+
+from pydantic import BaseModel, Field, ValidationError, model_validator
+
+from . import archetypes
+from .archetypes import CardSlot
+from .generate import Card, WhyStep
+
+SYSTEM = """You write interview-prep cards for the 90x Feed. You are asked for ONE card of ONE named archetype, and you write exactly that card — never a different format, never several cards.
+
+The archetype, the primitive (how the reader answers) and the target difficulty are assigned for you in the request. Fill only the card content. Do not choose or rename the archetype or the format.
+
+THE READER CANNOT SEE THE LESSON. The card tests whether they learned the topic, not whether they can find a sentence. Never write "the lesson", "the passage", "the text", "the above", "as described", "the reference solution". A question that only makes sense with the lesson open is broken.
+
+The card must be answerable by a competent engineer who studied this topic anywhere, and must be something an interviewer would plausibly ask. Everything in the answer must follow from the material given. Do not invent facts, statistics, benchmarks, company names, or results.
+
+DIFFICULTY RUBRIC. You are given a target difficulty. Write a card that MEETS that row, not one you merely label with it. If the material cannot support a card at that difficulty for this archetype, refuse rather than soften the card.
+- Easy: 1 reasoning step. No stated constraint changes the answer. Spans a single fact. Distractors need not encode real misconceptions. No calculation required.
+- Medium: 2 reasoning steps. A stated constraint sometimes changes the answer. Spans a single fact. Distractors must encode real misconceptions. A calculation is optional.
+- Hard: 3+ reasoning steps. A stated constraint changes the answer. Spans more than one fact. Distractors must encode real misconceptions. Needs a calculation. A Hard card also carries a why-step.
+
+WHY-STEP (Hard only): a second question asking why the answer is right. `why_step.options` is 2-4 plausible reasons and `why_step.correct` the 0-based index of the real one. Every wrong reason must be something somebody actually gives, or the reader is punished for a writing failure.
+
+If this topic genuinely has no natural card of this archetype, return `refused` with a one-sentence reason and leave `draft` null. A refusal is a valid answer; do not force a card.
+
+`answer` is the explanation shown after the reader answers — 1-3 sentences, including why the right answer is right. `key_points` are 2-4 short, independently checkable points. Write in plain, direct English."""
+
+# What the reader does and what the answer columns must hold, per primitive.
+PRIMITIVE_INSTRUCTIONS = {
+    "pick_one": (
+        "PICK ONE. Ask a question with exactly one right answer. Give exactly 4 `options` and set "
+        "`picked` to the single 0-based index of the correct option. Every wrong option must be a "
+        "mistake a candidate actually makes — the off-by-one, the confused pair, the neighbouring "
+        "concept. An option nobody would pick is padding."
+    ),
+    "order": (
+        "ORDER. List N items to put in order, as a numbered list, and ask for the order. Set "
+        "`constraints` to a list of [before, after] pairs of 0-based indices that define every correct "
+        "order: every correct order satisfies all of them, and any order satisfying them is correct. "
+        "If the order is fully determined, chain the adjacent pairs. Do not state a constraint the "
+        "material does not support."
+    ),
+    "match": (
+        "MATCH. List a left column and a right column, and ask the reader to pair them. Set `pairs` to "
+        "the one-to-one [[left, right], ...] mapping of 0-based indices. Every left item pairs to "
+        "exactly one right item."
+    ),
+    "bucket": (
+        "BUCKET. List items and a small set of named buckets, and ask the reader to sort the items. "
+        "Set `pairs` to [[item, bucket], ...] of 0-based indices; the same bucket may repeat across "
+        "items. Each item has exactly one home under the rule you state."
+    ),
+    "tap_in_place": (
+        "TAP IN PLACE. Show a short snippet, plan or diagram with numbered lines and ask which line or "
+        "token is the answer (the bug, the bottleneck, the missing insertion point, the unsafe line). "
+        "Set `picked` to the single 0-based index of that line or token."
+    ),
+    "self_rate": (
+        "SELF-RATE (flash). Name one term or fact and ask the reader to self-rate knew-it/didn't. "
+        "`answer` is the one-sentence fact. Leave `options`, `picked`, `constraints`, `pairs` and "
+        "`value` empty."
+    ),
+    "assemble": (
+        "ASSEMBLE. Give a pool of tokens and ask the reader to assemble a line (a SQL clause, a method "
+        "signature, a definition). Set `constraints` to [before, after] pairs of 0-based token indices "
+        "defining the correct sequence; for a fully determined line, chain the adjacent pairs."
+    ),
+    "numeric": (
+        "NUMERIC. Ask for a number — a complexity, a storage size, a row count, a lower bound. Set "
+        "`value` to the expected number and `tolerance` to the allowed absolute error (exact for a "
+        "count, an order of magnitude for an estimate). Leave `options` empty."
+    ),
+    "claim_grid": (
+        "CLAIM GRID. List 3-4 statements about one topic and ask the reader to mark each true or false. "
+        "Set `pairs` to [[statement, 0|1], ...] where 1 means true and 0 means false."
+    ),
+    "grid_toggle": (
+        "GRID TOGGLE. Describe a small table (rows and columns, at most 3x3) and ask which cells hold. "
+        "Set `picked` to the 0-based cell indices, row-major, that are correct."
+    ),
+}
+
+
+class Refusal(BaseModel):
+    """The writer's honest answer when no natural card of this archetype fits."""
+
+    reason: str = Field(min_length=1)
+
+
+class CardDraft(BaseModel):
+    """What the model fills. `format`, `archetype` and `difficulty` are stamped
+    by the pipeline, so they are deliberately absent from this model."""
+
+    prompt: str = Field(min_length=10)
+    answer: str = Field(min_length=1)
+    key_points: list[str] = Field(min_length=2, max_length=4)
+    options: list[str] | None = None
+    picked: list[int] | None = None
+    constraints: list[list[int]] | None = None
+    pairs: list[list[int]] | None = None
+    value: float | None = None
+    tolerance: float | None = None
+    why_step: WhyStep | None = None
+
+
+class WriteResult(BaseModel):
+    draft: CardDraft | None = None
+    refused: str | None = None
+
+    @model_validator(mode="after")
+    def _exactly_one(self):
+        if (self.draft is None) == (self.refused is None):
+            raise ValueError("return exactly one of `draft` or `refused`")
+        return self
+
+
+def _user(topic: dict, lesson_md: str, slot: CardSlot, arch: archetypes.Archetype, hard_material: str) -> str:
+    instruction = PRIMITIVE_INSTRUCTIONS[slot.primitive]
+    lines = [
+        f"Topic: {topic['name']} ({topic['domain']})",
+        f"Archetype: {arch.label} ({slot.archetype})",
+        f"Primitive: {slot.primitive}",
+        f"Target difficulty: {slot.difficulty}",
+        "",
+        instruction,
+        "",
+        "Lesson:",
+        lesson_md,
+    ]
+    if hard_material:
+        lines += ["", "Additional source material you may use (problem statements and pattern tricks):", hard_material]
+    return "\n".join(lines)
+
+
+def write_one(
+    llm, topic: dict, lesson_md: str, slot: CardSlot, hard_material: str = "", tier: str = "smart"
+) -> Card | Refusal:
+    """Write one card for one named archetype, or refuse. Never raises for a
+    refusal — only for a call the model could not answer at all."""
+    arch = archetypes.by_id(slot.archetype)
+    result = llm.complete_json(SYSTEM, _user(topic, lesson_md, slot, arch, hard_material), WriteResult,
+                               tier=tier, purpose="cards-write")
+    if result.draft is None:
+        return Refusal(reason=result.refused or "no natural card of this archetype")
+    draft = result.draft
+    try:
+        # The pipeline assigns the format, archetype and difficulty; the writer
+        # only fills content. Stamping here, and re-validating, means a confused
+        # model cannot smuggle a different format through.
+        return Card(
+            format=slot.primitive,
+            archetype=slot.archetype,
+            difficulty=slot.difficulty,
+            prompt=draft.prompt,
+            answer=draft.answer,
+            key_points=draft.key_points,
+            options=draft.options,
+            picked=draft.picked,
+            constraints=draft.constraints,
+            pairs=draft.pairs,
+            value=draft.value,
+            tolerance=draft.tolerance,
+            why_step=draft.why_step,
+        )
+    except ValidationError as e:
+        # Answer columns that do not match the primitive make the card malformed;
+        # treat it like a refusal so the budget refills rather than saving it.
+        return Refusal(reason=f"malformed answer for {slot.primitive}: {str(e).splitlines()[0]}")

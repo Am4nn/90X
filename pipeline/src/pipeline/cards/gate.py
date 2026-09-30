@@ -31,6 +31,13 @@ So the stages now run in order, and the two cheap deterministic ones run first:
    format it was given? Never "is this format allowed".
 5. **gradable** - the model. Can it be marked the way this format is marked?
 
+Two more checks run ahead of the model stages. The **structural rules**
+(`structure.py`) are free and deterministic, catching an option that gives the
+answer away by shape before anyone pays to read it. The **blind gate**
+(`blind_gate.py`) shows a model only the answer choices and rejects a card it
+can answer without the lesson — the reader-side check this reviewer cannot make
+from the question alone.
+
 A card failing only stage 4 or 5 is a wording problem the rewrite usually
 fixes; one failing stage 1, 2 or 3 is a worse card. Reporting the earliest
 failure keeps the reason honest, so the repair pass is told what is actually
@@ -42,6 +49,7 @@ import re
 from pydantic import BaseModel, Field
 
 from ..lessons.check import REFERS_TO_SOURCE
+from . import structure
 
 FENCED_SNIPPET = re.compile(r"```.*?```", re.DOTALL)
 MCQ_OPTIONS = 4
@@ -165,6 +173,13 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
     for i, card in enumerate(cards):
         if problem := malformed(card):
             rejected.append((card, f"malformed: {problem}"))
+            continue
+        # Structural rules run before any model verdict: an option that is the
+        # only number, the only code block, far out of length band, or an "all
+        # of the above" gives the answer away by shape, which the reviewer and
+        # the blind gate cannot see. Free and deterministic.
+        if probs := structure.problems(card):
+            rejected.append((card, f"guessable by shape: {probs[0]}"))
             continue
         if m := REFERS_TO_SOURCE.search(card.prompt):
             rejected.append((card, f"refers to unseen material: {m.group(0)!r}"))
