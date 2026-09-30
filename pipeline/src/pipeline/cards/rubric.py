@@ -7,6 +7,9 @@ a measurement rather than an opinion stored as data.
 The five properties are content judgements a card does not store as fields, so
 `score` takes them directly. The pipeline writes the rubric's answer; the
 writer's label is ignored.
+
+The rubric is pure code and makes no model call, so its "tier" is the cheapest
+one there is: free. It runs in-process and never touches an LLM.
 """
 
 from dataclasses import dataclass

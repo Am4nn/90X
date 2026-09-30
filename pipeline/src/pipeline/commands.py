@@ -125,7 +125,7 @@ def lesson_cards(args, con) -> None:
 def trial(args, con) -> None:
     from .cards import trial as t
 
-    t.run(con, tier=args.tier)
+    t.run(con, tier=args.tier, thinking=args.writer_thinking)
 
 
 def gate2(args, con) -> None:

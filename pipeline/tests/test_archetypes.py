@@ -83,6 +83,20 @@ def test_shape_of_maps_primitives_and_nothing_else():
     assert archetypes.shape_of("typed") is None  # a legacy format, not a primitive
 
 
+def test_options_shape_of_maps_primitives():
+    assert archetypes.options_shape_of("pick_one") == "list"
+    assert archetypes.options_shape_of("order") == "list"
+    assert archetypes.options_shape_of("tap_in_place") == "list"
+    assert archetypes.options_shape_of("claim_grid") == "list"
+    assert archetypes.options_shape_of("match") == "match"
+    assert archetypes.options_shape_of("bucket") == "bucket"
+    assert archetypes.options_shape_of("assemble") == "assemble"
+    assert archetypes.options_shape_of("grid_toggle") == "grid"
+    assert archetypes.options_shape_of("numeric") == "none"
+    assert archetypes.options_shape_of("self_rate") == "none"
+    assert archetypes.options_shape_of("typed") is None  # legacy, no optionsShape
+
+
 def test_difficulty_is_not_a_flat_third():
     # The cycle's target mix is Medium-heavy, not Easy/Medium/Hard thirds.
     slots = archetypes.budget({"domain": "system_design", "importance": 1.0})

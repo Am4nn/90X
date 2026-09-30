@@ -19,7 +19,7 @@ never reach the model: fold the source text in and the gate is defeated.
 from pydantic import BaseModel, Field
 
 from ..llm import LLMError
-from .archetypes import shape_of
+from .archetypes import options_shape_of, shape_of
 
 SAMPLES = 3
 REJECT_AT = 2
@@ -70,18 +70,43 @@ def shape(card) -> str | None:
     return s
 
 
+def _numbered(items) -> str:
+    return "\n".join(f"{i}. {o}" for i, o in enumerate(items or []))
+
+
 def view(card) -> str:
     """The answer choices and nothing else — never the question, lesson, topic
     or area.
 
-    A pick-one card stores its options separately, so the model sees exactly
-    those, numbered. Every other primitive keeps its items inside the prompt,
-    so the reader's view is the prompt; the source text still never reaches
-    the model either way.
+    The choices are the `options` in their canonical per-shape encoding: a flat
+    list for pick_one/order/tap_in_place/claim_grid (and legacy mcq), an object
+    for match/bucket/assemble/grid. A numeric card stores no choices, so its
+    question is the reader's view; the source text still never reaches the model
+    either way.
     """
-    options = getattr(card, "options", None) or []
-    if options:
-        return "Options:\n" + "\n".join(f"{i}. {o}" for i, o in enumerate(options))
+    options = getattr(card, "options", None)
+    if isinstance(options, list) and options:
+        return "Options:\n" + _numbered(options)
+    if isinstance(options, dict):
+        shape = options_shape_of(getattr(card, "format", None))
+        if shape == "match":
+            return "Left:\n" + _numbered(options.get("left")) + "\nRight:\n" + _numbered(options.get("right"))
+        if shape == "bucket":
+            return "Items:\n" + _numbered(options.get("items")) + "\nBuckets:\n" + _numbered(options.get("columns"))
+        if shape == "assemble":
+            tokens = options.get("tokens") or []
+            fixed = options.get("fixed")
+            out = ["Tokens:", _numbered(tokens)]
+            # Pre-filled slots are part of what a reader sees: an assemble card
+            # whose fixed slots already reveal the answer must not pass the gate.
+            if isinstance(fixed, list):
+                pre = [f"slot {i} -> token {f}" for i, f in enumerate(fixed)
+                       if isinstance(f, int) and 0 <= f < len(tokens)]
+                if pre:
+                    out.append("Pre-filled: " + ", ".join(pre))
+            return "\n".join(out)
+        if shape == "grid":
+            return "Rows:\n" + _numbered(options.get("rows")) + "\nColumns:\n" + _numbered(options.get("columns"))
     return card.prompt
 
 
@@ -129,7 +154,7 @@ def correct(card, guess: Guess) -> bool:
     return False
 
 
-def judge_card(llm, card, tier: str = "smart") -> int:
+def judge_card(llm, card, tier: str = "fast") -> int:
     """How many of SAMPLES samples answered correctly (0..SAMPLES).
 
     A sample the model fails to answer (bad JSON, provider error) is not
@@ -141,7 +166,12 @@ def judge_card(llm, card, tier: str = "smart") -> int:
     correct_count = 0
     for _ in range(SAMPLES):
         try:
-            guess = llm.complete_json(SYSTEM, _user(card), Guess, tier=tier, purpose="blind-gate")
+            # Thinking is OFF here for correctness, not cost: a model reasoning
+            # for thousands of tokens is a far stronger guesser than a reader
+            # skimming four options on a phone. With thinking on it becomes a
+            # false-positive machine, and every false rejection costs a smart
+            # repair pass. Do not "fix" this into a stronger guesser.
+            guess = llm.complete_json(SYSTEM, _user(card), Guess, tier=tier, purpose="blind-gate", thinking=False)
         except LLMError:
             continue
         if correct(card, guess):
@@ -153,7 +183,7 @@ def _user(card) -> str:
     return f"{view(card)}\n\n{_INSTRUCTIONS[shape(card)]}"
 
 
-def review(llm, cards: list, tier: str = "smart") -> list[BlindVerdict]:
+def review(llm, cards: list, tier: str = "fast") -> list[BlindVerdict]:
     """One blind verdict per card, three samples each."""
     return [BlindVerdict(index=i, correct=judge_card(llm, card, tier)) for i, card in enumerate(cards)]
 

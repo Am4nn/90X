@@ -16,8 +16,8 @@ class FakeLLM:
         self.result = result
         self.calls = []
 
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
-        self.calls.append({"system": system, "user": user, "schema": schema, "tier": tier, "purpose": purpose})
+    def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
+        self.calls.append({"system": system, "user": user, "schema": schema, "tier": tier, "purpose": purpose, "thinking": thinking})
         return self.result
 
 
@@ -100,10 +100,10 @@ def test_an_ordered_card_needs_before_after_pairs():
     with pytest.raises(ValidationError):
         Card(format="order", archetype="sequence", difficulty="Medium",
              prompt="Put these in order.", answer="1, 2.", key_points=["a", "b"],
-             constraints=[[0]])  # a lone index is not a [before, after] pair
+             options=["A", "B"], constraints=[[0]])  # a lone index is not a [before, after] pair
     Card(format="order", archetype="sequence", difficulty="Medium",
          prompt="Put these in order.", answer="1, 2.", key_points=["a", "b"],
-         constraints=[[0, 1]])
+         options=["A", "B"], constraints=[[0, 1]])
 
 
 def test_a_hard_card_carries_a_why_step():
@@ -115,3 +115,95 @@ def test_a_hard_card_carries_a_why_step():
         why_step=WhyStep(options=["rehashing rebalances", "nothing grows", "buckets never change"], correct=0),
     )
     assert card.why_step.correct == 0
+
+
+def test_the_lesson_prefix_comes_before_the_per_card_content():
+    llm = FakeLLM(write.WriteResult(refused="nope"))
+    slot = CardSlot("concept", "pick_one", "Easy")
+    write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    user = llm.calls[0]["user"]
+    assert user.index("Lesson:") < user.index("Archetype:"), "the lesson must be the stable prefix"
+    assert LESSON in user
+
+
+def test_the_writer_stamps_per_shape_options():
+    draft = write.CardDraft(
+        prompt="Match each term to its meaning.",
+        answer="Atomicity is all-or-nothing.",
+        key_points=["all or nothing", "single unit"],
+        options={"left": ["A", "C"], "right": ["Atomicity", "Consistency"]},
+        pairs=[[0, 0], [1, 1]],
+    )
+    llm = FakeLLM(write.WriteResult(draft=draft))
+    slot = CardSlot("term-meaning", "match", "Medium")
+    result = write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    assert isinstance(result, Card)
+    assert result.options == {"left": ["A", "C"], "right": ["Atomicity", "Consistency"]}
+    assert result.pairs == [[0, 0], [1, 1]]
+
+
+def test_options_that_mismatch_the_shape_become_a_refusal():
+    # A match card whose options are a flat list cannot render as left/right, so
+    # it is refused rather than stored blank.
+    bad = _draft()  # options: list[str], picked: [int] -> pick_one shape
+    llm = FakeLLM(write.WriteResult(draft=write.CardDraft(**bad)))
+    slot = CardSlot("term-meaning", "match", "Medium")
+    result = write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    assert isinstance(result, write.Refusal)
+    assert "malformed" in result.reason
+
+
+def test_output_guards_reject_pathological_lengths():
+    base = dict(prompt="Which structure gives O(1) lookup?", answer="A hash map.",
+                key_points=["hashing spreads keys", "buckets stay short"],
+                options=["A", "B", "C", "D"], picked=[0])
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "answer": "x" * (write.ANSWER_MAX + 1)})
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "key_points": ["a", "x" * (write.KEY_POINT_MAX + 1)]})
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "options": ["A", "B", "C", "x" * (write.OPTION_MAX + 1)]})
+    with pytest.raises(ValidationError):
+        write.CardDraft(**{**base, "prompt": "x" * (write.PROMPT_MAX + 1)})
+
+
+def test_why_step_options_are_length_capped():
+    overlong = "x" * (write.OPTION_MAX + 1)
+    with pytest.raises(ValidationError):
+        write.CardDraft(
+            prompt="Which invariant survives resizing?",
+            answer="Load stays bounded.",
+            key_points=["rehash keeps buckets short", "amortised O(1)"],
+            options=["A", "B", "C", "D"], picked=[0],
+            why_step=WhyStep(options=["rehashing rebalances", overlong], correct=0),
+        )
+
+
+def test_a_reply_that_never_validates_becomes_a_refusal():
+    class _Raising:
+        def complete_json(self, *a, **k):
+            raise write.LLMError("cards-write: invalid JSON after retry")
+
+    slot = CardSlot("concept", "pick_one", "Easy")
+    result = write.write_one(_Raising(), TOPIC, LESSON, slot, tier="smart")
+    assert isinstance(result, write.Refusal)
+    assert "did not validate" in result.reason
+
+
+def test_a_budget_failure_still_propagates():
+    class _Budget:
+        def complete_json(self, *a, **k):
+            raise write.BudgetExceeded("cap reached")
+
+    slot = CardSlot("concept", "pick_one", "Easy")
+    with pytest.raises(write.BudgetExceeded):
+        write.write_one(_Budget(), TOPIC, LESSON, slot, tier="smart")
+
+
+def test_write_one_passes_thinking_through():
+    llm = FakeLLM(write.WriteResult(refused="nope"))
+    slot = CardSlot("concept", "pick_one", "Easy")
+    write.write_one(llm, TOPIC, LESSON, slot, tier="smart", thinking=True)
+    assert llm.calls[0]["thinking"] is True
+    write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
+    assert llm.calls[1]["thinking"] is False

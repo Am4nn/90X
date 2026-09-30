@@ -11,7 +11,7 @@ class _FakeLLM:
     def __init__(self):
         self.calls = 0
 
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
+    def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
         self.calls += 1
         return Guess(picked=[0])
 

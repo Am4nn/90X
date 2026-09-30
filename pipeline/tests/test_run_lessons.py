@@ -14,7 +14,7 @@ class _Writer:
     def __init__(self):
         self.calls = []
 
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
+    def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
         self.calls.append(user)
         if "Primitive: order" in user:
             return write.WriteResult(refused="no natural sequence for this topic")
@@ -59,6 +59,7 @@ def test_constraints_are_saved_as_before_object(tmp_path):
     run_lessons.save(con, topic, [
         Card(format="order", archetype="sequence", difficulty="Medium",
              prompt="Put these in order.", answer="1, 2, 3.", key_points=["a", "b"],
+             options=["A", "B", "C", "D", "E", "F"],
              constraints=[[1, 5], [5, 2]]),
     ], {"problems": [], "tricks": []})
     raw = con.execute("select constraints from cards where topic_slug = ?", [topic["slug"]]).fetchone()[0]

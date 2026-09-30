@@ -3,7 +3,7 @@ section. Every card tests one concept, has 2-4 key points for grading, and
 must be something an interviewer would plausibly ask."""
 
 import re
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -51,6 +51,66 @@ def _is_index_pair(pair) -> bool:
     return isinstance(pair, (list, tuple)) and len(pair) == 2 and all(_is_index(i) for i in pair)
 
 
+def _is_str_list(value) -> bool:
+    return isinstance(value, list) and all(isinstance(x, str) for x in value)
+
+
+def options_error(format: str, options) -> str | None:
+    """Validate `options` against the primitive's `optionsShape`, or None when ok.
+
+    This is the pipeline side of `web/src/lib/feed/options.ts` parseOptions, the
+    canonical `cards.options` encoding:
+
+      list     -> string[]                    (pick_one, order, tap_in_place, claim_grid)
+      match    -> { left, right }
+      bucket   -> { items, columns }
+      assemble -> { tokens, fixed }           (fixed[i] is a token index or null)
+      grid     -> { rows, columns }
+      none     -> null                        (numeric, self_rate)
+
+    Legacy chunk formats (typed/flash/mcq/output) are not primitives, so they
+    have no optionsShape and are left to their own validators.
+    """
+    from .archetypes import options_shape_of
+
+    shape = options_shape_of(format)
+    if shape is None:
+        return None
+    if shape == "none":
+        if options not in (None, [], {}):
+            return f"{format} cards carry no options"
+        return None
+    if shape == "list":
+        if not _is_str_list(options) or not options:
+            return f"{format} needs `options` as a non-empty list of strings"
+        return None
+    if not isinstance(options, dict):
+        return f"{format} needs `options` as an object ({shape})"
+    if shape == "match":
+        if not _is_str_list(options.get("left")) or not _is_str_list(options.get("right")) \
+                or not options["left"] or not options["right"]:
+            return "match options need non-empty `left` and `right` string lists"
+    elif shape == "bucket":
+        if not _is_str_list(options.get("items")) or not _is_str_list(options.get("columns")) \
+                or not options["items"] or not options["columns"]:
+            return "bucket options need non-empty `items` and `columns` string lists"
+    elif shape == "assemble":
+        tokens = options.get("tokens")
+        if not _is_str_list(tokens) or not tokens:
+            return "assemble options need a non-empty `tokens` string list"
+        fixed = options.get("fixed")
+        if fixed is not None:
+            if not isinstance(fixed, list) or len(fixed) != len(tokens):
+                return "assemble `fixed` must have one entry per token, or be omitted"
+            if not all(f is None or (_is_index(f) and 0 <= f < len(tokens)) for f in fixed):
+                return "assemble `fixed` entries must be a token index or null"
+    elif shape == "grid":
+        if not _is_str_list(options.get("rows")) or not _is_str_list(options.get("columns")) \
+                or not options["rows"] or not options["columns"]:
+            return "grid options need non-empty `rows` and `columns` string lists"
+    return None
+
+
 class Card(BaseModel):
     # `format` now holds a primitive id (pick_one, order, ...); the legacy chunk
     # formats (typed/flash/mcq/output) still parse, but the Feed v2 writer never
@@ -60,7 +120,10 @@ class Card(BaseModel):
     prompt: str = Field(min_length=10)
     answer: str = Field(min_length=1)
     key_points: list[str] = Field(min_length=2, max_length=4)
-    options: list[str] | None = None
+    # `options` is the canonical per-shape encoding (see options_error): a flat
+    # string list for "list", an object for match/bucket/assemble/grid, None for
+    # "none". Legacy formats store the flat list the old writer produced.
+    options: list[str] | dict[str, Any] | None = None
     difficulty: Literal["Easy", "Medium", "Hard"]
     # Per-shape answer columns, matching public.cards from the Feed v2 migration.
     picked: list[int] | None = None          # chosen: the correct indices
@@ -77,6 +140,14 @@ class Card(BaseModel):
                 raise ValueError("mcq cards need exactly 4 options")
             if self.answer not in self.options:
                 raise ValueError("mcq answer must be one of the options")
+        return self
+
+    @model_validator(mode="after")
+    def _options_shape(self):
+        # A primitive must carry its options in the canonical shape the app
+        # renders. A card whose options don't match is malformed, not fixed.
+        if (err := options_error(self.format, self.options)):
+            raise ValueError(err)
         return self
 
     @model_validator(mode="after")
