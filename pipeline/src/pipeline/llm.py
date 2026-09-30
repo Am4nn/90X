@@ -27,6 +27,14 @@ PRICES = {
 }
 DEFAULT_PRICE = (1.0, 5.0)  # unknown model: count it conservatively
 
+# DeepSeek thinks by default and bills the reasoning tokens as output, so a
+# call that only needs a JSON verdict pays for chain-of-thought nobody reads.
+# This mirrors web/src/lib/ai.ts NO_THINKING — the app sends
+# { deepseek: { thinking: { type: "disabled" } } } through the AI SDK's
+# providerOptions; the OpenAI SDK puts the same body field under `extra_body`,
+# where the `deepseek` provider namespace is already implied by the endpoint.
+NO_THINKING = {"thinking": {"type": "disabled"}}
+
 # DeepSeek peak hours, UTC, Monday-Friday.
 PEAK_WINDOWS = ((1, 4), (6, 10))
 
@@ -162,10 +170,14 @@ class LLM:
             if attempt:
                 messages.append({"role": "user", "content": f"That reply was invalid ({last_error}). Reply again with valid JSON only."})
             client = self.clients.get(tier, self.client)
-            # Gemini thinks by default and bills it; a JSON verdict doesn't need it.
+            # Gemini and DeepSeek both think by default and bill the reasoning
+            # tokens as output; a JSON verdict or card never needs it. Gemini
+            # takes `reasoning_effort`, DeepSeek takes the `thinking` body field.
             extra = {"reasoning_effort": "none"} if model.startswith("gemini") else {}
+            extra_body = NO_THINKING if model.startswith("deepseek") else None
             response = client.chat.completions.create(
-                model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2, **extra,
+                model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2,
+                extra_body=extra_body, **extra,
             )
             self._log(model, purpose, response.usage)
             content = response.choices[0].message.content or ""

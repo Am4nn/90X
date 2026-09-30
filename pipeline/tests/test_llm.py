@@ -133,6 +133,27 @@ def test_gemini_calls_turn_thinking_off(tmp_path):
     assert "reasoning_effort" not in calls.calls[1]
 
 
+def test_deepseek_calls_turn_thinking_off(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'] * 2)
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"})
+    ai.complete_json("s", "u", Answer, tier="fast")
+    ai.complete_json("s", "u", Answer, tier="smart")
+    # Both DeepSeek tiers disable thinking, mirroring web/src/lib/ai.ts NO_THINKING.
+    assert calls.calls[0]["extra_body"] == llm.NO_THINKING == {"thinking": {"type": "disabled"}}
+    assert calls.calls[1]["extra_body"] == llm.NO_THINKING
+    assert "reasoning_effort" not in calls.calls[0]
+
+
+def test_other_providers_get_no_thinking_override(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'])
+    ai = llm.LLM(client=client, con=con, models={"fast": "some-other-model", "smart": "deepseek-v4-pro"})
+    ai.complete_json("s", "u", Answer, tier="fast")
+    assert calls.calls[0].get("extra_body") is None
+    assert "reasoning_effort" not in calls.calls[0]
+
+
 def test_one_lock_per_connection(tmp_path):
     """A runner and the LLM must wait on the same lock.
 
