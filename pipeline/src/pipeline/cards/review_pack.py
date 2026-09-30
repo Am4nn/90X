@@ -1,70 +1,78 @@
 """The card sample Aman reads, and hands to an outside reviewer.
 
-One sample gates every batch, because reviewing 20 cards from each of 16
-batches is 320 cards and he will not do that - and a review nobody finishes
-is worse than a smaller one that gets done.
+The review question is "does this archetype earn a place", not "is this card
+correct" - the gates answer correctness. So the sample is **two cards per
+archetype, grouped by archetype, not shuffled**: a reviewer judges a *kind* of
+question, not 94 individual cards. 47 archetypes x 2 = 94.
 
-So: 25 cards, spread across areas and formats, weighted toward the ones the
-gate was least sure about, each shown with the lesson it came from. An
-outside reviewer can only judge "could someone answer this?" if they can see
-what the reader was taught, and a card that quietly needs unseen context is
-the exact failure that started this rebuild.
+Each card is shown with the answer definition the reader is judged against (the
+correct indices, the ordering constraints, the mapping pairs, the number and its
+tolerance, and the why-step with its distractors), so the owner can see whether
+a wrong reason is genuinely plausible before the right-answer-wrong-reason rule
+punishes a reader for a writing failure.
 
-Every rejected card is listed too, with the gate's reason. The gate is as
-much on trial as the cards: its first run rejected 40 good cards out of 42.
+Every rejected card is listed too, with the gate's reason. The gate is as much
+on trial as the cards.
 """
 
 import json
 
-SAMPLE = 25
-FORMATS = ("typed", "flash", "mcq", "output")
+from . import archetypes
+
+# 47 archetypes, two each. A flat 100 would over-represent pick-one (20 of 47)
+# and under-represent the new primitives, which is the bias the review exists to
+# catch.
+PER_ARCHETYPE = 2
+SAMPLE = PER_ARCHETYPE * len(archetypes.registry().archetypes)
+
+
+def _json(value):
+    """A jsonb column value as its Python form, or None. DuckDB stores jsonb as
+    text, so the columns arrive as strings and the `??` columns as real None."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (ValueError, TypeError):
+            return None
+    return value
 
 
 def sample(con, size: int = SAMPLE) -> list[dict]:
-    """Least-confident first, one card per topic at most.
+    """Two cards per archetype, grouped by archetype, least-confident first.
 
-    Partitioning only by area and format let a single shaky topic take several
-    of the 25 places while other topics got none, which narrows exactly the
-    range the reviewer is there to cover."""
+    Grouping in Python rather than SQL: the registry is the order to read in,
+    and taking the two least-confident cards per archetype is a per-group slice
+    that SQL's window functions make harder to read than it is worth."""
+    cols = [
+        "id", "slug", "domain", "topic", "format", "difficulty", "prompt", "options",
+        "answer", "key_points", "quality", "archetype", "picked", "constraints", "pairs",
+        "value", "tolerance", "why_step", "lesson",
+    ]
     rows = con.execute(
         """
         select c.id, c.topic_slug, t.domain, t.name, c.format, c.difficulty, c.prompt_md,
-               c.options, c.answer_md, c.key_points, c.quality, l.body_md
+               c.options, c.answer_md, c.key_points, c.quality, c.archetype,
+               c.picked, c.constraints, c.pairs, c.value, c.tolerance, c.why_step, l.body_md
         from cards c
         join topics t on t.slug = c.topic_slug
         join lessons l on l.topic_slug = c.topic_slug
         where c.source = 'lesson' and c.status = 'draft'
-        qualify row_number() over (
-            partition by c.topic_slug
-            order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
-        ) = 1
-        order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), t.domain, c.id
+        order by coalesce(cast(json_extract(c.quality, '$.gate_confidence') as double), 0.5), c.id
         """
     ).fetchall()
-    cols = ["id", "slug", "domain", "topic", "format", "difficulty", "prompt", "options",
-            "answer", "key_points", "quality", "lesson"]
-    candidates = [dict(zip(cols, r)) for r in rows]
+    cards = [dict(zip(cols, r)) for r in rows]
 
-    # One per topic, then spread across area and format by taking turns. Doing
-    # the spread in SQL capped each group at four and left those places empty
-    # when the topic filter removed them, so the sample shrank instead of
-    # drawing from elsewhere.
-    picked: list[dict] = []
-    seen_groups: dict[tuple, int] = {}
-    for allowed in (1, 2, 3, 4, 99):
-        for card in candidates:
-            if len(picked) >= size:
-                break
-            if card in picked:
-                continue
-            group = (card["domain"], card["format"])
-            if seen_groups.get(group, 0) >= allowed:
-                continue
-            seen_groups[group] = seen_groups.get(group, 0) + 1
-            picked.append(card)
-        if len(picked) >= size:
-            break
-    return picked[:size]
+    order = [a.id for a in archetypes.registry().archetypes]
+    labels = {a.id: a.label for a in archetypes.registry().archetypes}
+    by_archetype: dict[str, list[dict]] = {aid: [] for aid in order}
+    for card in cards:
+        aid = card["archetype"]
+        if aid in by_archetype and len(by_archetype[aid]) < PER_ARCHETYPE:
+            card["archetype_label"] = labels.get(aid, aid)
+            by_archetype[aid].append(card)
+    return [card for aid in order for card in by_archetype[aid]][:size]
 
 
 def rejected(con, status: str = "rejected") -> list[dict]:
@@ -102,6 +110,134 @@ def selector(con, slug: str, prompt: str) -> str:
     return mine
 
 
+# --- Rendering the card the reviewer sees ------------------------------------
+
+def _text(index, texts: list[str]) -> str:
+    if texts and isinstance(index, int) and 0 <= index < len(texts):
+        return texts[index]
+    return str(index)
+
+
+def _letter(index, texts: list[str]) -> str:
+    if texts and isinstance(index, int) and 0 <= index < len(texts):
+        return f"{chr(65 + index)}. {texts[index]}"
+    return str(index)
+
+
+def _flat_options(card) -> list[str]:
+    """The option/item texts as a flat list, for resolving answer indices. The
+    structured shapes (match/bucket/assemble/grid) store indices in separate
+    spaces, so a flat list does not apply and the caller resolves per shape."""
+    options = _json(card["options"])
+    if isinstance(options, list):
+        return [str(o) for o in options]
+    return []
+
+
+def _grid(card) -> tuple[list[str], list[str]]:
+    options = _json(card["options"])
+    if isinstance(options, dict):
+        rows = [str(r) for r in (options.get("rows") or [])]
+        columns = [str(c) for c in (options.get("columns") or [])]
+        return rows, columns
+    return [], []
+
+
+def _options_lines(card) -> list[str]:
+    """The card's options, in the reader's vocabulary: a lettered list for the
+    list shapes, the two sides of a match, the items and columns of a bucket, the
+    tokens and fixed slots of an assemble, or the rows and columns of a grid."""
+    options = _json(card["options"])
+    if isinstance(options, list):
+        return [f"{chr(65 + i)}. {o}" for i, o in enumerate(options)]
+    if isinstance(options, dict):
+        lines = []
+        for key, label in (
+            ("left", "Left"),
+            ("right", "Right"),
+            ("items", "Items"),
+            ("columns", "Columns"),
+            ("tokens", "Tokens"),
+            ("rows", "Rows"),
+        ):
+            value = options.get(key)
+            if value:
+                lines.append(f"**{label}**: " + ", ".join(str(x) for x in value))
+        if "fixed" in options:
+            lines.append("**Fixed slots**: " + ", ".join("·" if x is None else str(x) for x in options["fixed"]))
+        return lines
+    return []
+
+
+def _answer_lines(card) -> list[str]:
+    """The answer definition the reader is graded against, in the reader's own
+    vocabulary: the correct option(s), the ordering constraints, the mapping
+    pairs, or the number and its tolerance."""
+    fmt = card["format"]
+    shape = archetypes.shape_of(fmt)
+    texts = _flat_options(card)
+
+    if shape == "chosen":
+        picked = _json(card["picked"]) or []
+        if fmt == "grid_toggle":
+            rows, columns = _grid(card)
+            cells = []
+            for i in picked:
+                if isinstance(i, int) and columns and 0 <= i < len(rows) * len(columns):
+                    cells.append(f"{rows[i // len(columns)]} · {columns[i % len(columns)]}")
+                else:
+                    cells.append(str(i))
+            return ["- Ticked: " + (", ".join(cells) if cells else "none")]
+        shown = [_letter(i, texts) for i in picked if isinstance(i, int)]
+        return ["- Correct: " + (", ".join(shown) if shown else "none")]
+
+    if shape == "ordered":
+        before = (_json(card["constraints"]) or {}).get("before") or []
+        parts = []
+        for pair in before:
+            if isinstance(pair, (list, tuple)) and len(pair) == 2:
+                parts.append(f"{_text(pair[0], texts)} → {_text(pair[1], texts)}")
+        return ["- before: " + (" · ".join(parts) if parts else "none")]
+
+    if shape == "mapping":
+        pairs = _json(card["pairs"]) or []
+        parts = []
+        for pair in pairs:
+            if isinstance(pair, (list, tuple)) and len(pair) == 2:
+                left, right = pair
+                if fmt == "claim_grid":
+                    parts.append(f"{_text(left, texts)} → {'true' if right == 1 else 'false'}")
+                else:
+                    parts.append(f"{_text(left, texts)} ↔ {_text(right, texts)}")
+        return ["- " + " · ".join(parts)] if parts else []
+
+    if shape == "number":
+        if card["value"] is not None and card["tolerance"] is not None:
+            return [f"- {card['value']} ± {card['tolerance']}"]
+        return []
+
+    return []
+
+
+def _why_lines(card) -> list[str]:
+    """The why-step, with the correct reason marked and the distractors shown
+    plainly - the owner judges whether a wrong reason is plausible, so burying
+    them in JSON would hide exactly the failure this review exists to catch."""
+    why = _json(card["why_step"])
+    if not isinstance(why, dict):
+        return []
+    options = [str(o) for o in (why.get("options") or [])]
+    correct = why.get("correct")
+    if not options:
+        return []
+    lines = ["**Why (right answer, wrong reason is wrong)**", ""]
+    for i, option in enumerate(options):
+        marker = "→ **" if i == correct else "  "
+        suffix = "**" if i == correct else ""
+        lines.append(f"{marker}{_letter(i, options)}{suffix}")
+    return lines
+
+
 def report(con) -> str:
     kept, dropped, fixed = con.execute(
         """select count(*) filter (where status = 'draft'),
@@ -124,45 +260,56 @@ def report(con) -> str:
         f"{kept} cards are ready to publish. An automated gate read {seen} and objected to "
         f"{caught} of them ({caught / max(1, seen):.0%}): {fixed} were rewritten and passed on the "
         f"second look, {dropped} could not be saved and were dropped "
-        f"({dropped / max(1, seen):.0%}). Mix: " + ", ".join(f"{n} {f}" for f, n in mix) + "."
+        f"({dropped / max(1, seen):.0%}). Mix by answer screen: "
+        + ", ".join(f"{n} {f}" for f, n in mix) + "."
         + ("" if fixed else "\n\n*No card here is recorded as caught-and-rewritten. Card runs before "
            "2026-09-28 did not keep that record, so on an older run the rewrite pass is invisible "
            "rather than idle, and the drop rate is the only measured number above.*"),
         "",
         "## What these are",
         "",
-        "90x is an interview-prep app. Each topic has one authored lesson, and cards are generated "
-        "from that lesson to test recall. A reader answers a card **without** the lesson in front of "
-        "them: typed answers are graded by a model against the listed key points, multiple choice by "
-        "the marked option, and output cards by exact match.",
+        "90x is an interview-prep app. The Feed is being rebuilt around 47 question archetypes over "
+        "ten answer screens (primitives). Every card names its archetype and its screen, and every "
+        "answer is marked by a pure function against the answer definition shown below - no model, "
+        "no typing. A reader answers without the lesson in front of them.",
         "",
         "## What to judge",
         "",
-        "1. **Could a competent engineer who studied this lesson answer this, with nothing else in front of them?** "
-        "A card that needs the lesson open is broken, however good it looks beside it.",
-        "2. **Is the format right?** Typed for explanation and trade-offs, flash for one crisp fact, "
-        "multiple choice where the options matter, output where a snippet has one unambiguous result.",
-        "3. **Are the key points gradable?** They are what a model checks a typed answer against.",
-        "4. **Are the wrong options real mistakes?** A distractor nobody would pick makes the card a reading test.",
-        "5. **Was the gate right?** The rejected cards are at the end with its reasons. It has been wrong before: "
-        "an earlier version rejected 40 good cards out of 42 because it misread conceptual questions as malformed.",
+        "The gates already checked whether each card is correct, guessable and well-formed. This "
+        "review asks the one question the gates cannot: **does this archetype earn a place in the "
+        "Feed?** Judge each *kind* of question, not each individual card. For each archetype below, "
+        "ask:",
         "",
-        f"Below: {len(picked)} cards, spread across areas and formats, weighted toward the ones the gate was "
-        "least sure about. Each is shown with the lesson it came from.",
+        "1. **Could a competent engineer who studied this topic answer it, with nothing else open?** "
+        "A card that needs the lesson open is broken, however good it looks beside it.",
+        "2. **Does the answer screen fit the question?** Order for sequences, match for pairs, a "
+        "number for a calculation, tap for a point inside a snippet.",
+        "3. **Are the why-step's wrong reasons plausible mistakes?** A right answer with an "
+        "implausible reason is marked wrong, which punishes the reader for a writing failure.",
+        "4. **Was the gate right?** The rejected cards are at the end with its reasons.",
+        "",
+        f"Below: {len(picked)} cards, two per archetype, grouped by archetype so a *kind* of "
+        "question can be judged as a whole. The two least-confident cards per archetype are shown, "
+        "each with the lesson it came from and the answer definition the reader is graded against.",
         "",
         "---",
         "",
     ]
 
+    last_archetype = None
     for i, card in enumerate(picked, 1):
         confidence = (json.loads(card["quality"] or "{}") or {}).get("gate_confidence")
-        # The slug and a fragment of the question, so an objection can name this
-        # exact card. Without it, an objection keyed on the topic alone hit
-        # whichever of the topic's ten cards came first - which is how twelve of
-        # thirteen reviewer objections rewrote a card nobody complained about.
         first_line = selector(con, card["slug"], card["prompt"])
+
+        if card["archetype"] != last_archetype:
+            lines += [
+                f"## {card['archetype_label']} (`{card['archetype']}` · {card['format']})",
+                "",
+            ]
+            last_archetype = card["archetype"]
+
         lines += [
-            f"## {i}. {card['topic']} · {card['format']} · {card['difficulty']}",
+            f"### {i}. {card['topic']} · {card['difficulty']}",
             "",
             f"*{card['domain']} · gate confidence {confidence if confidence is not None else 'n/a'}*",
             "",
@@ -173,8 +320,15 @@ def report(con) -> str:
             card["prompt"],
             "",
         ]
-        if card["options"]:
-            lines += ["**Options**", ""] + [f"- {o}" for o in json.loads(card["options"])] + [""]
+        options = _options_lines(card)
+        if options:
+            lines += ["**Options**", ""] + options + [""]
+        answer = _answer_lines(card)
+        if answer:
+            lines += ["**Answer (the reader is graded on)**", ""] + answer + [""]
+        why = _why_lines(card)
+        if why:
+            lines += why + [""]
         lines += [
             "**Reference answer**",
             "",
