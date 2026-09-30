@@ -14,7 +14,7 @@ class _Writer:
     def __init__(self):
         self.calls = []
 
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
+    def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
         self.calls.append(user)
         if "Primitive: order" in user:
             return write.WriteResult(refused="no natural sequence for this topic")

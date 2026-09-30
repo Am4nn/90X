@@ -78,4 +78,6 @@ def rewrite(llm, topic: dict, lesson_md: str, rejected: list[tuple[object, str]]
         f"Cards to fix:\n{listing}\n\n"
         f"Lesson they came from:\n{lesson_md}"
     )
-    return llm.complete_json(REWRITE_SYSTEM, user, CardSet, tier=tier, purpose="cards-rewrite").cards
+    # The repair pass diagnoses *why* a card failed, so it is the one step that
+    # keeps DeepSeek thinking on (see .planning/feed-v2/DECISIONS.md).
+    return llm.complete_json(REWRITE_SYSTEM, user, CardSet, tier=tier, purpose="cards-rewrite", thinking=True).cards

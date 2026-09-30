@@ -27,12 +27,15 @@ PRICES = {
 }
 DEFAULT_PRICE = (1.0, 5.0)  # unknown model: count it conservatively
 
-# DeepSeek thinks by default and bills the reasoning tokens as output, so a
-# call that only needs a JSON verdict pays for chain-of-thought nobody reads.
-# This mirrors web/src/lib/ai.ts NO_THINKING — the app sends
-# { deepseek: { thinking: { type: "disabled" } } } through the AI SDK's
-# providerOptions; the OpenAI SDK puts the same body field under `extra_body`,
-# where the `deepseek` provider namespace is already implied by the endpoint.
+# DeepSeek thinks by default and bills the reasoning tokens as output. Most
+# pipeline steps turn it off (a JSON verdict or a card does not need it), but
+# the repair pass leaves it on so the model can diagnose *why* a card failed.
+# Thinking is therefore a per-call choice, not a global switch — see
+# `.planning/feed-v2/DECISIONS.md` (Model tiers and thinking). This mirrors
+# web/src/lib/ai.ts NO_THINKING ({ deepseek: { thinking: { type: "disabled" } } }
+# through the AI SDK's providerOptions); the OpenAI SDK puts the same body field
+# under `extra_body`, where the `deepseek` namespace is already implied by the
+# endpoint.
 NO_THINKING = {"thinking": {"type": "disabled"}}
 
 # DeepSeek peak hours, UTC, Monday-Friday.
@@ -139,9 +142,15 @@ class LLM:
             if "review" not in self.clients and (review := _review_client()):
                 self.clients["review"] = review
 
-    def complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "") -> T:
+    def complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "",
+                      thinking: bool = False) -> T:
         """Ask for JSON matching `schema`. Retries once with the validation
-        error; raises LLMError if the second answer is also invalid."""
+        error; raises LLMError if the second answer is also invalid.
+
+        `thinking` turns DeepSeek's reasoning on for this one call (off by
+        default). Only the repair pass sets it on — diagnosing *why* a card
+        failed wants the model to think; classification and generation do not.
+        """
         with self.lock:
             spent = spend_usd(self.con)
             in_flight = self.in_flight
@@ -153,12 +162,13 @@ class LLM:
             # of that gap without pretending to know their exact cost.
             if spent + in_flight * self.typical_call_usd >= self.max_usd:
                 raise BudgetExceeded(f"AI spend ${spent:.2f} plus {in_flight} in flight reached the ${self.max_usd:.2f} cap")
-            return self._complete_json(system, user, schema, tier, purpose)
+            return self._complete_json(system, user, schema, tier, purpose, thinking)
         finally:
             with self.lock:
                 self.in_flight -= 1
 
-    def _complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "") -> T:
+    def _complete_json(self, system: str, user: str, schema: type[T], tier: str = "fast", purpose: str = "",
+                       thinking: bool = False) -> T:
         model = self.models[tier]
         system_full = (
             f"{system}\n\nReply with a single JSON object matching this JSON Schema, and nothing else:\n"
@@ -170,11 +180,11 @@ class LLM:
             if attempt:
                 messages.append({"role": "user", "content": f"That reply was invalid ({last_error}). Reply again with valid JSON only."})
             client = self.clients.get(tier, self.client)
-            # Gemini and DeepSeek both think by default and bill the reasoning
-            # tokens as output; a JSON verdict or card never needs it. Gemini
-            # takes `reasoning_effort`, DeepSeek takes the `thinking` body field.
+            # Gemini thinks by default and bills it; a JSON verdict doesn't need
+            # it, so reasoning_effort is always none for Gemini. DeepSeek's
+            # thinking is per-call: off unless `thinking` is set (the repair pass).
             extra = {"reasoning_effort": "none"} if model.startswith("gemini") else {}
-            extra_body = NO_THINKING if model.startswith("deepseek") else None
+            extra_body = NO_THINKING if model.startswith("deepseek") and not thinking else None
             response = client.chat.completions.create(
                 model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2,
                 extra_body=extra_body, **extra,

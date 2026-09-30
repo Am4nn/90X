@@ -27,7 +27,7 @@ class _RecordingLLM:
         self.replies = list(replies)
         self.users = []
 
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
+    def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
         self.users.append(user)
         return self.replies.pop(0)
 
@@ -42,6 +42,20 @@ def test_the_model_sees_options_and_nothing_else():
         assert "which structure gives O(1)" not in user.lower(), "the question must not be shown"
         assert "lesson" not in user.lower(), "the source text must not reach the model"
         assert "hashing" not in user.lower(), "the topic content must not reach the model"
+
+
+def test_assemble_view_shows_prefilled_slots():
+    card = Card.model_validate({
+        "format": "assemble", "archetype": "fill-code-blank", "difficulty": "Medium",
+        "prompt": "Assemble the SELECT clause.",
+        "answer": "SELECT x FROM y WHERE z.", "key_points": ["a", "b"],
+        "options": {"tokens": ["SELECT", "FROM", "WHERE"], "fixed": [0, 1, None]},
+        "constraints": [[0, 1], [1, 2]],
+    })
+    shown = blind_gate.view(card)
+    assert "SELECT" in shown and "FROM" in shown and "WHERE" in shown
+    assert "slot 0 -> token 0" in shown and "slot 1 -> token 1" in shown
+    assert "slot 2" not in shown, "a gap slot is not a pre-filled one"
 
 
 def test_three_samples_are_taken():

@@ -412,3 +412,22 @@ gap.
 Against $20 newly available. The one number that could move is generation: structured formats
 carry more fields than a prose answer, so a card may cost more than the ~$0.0017 the original
 pass averaged. **Measure on one topic before running 274.**
+
+## Model tiers and thinking
+
+Thinking is a per-step choice, not a global switch. DeepSeek thinks by default and bills the
+reasoning tokens as output; `llm.complete_json(..., thinking=…)` turns it on or off per call, and
+each step states its choice rather than inheriting a default.
+
+| step | tier | thinking | why |
+|---|---|---|---|
+| card writer | smart | **off** | the open question — keep off for now and measure it. |
+| blind gate | fast | **off** | correctness, not cost. A model reasoning for thousands of tokens is a far stronger guesser than a reader skimming four options on a phone; with thinking on it becomes a false-positive machine, and every false rejection costs a smart repair pass. |
+| difficulty rubric | — (pure code) | off | classification against stated criteria; it makes no model call at all. |
+| answerability gate | smart | off | classification against stated criteria. |
+| repair pass | smart | **on** | it is diagnosing *why* a card failed. |
+
+The one that matters is the blind gate. It reads like a cost-saving, so the next person who
+touches it may be tempted to turn thinking on to make it "better". Do not: a stronger guesser
+is a false-positive machine, and every false rejection it produces spends a smart repair pass to
+fix a card that was never broken. Leave the blind gate's thinking off, on purpose.

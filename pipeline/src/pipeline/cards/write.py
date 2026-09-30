@@ -29,6 +29,8 @@ prose.
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
+from ..llm import BudgetExceeded, LLMError
+
 from . import archetypes
 from .archetypes import CardSlot
 from .generate import Card, WhyStep
@@ -176,6 +178,10 @@ class CardDraft(BaseModel):
         for option in _option_strings(self.options):
             if len(option) > OPTION_MAX:
                 raise ValueError(f"an option is {len(option)} chars (cap {OPTION_MAX})")
+        if self.why_step:
+            for option in self.why_step.options:
+                if len(option) > OPTION_MAX:
+                    raise ValueError(f"a why-step option is {len(option)} chars (cap {OPTION_MAX})")
         return self
 
 
@@ -217,10 +223,24 @@ def write_one(
     llm, topic: dict, lesson_md: str, slot: CardSlot, hard_material: str = "", tier: str = "smart"
 ) -> Card | Refusal:
     """Write one card for one named archetype, or refuse. Never raises for a
-    refusal — only for a call the model could not answer at all."""
+    refusal or for a reply that does not validate — only for a provider or
+    budget failure the caller must stop on."""
     arch = archetypes.by_id(slot.archetype)
-    result = llm.complete_json(SYSTEM, _user(topic, lesson_md, slot, arch, hard_material), WriteResult,
-                               tier=tier, purpose="cards-write")
+    try:
+        # The writer keeps thinking off for now — it generates from stated
+        # content rather than diagnosing anything (see DECISIONS.md, the open
+        # question of whether a Hard card would write better with it on).
+        result = llm.complete_json(SYSTEM, _user(topic, lesson_md, slot, arch, hard_material), WriteResult,
+                                   tier=tier, purpose="cards-write", thinking=False)
+    except BudgetExceeded:
+        # The spend cap is a hard stop for the whole run, not a card to refill.
+        raise
+    except LLMError:
+        # The model answered but its reply never validated (an over-length
+        # draft, a malformed options shape) even after a retry. That is a
+        # refusal: the slot refills with another archetype. A provider error is
+        # not an LLMError, so it still propagates.
+        return Refusal(reason="the writer's reply did not validate after a retry")
     if result.draft is None:
         return Refusal(reason=result.refused or "no natural card of this archetype")
     draft = result.draft

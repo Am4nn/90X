@@ -94,7 +94,17 @@ def view(card) -> str:
         if shape == "bucket":
             return "Items:\n" + _numbered(options.get("items")) + "\nBuckets:\n" + _numbered(options.get("columns"))
         if shape == "assemble":
-            return "Tokens:\n" + _numbered(options.get("tokens"))
+            tokens = options.get("tokens") or []
+            fixed = options.get("fixed")
+            out = ["Tokens:", _numbered(tokens)]
+            # Pre-filled slots are part of what a reader sees: an assemble card
+            # whose fixed slots already reveal the answer must not pass the gate.
+            if isinstance(fixed, list):
+                pre = [f"slot {i} -> token {f}" for i, f in enumerate(fixed)
+                       if isinstance(f, int) and 0 <= f < len(tokens)]
+                if pre:
+                    out.append("Pre-filled: " + ", ".join(pre))
+            return "\n".join(out)
         if shape == "grid":
             return "Rows:\n" + _numbered(options.get("rows")) + "\nColumns:\n" + _numbered(options.get("columns"))
     return card.prompt
@@ -156,7 +166,12 @@ def judge_card(llm, card, tier: str = "fast") -> int:
     correct_count = 0
     for _ in range(SAMPLES):
         try:
-            guess = llm.complete_json(SYSTEM, _user(card), Guess, tier=tier, purpose="blind-gate")
+            # Thinking is OFF here for correctness, not cost: a model reasoning
+            # for thousands of tokens is a far stronger guesser than a reader
+            # skimming four options on a phone. With thinking on it becomes a
+            # false-positive machine, and every false rejection costs a smart
+            # repair pass. Do not "fix" this into a stronger guesser.
+            guess = llm.complete_json(SYSTEM, _user(card), Guess, tier=tier, purpose="blind-gate", thinking=False)
         except LLMError:
             continue
         if correct(card, guess):

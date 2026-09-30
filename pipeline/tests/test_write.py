@@ -16,8 +16,8 @@ class FakeLLM:
         self.result = result
         self.calls = []
 
-    def complete_json(self, system, user, schema, tier="smart", purpose=""):
-        self.calls.append({"system": system, "user": user, "schema": schema, "tier": tier, "purpose": purpose})
+    def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
+        self.calls.append({"system": system, "user": user, "schema": schema, "tier": tier, "purpose": purpose, "thinking": thinking})
         return self.result
 
 
@@ -165,3 +165,36 @@ def test_output_guards_reject_pathological_lengths():
         write.CardDraft(**{**base, "options": ["A", "B", "C", "x" * (write.OPTION_MAX + 1)]})
     with pytest.raises(ValidationError):
         write.CardDraft(**{**base, "prompt": "x" * (write.PROMPT_MAX + 1)})
+
+
+def test_why_step_options_are_length_capped():
+    overlong = "x" * (write.OPTION_MAX + 1)
+    with pytest.raises(ValidationError):
+        write.CardDraft(
+            prompt="Which invariant survives resizing?",
+            answer="Load stays bounded.",
+            key_points=["rehash keeps buckets short", "amortised O(1)"],
+            options=["A", "B", "C", "D"], picked=[0],
+            why_step=WhyStep(options=["rehashing rebalances", overlong], correct=0),
+        )
+
+
+def test_a_reply_that_never_validates_becomes_a_refusal():
+    class _Raising:
+        def complete_json(self, *a, **k):
+            raise write.LLMError("cards-write: invalid JSON after retry")
+
+    slot = CardSlot("concept", "pick_one", "Easy")
+    result = write.write_one(_Raising(), TOPIC, LESSON, slot, tier="smart")
+    assert isinstance(result, write.Refusal)
+    assert "did not validate" in result.reason
+
+
+def test_a_budget_failure_still_propagates():
+    class _Budget:
+        def complete_json(self, *a, **k):
+            raise write.BudgetExceeded("cap reached")
+
+    slot = CardSlot("concept", "pick_one", "Easy")
+    with pytest.raises(write.BudgetExceeded):
+        write.write_one(_Budget(), TOPIC, LESSON, slot, tier="smart")
