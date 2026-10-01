@@ -29,7 +29,7 @@ from pathlib import Path
 
 from pipeline import staging
 from pipeline.llm import LLM
-from pipeline.cards import run_lessons, regate
+from pipeline.cards import regate, run_lessons, validate
 
 RUN_ID = "feed-v2-full"
 LOG = Path(__file__).resolve().parents[1] / ".data" / "review" / "feed-v2-run.log"
@@ -86,6 +86,9 @@ def main(argv: list[str] | None = None) -> None:
     print("--- step 2: gate + repair ---", flush=True)
     result = regate.run(con, only=only, tier="smart", llm=llm)
     print(f"regate done: {result}, {int(time.time() - started)}s total", flush=True)
+
+    print("--- step 3: cross-topic dedupe + answer-definition consistency ---", flush=True)
+    print(validate.report(con), flush=True)
 
     print(f"=== Feed v2 run end  {datetime.now(timezone.utc).isoformat()}  "
           f"{int(time.time() - started)}s ===", flush=True)

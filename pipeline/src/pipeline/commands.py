@@ -271,6 +271,12 @@ def card_regate(args, con) -> None:
           f"{t['rejected']} still rejected, spend ${llm.spend_usd(con):.2f}")
 
 
+def card_validate(args, con) -> None:
+    from .cards import validate
+
+    print(validate.report(con))
+
+
 def rebatch(args, con) -> None:
     from .cards import rebatch as rb
 
@@ -281,7 +287,7 @@ def rebatch(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status, "trial": trial, "gate2": gate2}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status, "trial": trial, "gate2": gate2}
 
 
 def run(name: str, args) -> None:
