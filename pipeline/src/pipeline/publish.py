@@ -141,6 +141,17 @@ def _prepare(value, column):
     return value
 
 
+def _json(value):
+    """Serialize a staging JSON string for a jsonb upsert, or None.
+
+    Staging stores the Feed v2 answer columns (`picked`, `constraints`,
+    `pairs`, `why_step`) as JSON strings, the same way `options` is stored;
+    this round-trips one for a `%s::jsonb` cast the way `_publish_cards` already
+    does for its other JSON columns.
+    """
+    return None if value is None else json.dumps(json.loads(value))
+
+
 def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = False) -> dict:
     counts = {}
     with pg.transaction():
@@ -195,16 +206,22 @@ def _publish_cards(con, cur) -> dict:
         # sorts ascending, so a card that arrives without one looks safest.
         cards = con.execute(
             """select id, topic_slug, problem_slug, format, difficulty, prompt_md, options, answer_md,
-                      key_points, source_refs, quality, risk from cards where batch_id = ? and kept""", [bid]).fetchall()
+                      key_points, source_refs, quality, risk, archetype, picked, constraints, pairs,
+                      value, tolerance, why_step from cards where batch_id = ? and kept""", [bid]).fetchall()
         cur.executemany(
             """insert into public.cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md,
-                   options, answer_md, key_points, source_refs, quality, risk, status)
-               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, 'draft')
+                   options, answer_md, key_points, source_refs, quality, risk, archetype, picked,
+                   constraints, pairs, value, tolerance, why_step, status)
+               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s,
+                       %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s::jsonb, 'draft')
                on conflict (id) do update set
-                 batch_id = excluded.batch_id, risk = excluded.risk""",
+                 batch_id = excluded.batch_id, risk = excluded.risk, archetype = excluded.archetype,
+                 picked = excluded.picked, constraints = excluded.constraints, pairs = excluded.pairs,
+                 value = excluded.value, tolerance = excluded.tolerance, why_step = excluded.why_step""",
             [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
               json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")),
-              json.dumps(json.loads(c[10] or "{}")), c[11])
+              json.dumps(json.loads(c[10] or "{}")), c[11],
+              c[12], _json(c[13]), _json(c[14]), _json(c[15]), c[16], c[17], _json(c[18]))
              for c in cards])
         n_cards += len(cards)
     return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}

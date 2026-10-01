@@ -78,7 +78,7 @@ def sample(con, size: int = SAMPLE) -> list[dict]:
 def rejected(con, status: str = "rejected") -> list[dict]:
     rows = con.execute(
         """select topic_slug, format, prompt_md, reject_reason from cards
-           where source = 'lesson' and status = ? order by topic_slug""",
+           where source = 'lesson' and status = ? and archetype is not null order by topic_slug""",
         [status],
     ).fetchall()
     return [dict(zip(["slug", "format", "prompt", "reason"], r)) for r in rows]
@@ -243,11 +243,11 @@ def report(con) -> str:
         """select count(*) filter (where status = 'draft'),
                   count(*) filter (where status = 'rejected'),
                   count(*) filter (where status = 'repaired')
-           from cards where source = 'lesson'"""
+           from cards where source = 'lesson' and archetype is not null"""
     ).fetchone()
     mix = con.execute(
         """select format, count(*) from cards where source = 'lesson' and status = 'draft'
-           group by 1 order by 2 desc"""
+              and archetype is not null group by 1 order by 2 desc"""
     ).fetchall()
     picked, refused = sample(con), rejected(con)
     sent_back = rejected(con, "repaired")

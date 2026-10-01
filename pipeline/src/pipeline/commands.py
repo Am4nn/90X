@@ -286,8 +286,21 @@ def rebatch(args, con) -> None:
     print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", in staging; run publish to send them"))
 
 
+def swap(args, con) -> None:
+    import os
+
+    from .cards import swap as s
+
+    result = s.run(os.environ["DATABASE_URL"], dry_run=not args.apply)
+    if args.apply:
+        print(f"swap applied: {result['retired']} retired, {result['activated']} activated")
+    else:
+        print(f"dry run: would retire {result['retire_live']} live cards and "
+              f"activate {result['activate_draft_archetyped']} draft archetyped cards")
+
+
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status, "trial": trial, "gate2": gate2}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "swap": swap, "status": status, "trial": trial, "gate2": gate2}
 
 
 def run(name: str, args) -> None:

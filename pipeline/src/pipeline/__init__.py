@@ -75,6 +75,8 @@ def main() -> None:
                     help="delete published cards even when they hold study history")
     rb = sub.add_parser("rebatch", help="regroup draft cards into review batches (area x part)")
     rb.add_argument("--dry-run", action="store_true", help="show the batches without changing anything")
+    sw = sub.add_parser("swap", help="flip the Feed v2 corpus live (new draft -> live, old live -> retired)")
+    sw.add_argument("--apply", action="store_true", help="run the flip (default: dry-run only)")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()
