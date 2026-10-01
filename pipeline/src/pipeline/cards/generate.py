@@ -42,6 +42,12 @@ class WhyStep(BaseModel):
     options: list[str] = Field(min_length=2, max_length=4)
     correct: int = Field(ge=0)
 
+    @model_validator(mode="after")
+    def _correct_in_range(self):
+        if self.correct >= len(self.options):
+            raise ValueError("why_step.correct must index one of why_step.options")
+        return self
+
 
 def _is_index(value) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
