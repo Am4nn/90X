@@ -125,6 +125,39 @@ def eligible(area: str) -> list[Archetype]:
     return [a for a in registry().archetypes if area in a.areas]
 
 
+def _spread(archetypes: list[Archetype]) -> list[Archetype]:
+    """Order eligible archetypes so primitives interleave.
+
+    The registry lists pick_one archetypes first (20 of 47), so a plain
+    round-robin in registry order hands pick_one the whole budget whenever a
+    topic's card count is smaller than its eligible set — the non-pick-one
+    primitives never get a slot. Interleaving one archetype from each primitive
+    in turn keeps a short budget spread across primitives instead of stacked on
+    the first primitive in the file. Within a primitive, registry order is kept.
+    """
+    groups: dict[str, list[Archetype]] = {}
+    order: list[str] = []
+    for a in archetypes:
+        key = a.primitives[0]
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(a)
+    spread: list[Archetype] = []
+    i = 0
+    while True:
+        advanced = False
+        for key in order:
+            group = groups[key]
+            if i < len(group):
+                spread.append(group[i])
+                advanced = True
+        if not advanced:
+            break
+        i += 1
+    return spread
+
+
 def count_for(importance: float) -> int:
     return max(MIN_CARDS, round(CARDS_PER_IMPORTANCE * importance))
 
@@ -152,10 +185,11 @@ def difficulty_for(archetype: Archetype, index: int) -> str:
 
 def budget(topic: dict) -> list[CardSlot]:
     """A topic's card slots: count proportional to importance, spread equally
-    (round-robin) across the archetypes eligible for its domain, each with a
-    difficulty target. Returns [] for a domain the catalogue does not cover."""
+    (round-robin) across the archetypes eligible for its domain — interleaved so
+    the primitives, not just pick_one, are represented. Returns [] for a domain
+    the catalogue does not cover."""
     area = topic.get("domain", "")
-    archetypes = eligible(area)
+    archetypes = _spread(eligible(area))
     if not archetypes:
         return []
     n = count_for(topic.get("importance") or 0.5)
