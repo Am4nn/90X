@@ -240,3 +240,8 @@ def test_order_and_assemble_tell_the_writer_to_shuffle():
 
 def test_the_writer_is_told_wrong_reasons_must_be_false_about_the_same_item():
     assert "very item, pair, row, or value" in write.SYSTEM
+
+
+def test_the_writer_is_told_best_and_rank_questions_need_stated_assumptions():
+    assert "ONE ANSWER, OR REFUSE" in write.SYSTEM
+    assert "unstated assumption" in write.SYSTEM
