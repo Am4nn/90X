@@ -436,3 +436,38 @@ The one that matters is the blind gate. It reads like a cost-saving, so the next
 touches it may be tempted to turn thinking on to make it "better". Do not: a stronger guesser
 is a false-positive machine, and every false rejection it produces spends a smart repair pass to
 fix a card that was never broken. Leave the blind gate's thinking off, on purpose.
+
+---
+
+# Round 5 — the run, settled (2026-10-01)
+
+Operational decisions for the generation run, after the first Gate 2 measurements came back.
+The gate measured **62% rejection** on 50 cards, found the per-topic budget was skewing to
+`pick_one` (fixed, #55), and found the why-step wrong-reasons were LLM straw men (fixed, #56,
+which brought rejection to **46%**). A follow-up pass is tightening `match`/`numeric` why-step
+scoping and answer-consistency.
+
+## Go-ahead is manual
+
+The full run never starts on a threshold. I report the final Gate 2 number plus a costed plan
+(card count, estimated cost, ETA), and Aman approves explicitly. No auto-proceed.
+
+## The full run waits for off-hours
+
+Generation runs in the off-peak price window, not at peak. And the cards already generated
+during the Gate 2 / re-measure runs are **real corpus cards** — they are kept and published, not
+discarded as test data.
+
+## A floor on the corpus
+
+Repair-once-then-drop will shrink the ~2,900. If the final count would fall below **~2,500**,
+stop and check before shrinking further.
+
+## The swap is prepared, not executed here
+
+Build and verify the draft → live → retired mechanics, run a staging dry-run, and write the
+production runbook — then stop. The production migration and the final publish are Aman's.
+
+## Gate 3 in two forms
+
+The ~94-card human review ships as both the web review pack and a markdown file.
