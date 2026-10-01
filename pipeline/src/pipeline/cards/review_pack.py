@@ -163,7 +163,7 @@ def _options_lines(card) -> list[str]:
             value = options.get(key)
             if value:
                 lines.append(f"**{label}**: " + ", ".join(str(x) for x in value))
-        if "fixed" in options:
+        if options.get("fixed"):
             lines.append("**Fixed slots**: " + ", ".join("·" if x is None else str(x) for x in options["fixed"]))
         return lines
     return []

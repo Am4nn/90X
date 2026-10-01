@@ -45,6 +45,8 @@ THE READER CANNOT SEE THE LESSON. The card tests whether they learned the topic,
 
 The card must be answerable by a competent engineer who studied this topic anywhere, and must be something an interviewer would plausibly ask. Everything in the answer must follow from the material given. Do not invent facts, statistics, benchmarks, company names, or results.
 
+ONE ANSWER, OR REFUSE. A question that asks for the "best", "fastest", "most likely", "cheapest", or asks the reader to "rank" has one right answer only under assumptions the reader is told: the workload, capacity, implementation, or the exact metric being ranked. State those assumptions in `prompt` (for example "queries are dominated by per-tenant lookups", "standard implementation", "no extra memory"). If the right answer genuinely changes with a factor the material does not pin down, refuse rather than grade a reader against an unstated assumption.
+
 DISTRACTORS AND WRONG REASONS. Every wrong option and every wrong reason must be a substantive mistake a real candidate makes about THIS topic — the confused pair, the off-by-one, the neighbouring concept, the wrong-but-plausible justification. A reader must be able to pick it for a reason that lives in the topic, not in the shape of the card.
 
 Never use a structural or meta tell as a wrong option or wrong reason:
