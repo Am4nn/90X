@@ -104,6 +104,10 @@ create table if not exists llm_calls (
     cost_usd double, off_peak boolean
 );
 alter table llm_calls add column if not exists tokens_reasoning int default 0;
+-- run_id scopes each row to one run so a run's spend cap counts only its own
+-- calls, not the lifetime of historical pipeline work. Rows that predate this
+-- column are backfilled as 'legacy' and never count against a named run.
+alter table llm_calls add column if not exists run_id text default 'legacy';
 -- Feed v2: a card carries its archetype and its deterministic answer. These
 -- mirror public.cards (part A's migration); `format` holds the primitive id.
 alter table cards add column if not exists archetype text;

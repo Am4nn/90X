@@ -121,8 +121,13 @@ def _review_client():
 
 class LLM:
     def __init__(self, con: duckdb.DuckDBPyConnection, client=None, models: dict | None = None,
-                 max_usd: float | None = None, clients: dict | None = None):
+                 max_usd: float | None = None, clients: dict | None = None,
+                 run_id: str | None = None):
         self.con = con
+        # Which run this instance's calls belong to. None is the ad-hoc/legacy
+        # case: the spend cap then covers the whole table, as it always has. A
+        # named run (e.g. the Feed v2 full run) scopes the cap to its own rows.
+        self.run_id = run_id
         self.max_usd = max_usd if max_usd is not None else float(os.environ.get("PIPELINE_MAX_USD", DEFAULT_MAX_USD))
         self.client = client or _default_client()
         # DuckDB connections aren't thread-safe; calls may run in a thread pool.
@@ -152,7 +157,7 @@ class LLM:
         failed wants the model to think; classification and generation do not.
         """
         with self.lock:
-            spent = spend_usd(self.con)
+            spent = spend_usd(self.con, self.run_id)
             in_flight = self.in_flight
             self.in_flight += 1
         try:
@@ -212,14 +217,24 @@ class LLM:
     def _insert(self, model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning=0) -> None:
         cost = cost_usd(model, tokens_in, tokens_out + tokens_reasoning, off_peak)
         self.con.execute(
-            """insert into llm_calls (model, purpose, tokens_in, tokens_out, tokens_reasoning, cost_usd, off_peak)
-               values (?, ?, ?, ?, ?, ?, ?)""",
-            [model, purpose, tokens_in, tokens_out, tokens_reasoning, cost, off_peak],
+            """insert into llm_calls (model, purpose, tokens_in, tokens_out, tokens_reasoning, cost_usd, off_peak, run_id)
+               values (?, ?, ?, ?, ?, ?, ?, ?)""",
+            [model, purpose, tokens_in, tokens_out, tokens_reasoning, cost, off_peak, self.run_id],
         )
         entry = self.run_costs.setdefault(model, [0, 0.0])
         entry[0] += 1
         entry[1] += cost
 
 
-def spend_usd(con: duckdb.DuckDBPyConnection) -> float:
-    return con.execute("select coalesce(sum(cost_usd), 0) from llm_calls").fetchone()[0]
+def spend_usd(con: duckdb.DuckDBPyConnection, run_id: str | None = None) -> float:
+    """Total logged AI spend in USD.
+
+    With `run_id` set, only that run's rows count — the per-run cap relies on
+    this. With `run_id` None (the legacy behaviour) the whole table counts, so
+    ad-hoc invocations and progress lines that diff `spend_usd(con)` before and
+    after a step keep working unchanged."""
+    if run_id is None:
+        return con.execute("select coalesce(sum(cost_usd), 0) from llm_calls").fetchone()[0]
+    return con.execute(
+        "select coalesce(sum(cost_usd), 0) from llm_calls where run_id = ?", [run_id]
+    ).fetchone()[0]
