@@ -49,12 +49,15 @@ def card_id(topic_slug: str, prompt: str, kind: str = "") -> str:
 
 
 def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bool) -> list[dict]:
+    # A topic already carrying Feed v2 cards (archetype set) is done. The old
+    # corpus cards have source='lesson' but no archetype, so they must NOT stop
+    # a topic from being regenerated — they are what this run replaces.
     rows = con.execute(
         """
         select t.slug, t.name, t.domain, t.importance, l.body_md
         from lessons l join topics t on t.slug = l.topic_slug
         where l.status = 'ok'
-          and (? or t.slug not in (select topic_slug from cards where topic_slug is not null and source = 'lesson'))
+          and (? or t.slug not in (select topic_slug from cards where topic_slug is not null and source = 'lesson' and archetype is not null))
         order by t.importance desc, t.slug
         """,
         [redo],

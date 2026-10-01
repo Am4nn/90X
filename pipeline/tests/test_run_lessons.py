@@ -77,3 +77,20 @@ def test_a_refused_slot_refills_instead_of_aborting(tmp_path):
     assert len(cards) + len(refused) == len(slots)
     assert any("Primitive: order" in u for u in llm.calls), "the ordering slot was attempted"
     assert len(cards) == len(slots), "refill fills every slot the fake can answer"
+
+
+def test_topics_with_old_cards_are_regenerated_but_feed_v2_topics_are_skipped(tmp_path):
+    con = staging.connect(Path(tmp_path) / "s.duckdb")
+    for slug, name in (("old-topic", "Old"), ("v2-topic", "V2")):
+        con.execute("insert into topics (slug, domain, name, importance) values (?, 'dsa', ?, 1.0)", [slug, name])
+        con.execute("insert into lessons (topic_slug, title, body_md, status) values (?, ?, 'lesson', 'ok')", [slug, slug])
+    # An old-corpus card (no archetype) must not stop its topic being regenerated.
+    con.execute("insert into cards (id, topic_slug, format, prompt_md, answer_md, status, source) "
+                "values ('o1', 'old-topic', 'mcq', 'q?', 'a', 'draft', 'lesson')")
+    # A Feed v2 card (archetype set) means the topic is already done.
+    con.execute("insert into cards (id, topic_slug, format, archetype, prompt_md, answer_md, status, source) "
+                "values ('v1', 'v2-topic', 'pick_one', 'concept', 'q?', 'a', 'draft', 'lesson')")
+
+    slugs = [t["slug"] for t in run_lessons.topics_with_lessons(con, None, None, redo=False)]
+    assert "old-topic" in slugs, "a topic holding only old-corpus cards must be regenerated"
+    assert "v2-topic" not in slugs, "a topic already carrying Feed v2 cards is done"
