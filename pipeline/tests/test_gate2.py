@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pipeline import staging
 from pipeline.cards import gate2
-from pipeline.cards.blind_gate import Guess
+from pipeline.cards.blind_gate import Judgement
 
 
 class _FakeLLM:
@@ -13,7 +13,7 @@ class _FakeLLM:
 
     def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
         self.calls += 1
-        return Guess(picked=[0])
+        return Judgement(guessable=True)
 
 
 def _insert(con, i: int, picked: str) -> None:
@@ -35,7 +35,7 @@ def test_gate2_reports_the_rejection_rate_and_writes_nothing(tmp_path):
     result = gate2.run(con, llm=llm, n=3)
 
     assert result["cards"] == 3
-    # Every sample picks [0], which matches `picked`, so every card is guessable.
+    # Every sample flags the card guessable, so every card is rejected.
     assert result["rejected"] == 3
     assert result["rate"] == 1.0
     assert llm.calls == 9  # 3 samples x 3 cards
