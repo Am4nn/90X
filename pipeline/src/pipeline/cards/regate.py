@@ -15,7 +15,7 @@ import json
 from datetime import datetime, timezone
 
 from ..llm import LLM, BudgetExceeded, LLMError, lock_for, spend_usd
-from . import gate
+from . import blind_gate, gate
 from .from_lessons import rewrite
 from .run_lessons import WORKERS, card_id
 
@@ -58,6 +58,22 @@ def cards_of(con, slug: str) -> list[Draft]:
         [slug],
     ).fetchall()
     return [Draft(r) for r in rows]
+
+
+def merge_rejects(answerability: list[tuple[object, str]],
+                  guessability: list[tuple[object, str]]) -> list[tuple[object, str]]:
+    """Union of the two gates' rejections.
+
+    The answerability gate's reason wins when a card fails both, because it is
+    the more fundamental ("the marked answer is wrong") than "guessable by
+    elimination". The card objects are the same ones `cards_of` returned, so a
+    later `apply` matches them by identity.
+    """
+    out = list(answerability)
+    for card, reason in guessability:
+        if not any(card is c for c, _ in out):
+            out.append((card, reason))
+    return out
 
 
 def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
@@ -137,6 +153,12 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
         result = gate.review(llm, topic, cards, tier=tier)
         rejected = gate.judge(cards, result)
         confidence = gate.confidence_by_card(cards, result)
+        # The blind gate is a second, independent check: a card whose answer is
+        # forced by the choices' shape alone is guessable even when its answer is
+        # correct, so the answerability gate alone would let it through. Reject
+        # on either gate, so the two can never un-reject each other.
+        blind = blind_gate.review(llm, cards, tier=tier)
+        rejected = merge_rejects(rejected, blind_gate.judge(cards, blind))
         # A stricter gate without a repair pass is just a delete button. Most of
         # what it turns down here is a good question in the wrong format - "what
         # iteration order do HashSet, LinkedHashSet and TreeSet give?" is a fair
@@ -151,6 +173,8 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
             if replacements:
                 passed = gate.review(llm, topic, replacements)
                 still_bad = {id(c) for c, _ in gate.judge(replacements, passed)}
+                blind_passed = blind_gate.review(llm, replacements, tier=tier)
+                still_bad |= {id(c) for c, _ in blind_gate.judge(replacements, blind_passed)}
                 confidence.update(gate.confidence_by_card(replacements, passed))
                 # Positional pairing is what the rewrite prompt asks for; when
                 # the counts disagree there is no honest mapping, so nothing is

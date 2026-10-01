@@ -8,7 +8,8 @@ Usage (from the pipeline directory):
 What it does, in order:
 
 1. Write every topic's card budget (run_lessons.run) — drafts saved per topic.
-2. Gate + repair the drafts (regate.run) — answerability verdicts + one rewrite.
+2. Gate + repair the drafts (regate.run) — answerability AND guessability
+   (blind gate) verdicts, one rewrite each for rejected cards.
 
 Properties you can rely on:
 
@@ -19,10 +20,6 @@ Properties you can rely on:
   lifetime llm_calls table.
 - Monitored. All progress goes to stdout AND .data/review/feed-v2-run.log
   (appended), so you can `tail -f` it while it runs.
-
-Note: the guessability pass (blind_gate, the "elimination" check) is not yet
-wired as a full-corpus step — see the plan. This wrapper covers the write and
-the answerability gate + repair.
 """
 
 import sys
