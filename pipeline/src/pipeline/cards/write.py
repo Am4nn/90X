@@ -43,12 +43,22 @@ THE READER CANNOT SEE THE LESSON. The card tests whether they learned the topic,
 
 The card must be answerable by a competent engineer who studied this topic anywhere, and must be something an interviewer would plausibly ask. Everything in the answer must follow from the material given. Do not invent facts, statistics, benchmarks, company names, or results.
 
+DISTRACTORS AND WRONG REASONS. Every wrong option and every wrong reason must be a substantive mistake a real candidate makes about THIS topic — the confused pair, the off-by-one, the neighbouring concept, the wrong-but-plausible justification. A reader must be able to pick it for a reason that lives in the topic, not in the shape of the card.
+
+Never use a structural or meta tell as a wrong option or wrong reason:
+- the length, position, or alphabetical order of the options;
+- a count of rows, tables, columns or steps ("classified by the number of tables involved", "ordered by row count");
+- "these are common interview questions", "this is in the official documentation", "the lesson lists them in this order";
+- a statement that is true but off-topic — a real fact that is not actually a reason for this specific answer.
+
+If the material cannot support the required number of genuinely plausible wrong options or wrong reasons, refuse rather than pad. A wrong option nobody would pick is a card defect, not a formatting choice.
+
 DIFFICULTY RUBRIC. You are given a target difficulty. Write a card that MEETS that row, not one you merely label with it. If the material cannot support a card at that difficulty for this archetype, refuse rather than soften the card.
 - Easy: 1 reasoning step. No stated constraint changes the answer. Spans a single fact. Distractors need not encode real misconceptions. No calculation required.
 - Medium: 2 reasoning steps. A stated constraint sometimes changes the answer. Spans a single fact. Distractors must encode real misconceptions. A calculation is optional.
 - Hard: 3+ reasoning steps. A stated constraint changes the answer. Spans more than one fact. Distractors must encode real misconceptions. Needs a calculation. A Hard card also carries a why-step.
 
-WHY-STEP (Hard only): a second question asking why the answer is right. `why_step.options` is 2-4 plausible reasons and `why_step.correct` the 0-based index of the real one. Every wrong reason must be something somebody actually gives, or the reader is punished for a writing failure.
+WHY-STEP (Hard only): a second question asking why the answer is right. `why_step.options` is 2-4 plausible reasons and `why_step.correct` the 0-based index of the real one. Every wrong reason must be a reason somebody actually gives for THIS answer — the plausible-but-wrong justification, never a meta-reason and never a true-but-off-topic fact. A correct answer marked wrong for its reason only punishes the reader fairly if the wrong reasons are genuinely plausible, so this is a correctness requirement, not style.
 
 If this topic genuinely has no natural card of this archetype, return `refused` with a one-sentence reason and leave `draft` null. A refusal is a valid answer; do not force a card.
 
@@ -62,9 +72,11 @@ PRIMITIVE_INSTRUCTIONS = {
     "pick_one": (
         "PICK ONE. Ask a question with exactly one right answer. Put the 4 answer choices in "
         "`options` as a list of strings, and set `picked` to the single 0-based index of the "
-        "correct one. Every wrong option must be a mistake a candidate actually makes - the "
-        "off-by-one, the confused pair, the neighbouring concept. An option nobody would pick "
-        "is padding."
+        "correct one. Every wrong option must be a substantive mistake a candidate actually "
+        "makes about the topic - the off-by-one, the confused pair, the neighbouring concept - "
+        "never a structural tell (length, alphabetical order, position) and never a "
+        "true-but-off-topic fact. An option nobody would pick is padding; if the material "
+        "cannot support 3 plausible wrong options, refuse rather than pad."
     ),
     "order": (
         "ORDER. Put the N items to order in `options` as a list of strings, one item per entry, "
@@ -72,19 +84,25 @@ PRIMITIVE_INSTRUCTIONS = {
         "to a list of [before, after] pairs of 0-based indices into `options` that define every "
         "correct order: every correct order satisfies all of them, and any order satisfying them "
         "is correct. If the order is fully determined, chain the adjacent pairs. Do not state a "
-        "constraint the material does not support."
+        "constraint the material does not support. A reader who has not studied the topic must "
+        "not be able to infer the order from the items' wording (alphabetical, by length, "
+        "already sorted)."
     ),
     "match": (
         "MATCH. Put the left column in `options.left` and the right column in `options.right`, "
         "each a list of strings in display order, and ask the reader to pair them. Set `pairs` "
         "to the one-to-one [[left, right], ...] mapping of 0-based indices. Every left item "
-        "pairs to exactly one right item."
+        "pairs to exactly one right item. Each left item must be confusable with more than one "
+        "right item for a reader who has not studied the topic; do not pair first-to-first, "
+        "second-to-second."
     ),
     "bucket": (
         "BUCKET. Put the items in `options.items` and the named buckets in `options.columns`, "
         "each a list of strings, and ask the reader to sort the items. Set `pairs` to "
         "[[item, column], ...] of 0-based indices; the same column may repeat across items. "
-        "Each item has exactly one home under the rule you state."
+        "Each item has exactly one home under the rule you state. Each item must be genuinely "
+        "ambiguous between at least two buckets for a reader who has not studied the topic; do "
+        "not reveal an item's home by its wording."
     ),
     "tap_in_place": (
         "TAP IN PLACE. Put the snippet, plan or diagram's lines in `options` as a list of "
@@ -113,7 +131,9 @@ PRIMITIVE_INSTRUCTIONS = {
     "claim_grid": (
         "CLAIM GRID. Put the 3-4 statements in `options` as a list of strings, one statement "
         "per entry, and ask the reader to mark each true or false. Set `pairs` to "
-        "[[statement, 0|1], ...] where 1 means true and 0 means false."
+        "[[statement, 0|1], ...] where 1 means true and 0 means false. Every statement must "
+        "need knowledge of the topic to judge - not be obviously true or false from its shape "
+        "or wording."
     ),
     "grid_toggle": (
         "GRID TOGGLE. Put the row labels in `options.rows` and the column labels in "
