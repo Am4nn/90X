@@ -53,6 +53,20 @@ def test_budget_never_names_an_ineligible_archetype():
         assert all(s.primitive in by_id[s.archetype].primitives for s in slots), area
 
 
+def test_budget_spreads_across_primitives_not_just_pick_one():
+    # A short budget used to be almost all pick_one, because the registry lists
+    # those archetypes first and the round-robin never reached the rest. The
+    # interleaving must keep a 10-card topic spread across primitives.
+    from collections import Counter
+
+    for area in ("dsa", "cs", "java", "sql", "system_design"):
+        slots = archetypes.budget({"domain": area, "importance": 0.5})
+        prims = Counter(s.primitive for s in slots)
+        assert len(prims) >= 4, f"{area}: {dict(prims)}"
+        top = prims.most_common(1)[0][1]
+        assert top <= len(slots) // 2, f"{area}: {dict(prims)}"
+
+
 def test_the_four_dual_primitive_archetypes_offer_both():
     for aid in ("complexity", "trace-the-value", "estimate", "impossible-bound"):
         assert set(archetypes.by_id(aid).primitives) == {"pick_one", "numeric"}, aid
