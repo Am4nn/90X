@@ -190,7 +190,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     # Also once: 1,200 documents belonging to no topic, offered to every one of
     # them. `for_topic` keeps only what overlaps the topic's name.
     spare = spare_documents(con)
-    started, before = time.time(), spend_usd(con)
+    started, before = time.time(), spend_usd(con, getattr(llm, "run_id", None))
     written = failed = 0
 
     print(f"{len(todo)} topics to write, {WORKERS} at a time", flush=True)
@@ -235,7 +235,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                     continue
                 with db:
                     save(con, topic, result)
-                    spent = spend_usd(con) - before
+                    spent = spend_usd(con, getattr(llm, "run_id", None)) - before
                 done += 1
                 written += not result["problems"]
                 failed += bool(result["problems"])

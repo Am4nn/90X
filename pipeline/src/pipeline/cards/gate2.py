@@ -48,10 +48,10 @@ def run(con, llm: LLM | None = None, n: int = TRIAL_CARDS, tier: str = "fast") -
     """Report the blind-gate rejection rate over n cards. Writes nothing."""
     llm = llm or LLM(con)
     cards = pick_cards(con, n)
-    before = spend_usd(con)
+    before = spend_usd(con, getattr(llm, "run_id", None))
     verdicts = blind_gate.review(llm, cards, tier=tier)
     rejected = blind_gate.judge(cards, verdicts)
-    spent = spend_usd(con) - before
+    spent = spend_usd(con, getattr(llm, "run_id", None)) - before
     rate = len(rejected) / len(cards) if cards else 0.0
     print(f"Gate 2: {len(cards)} cards, {len(rejected)} rejected ({rate:.0%}), ${spent:.4f}", flush=True)
     for card, reason in rejected:

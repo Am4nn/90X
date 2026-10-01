@@ -42,7 +42,7 @@ def run(con, tier: str = "smart", thinking: bool = False) -> None:
         print("no topic with an ok lesson", flush=True)
         return
     slots = archetypes.budget(topic)
-    before_spend = spend_usd(con)
+    before_spend = spend_usd(con, getattr(llm, "run_id", None))
     before_tokens = tokens(con)
     started = time.time()
 
@@ -53,7 +53,7 @@ def run(con, tier: str = "smart", thinking: bool = False) -> None:
                                              progress=True, thinking=thinking)
     with run_lessons.lock_for(con):
         run_lessons.save(con, topic, cards, hard)
-        spent = spend_usd(con) - before_spend
+        spent = spend_usd(con, getattr(llm, "run_id", None)) - before_spend
         after_tokens = tokens(con)
 
     t_in, t_out, t_reasoning = [b - a for a, b in zip(before_tokens, after_tokens)]

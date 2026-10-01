@@ -185,7 +185,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     (cards_written, slots_refused)."""
     llm = llm or LLM(con)
     todo = topics_with_lessons(con, only, limit, redo)
-    started, before = time.time(), spend_usd(con)
+    started, before = time.time(), spend_usd(con, getattr(llm, "run_id", None))
     db = lock_for(con)
     written_total = refused_total = done = 0
 
@@ -220,7 +220,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
                     continue  # a domain the catalogue does not cover
                 with db:
                     save(con, topic, cards, hard)
-                    spent = spend_usd(con) - before
+                    spent = spend_usd(con, getattr(llm, "run_id", None)) - before
                 done += 1
                 written_total += len(cards)
                 refused_total += len(refused)

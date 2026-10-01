@@ -126,7 +126,7 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
     llm = llm or LLM(con)
     todo = topics_with_cards(con, only)
     db = lock_for(con)
-    started, before = time.time(), spend_usd(con)
+    started, before = time.time(), spend_usd(con, getattr(llm, "run_id", None))
     totals = {"topics": 0, "judged": 0, "recovered": 0, "newly_rejected": 0, "rejected": 0, "reformatted": 0}
 
     def work(topic: dict):
@@ -179,7 +179,7 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
                 with db:
                     recovered, newly = apply(con, cards, rejected, confidence)
                     fixes = [(o, c) for o, c in fixes if store_fix(con, topic, o, c, confidence)]
-                    spent = spend_usd(con) - before
+                    spent = spend_usd(con, getattr(llm, "run_id", None)) - before
                 totals["topics"] += 1
                 totals["judged"] += len(cards)
                 totals["recovered"] += recovered
