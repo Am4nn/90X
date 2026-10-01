@@ -91,6 +91,43 @@ def test_budget_cap_stops_calls(tmp_path):
     assert calls.calls == []  # never reached the API
 
 
+def test_spend_usd_filters_by_run_id(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    for cost, run in [(3.0, "legacy"), (5.0, "run-a"), (7.0, "run-b")]:
+        con.execute("insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak, run_id)"
+                    " values ('m', 'p', 1, 1, ?, true, ?)", [cost, run])
+    # A named run sees only its own rows; the other run's and legacy rows are excluded.
+    assert llm.spend_usd(con, "run-a") == pytest.approx(5.0)
+    assert llm.spend_usd(con, "run-b") == pytest.approx(7.0)
+    # With no run_id the whole table still counts (backward-compatible).
+    assert llm.spend_usd(con) == pytest.approx(15.0)
+
+
+def test_budget_cap_is_per_run(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    # Historical pipeline work far above the cap, plus another run's spend.
+    con.execute("insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak, run_id)"
+                " values ('m', 'p', 1, 1, 100.0, true, 'legacy')")
+    con.execute("insert into llm_calls (model, purpose, tokens_in, tokens_out, cost_usd, off_peak, run_id)"
+                " values ('m', 'p', 1, 1, 100.0, true, 'other-run')")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'])
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"},
+                 max_usd=5.0, run_id="run-a")
+    # This run has $0 logged so far, so the call goes through despite $200 of
+    # legacy + other-run spend sitting in the same table.
+    assert ai.complete_json("s", "u", Answer) == Answer(pattern="dp", confidence=0.5)
+    assert calls.calls  # the API was reached
+
+
+def test_run_id_is_written_to_llm_calls(tmp_path):
+    con = staging.connect(tmp_path / "s.duckdb")
+    client, calls = fake_client(['{"pattern": "dp", "confidence": 0.5}'])
+    ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"},
+                 run_id="run-a")
+    ai.complete_json("s", "u", Answer)
+    assert con.execute("select run_id from llm_calls").fetchone() == ("run-a",)
+
+
 def test_review_tier_uses_its_own_client(tmp_path):
     con = staging.connect(tmp_path / "s.duckdb")
     main, main_calls = fake_client(['{"pattern": "a", "confidence": 1}'])
