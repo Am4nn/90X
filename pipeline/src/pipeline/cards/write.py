@@ -27,6 +27,8 @@ those items, so the grader can check the reader's order/mapping without parsing
 prose.
 """
 
+import re
+
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
 from ..llm import BudgetExceeded, LLMError
@@ -58,7 +60,18 @@ DIFFICULTY RUBRIC. You are given a target difficulty. Write a card that MEETS th
 - Medium: 2 reasoning steps. A stated constraint sometimes changes the answer. Spans a single fact. Distractors must encode real misconceptions. A calculation is optional.
 - Hard: 3+ reasoning steps. A stated constraint changes the answer. Spans more than one fact. Distractors must encode real misconceptions. Needs a calculation. A Hard card also carries a why-step.
 
-WHY-STEP (Hard only): a second question asking why the answer is right. `why_step.options` is 2-4 plausible reasons and `why_step.correct` the 0-based index of the real one. Every wrong reason must be a reason somebody actually gives for THIS answer — the plausible-but-wrong justification, never a meta-reason and never a true-but-off-topic fact. A correct answer marked wrong for its reason only punishes the reader fairly if the wrong reasons are genuinely plausible, so this is a correctness requirement, not style.
+WHY-STEP (Hard only): a second question asking why ONE specific part of the answer is right. `why_step.options` is 2-4 plausible reasons and `why_step.correct` the 0-based index of the real one.
+
+The correct reason must state the SAME conclusion as `answer`. If `answer` says the change improves throughput, the correct reason explains why it improves; it may never argue the opposite. A correct reason that contradicts `answer` is a wrong card.
+
+Every wrong reason must be a FALSE statement about the very item, pair, row, or value the correct reason is about — the plausible mistake a candidate makes on THAT item. Never a true statement about a different item, and never a true-but-off-topic edge case:
+- match / bucket / claim_grid / grid_toggle: ask why one specific pair or cell is right. Wrong reasons are false claims about that same pair (the swap, the near-miss), not true descriptions of a different pair in the card.
+- numeric: wrong reasons must justify a WRONG number — the reasoning or arithmetic error that produces a different value — never a caveat that is actually true of the correct value.
+- pick_one / order / tap_in_place / assemble: wrong reasons are false claims about that same answer.
+
+A correct answer marked wrong for its reason only punishes the reader fairly if the wrong reasons are genuinely plausible, so this is a correctness requirement, not style.
+
+Never write your reasoning, hedging, or self-correction into any field. If you reconsider an answer, replace the field with the final value. Do not leave "wait", "let me re-evaluate", "I need to adjust", or any chain of thought in `prompt`, `answer`, `key_points`, `options`, `picked`, `pairs`, `constraints`, `value`, `tolerance`, or `why_step`.
 
 If this topic genuinely has no natural card of this archetype, return `refused` with a one-sentence reason and leave `draft` null. A refusal is a valid answer; do not force a card.
 
@@ -80,29 +93,30 @@ PRIMITIVE_INSTRUCTIONS = {
     ),
     "order": (
         "ORDER. Put the N items to order in `options` as a list of strings, one item per entry, "
-        "in the prompt order (do not sort them). Ask for the correct order. Set `constraints` "
-        "to a list of [before, after] pairs of 0-based indices into `options` that define every "
-        "correct order: every correct order satisfies all of them, and any order satisfying them "
-        "is correct. If the order is fully determined, chain the adjacent pairs. Do not state a "
-        "constraint the material does not support. A reader who has not studied the topic must "
-        "not be able to infer the order from the items' wording (alphabetical, by length, "
-        "already sorted)."
+        "in a SHUFFLED order: the order you list them in must NOT be the correct order, and must "
+        "not be alphabetical or by length, so a reader has to rearrange them. Ask for the correct "
+        "order. Set `constraints` to a list of [before, after] pairs of 0-based indices into the "
+        "SHUFFLED `options` that define every correct order: every correct order satisfies all of "
+        "them, and any order satisfying them is correct. If the order is fully determined, chain "
+        "the adjacent pairs. Do not state a constraint the material does not support."
     ),
     "match": (
         "MATCH. Put the left column in `options.left` and the right column in `options.right`, "
-        "each a list of strings in display order, and ask the reader to pair them. Set `pairs` "
-        "to the one-to-one [[left, right], ...] mapping of 0-based indices. Every left item "
-        "pairs to exactly one right item. Each left item must be confusable with more than one "
-        "right item for a reader who has not studied the topic; do not pair first-to-first, "
-        "second-to-second."
+        "each a list of strings. List the RIGHT column in a SHUFFLED order, so the correct "
+        "pairing is not left[i] with right[i] - a reader must not be able to match items by "
+        "position. Set `pairs` to the one-to-one [[left, right], ...] mapping of 0-based "
+        "indices into those shuffled lists. Every left item pairs to exactly one right item. "
+        "Each left item must be confusable with more than one right item for a reader who has "
+        "not studied the topic."
     ),
     "bucket": (
         "BUCKET. Put the items in `options.items` and the named buckets in `options.columns`, "
-        "each a list of strings, and ask the reader to sort the items. Set `pairs` to "
-        "[[item, column], ...] of 0-based indices; the same column may repeat across items. "
-        "Each item has exactly one home under the rule you state. Each item must be genuinely "
-        "ambiguous between at least two buckets for a reader who has not studied the topic; do "
-        "not reveal an item's home by its wording."
+        "each a list of strings, and ask the reader to sort the items. List the ITEMS in a "
+        "SHUFFLED order, so their homes are not revealed by position or by a one-to-one "
+        "pattern. Set `pairs` to [[item, column], ...] of 0-based indices; the same column may "
+        "repeat across items. Each item has exactly one home under the rule you state. Each "
+        "item must be genuinely ambiguous between at least two buckets for a reader who has "
+        "not studied the topic; do not reveal an item's home by its wording."
     ),
     "tap_in_place": (
         "TAP IN PLACE. Put the snippet, plan or diagram's lines in `options` as a list of "
@@ -116,12 +130,15 @@ PRIMITIVE_INSTRUCTIONS = {
         "`pairs`, `value` and `tolerance` empty."
     ),
     "assemble": (
-        "ASSEMBLE. Put the token pool in `options.tokens` as a list of strings and, where the "
-        "line has pre-filled slots, `options.fixed` as one entry per token - the token index "
-        "that slot is fixed to, or null for a gap the reader fills (omit `fixed` to leave every "
-        "slot a gap). Ask the reader to assemble a line (a SQL clause, a method signature, a "
-        "definition). Set `constraints` to [before, after] pairs of 0-based token indices "
-        "defining the correct sequence; for a fully determined line, chain the adjacent pairs."
+        "ASSEMBLE. Put the token pool in `options.tokens` as a list of strings in a SHUFFLED "
+        "order - the tokens must not already be in the order they are assembled into, so a "
+        "reader has to rearrange them. Where the line has pre-filled slots, set `options.fixed` "
+        "as one entry per token - the token index that slot is fixed to, or null for a gap the "
+        "reader fills (omit `fixed` to leave every slot a gap); the pre-filled slots must not by "
+        "themselves spell out the answer. Ask the reader to assemble a line (a SQL clause, a "
+        "method signature, a definition). Set `constraints` to [before, after] pairs of 0-based "
+        "token indices defining the correct sequence; for a fully determined line, chain the "
+        "adjacent pairs."
     ),
     "numeric": (
         "NUMERIC. Ask for a number - a complexity, a storage size, a row count, a lower bound. "
@@ -159,6 +176,22 @@ PROMPT_MAX = 3000
 ANSWER_MAX = 2000
 KEY_POINT_MAX = 500
 OPTION_MAX = 800
+
+# The writer's chain of thought must never reach a field the reader sees. These
+# are the self-correction and narration markers it leaves when it reasons inside
+# `answer` or an option instead of writing the final value — the same leak that
+# put "Wait, ... let me re-evaluate ... I need to adjust the picked indices" into
+# a grid-toggle answer. A field matching any of them is rejected rather than
+# shipped.
+REASONING_LEAK = re.compile(
+    r"(?i)(?:"
+    r"\blet me (?:re-?evaluat\w*|reconsider\w*|think|adjust|check|verify|redo|fix)\b|"
+    r"\bi (?:need|should|will|have) to (?:adjust|reconsider|correct|fix|redo)\b|"
+    r"\bwait,|\bscratch that\b|\bon second thought\b|\bupon (?:reflection|reconsideration)\b|"
+    r"\bi meant\b|"
+    r"\badjust the (?:picked|pairs|constraints|answer|indices)\b"
+    r")"
+)
 
 
 def _option_strings(options) -> list[str]:
@@ -202,6 +235,19 @@ class CardDraft(BaseModel):
             for option in self.why_step.options:
                 if len(option) > OPTION_MAX:
                     raise ValueError(f"a why-step option is {len(option)} chars (cap {OPTION_MAX})")
+        return self
+
+    @model_validator(mode="after")
+    def _no_reasoning_leak(self):
+        # Reasoning or self-correction left in a reader-facing field is a broken
+        # card: the reader sees the writer's deliberation, and the answer often
+        # disagrees with itself mid-sentence.
+        fields = [self.prompt, self.answer, *self.key_points, *_option_strings(self.options)]
+        if self.why_step:
+            fields += self.why_step.options
+        for field in fields:
+            if REASONING_LEAK.search(field):
+                raise ValueError("a field carries the writer's reasoning or self-correction; write only the final value")
         return self
 
 

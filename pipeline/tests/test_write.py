@@ -207,3 +207,29 @@ def test_write_one_passes_thinking_through():
     assert llm.calls[0]["thinking"] is True
     write.write_one(llm, TOPIC, LESSON, slot, tier="smart")
     assert llm.calls[1]["thinking"] is False
+
+
+def test_a_draft_with_leaked_reasoning_is_rejected():
+    # The writer's chain of thought must never reach a reader-facing field; a
+    # self-correcting answer is the leak the grid-toggle card shipped.
+    bad = _draft(answer="The answer is B. Wait, let me re-evaluate: actually A. I need to adjust the indices.")
+    with pytest.raises(ValidationError):
+        write.CardDraft(**bad)
+
+
+def test_a_why_step_correct_index_must_name_an_option():
+    with pytest.raises(ValidationError):
+        WhyStep(options=["a", "b"], correct=2)  # only 0 and 1 exist
+
+
+def test_order_and_assemble_tell_the_writer_to_shuffle():
+    assert "SHUFFLED" in write.PRIMITIVE_INSTRUCTIONS["order"]
+    assert "SHUFFLED" in write.PRIMITIVE_INSTRUCTIONS["assemble"]
+    # match and bucket leak the same way: the writer lists both sides in the
+    # matching order, so the answer is the diagonal.
+    assert "SHUFFLED" in write.PRIMITIVE_INSTRUCTIONS["match"]
+    assert "SHUFFLED" in write.PRIMITIVE_INSTRUCTIONS["bucket"]
+
+
+def test_the_writer_is_told_wrong_reasons_must_be_false_about_the_same_item():
+    assert "very item, pair, row, or value" in write.SYSTEM
