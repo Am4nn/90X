@@ -471,3 +471,39 @@ production runbook — then stop. The production migration and the final publish
 ## Gate 3 in two forms
 
 The ~94-card human review ships as both the web review pack and a markdown file.
+
+---
+
+# Round 6 — the blind gate and Gemini, settled (2026-10-01)
+
+Measurement forced two corrections after the first Gate 2 numbers.
+
+## The blind gate was false-rejecting "known", not "guessable"
+
+The blind gate showed a model only the options and rejected when it answered correctly. After
+the distractor and shape-leak fixes (62% → 46% → 51% on the old gate), the remaining rejection
+turned out to be **false rejects**: fundamental-topics cards ("primary purpose of an index",
+"B-tree is O(log n)") that a *knowledgeable* model answers trivially but a *learner* — the
+actual Feed reader — does not. Left alone, repair-then-drop would have discarded ~half the
+corpus, far below the ~2,500 floor.
+
+**Decided: the gate rejects "guessable by elimination/structure", not "a knowledgeable model
+answers it".** Its prompt now rules on *can a reader with no knowledge of the topic get this
+right by eliminating options*. Result: **~9%** rejection (was 51%), and the rejects are all
+structural tells ("items already in the correct order", "one option qualitatively different").
+19 of the 22 cards the old gate rejected are now correctly let through.
+
+## Gemini stays out of card generation
+
+A 10-card spike plus a 20-card reviewer run, all off-peak:
+
+- **Writer** — par. Gemini's cards were less guessable (30% vs 46%) but that is one noisy topic,
+  ~28% dearer, and it emits U+FFFD in math notation. Not worth switching.
+- **Blind gate** — Gemini agrees 9/10 with DeepSeek but costs ~4.7× (it emits hidden thought
+  tokens even at `reasoning_effort=none`). Keep DeepSeek.
+- **Independent reviewer (Gemini)** — flagged 0/20 errors `gate.py` missed. No value for Feed
+  cards (the lessons they are built from were already independently reviewed at the lesson
+  stage). Not wired into the card path.
+
+**Decided: generation stays all DeepSeek; no independent-reviewer step in the Feed v2 card flow.**
+The blind gate plus the deterministic shape rules are doing that job.
