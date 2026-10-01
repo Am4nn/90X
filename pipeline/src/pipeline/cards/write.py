@@ -183,13 +183,14 @@ OPTION_MAX = 800
 # put "Wait, ... let me re-evaluate ... I need to adjust the picked indices" into
 # a grid-toggle answer. A field matching any of them is rejected rather than
 # shipped.
+# Deliberately narrow: only markers a writer uses to correct its own in-progress
+# answer. Ordinary reader-facing words a valid card can legitimately quote —
+# "wait,", "I meant", "let me check/verify/adjust" — are left out on purpose.
 REASONING_LEAK = re.compile(
     r"(?i)(?:"
-    r"\blet me (?:re-?evaluat\w*|reconsider\w*|think|adjust|check|verify|redo|fix)\b|"
+    r"\blet me (?:re-?evaluat\w*|reconsider\w*|think|redo|fix)\b|"
     r"\bi (?:need|should|will|have) to (?:adjust|reconsider|correct|fix|redo)\b|"
-    r"\bwait,|\bscratch that\b|\bon second thought\b|\bupon (?:reflection|reconsideration)\b|"
-    r"\bi meant\b|"
-    r"\badjust the (?:picked|pairs|constraints|answer|indices)\b"
+    r"\bscratch that\b|\bon second thought\b|\bupon (?:reflection|reconsideration)\b"
     r")"
 )
 

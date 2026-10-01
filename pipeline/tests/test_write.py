@@ -217,6 +217,13 @@ def test_a_draft_with_leaked_reasoning_is_rejected():
         write.CardDraft(**bad)
 
 
+def test_ordinary_quoted_phrases_are_not_treated_as_leaks():
+    # The guard is deliberately narrow: "wait,", "I meant" and "let me check"
+    # are ordinary words a valid card can quote, so they must not be rejected.
+    ok = _draft(answer="wait, I meant the reader should pick B, but let me check the options")
+    assert write.CardDraft(**ok).answer
+
+
 def test_a_why_step_correct_index_must_name_an_option():
     with pytest.raises(ValidationError):
         WhyStep(options=["a", "b"], correct=2)  # only 0 and 1 exist
