@@ -108,7 +108,8 @@ def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
 
     llm = llm or LLM(con)
     todo = pending(con)
-    moved: dict[str, str] = {}
+    # card id -> (archetype it was filed under, archetype it is moving to)
+    moved: dict[str, tuple[str, str]] = {}
     no_candidates = unchanged = failed = 0
     considered = 0
     stopped = False
@@ -142,15 +143,25 @@ def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
         if chosen is None:
             unchanged += 1
             continue
-        moved[row["id"]] = chosen.id
+        moved[row["id"]] = (row["archetype"], chosen.id)
 
     if not dry_run and moved:
         # Back to draft so the next gate pass judges it under its new label. That
         # pass, not this one, is what proves the move was right.
+        #
+        # The move is recorded in `quality` rather than thrown away. Setting
+        # reject_reason to null erased the only trace that a card had been moved,
+        # so a follow-up gate could not be aimed at the cards that needed it and
+        # the whole corpus had to be re-judged instead - $6 rather than under $1,
+        # every time the step runs. `refiled_from` is also the honest record of
+        # why a card carries the archetype it does.
         con.executemany(
             """update cards set archetype = ?, status = 'draft', kept = true,
-                      reject_reason = null where id = ?""",
-            [[new, card_id] for card_id, new in moved.items()],
+                      reject_reason = null,
+                      quality = json_merge_patch(coalesce(quality, '{}'),
+                                                json_object('refiled_from', ?))
+               where id = ?""",
+            [[new, old, card_id] for card_id, (old, new) in moved.items()],
         )
 
     return {
@@ -163,3 +174,17 @@ def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
         "stopped_early": stopped,
         "dry_run": dry_run,
     }
+
+
+def refiled(con) -> list[str]:
+    """Topic slugs holding a card this step moved.
+
+    The point of recording the move: a gate pass can be aimed at these topics
+    rather than at all 274, which is the difference between $6 and under $1.
+    """
+    rows = con.execute(
+        """select distinct topic_slug from cards
+           where archetype is not null
+             and json_extract_string(quality, '$.refiled_from') is not null"""
+    ).fetchall()
+    return [r[0] for r in rows]
