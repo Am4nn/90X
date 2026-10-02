@@ -349,3 +349,46 @@ def test_the_printed_selector_matches_the_way_pick_matches(tmp_path):
     picked = selector(con, "sql-iso", rows[0][1])
     cards = [Row(p) for _, p in rows]
     assert pick(cards, picked) is not None, f"{picked!r} is still ambiguous to pick"
+
+
+def test_a_question_that_does_not_match_its_archetype_is_rejected():
+    """The hole the first corpus shipped through.
+
+    A card filed under `output-prediction` asked which SOLID principle a design
+    violates, and every gate passed it: wellformed checks the answer's shape, the
+    blind gate checks guessability, and fits_format asks whether the answer fits
+    the screen. None of them asked whether the question was the one the archetype
+    promised.
+    """
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        # Medium, so `wellformed` has no quarrel with it: a Hard card without a
+        # why-step is rejected earlier and would not reach the archetype verdict.
+        id="x", archetype="output-prediction", format="pick_one", difficulty="Medium",
+        prompt="Which SOLID principle is most clearly violated by this design?",
+        options=["SRP", "OCP", "LSP", "DIP"], answer="OCP", key_points=[],
+        picked=[1], constraints=None, pairs=None, value=None, tolerance=None, why_step=None,
+    )
+    result = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, fits_archetype=False, fits_format=True,
+                     gradable=True, confidence=0.9, reason="asks about design principles, not output"),
+    ])
+    rejected = gate.judge([card], result)
+    assert len(rejected) == 1, rejected
+    assert "wrong archetype" in rejected[0][1], rejected[0][1]
+
+
+def test_the_gate_is_told_which_archetype_it_is_judging():
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    shown = gate.prompt_only(SimpleNamespace(
+        archetype="tap-the-bug", format="tap_in_place", prompt="Which line is wrong?", options=None))
+    assert "tap-the-bug" in shown, shown
+    # A legacy card has no archetype and must not grow a blank line for one.
+    legacy = gate.prompt_only(SimpleNamespace(archetype=None, format="typed", prompt="Why?", options=None))
+    assert "archetype" not in legacy, legacy

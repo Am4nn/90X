@@ -49,7 +49,7 @@ import re
 from pydantic import BaseModel, Field
 
 from ..lessons.check import REFERS_TO_SOURCE
-from . import structure, wellformed
+from . import archetypes, structure, wellformed
 
 FENCED_SNIPPET = re.compile(r"```.*?```", re.DOTALL)
 MCQ_OPTIONS = 4
@@ -72,16 +72,18 @@ There are exactly four card formats and all four are valid. This is settled and 
 - "mcq" is {MCQ_OPTIONS} options with one unambiguously correct.
 - "output" shows a short code snippet and asks what it prints or returns, graded by exact match after whitespace is normalised.
 
-For each card, answer three separate questions. Keep them separate: a card can be perfectly answerable and still be in the wrong format, and saying so in the wrong field loses the distinction.
+For each card, answer four separate questions. Keep them separate: a card can be perfectly answerable and still be in the wrong format, and saying so in the wrong field loses the distinction.
 
 1. `answerable` - could a competent engineer who has studied this topic answer this question as asked? Set it false only when something is genuinely missing or the question is ambiguous: it points at a specific solution, passage, diagram, snippet, example or bare variable the candidate cannot see, or several different answers would all be correct. Needing to know the topic well is not a reason.
 
-2. `fits_format` - does the honest answer fit the format this card was given? This is about the answer's shape, never about whether the format is permitted - all four are.
+2. `fits_archetype` - does the question ask what its archetype names? The archetype is given above each card and its name says what the question must do: `output-prediction` must ask what the code prints or returns, `tap-the-bug` must ask which line is wrong, `which-approach` must ask which approach fits, `estimate` must ask for a quantity. Set it false when the card asks something else entirely, however good that other question is - a design-principle question filed under output prediction is a mismatch, not a bad card. Judge the question against the archetype's name only; do not invent extra requirements it does not state.
+
+3. `fits_format` - does the honest answer fit the format this card was given? This is about the answer's shape, never about whether the format is permitted - all four are.
    - typed: false only when the honest answer is a list of items to enumerate ("name the four isolation levels"), where the candidate cannot know how many you want, or when it truly needs several paragraphs.
    - flash: false when the honest answer needs a paragraph.
    - output: false when the snippet could print more than one thing - a timestamp, hash ordering, a locale.
 
-3. `gradable` - can it be marked the way this format is marked? An output card whose expected text has no single obvious spelling (the delimiters of a SQL result set, say) is not gradable. A multiple-choice card with two defensible options is not gradable.
+4. `gradable` - can it be marked the way this format is marked? An output card whose expected text has no single obvious spelling (the delimiters of a SQL result set, say) is not gradable. A multiple-choice card with two defensible options is not gradable.
 
 Give a short `reason` for each field you set false, and leave it empty otherwise.
 
@@ -96,6 +98,7 @@ class Verdict(BaseModel):
     index: int = Field(description="the card's position in the list, starting at 0")
     answerable: bool = Field(default=True, description="a competent engineer could answer it as asked")
     fits_format: bool = Field(default=True, description="the honest answer fits the format given")
+    fits_archetype: bool = Field(default=True, description="the question asks what its archetype names")
     gradable: bool = Field(default=True, description="it can be marked the way this format is marked")
     reason: str = Field(default="", description="one short sentence for whichever field is false")
     picked: str = Field(default="", description="multiple choice only: the option you would pick")
@@ -108,8 +111,23 @@ class GateResult(BaseModel):
 
 
 def prompt_only(card) -> str:
-    """What the gate is allowed to see."""
-    lines = [f"format: {card.format}", f"question: {card.prompt}"]
+    """What the gate is allowed to see.
+
+    The archetype is included because nothing else checked that a card asks what
+    its archetype names. A card filed under `output-prediction` asked which SOLID
+    principle a design violates, and every gate passed it: `wellformed` checks the
+    answer's shape, the blind gate checks guessability, and `fits_format` asks
+    whether the answer fits the screen. None of them asks whether the question is
+    the one the archetype promised.
+    """
+    archetype = getattr(card, "archetype", None)
+    lines = []
+    if archetype:
+        try:
+            lines.append(f"archetype: {archetypes.by_id(archetype).label} ({archetype})")
+        except StopIteration:
+            lines.append(f"archetype: {archetype}")
+    lines += [f"format: {card.format}", f"question: {card.prompt}"]
     if card.format == "mcq" and card.options:
         lines += [f"  option: {o}" for o in card.options]
     return "\n".join(lines)
@@ -202,6 +220,8 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
         denied_the_format = bool(DENIES_THE_FORMAT.search(v.reason))
         if not v.answerable:
             rejected.append((card, f"not answerable: {v.reason}"))
+        elif not v.fits_archetype:
+            rejected.append((card, f"wrong archetype: {v.reason}"))
         elif not v.fits_format and not denied_the_format:
             rejected.append((card, f"wrong_format: {v.reason}"))
         elif not v.gradable:
