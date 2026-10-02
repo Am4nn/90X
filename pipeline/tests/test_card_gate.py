@@ -373,8 +373,8 @@ def test_a_question_that_does_not_match_its_archetype_is_rejected():
         picked=[1], constraints=None, pairs=None, value=None, tolerance=None, why_step=None,
     )
     result = gate.GateResult(verdicts=[
-        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_archetype=False,
-                     fits_format=True, gradable=True, confidence=0.9,
+        gate.Verdict(index=0, answerable=True, premise_holds=True, one_answer=True,
+                     fits_archetype=False, fits_format=True, gradable=True, confidence=0.9,
                      reason="asks about design principles, not output"),
     ])
     rejected = gate.judge([card], result)
@@ -414,9 +414,9 @@ def test_an_omitted_archetype_verdict_rejects_rather_than_passes():
     )
     # A verdict with every other field answered and this one absent.
     silent = gate.GateResult(verdicts=[
-        # premise_holds answered, fits_archetype not: isolates the archetype branch.
-        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_format=True,
-                     gradable=True, confidence=0.9, reason="fine"),
+        # Every verdict before the archetype one answered: isolates that branch.
+        gate.Verdict(index=0, answerable=True, premise_holds=True, one_answer=True,
+                     fits_format=True, gradable=True, confidence=0.9, reason="fine"),
     ])
     rejected = gate.judge([card], silent)
     assert len(rejected) == 1 and "wrong archetype" in rejected[0][1], rejected
@@ -473,3 +473,46 @@ def test_an_omitted_premise_verdict_also_rejects():
     ])
     rejected = gate.judge([card], silent)
     assert len(rejected) == 1 and "impossible premise" in rejected[0][1], rejected
+
+
+def test_a_question_with_two_defensible_answers_is_rejected():
+    """The class a third reviewer named that nobody else did: the question does not
+    constrain the answer. "A stable sort, optimal comparisons" does not fix an
+    algorithm, so a comparison count is not determined by the question as asked."""
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="complexity", format="pick_one", difficulty="Hard",
+        prompt="Using a stable sort with optimal comparisons, how many comparisons are needed?",
+        options=["7", "8", "9", "10"], answer="7", key_points=[], picked=[0],
+        constraints=None, pairs=None, value=None, tolerance=None,
+        why_step={"options": ["because the bound is tight", "because it is TimSort"], "correct": 0},
+    )
+    result = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, premise_holds=True, one_answer=False,
+                     fits_archetype=True, fits_format=True, gradable=True, confidence=0.8,
+                     reason="no algorithm is fixed, so the count is not determined"),
+    ])
+    rejected = gate.judge([card], result)
+    assert len(rejected) == 1 and "more than one answer" in rejected[0][1], rejected
+
+
+def test_an_omitted_one_answer_verdict_also_rejects():
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="concept", format="pick_one", difficulty="Medium",
+        prompt="Which is correct?", options=["a", "b", "c", "d"], answer="a",
+        key_points=[], picked=[0], constraints=None, pairs=None, value=None,
+        tolerance=None, why_step=None,
+    )
+    silent = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_archetype=True,
+                     fits_format=True, gradable=True, confidence=0.9, reason="fine"),
+    ])
+    rejected = gate.judge([card], silent)
+    assert len(rejected) == 1 and "more than one answer" in rejected[0][1], rejected
