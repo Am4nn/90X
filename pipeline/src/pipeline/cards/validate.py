@@ -139,12 +139,18 @@ def cross_topic_dupes(con, threshold: int = 90) -> list[tuple[str, str]]:
     dupe names the kept card that absorbed it.
     """
     rows = con.execute(
-        """select c.id, c.prompt_md from cards c
+        """select c.id, c.prompt_md, c.options from cards c
            join topics t on t.slug = c.topic_slug
            where c.source = 'lesson' and c.status = 'draft'
            order by t.importance desc, c.id"""
     ).fetchall()
-    cards = [{"id": r[0], "prompt": r[1]} for r in rows]
+    # Compared on prompt AND content. On the prompt alone every claim-grid card
+    # matched every other at 100%, because their prompt is boilerplate - "Mark each
+    # statement as true or false." - and the question itself lives in `options`. That
+    # reported 239 near-duplicate pairs, of which a Java collections card and a
+    # segment-tree card were one: not duplicates at all, just a shared stem. Acting
+    # on that measurement would have deleted good, distinct cards.
+    cards = [{"id": r[0], "prompt": _comparable(r[1], r[2])} for r in rows]
 
     # Same greedy first-wins dedupe as check.dedupe, but we record the pairs
     # rather than just the survivors.
@@ -177,3 +183,58 @@ def report(con) -> str:
         for keep_id, dupe_id in dupes:
             lines.append(f"- {keep_id} <- {dupe_id}")
     return "\n".join(lines)
+
+def drop_dupes(con, threshold: int = 90, dry_run: bool = True) -> dict:
+    """Reject the loser of every near-duplicate pair.
+
+    `cross_topic_dupes` already decides which card to keep - the one from the
+    more important topic - and this used to only print the pairs. 239 of them
+    sat in a publishable corpus with nothing acting on them, which two reviewers
+    independently named as the thing that would make the Feed feel repetitive.
+    Detecting a problem and printing it is not fixing it.
+
+    Free: the pairs come from embeddings already stored. A dropped card is
+    rejected with its reason and the id of the card that absorbed it, so the
+    decision stays auditable and reversible.
+    """
+    pairs = cross_topic_dupes(con, threshold=threshold)
+    # One card can lose to several keepers; reject it once, naming the first.
+    losers: dict[str, str] = {}
+    for keep_id, dupe_id in pairs:
+        losers.setdefault(dupe_id, keep_id)
+    # Never drop a card that is itself a keeper for something else: that would
+    # remove both halves of a pair and lose the question entirely.
+    keepers = {keep_id for keep_id, _ in pairs}
+    dropping = {d: k for d, k in losers.items() if d not in keepers}
+    if not dry_run and dropping:
+        con.executemany(
+            """update cards set status = 'rejected', kept = false,
+                      reject_reason = ? where id = ? and status = 'draft'
+            """,
+            [[f"near-duplicate of {keep}", dupe] for dupe, keep in dropping.items()],
+        )
+    return {
+        "pairs": len(pairs),
+        "dropped": len(dropping),
+        "kept_as_keeper": len(losers) - len(dropping),
+        "dry_run": dry_run,
+    }
+
+def _comparable(prompt: str, options) -> str:
+    """What makes a card distinct: its prompt plus the content it shows.
+
+    A generic stem is not the question. A claim grid asks its question through the
+    statements in `options`, a bucket through its items, a match through its two
+    sides - so those go into the comparison, or two unrelated cards that happen to
+    share an instruction read as identical.
+    """
+    parts = [prompt or ""]
+    parsed = _json(options)
+    if isinstance(parsed, list):
+        parts += [str(x) for x in parsed]
+    elif isinstance(parsed, dict):
+        for key in ("left", "right", "items", "columns", "rows", "tokens"):
+            value = parsed.get(key)
+            if isinstance(value, list):
+                parts += [str(x) for x in value]
+    return " ".join(parts)

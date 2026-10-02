@@ -373,8 +373,9 @@ def test_a_question_that_does_not_match_its_archetype_is_rejected():
         picked=[1], constraints=None, pairs=None, value=None, tolerance=None, why_step=None,
     )
     result = gate.GateResult(verdicts=[
-        gate.Verdict(index=0, answerable=True, fits_archetype=False, fits_format=True,
-                     gradable=True, confidence=0.9, reason="asks about design principles, not output"),
+        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_archetype=False,
+                     fits_format=True, gradable=True, confidence=0.9,
+                     reason="asks about design principles, not output"),
     ])
     rejected = gate.judge([card], result)
     assert len(rejected) == 1, rejected
@@ -413,8 +414,9 @@ def test_an_omitted_archetype_verdict_rejects_rather_than_passes():
     )
     # A verdict with every other field answered and this one absent.
     silent = gate.GateResult(verdicts=[
-        gate.Verdict(index=0, answerable=True, fits_format=True, gradable=True,
-                     confidence=0.9, reason="fine"),
+        # premise_holds answered, fits_archetype not: isolates the archetype branch.
+        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_format=True,
+                     gradable=True, confidence=0.9, reason="fine"),
     ])
     rejected = gate.judge([card], silent)
     assert len(rejected) == 1 and "wrong archetype" in rejected[0][1], rejected
@@ -426,3 +428,48 @@ def test_an_omitted_archetype_verdict_rejects_rather_than_passes():
         pairs=None, value=None, tolerance=None, why_step=None,
     )
     assert gate.judge([legacy], silent) == []
+
+
+def test_a_self_contradictory_premise_is_rejected():
+    """Card #4 of the review pack: "16 initial bins", "no resizing", "all keys hash to
+    distinct bins", then 100,000 insertions. 100,000 distinct bins cannot exist among
+    16, and the reference answer accepted the contradiction. Nothing checked that a
+    question's own assumptions can hold at once."""
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="complexity", format="numeric", difficulty="Medium",
+        prompt="A map has 16 bins. 100 threads insert 1000 distinct keys each. "
+               "Assume no resizing and all keys hash to distinct bins. How many CAS operations?",
+        options=None, answer="100000", key_points=[], picked=None, constraints=None,
+        pairs=None, value=100000.0, tolerance=0.0, why_step=None,
+    )
+    result = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, premise_holds=False, fits_archetype=True,
+                     fits_format=True, gradable=True, confidence=0.8,
+                     reason="100,000 distinct bins cannot exist among 16"),
+    ])
+    rejected = gate.judge([card], result)
+    assert len(rejected) == 1 and "impossible premise" in rejected[0][1], rejected
+
+
+def test_an_omitted_premise_verdict_also_rejects():
+    """Fails closed, like the archetype verdict: silence must not read as "fine"."""
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="concept", format="pick_one", difficulty="Medium",
+        prompt="Which is correct?", options=["a", "b", "c", "d"], answer="a",
+        key_points=[], picked=[0], constraints=None, pairs=None, value=None,
+        tolerance=None, why_step=None,
+    )
+    silent = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, fits_archetype=True, fits_format=True,
+                     gradable=True, confidence=0.9, reason="fine"),
+    ])
+    rejected = gate.judge([card], silent)
+    assert len(rejected) == 1 and "impossible premise" in rejected[0][1], rejected

@@ -278,6 +278,13 @@ def card_validate(args, con) -> None:
     from .cards import validate
 
     print(validate.report(con))
+    if getattr(args, "drop_dupes", False):
+        result = validate.drop_dupes(con, dry_run=not args.apply)
+        print()
+        for k in ("pairs", "dropped", "kept_as_keeper"):
+            print(f"  {k:16} {result[k]}")
+        print("dry run: nothing changed. Add --apply." if result["dry_run"]
+              else "duplicates rejected; they are excluded from publish")
 
 
 def rebatch(args, con) -> None:

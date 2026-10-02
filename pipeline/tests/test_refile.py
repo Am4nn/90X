@@ -141,3 +141,38 @@ def test_a_budget_stop_is_reported_and_not_counted_as_considered(tmp_path):
     assert result["stopped_early"] is True, result
     assert result["considered"] == 0, "a card stopped on cannot count as considered"
     assert result["pending"] == 1, result
+
+
+def test_a_move_records_where_the_card_came_from(tmp_path):
+    """Setting reject_reason to null erased the only trace that a card had moved, so
+    a follow-up gate could not be aimed at the cards that needed one and the whole
+    corpus had to be re-judged - $6 rather than under $1, every run."""
+    from pipeline import staging
+    from pipeline.cards import refile as rf
+
+    class Picks:
+        def complete_json(self, system, user, schema, tier="fast", purpose=""):
+            return rf.Choice(archetype="which-principle-violated", reason="it names a principle")
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("insert into topics (slug, domain, name, sort) values ('zz-t', 'lld', 'T', 0)")
+    con.execute(
+        """insert into cards (id, topic_slug, format, archetype, difficulty, prompt_md,
+               answer_md, status, kept, reject_reason, source)
+           values ('id-1', 'zz-t', 'pick_one', 'output-prediction', 'Medium',
+               'Which SOLID principle is violated?', 'OCP', 'rejected', false,
+               'wrong archetype: asks about principles', 'lesson')"""
+    )
+
+    result = rf.run(con, llm=Picks(), dry_run=False)
+    assert result["moved"] == 1, result
+
+    status, archetype, quality = con.execute(
+        "select status, archetype, quality from cards where id = 'id-1'"
+    ).fetchone()
+    assert status == "draft", status
+    assert archetype == "which-principle-violated", archetype
+    assert "output-prediction" in (quality or ""), f"the old archetype was not recorded: {quality}"
+
+    # And the topic is findable, which is the point of recording it.
+    assert rf.refiled(con) == ["zz-t"]

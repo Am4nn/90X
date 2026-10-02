@@ -72,18 +72,20 @@ There are exactly four card formats and all four are valid. This is settled and 
 - "mcq" is {MCQ_OPTIONS} options with one unambiguously correct.
 - "output" shows a short code snippet and asks what it prints or returns, graded by exact match after whitespace is normalised.
 
-For each card, answer four separate questions. Keep them separate: a card can be perfectly answerable and still be in the wrong format, and saying so in the wrong field loses the distinction.
+For each card, answer five separate questions. Keep them separate: a card can be perfectly answerable and still be in the wrong format, and saying so in the wrong field loses the distinction.
 
 1. `answerable` - could a competent engineer who has studied this topic answer this question as asked? Set it false only when something is genuinely missing or the question is ambiguous: it points at a specific solution, passage, diagram, snippet, example or bare variable the candidate cannot see, or several different answers would all be correct. Needing to know the topic well is not a reason.
 
-2. `fits_archetype` - does the question do what "the question must" line above the card says? That line is the archetype's definition, not a hint: judge the question against it literally. A card can be excellent and still fail this, and a well-written question about something else is exactly the case to catch - a design-principle question under output prediction is a mismatch, not a bad card. Examples of the requirement: `output-prediction` must ask what the code prints or returns, `tap-the-bug` must ask which line is wrong, `which-approach` must ask which approach fits, `estimate` must ask for a quantity. Do not invent requirements the line does not state: it is about what the question asks, never about difficulty, option quality or grading.
+2. `premise_holds` - can the question's own stated assumptions all be true at the same time, and does any number it quotes follow from them? Work through the setup as given. A card saying "16 bins, no resizing, and all keys hash to distinct bins" and then asking about 100,000 insertions fails: 100,000 distinct bins cannot exist among 16, so the premise is self-contradictory however good the question looks. Check the arithmetic the setup implies, not the answer - judging the answer is a different question. Set it true when the setup is consistent, even if you would need to work to answer it.
 
-3. `fits_format` - does the honest answer fit the format this card was given? This is about the answer's shape, never about whether the format is permitted - all four are.
+3. `fits_archetype` - does the question do what "the question must" line above the card says? That line is the archetype's definition, not a hint: judge the question against it literally. A card can be excellent and still fail this, and a well-written question about something else is exactly the case to catch - a design-principle question under output prediction is a mismatch, not a bad card. Examples of the requirement: `output-prediction` must ask what the code prints or returns, `tap-the-bug` must ask which line is wrong, `which-approach` must ask which approach fits, `estimate` must ask for a quantity. Do not invent requirements the line does not state: it is about what the question asks, never about difficulty, option quality or grading.
+
+4. `fits_format` - does the honest answer fit the format this card was given? This is about the answer's shape, never about whether the format is permitted - all four are.
    - typed: false only when the honest answer is a list of items to enumerate ("name the four isolation levels"), where the candidate cannot know how many you want, or when it truly needs several paragraphs.
    - flash: false when the honest answer needs a paragraph.
    - output: false when the snippet could print more than one thing - a timestamp, hash ordering, a locale.
 
-4. `gradable` - can it be marked the way this format is marked? An output card whose expected text has no single obvious spelling (the delimiters of a SQL result set, say) is not gradable. A multiple-choice card with two defensible options is not gradable.
+5. `gradable` - can it be marked the way this format is marked? An output card whose expected text has no single obvious spelling (the delimiters of a SQL result set, say) is not gradable. A multiple-choice card with two defensible options is not gradable.
 
 Give a short `reason` for each field you set false, and leave it empty otherwise.
 
@@ -104,6 +106,9 @@ class Verdict(BaseModel):
     # means "did not answer", and for a card that has an archetype that is a
     # rejection, not a pass.
     fits_archetype: bool | None = Field(default=None, description="the question asks what its archetype names")
+    premise_holds: bool | None = Field(
+        default=None, description="the question's own stated assumptions can all be true at once"
+    )
     gradable: bool = Field(default=True, description="it can be marked the way this format is marked")
     reason: str = Field(default="", description="one short sentence for whichever field is false")
     picked: str = Field(default="", description="multiple choice only: the option you would pick")
@@ -228,6 +233,9 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
         denied_the_format = bool(DENIES_THE_FORMAT.search(v.reason))
         if not v.answerable:
             rejected.append((card, f"not answerable: {v.reason}"))
+        elif getattr(card, "archetype", None) and v.premise_holds is not True:
+            why = v.reason if v.premise_holds is False else "the gate did not rule on whether the premise holds"
+            rejected.append((card, f"impossible premise: {why}"))
         elif getattr(card, "archetype", None) and v.fits_archetype is not True:
             # Anything but an explicit True: a stated mismatch, or no answer at
             # all. A legacy card has no archetype to fit, so it is not asked.
