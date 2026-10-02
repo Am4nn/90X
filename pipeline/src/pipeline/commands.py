@@ -317,6 +317,19 @@ def reconcile(args, con) -> None:
         print(f"wrote {written}, trimmed {dropped}, refused {refused}")
 
 
+def refile(args, con) -> None:
+    """Move cards the gate rejected for the wrong archetype to the right one."""
+    from .cards import refile as rf
+
+    result = rf.run(con, tier=args.tier, dry_run=not args.apply)
+    for k in ("considered", "moved", "no_candidate_archetype", "nothing_fitted", "failed"):
+        print(f"  {k:24} {result[k]}")
+    if args.apply:
+        print("moved cards are back in draft; run card-regate to confirm they fit now")
+    else:
+        print("dry run: nothing changed. Re-run with --apply.")
+
+
 def wellformed(args, con) -> None:
     """Audit the archetyped corpus against the registry's answer contract, and
     optionally reject what fails so the repair pass rewrites it.
@@ -374,7 +387,7 @@ def wellformed(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "swap": swap, "reconcile": reconcile, "wellformed": wellformed, "status": status, "trial": trial, "gate2": gate2}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "swap": swap, "reconcile": reconcile, "refile": refile, "wellformed": wellformed, "status": status, "trial": trial, "gate2": gate2}
 
 
 def run(name: str, args) -> None:

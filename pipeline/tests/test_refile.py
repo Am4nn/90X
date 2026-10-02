@@ -1,0 +1,86 @@
+"""Re-filing a card the gate rejected for the wrong archetype.
+
+The question is usually fine and only the label is wrong, so moving it recovers a
+card the repair pass would have rewritten or lost. The move has to be bounded, and
+these are the bounds.
+"""
+
+from dataclasses import dataclass
+
+from pipeline.cards import archetypes, refile
+
+
+@dataclass
+class Card:
+    prompt: str = "Which SOLID principle is violated?"
+    archetype: str = "output-prediction"
+    format: str = "pick_one"
+    difficulty: str = "Medium"
+
+
+def test_candidates_keep_the_cards_own_primitive():
+    """The answer columns are shaped for the primitive: `picked` for chosen, `pairs`
+    for mapping. Moving a card to an archetype with a different primitive would
+    leave an answer definition nothing can grade."""
+    card = Card(format="pick_one")
+    for a in refile.candidates(card, "lld"):
+        assert "pick_one" in a.primitives, f"{a.id} does not take pick_one"
+
+    mapping = Card(format="match", archetype="term-meaning")
+    for a in refile.candidates(mapping, "lld"):
+        assert "match" in a.primitives, f"{a.id} does not take match"
+
+
+def test_candidates_respect_area_and_difficulty():
+    card = Card(format="pick_one", difficulty="Hard")
+    for a in refile.candidates(card, "sql"):
+        assert "sql" in a.areas, f"{a.id} is not eligible for sql"
+        assert "Hard" in a.difficulties, f"{a.id} does not allow Hard"
+
+
+def test_the_cards_current_archetype_is_never_a_candidate():
+    card = Card(archetype="concept", format="pick_one")
+    assert "concept" not in {a.id for a in refile.candidates(card, "java")}
+
+
+def test_the_real_mismatch_can_reach_a_sensible_home():
+    """The card that prompted all of this: a SOLID question filed under
+    output-prediction. `which-principle-violated` is pick_one and eligible for lld,
+    so the move is available without touching the answer columns."""
+    ids = {a.id for a in refile.candidates(Card(), "lld")}
+    assert "which-principle-violated" in ids
+
+
+def test_an_invented_archetype_is_refused_rather_than_written():
+    """The model picks from a list; an id outside it must not reach the database."""
+
+    class FakeLLM:
+        def complete_json(self, system, user, schema, tier="fast", purpose=""):
+            return refile.Choice(archetype="not-a-real-archetype", reason="made up")
+
+    options = refile.candidates(Card(), "lld")
+    assert options, "the test needs candidates to choose from"
+    assert refile.choose(FakeLLM(), Card(), options) is None
+
+
+def test_a_refusal_is_honoured():
+    class FakeLLM:
+        def complete_json(self, system, user, schema, tier="fast", purpose=""):
+            return refile.Choice(archetype=None, reason="nothing fits")
+
+    assert refile.choose(FakeLLM(), Card(), refile.candidates(Card(), "lld")) is None
+
+
+def test_no_candidates_means_no_model_call():
+    class Exploding:
+        def complete_json(self, *a, **k):
+            raise AssertionError("should not be asked when there is nothing to choose from")
+
+    assert refile.choose(Exploding(), Card(), []) is None
+
+
+def test_every_candidate_offers_an_intent_to_choose_by():
+    """The prompt is a list of ids and intents; a blank intent gives the model
+    nothing to match the question against."""
+    for a in refile.candidates(Card(), "lld"):
+        assert a.intent, f"{a.id} has no intent"
