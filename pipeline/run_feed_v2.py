@@ -4,10 +4,16 @@ Usage (from the pipeline directory):
 
     uv run python run_feed_v2.py                # full run
     uv run python run_feed_v2.py --only a,b,c   # a subset of topic slugs
+    uv run python run_feed_v2.py --reconcile    # trim surplus + write the shortfall
 
 What it does, in order:
 
 1. Write every topic's card budget (run_lessons.run) — drafts saved per topic.
+   With --reconcile, trim each topic's surplus archetypes and write only its
+   shortfall instead (reconcile.run). That is the right step once a corpus
+   already exists: run_lessons skips any topic that already has archetyped
+   cards, so it would write the 96 newly-covered topics and leave the uneven
+   distribution on the other 177 untouched.
 2. Gate + repair the drafts (regate.run) — answerability AND guessability
    (blind gate) verdicts, one rewrite each for rejected cards.
 
@@ -20,6 +26,10 @@ Properties you can rely on:
   lifetime llm_calls table.
 - Monitored. All progress goes to stdout AND .data/review/feed-v2-run.log
   (appended), so you can `tail -f` it while it runs.
+- Off-peak only. DeepSeek halves its prices outside peak hours and the whole
+  budget assumes that, so the run waits for the window rather than starting at
+  double price. Checked once at the start: the weekend window is long enough
+  that a 40-minute run cannot cross out of it.
 """
 
 import sys
@@ -28,8 +38,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pipeline import staging
-from pipeline.llm import LLM
-from pipeline.cards import regate, run_lessons, validate
+from pipeline.llm import LLM, is_off_peak, wait_for_off_peak
+from pipeline.cards import reconcile, regate, run_lessons, validate
 
 RUN_ID = "feed-v2-full"
 LOG = Path(__file__).resolve().parents[1] / ".data" / "review" / "feed-v2-run.log"
@@ -65,23 +75,36 @@ def _parse_args(argv):
 def main(argv: list[str] | None = None) -> None:
     argv = list(sys.argv[1:] if argv is None else argv)
     only = _parse_args(argv)
+    mode = "reconcile" if "--reconcile" in argv else "write"
+    run_id = "feed-v2-rebalance" if mode == "reconcile" else RUN_ID
 
     LOG.parent.mkdir(parents=True, exist_ok=True)
     log = open(LOG, "a", encoding="utf-8")
     sys.stdout = _Tee(sys.__stdout__, log)
 
-    print(f"=== Feed v2 run start  {datetime.now(timezone.utc).isoformat()}  run_id={RUN_ID}  "
-          f"only={only or 'all'} ===", flush=True)
+    print(f"=== Feed v2 run start  {datetime.now(timezone.utc).isoformat()}  run_id={run_id}  "
+          f"only={only or 'all'} mode={mode} ===", flush=True)
+
+    if not is_off_peak():
+        print("peak hours: waiting for the off-peak window before spending", flush=True)
+        wait_for_off_peak()
+        print(f"off-peak window open  {datetime.now(timezone.utc).isoformat()}", flush=True)
 
     con = staging.connect()
-    llm = LLM(con, run_id=RUN_ID)
+    llm = LLM(con, run_id=run_id)
 
     started = time.time()
 
-    print("--- step 1: write ---", flush=True)
-    written, refused = run_lessons.run(con, only=only, tier="smart", llm=llm)
-    print(f"write done: {written} cards, {refused} slots refused, "
-          f"{int(time.time() - started)}s elapsed", flush=True)
+    if mode == "reconcile":
+        print("--- step 1: trim surplus + write the shortfall ---", flush=True)
+        written, dropped, refused = reconcile.run(con, only=only, tier="smart", llm=llm, dry_run=False)
+        print(f"reconcile done: {written} cards written, {dropped} trimmed, {refused} slots refused, "
+              f"{int(time.time() - started)}s elapsed", flush=True)
+    else:
+        print("--- step 1: write ---", flush=True)
+        written, refused = run_lessons.run(con, only=only, tier="smart", llm=llm)
+        print(f"write done: {written} cards, {refused} slots refused, "
+              f"{int(time.time() - started)}s elapsed", flush=True)
 
     print("--- step 2: gate + repair ---", flush=True)
     result = regate.run(con, only=only, tier="smart", llm=llm)
@@ -92,6 +115,10 @@ def main(argv: list[str] | None = None) -> None:
 
     print(f"=== Feed v2 run end  {datetime.now(timezone.utc).isoformat()}  "
           f"{int(time.time() - started)}s ===", flush=True)
+    # Restore the real stdout before closing the log: leaving the _Tee in place
+    # over a closed file made the first run exit 1 on anything printed after
+    # this point, which looked like a failed run and was not one.
+    sys.stdout = sys.__stdout__
     log.close()
 
 
