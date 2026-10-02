@@ -176,3 +176,69 @@ def test_a_move_records_where_the_card_came_from(tmp_path):
 
     # And the topic is findable, which is the point of recording it.
     assert rf.refiled(con) == ["zz-t"]
+
+
+def _topic_with_rejected_card(con, card_id="id-1", archetype="output-prediction"):
+    con.execute("""insert into topics (slug, domain, name, sort, importance)
+                   values ('zz-t', 'lld', 'T', 0, 1)""")
+    con.execute(
+        """insert into cards (id, topic_slug, format, archetype, difficulty, prompt_md,
+               options, answer_md, status, kept, reject_reason, source)
+           values (?, 'zz-t', 'pick_one', ?, 'Medium', 'Which line is wrong?',
+               '["a","b","c","d"]', 'a', 'rejected', false, 'wrong archetype: no', 'lesson')""",
+        [card_id, archetype],
+    )
+
+
+def test_a_move_is_confirmed_before_it_can_be_published(tmp_path):
+    """The gap that put 34 cards in front of readers under an archetype that did not
+    fit. `refile --apply` wrote its moves and printed "run card-regate to confirm they
+    fit now", leaving the only check that proves a move was right to a caller who was
+    under no obligation to run it. A step that cannot verify its own output should not
+    be writing it.
+    """
+    from pipeline import staging
+    from pipeline.cards import refile as rf
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    _topic_with_rejected_card(con)
+
+    seen = {}
+
+    def fake_verify(con_, llm_, card_ids, tier="smart"):
+        seen["ids"], seen["tier"] = list(card_ids), tier
+        return {"checked": len(card_ids), "fit": len(card_ids), "unfit": 0, "reasons": []}
+
+    rf.verify, original = fake_verify, rf.verify
+    try:
+        picked = rf.Choice(archetype="counter-example", reason="it asks for a case where the rule fails")
+        llm = type("L", (), {"complete_json": lambda *a, **k: picked})()
+        result = rf.run(con, llm=llm, dry_run=False)
+    finally:
+        rf.verify = original
+
+    assert result["moved"] == 1, result
+    assert seen["ids"] == ["id-1"], "the check must be aimed at the moved card"
+    assert seen["tier"] == "smart", "moves are held to the bar the rest of the corpus met"
+    assert result["verified_fit"] == 1 and result["verified_unfit"] == 0, result
+
+
+def test_a_dry_run_never_calls_the_confirmation(tmp_path):
+    """The check writes rejections, so it must not run when nothing was written."""
+    from pipeline import staging
+    from pipeline.cards import refile as rf
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    _topic_with_rejected_card(con)
+
+    def forbidden(*a, **kw):
+        raise AssertionError("the confirmation ran during a dry run")
+
+    rf.verify, original = forbidden, rf.verify
+    try:
+        picked = rf.Choice(archetype="counter-example", reason="fits")
+        llm = type("L", (), {"complete_json": lambda *a, **k: picked})()
+        result = rf.run(con, llm=llm, dry_run=True)
+    finally:
+        rf.verify = original
+    assert result["moved"] == 1 and result["verified_fit"] == 0, result

@@ -87,7 +87,11 @@ def main() -> None:
     rc.add_argument("--run-id", help="tag this run's spend")
     rf = sub.add_parser("refile", help="move cards rejected for the wrong archetype to the right one (AI)")
     rf.add_argument("--apply", action="store_true", help="write the moves (default: dry-run only)")
-    rf.add_argument("--tier", default="fast", help="model tier: fast or smart")
+    rf.add_argument("--tier", default="fast", help="model tier for choosing the archetype: fast or smart")
+    rf.add_argument("--check-tier", default="smart",
+                    help="model tier that confirms each move fits (default: smart, the bar the rest of the corpus met)")
+    rf.add_argument("--no-check", action="store_true",
+                    help="skip the confirmation pass; moves are then unverified and must not be published")
     wf = sub.add_parser("wellformed", help="audit archetyped cards against the answer contract (free, no model)")
     wf.add_argument("--apply", action="store_true", help="mark failures rejected so card-fix rewrites them")
     sub.add_parser("status", help="counts and LLM spend in staging")

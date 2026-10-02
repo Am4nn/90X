@@ -100,8 +100,77 @@ def pending(con) -> list[dict]:
     return [dict(zip(keys, r)) for r in rows]
 
 
-def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
-    """Move what can be moved. Returns counts; the caller re-gates afterwards."""
+def verify(con, llm, card_ids: list[str], tier: str = "smart") -> dict:
+    """Ask the gate whether each moved card asks what its new archetype says.
+
+    A move is a claim, and the four bounds in `candidates` - area, primitive,
+    difficulty, the model answer validating against the list - are necessary but not
+    sufficient. Measured on the first real pass: 489 of 523 moves fit, 34 did not,
+    and all 34 had already gone live, because this check lived in a separate script
+    nobody was obliged to run.
+
+    Only the moved cards are judged. `card-regate` works per topic, and the moved
+    cards are spread thin - 523 of them over 159 topics - so re-gating by topic means
+    judging some 4,000 cards to check 523 and re-rolling verdicts already paid for.
+
+    The answerability gate only: no blind gate, no rewrite pass. The question is
+    narrow, and a card that fails goes back to rejected naming the archetype it
+    failed in, so the move is undone in effect and visible in the record.
+    """
+    from collections import defaultdict
+
+    from ..llm import BudgetExceeded, LLMError
+    from . import gate, regate
+
+    wanted: dict[str, set[str]] = defaultdict(set)
+    rows = con.execute(
+        f"""select topic_slug, id from cards
+            where id in ({",".join("?" * len(card_ids))})""",
+        card_ids,
+    ).fetchall() if card_ids else []
+    for slug, card_id in rows:
+        wanted[slug].add(card_id)
+
+    topics = {t["slug"]: t for t in regate.topics_with_cards(con, list(wanted))}
+    checked = unfit = 0
+    reasons: list[tuple[str, str]] = []
+
+    for slug, ids in wanted.items():
+        topic = topics.get(slug)
+        if not topic:
+            continue
+        cards = [c for c in regate.cards_of(con, slug) if c.id in ids]
+        if not cards:
+            continue
+        try:
+            result = gate.review(llm, topic, cards, tier=tier)
+        except BudgetExceeded as e:
+            print(f"  stopping: {e}", flush=True)
+            break
+        except (LLMError, Exception) as e:  # noqa: BLE001 - one topic's failure
+            print(f"  {slug}: FAILED {type(e).__name__}: {e}", flush=True)
+            continue
+        rejected = gate.judge(cards, result)
+        checked += len(cards)
+        unfit += len(rejected)
+        for card, why in rejected:
+            reasons.append((card.id, why))
+        if rejected:
+            regate.apply(con, cards, rejected, gate.confidence_by_card(cards, result))
+            print(f"  {slug}: {len(rejected)} of {len(cards)} did not fit", flush=True)
+
+    return {"checked": checked, "fit": checked - unfit, "unfit": unfit, "reasons": reasons}
+
+
+def run(con, llm=None, tier: str = "fast", dry_run: bool = True,
+        check: bool = True, check_tier: str = "smart") -> dict:
+    """Move what can be moved, then confirm each move with the gate.
+
+    The check used to be the caller's job - the step printed "run card-regate to
+    confirm they fit now" and left it there, which is how 34 cards reached readers
+    under an archetype that did not fit. A step that cannot verify its own output
+    should not be writing it.
+    """
     from types import SimpleNamespace
 
     from ..llm import LLM, BudgetExceeded
@@ -164,10 +233,16 @@ def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
             [[new, old, card_id] for card_id, (old, new) in moved.items()],
         )
 
+    checked = {"checked": 0, "fit": 0, "unfit": 0, "reasons": []}
+    if not dry_run and moved and check:
+        checked = verify(con, llm, list(moved), tier=check_tier)
+
     return {
         "considered": considered,
         "pending": len(todo),
         "moved": len(moved),
+        "verified_fit": checked["fit"],
+        "verified_unfit": checked["unfit"],
         "no_candidate_archetype": no_candidates,
         "nothing_fitted": unchanged,
         "failed": failed,

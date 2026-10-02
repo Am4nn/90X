@@ -328,13 +328,18 @@ def refile(args, con) -> None:
     """Move cards the gate rejected for the wrong archetype to the right one."""
     from .cards import refile as rf
 
-    result = rf.run(con, tier=args.tier, dry_run=not args.apply)
-    for k in ("pending", "considered", "moved", "no_candidate_archetype", "nothing_fitted", "failed"):
+    result = rf.run(con, tier=args.tier, dry_run=not args.apply,
+                    check=not args.no_check, check_tier=args.check_tier)
+    for k in ("pending", "considered", "moved", "no_candidate_archetype", "nothing_fitted", "failed",
+              "verified_fit", "verified_unfit"):
         print(f"  {k:24} {result[k]}")
     if result["stopped_early"]:
         print(f"  STOPPED EARLY on the spend cap: {result['pending'] - result['considered']} cards never looked at")
-    if args.apply:
-        print("moved cards are back in draft; run card-regate to confirm they fit now")
+    if args.apply and args.no_check:
+        print("moved cards are back in draft, UNVERIFIED; run card-regate before publishing")
+    elif args.apply:
+        print(f"{result['verified_fit']} moves confirmed by the gate; "
+              f"{result['verified_unfit']} did not fit and are rejected again")
     else:
         print("dry run: nothing changed. Re-run with --apply.")
 
