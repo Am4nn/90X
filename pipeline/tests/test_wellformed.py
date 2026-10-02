@@ -218,3 +218,27 @@ def test_a_legacy_card_is_not_judged_here():
 
 def test_a_clean_pick_one_passes():
     assert problems(options=["a", "b", "c", "d"], picked=[2]) == []
+
+
+# --- compose: the rubric is the answer definition ---------------------------
+
+def test_a_compose_card_without_a_rubric_fails():
+    # `key_points` is what the written answer is marked against, so too few of
+    # them means there is nothing to grade.
+    card = Card(format="compose", archetype="your-story", options=None)
+    card.key_points = ["only one"]
+    probs = wellformed.problems(card)
+    assert any("keyPoints: 1, below the minimum of 3" in p for p in probs), probs
+
+
+def test_a_compose_card_with_a_repeated_requirement_fails():
+    card = Card(format="compose", archetype="your-story", options=None)
+    card.key_points = ["names the result", "names the result", "says what you did"]
+    probs = wellformed.problems(card)
+    assert any("repeats a requirement" in p for p in probs), probs
+
+
+def test_a_well_formed_compose_card_passes():
+    card = Card(format="compose", archetype="your-story", options=None)
+    card.key_points = ["names the situation", "says what you personally did", "states a measurable result"]
+    assert wellformed.problems(card) == []
