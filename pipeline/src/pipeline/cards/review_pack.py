@@ -242,11 +242,20 @@ def _why_lines(card) -> list[str]:
     correct = why.get("correct")
     if not options:
         return []
-    lines = ["**Why (right answer, wrong reason is wrong)**", ""]
+    # Numbered "Reason N", not lettered. The why-step is a second question with its
+    # own option list, and lettering it A/B/C/D the way the main options are
+    # lettered invited readers to compare the two: two independent reviewers read
+    # "answer A, why C" as a contradiction when it is simply the right answer and
+    # the right reason, each from its own list. The labelling caused that, not the
+    # cards.
+    lines = [
+        "**Why-step — a second question, with its own options. The letters above do not apply here.**",
+        "",
+    ]
     for i, option in enumerate(options):
         marker = "→ **" if i == correct else "  "
         suffix = "**" if i == correct else ""
-        lines.append(f"{marker}{_letter(i, options)}{suffix}")
+        lines.append(f"{marker}Reason {i + 1}: {option}{suffix}")
     return lines
 
 
