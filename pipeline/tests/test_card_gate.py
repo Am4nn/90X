@@ -392,3 +392,37 @@ def test_the_gate_is_told_which_archetype_it_is_judging():
     # A legacy card has no archetype and must not grow a blank line for one.
     legacy = gate.prompt_only(SimpleNamespace(archetype=None, format="typed", prompt="Why?", options=None))
     assert "archetype" not in legacy, legacy
+
+
+def test_an_omitted_archetype_verdict_rejects_rather_than_passes():
+    """The check must fail closed.
+
+    `fits_archetype` used to default to True, so a model that simply did not
+    answer the question passed every mismatch silently - a safety check that is
+    disabled by the thing it is checking not replying.
+    """
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="output-prediction", format="pick_one", difficulty="Medium",
+        prompt="What does this print?", options=["1", "2", "3", "4"], answer="2",
+        key_points=[], picked=[1], constraints=None, pairs=None, value=None,
+        tolerance=None, why_step=None,
+    )
+    # A verdict with every other field answered and this one absent.
+    silent = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, fits_format=True, gradable=True,
+                     confidence=0.9, reason="fine"),
+    ])
+    rejected = gate.judge([card], silent)
+    assert len(rejected) == 1 and "wrong archetype" in rejected[0][1], rejected
+
+    # A legacy card has no archetype, so the question does not apply to it.
+    legacy = SimpleNamespace(
+        id="y", archetype=None, format="typed", difficulty="Medium", prompt="Why?",
+        options=[], answer="because", key_points=[], picked=None, constraints=None,
+        pairs=None, value=None, tolerance=None, why_step=None,
+    )
+    assert gate.judge([legacy], silent) == []

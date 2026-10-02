@@ -98,7 +98,12 @@ class Verdict(BaseModel):
     index: int = Field(description="the card's position in the list, starting at 0")
     answerable: bool = Field(default=True, description="a competent engineer could answer it as asked")
     fits_format: bool = Field(default=True, description="the honest answer fits the format given")
-    fits_archetype: bool = Field(default=True, description="the question asks what its archetype names")
+    # No default of True. A safety check that treats an omitted field as "fine"
+    # fails open: the model simply not answering this question would pass every
+    # mismatch silently, which is the opposite of what the check is for. None
+    # means "did not answer", and for a card that has an archetype that is a
+    # rejection, not a pass.
+    fits_archetype: bool | None = Field(default=None, description="the question asks what its archetype names")
     gradable: bool = Field(default=True, description="it can be marked the way this format is marked")
     reason: str = Field(default="", description="one short sentence for whichever field is false")
     picked: str = Field(default="", description="multiple choice only: the option you would pick")
@@ -223,8 +228,11 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
         denied_the_format = bool(DENIES_THE_FORMAT.search(v.reason))
         if not v.answerable:
             rejected.append((card, f"not answerable: {v.reason}"))
-        elif not v.fits_archetype:
-            rejected.append((card, f"wrong archetype: {v.reason}"))
+        elif getattr(card, "archetype", None) and v.fits_archetype is not True:
+            # Anything but an explicit True: a stated mismatch, or no answer at
+            # all. A legacy card has no archetype to fit, so it is not asked.
+            why = v.reason if v.fits_archetype is False else "the gate did not rule on whether it fits its archetype"
+            rejected.append((card, f"wrong archetype: {why}"))
         elif not v.fits_format and not denied_the_format:
             rejected.append((card, f"wrong_format: {v.reason}"))
         elif not v.gradable:
