@@ -561,3 +561,48 @@ def test_a_reply_that_leaves_a_verdict_out_is_invalid_rather_than_a_rejection():
     # makes it answer them in the first place.
     required = gate.Verdict.model_json_schema()["required"]
     assert {"fits_archetype", "premise_holds", "one_answer"} <= set(required), required
+
+
+def test_every_primitive_shows_the_gate_what_the_reader_sees():
+    """The defect behind 1,035 rejections. `prompt_only` guarded its options with
+    `card.format == "mcq"`, which covered 361 cards of 7,063. Every Feed v2
+    primitive was judged on its question text alone, so the model answered in a
+    hundred wordings of "Options are missing" and the gate rejected the card for a
+    defect that existed only in what it had been shown.
+    """
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    shapes = {
+        "pick_one": (["List", "Set", "Queue", "Map"], ["List", "Map"]),
+        "mcq": (["an interface", "a class"], ["an interface"]),
+        "claim_grid": (["Atomicity rolls back", "Durability survives a crash"], ["Atomicity rolls back"]),
+        "order": (["write the log", "execute the writes"], ["write the log"]),
+        "tap_in_place": (["1  CREATE TABLE t (", "2    id SERIAL"], ["CREATE TABLE t ("]),
+        "match": ({"left": ["Clustered"], "right": ["one per table"]}, ["Clustered", "one per table"]),
+        "bucket": ({"items": ["DNS query"], "columns": ["UDP", "TCP"]}, ["DNS query", "UDP", "TCP"]),
+        "assemble": ({"tokens": ["or", "none are applied"], "fixed": "Atomicity means"},
+                     ["none are applied", "Atomicity means"]),
+        "grid_toggle": ({"rows": ["DFS"], "columns": ["O(n) time"]}, ["DFS", "O(n) time"]),
+    }
+    for fmt, (options, must_appear) in shapes.items():
+        card = SimpleNamespace(archetype=None, format=fmt, prompt="Which one?",
+                               options=options, key_points=["the answer"])
+        shown = gate.prompt_only(card)
+        for text in must_appear:
+            assert text in shown, f"{fmt}: {text!r} withheld from the gate\n{shown}"
+        # The gate answers the card itself to check the marked answer agrees, so
+        # the answer must never be in what it reads.
+        assert "the answer" not in shown, f"{fmt} leaked key_points\n{shown}"
+
+    # Options arriving as stored JSON rather than parsed are rendered the same way.
+    stored = SimpleNamespace(archetype=None, format="pick_one", prompt="Which one?",
+                             options='["List", "Map"]', key_points=[])
+    assert "option: List" in gate.prompt_only(stored)
+
+    # A composed answer is marked against a rubric the reader is shown, so there
+    # the points are content, not the answer.
+    composed = SimpleNamespace(archetype=None, format="compose", prompt="Tell me about a time",
+                               options=None, key_points=["States what you personally did"])
+    assert "States what you personally did" in gate.prompt_only(composed)

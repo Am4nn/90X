@@ -44,6 +44,7 @@ failure keeps the reason honest, so the repair pass is told what is actually
 wrong rather than the last thing the reviewer happened to mention.
 """
 
+import json
 import re
 
 from pydantic import BaseModel, Field
@@ -150,9 +151,74 @@ def prompt_only(card) -> str:
         except StopIteration:
             lines.append(f"archetype: {archetype}")
     lines += [f"format: {card.format}", f"question: {card.prompt}"]
-    if card.format == "mcq" and card.options:
-        lines += [f"  option: {o}" for o in card.options]
+    lines += _shown(card)
     return "\n".join(lines)
+
+
+# What each primitive calls the things it puts on screen. The gate reads these
+# back to the model, so the label has to match what the reader is asked to do.
+_LABELS = {
+    "order": "step",
+    "tap_in_place": "line",
+    "claim_grid": "statement",
+    "assemble": "token",
+    "left": "left",
+    "right": "right",
+    "items": "item",
+    "columns": "column",
+    "rows": "row",
+    "tokens": "token",
+    "fixed": "fixed text",
+}
+
+
+def _shown(card) -> list[str]:
+    """Every piece of content the card puts in front of the reader.
+
+    This used to be `if card.format == "mcq"`, which covered 361 of 7,063 cards.
+    Every Feed v2 primitive - 2,074 `pick_one`, 754 `match`, 704 `order`, and the
+    rest - was judged on its question text alone, with its options withheld. The
+    model said so, over and over, in a hundred wordings of "Options are missing",
+    and the gate rejected the card for a defect that existed only in what it had
+    been shown: 1,035 cards turned down as unanswerable, and an unknown share of
+    939 archetype rejections decided without the options that say what the
+    question is. A gate must see what the reader sees.
+
+    The answer is still withheld. Options are not the answer - they are the
+    question's other half.
+    """
+    options = getattr(card, "options", None)
+    if isinstance(options, str):
+        try:
+            options = json.loads(options)
+        except (ValueError, TypeError):
+            return [f"  option: {options}"]
+    out: list[str] = []
+    if isinstance(options, list):
+        label = _LABELS.get(card.format, "option")
+        out += [f"  {label}: {o}" for o in options]
+    elif isinstance(options, dict):
+        for key, value in options.items():
+            label = _LABELS.get(key, key)
+            if isinstance(value, list):
+                out += [f"  {label}: {v}" for v in value]
+            elif value not in (None, ""):
+                out.append(f"  {label}: {value}")
+    # A composed answer is marked against a rubric the reader is shown, so the gate
+    # needs it to judge gradability. `key_points` is the answer itself for every
+    # other format - a numeric card's points read "height = 4" - and the gate
+    # answers the card independently to check the marked answer agrees. It stays
+    # blind everywhere but here.
+    if card.format == "compose":
+        rubric = getattr(card, "key_points", None)
+        if isinstance(rubric, str):
+            try:
+                rubric = json.loads(rubric)
+            except (ValueError, TypeError):
+                rubric = [rubric]
+        if isinstance(rubric, list):
+            out += [f"  the answer must cover: {point}" for point in rubric]
+    return out
 
 
 def review(llm, topic: dict, cards: list, tier: str = "smart") -> GateResult:
