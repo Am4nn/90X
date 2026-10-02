@@ -28,9 +28,17 @@ class Draft:
 
     def __init__(self, row) -> None:
         (self.id, self.topic_slug, self.format, self.difficulty, self.prompt,
-         options, self.answer, key_points, self.status) = row
+         options, self.answer, key_points, self.status, self.archetype,
+         picked, constraints, pairs, self.value, self.tolerance, why_step) = row
         self.options = json.loads(options) if options else []
         self.key_points = json.loads(key_points or "[]")
+        # The answer columns, not just the prompt: `wellformed` judges whether a
+        # reader could give the stored answer at all, and it cannot do that from
+        # the options alone.
+        self.picked = json.loads(picked) if picked else None
+        self.constraints = json.loads(constraints) if constraints else None
+        self.pairs = json.loads(pairs) if pairs else None
+        self.why_step = json.loads(why_step) if why_step else None
 
 
 def topics_with_cards(con, only: list[str] | None = None) -> list[dict]:
@@ -52,7 +60,8 @@ def cards_of(con, slug: str) -> list[Draft]:
     already replaced, not a candidate.
     """
     rows = con.execute(
-        """select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points, status
+        """select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points, status,
+                  archetype, picked, constraints, pairs, value, tolerance, why_step
            from cards where source = 'lesson' and topic_slug = ? and status in ('draft', 'rejected')
            order by status, id""",
         [slug],
@@ -96,7 +105,7 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
     # overwrote the repaired row, erasing the gate's objection.
     con.execute(
         "update cards set id = ?, status = 'repaired', kept = false where id = ?",
-        [card_id(topic["slug"], old.prompt, "repaired"), old.id],
+        [card_id(topic["slug"], old.prompt, f"repaired:{old.id}"), old.id],
     )
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     con.execute(
@@ -138,7 +147,16 @@ def apply(con, cards: list[Draft], rejected: list[tuple[object, str]], confidenc
     return recovered, newly_rejected
 
 
-def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None = None) -> dict:
+def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None = None,
+        blind: bool = True) -> dict:
+    """Re-judge the stored cards. `blind=False` skips the guessability half.
+
+    The blind gate is five times the cost of the answerability gate per card and
+    it is a model, so re-running it re-rolls verdicts it already gave. When the
+    only thing that changed is a rule in the answerability gate - the archetype
+    conformance check, say - skipping it asks the new question without paying to
+    ask the old one again or risking a different answer to it.
+    """
     llm = llm or LLM(con)
     todo = topics_with_cards(con, only)
     db = lock_for(con)
@@ -157,8 +175,9 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
         # forced by the choices' shape alone is guessable even when its answer is
         # correct, so the answerability gate alone would let it through. Reject
         # on either gate, so the two can never un-reject each other.
-        blind = blind_gate.review(llm, cards, tier=tier)
-        rejected = merge_rejects(rejected, blind_gate.judge(cards, blind))
+        if blind:
+            blind_result = blind_gate.review(llm, cards, tier=tier)
+            rejected = merge_rejects(rejected, blind_gate.judge(cards, blind_result))
         # A stricter gate without a repair pass is just a delete button. Most of
         # what it turns down here is a good question in the wrong format - "what
         # iteration order do HashSet, LinkedHashSet and TreeSet give?" is a fair

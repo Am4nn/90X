@@ -1,5 +1,7 @@
 """Stage-B commands. Each takes parsed args and a staging connection."""
 
+import types
+
 from . import staging
 
 
@@ -265,7 +267,8 @@ def card_regate(args, con) -> None:
     from . import llm
     from .cards import regate
 
-    t = regate.run(con, only=args.topics or None, tier=args.tier)
+    t = regate.run(con, only=args.topics or None, tier=args.tier,
+                   blind=not getattr(args, 'no_blind', False))
     print(f"card-regate: {t['judged']} cards re-judged across {t['topics']} topics, "
           f"{t['recovered']} recovered, {t['reformatted']} rewritten and passed, "
           f"{t['rejected']} still rejected, spend ${llm.spend_usd(con):.2f}")
@@ -286,8 +289,92 @@ def rebatch(args, con) -> None:
     print(f"{len(summary)} batches" + (" (dry run)" if args.dry_run else ", in staging; run publish to send them"))
 
 
+def swap(args, con) -> None:
+    import os
+
+    from .cards import swap as s
+
+    result = s.run(os.environ["DATABASE_URL"], dry_run=not args.apply)
+    if args.apply:
+        print(f"swap applied: {result['retired']} retired, {result['activated']} activated, "
+              f"{result['kept_live_uncovered_area']} kept live (area not in the catalogue)")
+    else:
+        print(f"dry run: would retire {result['retire_live']} live cards and "
+              f"activate {result['activate_draft_archetyped']} draft archetyped cards")
+        print(f"  keeping {result['kept_live_uncovered_area']} live cards whose area no archetype covers")
+        print(f"  covered areas: {', '.join(result['covered_areas'])}")
+
+
+def reconcile(args, con) -> None:
+    """Trim each topic's surplus archetypes and write its shortfall."""
+    from .cards import reconcile as rc
+    from .llm import LLM
+
+    llm = LLM(con, run_id=args.run_id) if args.run_id else None
+    written, dropped, refused = rc.run(con, only=args.topics or None, tier=args.tier,
+                                      llm=llm, dry_run=not args.apply)
+    if args.apply:
+        print(f"wrote {written}, trimmed {dropped}, refused {refused}")
+
+
+def wellformed(args, con) -> None:
+    """Audit the archetyped corpus against the registry's answer contract, and
+    optionally reject what fails so the repair pass rewrites it.
+
+    Free: no model call. This is the check that did not exist for nine of the ten
+    primitives during the first full run, which is how 241 unanswerable cards
+    reached the review pack.
+    """
+    import collections
+    import json
+
+    from .cards import wellformed as wf
+
+    rows = con.execute(
+        """select id, archetype, format, difficulty, options, picked, constraints, pairs,
+                  value, tolerance, why_step, key_points
+           from cards where archetype is not null and status = 'draft' order by id"""
+    ).fetchall()
+
+    loads = lambda v: json.loads(v) if v else None
+    reasons: collections.Counter[str] = collections.Counter()
+    by_primitive: collections.Counter[str] = collections.Counter()
+    failed: list[tuple[str, str]] = []
+    for row in rows:
+        card = types.SimpleNamespace(
+            id=row[0], archetype=row[1], format=row[2], difficulty=row[3],
+            options=loads(row[4]), picked=loads(row[5]), constraints=loads(row[6]),
+            pairs=loads(row[7]), value=row[8], tolerance=row[9], why_step=loads(row[10]),
+            # Without this a compose card has no rubric to check and the audit
+            # reports every one of them as missing its key points.
+            key_points=loads(row[11]))
+        if found := wf.problems(card):
+            failed.append((row[0], found[0]))
+            by_primitive[row[2]] += 1
+            for message in found:
+                reasons[message.split(",")[0][:70]] += 1
+
+    print(f"{len(rows)} archetyped draft cards, {len(failed)} not well formed "
+          f"({100 * len(failed) / max(len(rows), 1):.1f}%), {len(rows) - len(failed)} clean")
+    print("\nby primitive:")
+    for primitive, n in by_primitive.most_common():
+        print(f"  {primitive:14} {n:5}")
+    print("\nby reason:")
+    for reason, n in reasons.most_common(25):
+        print(f"  {n:5}  {reason}")
+
+    if not args.apply:
+        print(f"\ndry run: {len(failed)} cards would be marked rejected. Re-run with --apply.")
+        return
+    con.executemany(
+        "update cards set status = 'rejected', kept = false, reject_reason = ? where id = ?",
+        [[f"not well formed: {reason}", card_id] for card_id, reason in failed],
+    )
+    print(f"\nmarked {len(failed)} cards rejected; run card-fix to rewrite them.")
+
+
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "status": status, "trial": trial, "gate2": gate2}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "swap": swap, "reconcile": reconcile, "wellformed": wellformed, "status": status, "trial": trial, "gate2": gate2}
 
 
 def run(name: str, args) -> None:

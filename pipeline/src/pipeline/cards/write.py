@@ -19,7 +19,7 @@ The answer contract is the four shapes from `archetypes.json`:
 - ordered  (order, assemble)                      -> `constraints`: [before, after] pairs
 - mapping  (match, bucket, claim_grid)            -> `pairs`: [left, right] pairs
 - number   (numeric)                              -> `value` + `tolerance`
-- none     (self_rate)                            -> no answer columns
+- none     (self_rate, compose)                   -> no answer columns
 
 `options` carries the items the reader sees, in the canonical per-shape encoding
 from `web/src/lib/feed/options.ts`; `constraints` and `pairs` are indices into
@@ -83,6 +83,19 @@ If this topic genuinely has no natural card of this archetype, return `refused` 
 # `options` carries the display items in the canonical shape the app renders
 # (web/src/lib/feed/options.ts), so a list-shaped card stores a string[] and a
 # match/bucket/assemble/grid card stores its object.
+def _limit_lines(primitive: str) -> str:
+    """The registry's item-count limits for a primitive, in words the writer can
+    act on. Reads `archetypes.json` so the prompt cannot drift from the gate."""
+    fields = archetypes.registry().limits.get(primitive, {})
+    # `options` is what the column is called, not what the writer is filling in.
+    names = {"options": "entries in `options`", "keyPoints": "`key_points`"}
+    parts = []
+    for field, (low, high) in fields.items():
+        name = names.get(field, f"`{field}`")
+        parts.append(f"exactly {low} {name}" if low == high else f"{low} to {high} {name}")
+    return ", ".join(parts)
+
+
 PRIMITIVE_INSTRUCTIONS = {
     "pick_one": (
         "PICK ONE. Ask a question with exactly one right answer. Put the 4 answer choices in "
@@ -129,6 +142,20 @@ PRIMITIVE_INSTRUCTIONS = {
     "self_rate": (
         "SELF-RATE (flash). Name one term or fact and ask the reader to self-rate knew-it/"
         "didn't. `answer` is the one-sentence fact. Leave `options`, `picked`, `constraints`, "
+        "`pairs`, `value` and `tolerance` empty."
+    ),
+    "compose": (
+        "COMPOSE. The reader writes their own short answer - 2 to 3 sentences, no more - and it "
+        "is marked against `key_points`, so those are the rubric rather than a summary. Ask for "
+        "something a reader can answer about their OWN experience or their own wording; never ask "
+        "for a fact with one right phrasing, because a short written answer is the wrong screen "
+        "for that. `prompt` states what the answer must contain, in the reader's terms (for "
+        "example 'name the situation, what you did, and the result, in three sentences'). "
+        "`key_points` are 3 or 4 short, independently checkable requirements, each one a thing "
+        "the answer either does or does not do - 'states a specific measurable result', 'says "
+        "what the candidate personally did rather than the team' - and never a matter of taste. "
+        "`answer` is a model answer of the same length, which the reader sees afterwards as an "
+        "example rather than as the right answer. Leave `options`, `picked`, `constraints`, "
         "`pairs`, `value` and `tolerance` empty."
     ),
     "assemble": (
@@ -267,6 +294,12 @@ class WriteResult(BaseModel):
 
 def _user(topic: dict, lesson_md: str, slot: CardSlot, arch: archetypes.Archetype, hard_material: str) -> str:
     instruction = PRIMITIVE_INSTRUCTIONS[slot.primitive]
+    # The item-count limits, stated rather than discovered. They are enforced by
+    # `wellformed` either way, but a writer that is not told them produces cards
+    # the gate rejects and the repair pass pays to rewrite: a one-topic trial
+    # returned two four-bucket cards against a cap of three.
+    if limits := _limit_lines(slot.primitive):
+        instruction = f"{instruction}\n\nHARD LIMITS for this primitive, not preferences: {limits}."
     # The lesson is the one stable prefix across a topic's cards, so it goes
     # first. DeepSeek context-caches the prompt prefix, and putting the
     # per-card variable content (topic, archetype, primitive, difficulty,
