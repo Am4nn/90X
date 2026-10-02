@@ -7,8 +7,10 @@ from pipeline.cards import archetypes
 
 def test_the_catalogue_parses():
     reg = archetypes.registry()
-    # 47 at first release, plus the nine that ai, lld and behavioral needed.
-    assert len(reg.archetypes) == 56
+    # 47 at first release, plus the nine ai, lld and behavioral needed, minus
+    # star-parts: the blind gate rejected every card of it because matching
+    # Situation/Task/Action/Result to their own descriptions needs no knowledge.
+    assert len(reg.archetypes) == 55
     ids = [a.id for a in reg.archetypes]
     assert len(ids) == len(set(ids)), "archetype ids must be unique"
     assert all(set(a.primitives) <= set(reg.shapes) for a in reg.archetypes), \
@@ -50,7 +52,7 @@ def test_the_new_areas_got_the_archetypes_meant_for_them():
     assert not {"tap-the-bug", "fill-code-blank", "trace-the-value", "read-query-plan"} & ai
 
     behavioral = {a.id for a in archetypes.eligible("behavioral")}
-    assert {"your-story", "strongest-answer", "star-parts", "answer-critique"} <= behavioral
+    assert {"your-story", "strongest-answer", "answer-critique"} <= behavioral
     # Behavioural questions are about the shape of an answer, never about code.
     assert not {"complexity", "tap-the-bug", "estimate", "fill-code-blank"} & behavioral
 
