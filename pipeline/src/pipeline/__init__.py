@@ -77,6 +77,8 @@ def main() -> None:
     rb.add_argument("--dry-run", action="store_true", help="show the batches without changing anything")
     sw = sub.add_parser("swap", help="flip the Feed v2 corpus live (new draft -> live, old live -> retired)")
     sw.add_argument("--apply", action="store_true", help="run the flip (default: dry-run only)")
+    wf = sub.add_parser("wellformed", help="audit archetyped cards against the answer contract (free, no model)")
+    wf.add_argument("--apply", action="store_true", help="mark failures rejected so card-fix rewrites them")
     sub.add_parser("status", help="counts and LLM spend in staging")
 
     args = parser.parse_args()

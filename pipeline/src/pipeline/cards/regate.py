@@ -28,9 +28,17 @@ class Draft:
 
     def __init__(self, row) -> None:
         (self.id, self.topic_slug, self.format, self.difficulty, self.prompt,
-         options, self.answer, key_points, self.status) = row
+         options, self.answer, key_points, self.status, self.archetype,
+         picked, constraints, pairs, self.value, self.tolerance, why_step) = row
         self.options = json.loads(options) if options else []
         self.key_points = json.loads(key_points or "[]")
+        # The answer columns, not just the prompt: `wellformed` judges whether a
+        # reader could give the stored answer at all, and it cannot do that from
+        # the options alone.
+        self.picked = json.loads(picked) if picked else None
+        self.constraints = json.loads(constraints) if constraints else None
+        self.pairs = json.loads(pairs) if pairs else None
+        self.why_step = json.loads(why_step) if why_step else None
 
 
 def topics_with_cards(con, only: list[str] | None = None) -> list[dict]:
@@ -52,7 +60,8 @@ def cards_of(con, slug: str) -> list[Draft]:
     already replaced, not a candidate.
     """
     rows = con.execute(
-        """select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points, status
+        """select id, topic_slug, format, difficulty, prompt_md, options, answer_md, key_points, status,
+                  archetype, picked, constraints, pairs, value, tolerance, why_step
            from cards where source = 'lesson' and topic_slug = ? and status in ('draft', 'rejected')
            order by status, id""",
         [slug],

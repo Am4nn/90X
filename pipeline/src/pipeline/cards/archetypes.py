@@ -70,6 +70,7 @@ class Registry:
     archetypes: tuple[Archetype, ...]
     shapes: dict[str, str | None]
     options_shapes: dict[str, str | None]
+    limits: dict[str, dict[str, tuple[int, int]]]
 
 
 @lru_cache(maxsize=1)
@@ -77,6 +78,10 @@ def registry() -> Registry:
     data = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     shapes = {p["id"]: p.get("shape") for p in data["primitives"]}
     options_shapes = {p["id"]: p.get("optionsShape") for p in data["primitives"]}
+    limits = {
+        primitive: {field: (int(lo), int(hi)) for field, (lo, hi) in fields.items()}
+        for primitive, fields in data.get("limits", {}).items()
+    }
     archetypes = tuple(
         Archetype(
             id=a["id"],
@@ -88,7 +93,15 @@ def registry() -> Registry:
         )
         for a in data["archetypes"]
     )
-    return Registry(archetypes=archetypes, shapes=shapes, options_shapes=options_shapes)
+    return Registry(archetypes=archetypes, shapes=shapes, options_shapes=options_shapes, limits=limits)
+
+
+def limit_for(primitive: str, field: str) -> tuple[int, int] | None:
+    """The inclusive item-count range for a primitive's field, or None when the
+    registry sets no limit. `wellformed` is the only caller that enforces these;
+    keeping the numbers in `archetypes.json` is what stops the cap from living in
+    a comment the writer never reads."""
+    return registry().limits.get(primitive, {}).get(field)
 
 
 def by_id(archetype_id: str) -> Archetype:
@@ -183,11 +196,21 @@ def difficulty_for(archetype: Archetype, index: int) -> str:
     return target if target in archetype.difficulties else archetype.difficulties[0]
 
 
-def budget(topic: dict) -> list[CardSlot]:
+def budget(topic: dict, start: int = 0) -> list[CardSlot]:
     """A topic's card slots: count proportional to importance, spread equally
     (round-robin) across the archetypes eligible for its domain — interleaved so
     the primitives, not just pick_one, are represented. Returns [] for a domain
-    the catalogue does not cover."""
+    the catalogue does not cover.
+
+    `start` is where the round-robin begins, and it is the difference between an
+    even corpus and a lopsided one. A topic gets ~14 slots while its area has ~30
+    eligible archetypes, so a round-robin that always starts at 0 hands every
+    topic the same opening stretch of the order and never reaches the tail: the
+    first full run produced 173 cards for `flash` and 1 for `pattern-signal`,
+    with six archetypes never written at all. The caller passes a running total
+    of the slots already issued for this area, so the rotation continues across
+    topics and every archetype takes its turn.
+    """
     area = topic.get("domain", "")
     archetypes = _spread(eligible(area))
     if not archetypes:
@@ -195,7 +218,7 @@ def budget(topic: dict) -> list[CardSlot]:
     n = count_for(topic.get("importance") or 0.5)
     seen: dict[str, int] = {}
     slots: list[CardSlot] = []
-    for i in range(n):
+    for i in range(start, start + n):
         a = archetypes[i % len(archetypes)]
         occurrence = seen.get(a.id, 0)
         seen[a.id] = occurrence + 1
