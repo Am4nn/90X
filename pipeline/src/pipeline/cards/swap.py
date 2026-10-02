@@ -40,7 +40,10 @@ def flip(pg: psycopg.Connection, dry_run: bool = True) -> dict:
     cur = pg.cursor()
     cur.execute(f"select count(*) from public.cards where {where_retire}", (areas,))
     retiring = cur.fetchone()[0]
-    cur.execute("select count(*) from public.cards where status = 'draft' and archetype is not null")
+    cur.execute(
+        """select count(*) from public.cards
+           where archetype is not null and status in ('draft', 'live', 'retired')"""
+    )
     activating = cur.fetchone()[0]
     cur.execute(
         """select count(*) from public.cards where status = 'live' and topic_slug in (
@@ -54,7 +57,16 @@ def flip(pg: psycopg.Connection, dry_run: bool = True) -> dict:
         return counts
     with pg.transaction():
         cur.execute(f"update public.cards set status = 'retired' where {where_retire}", (areas,))
-        cur.execute("update public.cards set status = 'live' where status = 'draft' and archetype is not null")
+        # `retired` and `live` as well as `draft`: a regenerated card whose question
+        # did not change keeps its id, and publish leaves `status` alone, so it
+        # arrives already live. The retire above stands it down, and an activation
+        # that looked only at `draft` would leave it retired - the new corpus one
+        # card short with no error anywhere. Measured on the real publish: one card
+        # in 4,666, which the dry run reported as 4,665 to activate.
+        cur.execute(
+            """update public.cards set status = 'live'
+               where archetype is not null and status in ('draft', 'live', 'retired')"""
+        )
     return {"retired": retiring, "activated": activating, "kept_live_uncovered_area": exempt}
 
 
