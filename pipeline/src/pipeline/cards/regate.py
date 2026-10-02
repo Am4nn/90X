@@ -105,7 +105,7 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
     # overwrote the repaired row, erasing the gate's objection.
     con.execute(
         "update cards set id = ?, status = 'repaired', kept = false where id = ?",
-        [card_id(topic["slug"], old.prompt, "repaired"), old.id],
+        [card_id(topic["slug"], old.prompt, f"repaired:{old.id}"), old.id],
     )
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     con.execute(
