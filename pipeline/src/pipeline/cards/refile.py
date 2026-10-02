@@ -104,27 +104,40 @@ def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
     """Move what can be moved. Returns counts; the caller re-gates afterwards."""
     from types import SimpleNamespace
 
-    from ..llm import BudgetExceeded, LLMError, LLM
+    from ..llm import LLM, BudgetExceeded
 
     llm = llm or LLM(con)
     todo = pending(con)
     moved: dict[str, str] = {}
     no_candidates = unchanged = failed = 0
+    considered = 0
+    stopped = False
 
     for row in todo:
         card = SimpleNamespace(**row)
         options = candidates(card, row["area"])
+        considered += 1
         if not options:
             no_candidates += 1
             continue
         try:
             chosen = choose(llm, card, options, tier=tier)
         except BudgetExceeded as e:
+            # Count only what was actually looked at, and say the run is short.
+            # Reporting the full pending count as `considered` made an early stop
+            # read as a complete run, which is the one thing a caller deciding
+            # whether to re-run needs to know.
+            considered -= 1
+            stopped = True
             print(f"  stopping: {e}", flush=True)
             break
-        except LLMError as e:
+        except Exception as e:  # noqa: BLE001 - any provider failure is this card's
+            # Broad on purpose. An exception from the model client that is not an
+            # LLMError used to escape the loop entirely, so every move already
+            # chosen was discarded before the write below and no later card was
+            # tried. One card's failure should cost that card, not the pass.
             failed += 1
-            print(f"  {row['id'][:8]}: FAILED {e}", flush=True)
+            print(f"  {row['id'][:8]}: FAILED {type(e).__name__}: {e}", flush=True)
             continue
         if chosen is None:
             unchanged += 1
@@ -141,10 +154,12 @@ def run(con, llm=None, tier: str = "fast", dry_run: bool = True) -> dict:
         )
 
     return {
-        "considered": len(todo),
+        "considered": considered,
+        "pending": len(todo),
         "moved": len(moved),
         "no_candidate_archetype": no_candidates,
         "nothing_fitted": unchanged,
         "failed": failed,
+        "stopped_early": stopped,
         "dry_run": dry_run,
     }

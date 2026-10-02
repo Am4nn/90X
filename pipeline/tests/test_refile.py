@@ -84,3 +84,60 @@ def test_every_candidate_offers_an_intent_to_choose_by():
     nothing to match the question against."""
     for a in refile.candidates(Card(), "lld"):
         assert a.intent, f"{a.id} has no intent"
+
+
+def test_one_cards_provider_failure_does_not_discard_the_rest(tmp_path):
+    """A model-client exception used to escape the loop before the write, so every
+    move already chosen was lost and no later card was tried."""
+    from pipeline import staging
+    from pipeline.cards import refile as rf
+
+    class Flaky:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json(self, system, user, schema, tier="fast", purpose=""):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("provider exploded")
+            return rf.Choice(archetype=None, reason="nothing fits")
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into topics (slug, domain, name, sort)
+                   values ('zz-t', 'lld', 'T', 0)""")
+    for n in (1, 2):
+        con.execute(
+            """insert into cards (id, topic_slug, format, archetype, difficulty, prompt_md,
+                   answer_md, status, kept, reject_reason, source)
+               values (?, 'zz-t', 'pick_one', 'output-prediction', 'Medium', ?, 'a',
+                   'rejected', false, 'wrong archetype: no', 'lesson')""",
+            [f"id-{n}", f"Question {n}?"],
+        )
+
+    result = rf.run(con, llm=Flaky(), dry_run=True)
+    assert result["failed"] == 1, result
+    assert result["considered"] == 2, "the second card must still be tried"
+    assert result["stopped_early"] is False, result
+
+
+def test_a_budget_stop_is_reported_and_not_counted_as_considered(tmp_path):
+    from pipeline import staging
+    from pipeline.llm import BudgetExceeded
+    from pipeline.cards import refile as rf
+
+    class Broke:
+        def complete_json(self, *a, **k):
+            raise BudgetExceeded("cap reached")
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("""insert into topics (slug, domain, name, sort) values ('zz-t', 'lld', 'T', 0)""")
+    con.execute(
+        """insert into cards (id, topic_slug, format, archetype, difficulty, prompt_md,
+               answer_md, status, kept, reject_reason, source)
+           values ('id-1', 'zz-t', 'pick_one', 'output-prediction', 'Medium', 'Q?', 'a',
+               'rejected', false, 'wrong archetype: no', 'lesson')"""
+    )
+    result = rf.run(con, llm=Broke(), dry_run=True)
+    assert result["stopped_early"] is True, result
+    assert result["considered"] == 0, "a card stopped on cannot count as considered"
+    assert result["pending"] == 1, result

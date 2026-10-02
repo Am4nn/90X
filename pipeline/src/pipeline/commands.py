@@ -322,8 +322,10 @@ def refile(args, con) -> None:
     from .cards import refile as rf
 
     result = rf.run(con, tier=args.tier, dry_run=not args.apply)
-    for k in ("considered", "moved", "no_candidate_archetype", "nothing_fitted", "failed"):
+    for k in ("pending", "considered", "moved", "no_candidate_archetype", "nothing_fitted", "failed"):
         print(f"  {k:24} {result[k]}")
+    if result["stopped_early"]:
+        print(f"  STOPPED EARLY on the spend cap: {result['pending'] - result['considered']} cards never looked at")
     if args.apply:
         print("moved cards are back in draft; run card-regate to confirm they fit now")
     else:
