@@ -192,8 +192,15 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
             if replacements:
                 passed = gate.review(llm, topic, replacements)
                 still_bad = {id(c) for c, _ in gate.judge(replacements, passed)}
-                blind_passed = blind_gate.review(llm, replacements, tier=tier)
-                still_bad |= {id(c) for c, _ in blind_gate.judge(replacements, blind_passed)}
+                # Held to the same bar as the card it replaces, not a higher one.
+                # This ignored `blind` and always ran: under --no-blind a
+                # replacement had to clear a gate the original was never tested
+                # against, so every rewrite was discarded. Eight topics reported
+                # "0 rewritten" and the rewrite pass - the most expensive call in
+                # the run, because it sends the whole lesson - bought nothing.
+                if blind:
+                    blind_passed = blind_gate.review(llm, replacements, tier=tier)
+                    still_bad |= {id(c) for c, _ in blind_gate.judge(replacements, blind_passed)}
                 confidence.update(gate.confidence_by_card(replacements, passed))
                 # Positional pairing is what the rewrite prompt asks for; when
                 # the counts disagree there is no honest mapping, so nothing is

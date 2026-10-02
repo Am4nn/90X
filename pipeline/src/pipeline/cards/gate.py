@@ -102,17 +102,21 @@ class Verdict(BaseModel):
     index: int = Field(description="the card's position in the list, starting at 0")
     answerable: bool = Field(default=True, description="a competent engineer could answer it as asked")
     fits_format: bool = Field(default=True, description="the honest answer fits the format given")
-    # No default of True. A safety check that treats an omitted field as "fine"
-    # fails open: the model simply not answering this question would pass every
-    # mismatch silently, which is the opposite of what the check is for. None
-    # means "did not answer", and for a card that has an archetype that is a
-    # rejection, not a pass.
-    fits_archetype: bool | None = Field(default=None, description="the question asks what its archetype names")
+    # Nullable, but required: no default at all. A safety check that treats an
+    # omitted field as "fine" fails open - the model simply not answering would
+    # pass every mismatch silently, the opposite of what the check is for. But a
+    # default of None fails closed on a reply that was never really given, and
+    # that is just as wrong: a model that dropped these fields for one batch of
+    # `trees` cards had 18 fair cards rejected as "the gate did not rule", and
+    # nothing asked it again. With no default, an absent field is a schema
+    # violation, so the request is retried and the question actually gets asked;
+    # an explicit null still means "I will not rule", which is still a rejection.
+    fits_archetype: bool | None = Field(description="the question asks what its archetype names")
     premise_holds: bool | None = Field(
-        default=None, description="the question's own stated assumptions can all be true at once"
+        description="the question's own stated assumptions can all be true at once"
     )
     one_answer: bool | None = Field(
-        default=None, description="the question pins down exactly one defensible answer"
+        description="the question pins down exactly one defensible answer"
     )
     gradable: bool = Field(default=True, description="it can be marked the way this format is marked")
     reason: str = Field(default="", description="one short sentence for whichever field is false")
