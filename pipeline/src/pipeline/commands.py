@@ -331,7 +331,7 @@ def wellformed(args, con) -> None:
 
     rows = con.execute(
         """select id, archetype, format, difficulty, options, picked, constraints, pairs,
-                  value, tolerance, why_step
+                  value, tolerance, why_step, key_points
            from cards where archetype is not null and status = 'draft' order by id"""
     ).fetchall()
 
@@ -343,7 +343,10 @@ def wellformed(args, con) -> None:
         card = types.SimpleNamespace(
             id=row[0], archetype=row[1], format=row[2], difficulty=row[3],
             options=loads(row[4]), picked=loads(row[5]), constraints=loads(row[6]),
-            pairs=loads(row[7]), value=row[8], tolerance=row[9], why_step=loads(row[10]))
+            pairs=loads(row[7]), value=row[8], tolerance=row[9], why_step=loads(row[10]),
+            # Without this a compose card has no rubric to check and the audit
+            # reports every one of them as missing its key points.
+            key_points=loads(row[11]))
         if found := wf.problems(card):
             failed.append((row[0], found[0]))
             by_primitive[row[2]] += 1
