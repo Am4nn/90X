@@ -68,6 +68,31 @@ def topics_with_lessons(con, only: list[str] | None, limit: int | None, redo: bo
     return out[:limit] if limit else out
 
 
+def slot_starts(con) -> dict[str, int]:
+    """Where each topic's archetype round-robin begins, counted per area.
+
+    A topic gets ~14 slots while its area has ~30 eligible archetypes, so the
+    rotation has to continue from one topic to the next or the tail of the order
+    is never reached. The running total is computed over *every* topic with a
+    lesson, in one canonical order, rather than over the subset this run happens
+    to be writing: a resumed run, an `--only` run and a full run must all assign
+    a topic the same archetypes, or two partial runs produce a corpus neither
+    would have produced alone.
+    """
+    rows = con.execute(
+        """select t.slug, t.domain, t.importance
+           from lessons l join topics t on t.slug = l.topic_slug
+           where l.status = 'ok'
+           order by t.importance desc, t.slug"""
+    ).fetchall()
+    starts: dict[str, int] = {}
+    running: dict[str, int] = {}
+    for slug, domain, importance in rows:
+        starts[slug] = running.get(domain, 0)
+        running[domain] = starts[slug] + archetypes.count_for(importance or 0.5)
+    return starts
+
+
 def hard_sources(con, slug: str, domain: str) -> dict:
     """The problem statements and pattern tricks a Hard card may draw on.
 
@@ -188,6 +213,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     (cards_written, slots_refused)."""
     llm = llm or LLM(con)
     todo = topics_with_lessons(con, only, limit, redo)
+    starts = slot_starts(con)
     started, before = time.time(), spend_usd(con, getattr(llm, "run_id", None))
     db = lock_for(con)
     written_total = refused_total = done = 0
@@ -197,7 +223,7 @@ def run(con, only: list[str] | None = None, limit: int | None = None, redo: bool
     def work(topic: dict):
         with db:
             hard = hard_sources(con, topic["slug"], topic["domain"])
-        slots = archetypes.budget(topic)
+        slots = archetypes.budget(topic, starts.get(topic["slug"], 0))
         if not slots:
             return topic, [], [], hard
         cards, refused = write_topic(llm, topic, topic["lesson"], slots, hard_text(hard), tier)

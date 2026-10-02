@@ -141,6 +141,17 @@ def _prepare(value, column):
     return value
 
 
+def _json(value):
+    """Serialize a staging JSON string for a jsonb upsert, or None.
+
+    Staging stores the Feed v2 answer columns (`picked`, `constraints`,
+    `pairs`, `why_step`) as JSON strings, the same way `options` is stored;
+    this round-trips one for a `%s::jsonb` cast the way `_publish_cards` already
+    does for its other JSON columns.
+    """
+    return None if value is None else json.dumps(json.loads(value))
+
+
 def publish(con, pg: psycopg.Connection, dry_run: bool = False, force: bool = False) -> dict:
     counts = {}
     with pg.transaction():
@@ -195,16 +206,22 @@ def _publish_cards(con, cur) -> dict:
         # sorts ascending, so a card that arrives without one looks safest.
         cards = con.execute(
             """select id, topic_slug, problem_slug, format, difficulty, prompt_md, options, answer_md,
-                      key_points, source_refs, quality, risk from cards where batch_id = ? and kept""", [bid]).fetchall()
+                      key_points, source_refs, quality, risk, archetype, picked, constraints, pairs,
+                      value, tolerance, why_step from cards where batch_id = ? and kept""", [bid]).fetchall()
         cur.executemany(
             """insert into public.cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md,
-                   options, answer_md, key_points, source_refs, quality, risk, status)
-               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, 'draft')
+                   options, answer_md, key_points, source_refs, quality, risk, archetype, picked,
+                   constraints, pairs, value, tolerance, why_step, status)
+               values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s,
+                       %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s::jsonb, 'draft')
                on conflict (id) do update set
-                 batch_id = excluded.batch_id, risk = excluded.risk""",
+                 batch_id = excluded.batch_id, risk = excluded.risk, archetype = excluded.archetype,
+                 picked = excluded.picked, constraints = excluded.constraints, pairs = excluded.pairs,
+                 value = excluded.value, tolerance = excluded.tolerance, why_step = excluded.why_step""",
             [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
               json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")),
-              json.dumps(json.loads(c[10] or "{}")), c[11])
+              json.dumps(json.loads(c[10] or "{}")), c[11],
+              c[12], _json(c[13]), _json(c[14]), _json(c[15]), c[16], c[17], _json(c[18]))
              for c in cards])
         n_cards += len(cards)
     return {"card_batches": (len(batches), 0), "cards": (n_cards, 0)}
@@ -229,37 +246,61 @@ def staged_card_ids(con) -> list[str]:
 
 
 def _retire_superseded_cards(con, cur, force: bool) -> int:
-    """Delete published cards that staging no longer has.
+    """Delete **draft** cards that staging no longer has. Never a live one.
 
-    card_reviews, card_state, card_flags and batch_review_items all cascade
-    from a card, so removing one takes every answer, interval and flag with
-    it. That is free while the Feed is unused and irreversible afterwards, so
-    the rule lives here rather than in whoever remembers to check.
+    This used to delete every published card staging had dropped, on the premise
+    that doing so was "free while the Feed is unused". That premise expired: the
+    Feed has answers and spaced-repetition schedules in it now, and card_reviews,
+    card_state, card_flags and batch_review_items all cascade from a card.
+
+    Two reasons the scope is drafts alone, not one:
+
+    1. A card a reader could have seen is retired, not deleted - `status` goes to
+       `retired` and `card_state` stays, so nobody's readiness dial drops on
+       release day (DECISIONS round 4). Retiring is `cards/swap.py`'s job.
+    2. Publish must not retire them either. Between publish and the flip the old
+       corpus is the only thing live; standing it down here would leave the Feed
+       with nothing to serve until the swap ran, which is the shape of the
+       2026-09-29 outage.
+
+    So a regenerated corpus leaves every live card in place, and the flip - one
+    statement, after the deploy - is what stands the old ones down. Without this
+    scope, publishing a regenerated corpus raises `StudyHistoryAtRisk` over the
+    entire old corpus and the whole transaction rolls back, which is to say
+    production step 3 could not complete at all.
     """
     staged = staged_card_ids(con)
     cur.execute("create temp table _staged_cards (id uuid) on commit drop")
     if staged:
         cur.executemany("insert into _staged_cards values (%s)", [[i] for i in staged])
-    # What a person cannot get back: their answers and the spaced-repetition
-    # schedule those answers earned. A card's flags and its admin batch verdict
-    # cascade too, but they are bookkeeping about the card, meaningless once
-    # the card is gone, and blocking on them would mean every retirement needs
-    # --force, which is how a guard stops being read.
+    # Still guarded, now where it can actually fire: a draft card is invisible to
+    # readers, but a card that was live earlier and was set back to draft by hand
+    # can carry answers. What a person cannot get back is those answers and the
+    # schedule they earned. Flags and batch verdicts cascade too and are not
+    # guarded - they are bookkeeping about the card, meaningless once it is gone,
+    # and blocking on them would mean every publish needs --force, which is how a
+    # guard stops being read.
     at_risk = {}
     for table, label in (("card_reviews", "answers"), ("card_state", "review schedules")):
         cur.execute(
             f"""select count(*) from public.{table} t
-                where not exists (select 1 from _staged_cards s where s.id = t.card_id)"""
+                join public.cards c on c.id = t.card_id
+                where c.status = 'draft'
+                  and not exists (select 1 from _staged_cards s where s.id = t.card_id)"""
         )
         if found := cur.fetchone()[0]:
             at_risk[label] = found
     if at_risk and not force:
         detail = ", ".join(f"{n} {label}" for label, n in at_risk.items())
         raise StudyHistoryAtRisk(
-            f"{detail} belong to cards staging no longer has. Deleting them would erase "
+            f"{detail} belong to draft cards staging no longer has. Deleting them would erase "
             "that history. Re-run with force=True only if you mean it."
         )
-    cur.execute("delete from public.cards c where not exists (select 1 from _staged_cards s where s.id = c.id)")
+    cur.execute(
+        """delete from public.cards c
+           where c.status = 'draft'
+             and not exists (select 1 from _staged_cards s where s.id = c.id)"""
+    )
     return cur.rowcount
 
 

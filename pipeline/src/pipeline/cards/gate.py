@@ -49,7 +49,7 @@ import re
 from pydantic import BaseModel, Field
 
 from ..lessons.check import REFERS_TO_SOURCE
-from . import structure
+from . import structure, wellformed
 
 FENCED_SNIPPET = re.compile(r"```.*?```", re.DOTALL)
 MCQ_OPTIONS = 4
@@ -178,6 +178,14 @@ def judge(cards: list, result: GateResult) -> list[tuple[object, str]]:
         # the blind gate cannot see. Free and deterministic.
         if probs := structure.problems(card):
             rejected.append((card, f"guessable by shape: {probs[0]}"))
+            continue
+        # Well-formedness runs here too, and covers every primitive rather than
+        # just pick_one: item counts against the registry's limits, repeated
+        # options that make two indices equally correct, a mapping the answer
+        # screen cannot express, constraints that cycle. Also free, and the
+        # first full run shipped 241 cards that fail it.
+        if probs := wellformed.problems(card):
+            rejected.append((card, f"not well formed: {probs[0]}"))
             continue
         if m := REFERS_TO_SOURCE.search(card.prompt):
             rejected.append((card, f"refers to unseen material: {m.group(0)!r}"))
