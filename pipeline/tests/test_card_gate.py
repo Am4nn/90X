@@ -13,6 +13,17 @@ class FakeCard:
     options: list[str] = field(default_factory=list)
 
 
+def ruled(**kw):
+    """A Verdict with the three nullable fields stated.
+
+    `fits_archetype`, `premise_holds` and `one_answer` are required and have no
+    default, so that a model reply which leaves one out is a schema violation and
+    gets retried rather than being read as a rejection. Tests that predate those
+    fields mean "the model ruled, and said fine"; this says it once.
+    """
+    return Verdict(**{"fits_archetype": True, "premise_holds": True, "one_answer": True, **kw})
+
+
 def gate(cards, verdicts):
     return judge(cards, GateResult(verdicts=verdicts))
 
@@ -21,7 +32,7 @@ def test_rejects_a_card_that_needs_the_source():
     """The card Aman found: it quotes a solution the reader never sees."""
     card = FakeCard("In the reference solution, after removing the run starting at x up to y-1, "
                     "it sets d[x] = d[y] + y - x. What invariant makes this correct?")
-    rejected = gate([card], [Verdict(index=0)])
+    rejected = gate([card], [ruled(index=0)])
     assert len(rejected) == 1
     assert "unseen material" in rejected[0][1], rejected
     assert "reference solution" in rejected[0][1]
@@ -29,27 +40,27 @@ def test_rejects_a_card_that_needs_the_source():
 
 def test_rejects_what_the_reviewer_calls_unanswerable():
     card = FakeCard("What does the diagram show?")
-    rejected = gate([card], [Verdict(index=0, answerable=False, reason="no diagram is present")])
+    rejected = gate([card], [ruled(index=0, answerable=False, reason="no diagram is present")])
     assert rejected[0][1].startswith("not answerable")
 
 
 def test_rejects_a_typed_card_that_should_be_multiple_choice():
     """Aman's second example: the honest answer is a list to enumerate."""
     card = FakeCard("Along which dimensions can content negotiation vary the representation of a resource?")
-    rejected = gate([card], [Verdict(index=0, fits_format=False, reason="the answer is a list")])
+    rejected = gate([card], [ruled(index=0, fits_format=False, reason="the answer is a list")])
     assert rejected[0][1].startswith("wrong_format")
 
 
 def test_keeps_a_fair_card():
     card = FakeCard("Why does a sliding window run in O(n) even with a nested loop?")
-    assert gate([card], [Verdict(index=0)]) == []
+    assert gate([card], [ruled(index=0)]) == []
 
 
 def test_mcq_where_a_competent_answer_disagrees_is_rejected():
     card = FakeCard("Which is true of TCP?", answer="It is connection-oriented", format="mcq",
                     options=["It is connectionless", "It is connection-oriented",
                              "It never retransmits", "It has no ordering guarantee"])
-    rejected = gate([card], [Verdict(index=0, picked="It is connectionless")])
+    rejected = gate([card], [ruled(index=0, picked="It is connectionless")])
     assert "disagrees with the marked option" in rejected[0][1]
 
 
@@ -57,7 +68,7 @@ def test_mcq_agreement_is_kept():
     card = FakeCard("Which is true of TCP?", answer="It is connection-oriented", format="mcq",
                     options=["It is connectionless", "It is connection-oriented",
                              "It never retransmits", "It has no ordering guarantee"])
-    assert gate([card], [Verdict(index=0, picked=" It is connection-oriented ")]) == []
+    assert gate([card], [ruled(index=0, picked=" It is connection-oriented ")]) == []
 
 
 def test_a_card_the_reviewer_never_ruled_on_is_rejected():
@@ -65,7 +76,7 @@ def test_a_card_the_reviewer_never_ruled_on_is_rejected():
     checked. Rejected is not deleted: it goes through the repair pass and is
     gated again, so an omission costs a retry rather than a card."""
     cards = [FakeCard("Why is TCP reliable?"), FakeCard("Why is UDP fast?")]
-    rejected = gate(cards, [Verdict(index=0)])
+    rejected = gate(cards, [ruled(index=0)])
     assert len(rejected) == 1
     assert rejected[0][0].prompt == "Why is UDP fast?"
     assert "did not rule" in rejected[0][1]
@@ -180,7 +191,7 @@ def test_the_gate_cannot_reject_a_card_for_having_a_valid_format():
     """
     card = FakeCard("What is the exact output?\n```python\nprint(sorted({3,1,2}))\n```",
                     answer="[1, 2, 3]", format="output")
-    verdict = Verdict(index=0, fits_format=False,
+    verdict = ruled(index=0, fits_format=False,
                       reason="Format 'output' is not one of the allowed card formats (flash, typed, mcq).")
     assert gate([card], [verdict]) == []
 
@@ -189,7 +200,7 @@ def test_a_real_format_objection_still_rejects():
     """The guard must not swallow the objection it was built to allow."""
     card = FakeCard("What is the exact output?\n```python\nprint(time.time())\n```",
                     answer="1759000000.0", format="output")
-    rejected = gate([card], [Verdict(index=0, fits_format=False,
+    rejected = gate([card], [ruled(index=0, fits_format=False,
                                      reason="the snippet prints a timestamp, so the output changes")])
     assert "wrong_format" in rejected[0][1]
 
@@ -199,7 +210,7 @@ def test_an_answerable_card_in_the_wrong_format_reports_the_format():
     into one enum meant the reviewer had to choose, and the repair pass was
     told whichever it happened to pick."""
     card = FakeCard("Name the four transaction isolation levels.")
-    rejected = gate([card], [Verdict(index=0, answerable=True, fits_format=False,
+    rejected = gate([card], [ruled(index=0, answerable=True, fits_format=False,
                                      reason="the honest answer is a list to enumerate")])
     assert rejected[0][1].startswith("wrong_format")
 
@@ -208,7 +219,7 @@ def test_the_earliest_failure_is_the_one_reported():
     """A card that needs unseen material is a worse card than one in the wrong
     format, and the repair pass should be told the more fundamental thing."""
     card = FakeCard("In the reference solution, name the four isolation levels.")
-    rejected = gate([card], [Verdict(index=0, answerable=False, fits_format=False,
+    rejected = gate([card], [ruled(index=0, answerable=False, fits_format=False,
                                      reason="the answer is a list")])
     assert "unseen material" in rejected[0][1]
 
@@ -216,13 +227,13 @@ def test_the_earliest_failure_is_the_one_reported():
 def test_a_structurally_broken_card_is_caught_without_the_model():
     card = FakeCard("Which isolation level?", answer="Serializable", format="mcq",
                     options=["Read committed", "Serializable"])
-    rejected = gate([card], [Verdict(index=0)])
+    rejected = gate([card], [ruled(index=0)])
     assert "malformed" in rejected[0][1] and "4 options" in rejected[0][1]
 
 
 def test_an_output_card_must_show_its_snippet():
     card = FakeCard("What does the loop print?", answer="3", format="output")
-    rejected = gate([card], [Verdict(index=0)])
+    rejected = gate([card], [ruled(index=0)])
     assert "must show the snippet" in rejected[0][1]
 
 
@@ -235,7 +246,7 @@ def test_confidence_is_keyed_by_card_not_by_position():
     from pipeline.cards.gate import confidence_by_card
 
     cards = [FakeCard("a"), FakeCard("b"), FakeCard("c")]
-    result = GateResult(verdicts=[Verdict(index=0, confidence=0.2), Verdict(index=2, confidence=0.9)])
+    result = GateResult(verdicts=[ruled(index=0, confidence=0.2), ruled(index=2, confidence=0.9)])
     scores = confidence_by_card(cards, result)
     assert scores[id(cards[0])] == 0.2
     assert scores[id(cards[2])] == 0.9
@@ -247,7 +258,7 @@ def test_a_gradability_objection_is_never_suppressed():
     """The format-denial guard used to cover the gradable verdict too, so an
     ungradable card stayed publishable whenever the reason mentioned formats."""
     card = FakeCard("What is the exact output?\n```sql\nselect 1;\n```", answer="1", format="output")
-    rejected = gate([card], [Verdict(index=0, gradable=False,
+    rejected = gate([card], [ruled(index=0, gradable=False,
                                      reason="no standard plaintext format is valid for a SQL result set")])
     assert "not gradable" in rejected[0][1]
 
@@ -256,7 +267,7 @@ def test_a_real_format_objection_that_mentions_validity_still_rejects():
     """"this format is not valid for exact-match grading" is a genuine
     objection. A looser denial pattern swallowed it."""
     card = FakeCard("What is printed?\n```python\nprint(hash('a'))\n```", answer="x", format="output")
-    rejected = gate([card], [Verdict(index=0, fits_format=False,
+    rejected = gate([card], [ruled(index=0, fits_format=False,
                                      reason="this format is not valid for exact-match grading here")])
     assert "wrong_format" in rejected[0][1]
 
@@ -373,8 +384,8 @@ def test_a_question_that_does_not_match_its_archetype_is_rejected():
         picked=[1], constraints=None, pairs=None, value=None, tolerance=None, why_step=None,
     )
     result = gate.GateResult(verdicts=[
-        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_archetype=False,
-                     fits_format=True, gradable=True, confidence=0.9,
+        gate.Verdict(index=0, answerable=True, premise_holds=True, one_answer=True,
+                     fits_archetype=False, fits_format=True, gradable=True, confidence=0.9,
                      reason="asks about design principles, not output"),
     ])
     rejected = gate.judge([card], result)
@@ -395,7 +406,7 @@ def test_the_gate_is_told_which_archetype_it_is_judging():
     assert "archetype" not in legacy, legacy
 
 
-def test_an_omitted_archetype_verdict_rejects_rather_than_passes():
+def test_a_refusal_to_rule_on_archetype_verdict_rejects_rather_than_passes():
     """The check must fail closed.
 
     `fits_archetype` used to default to True, so a model that simply did not
@@ -414,9 +425,9 @@ def test_an_omitted_archetype_verdict_rejects_rather_than_passes():
     )
     # A verdict with every other field answered and this one absent.
     silent = gate.GateResult(verdicts=[
-        # premise_holds answered, fits_archetype not: isolates the archetype branch.
-        gate.Verdict(index=0, answerable=True, premise_holds=True, fits_format=True,
-                     gradable=True, confidence=0.9, reason="fine"),
+        # Every verdict before the archetype one answered: isolates that branch.
+        gate.Verdict(index=0, fits_archetype=None, answerable=True, premise_holds=True, one_answer=True,
+                     fits_format=True, gradable=True, confidence=0.9, reason="fine"),
     ])
     rejected = gate.judge([card], silent)
     assert len(rejected) == 1 and "wrong archetype" in rejected[0][1], rejected
@@ -447,7 +458,8 @@ def test_a_self_contradictory_premise_is_rejected():
         pairs=None, value=100000.0, tolerance=0.0, why_step=None,
     )
     result = gate.GateResult(verdicts=[
-        gate.Verdict(index=0, answerable=True, premise_holds=False, fits_archetype=True,
+        gate.Verdict(index=0, answerable=True, premise_holds=False, one_answer=True,
+                     fits_archetype=True,
                      fits_format=True, gradable=True, confidence=0.8,
                      reason="100,000 distinct bins cannot exist among 16"),
     ])
@@ -455,7 +467,7 @@ def test_a_self_contradictory_premise_is_rejected():
     assert len(rejected) == 1 and "impossible premise" in rejected[0][1], rejected
 
 
-def test_an_omitted_premise_verdict_also_rejects():
+def test_a_refusal_to_rule_on_premise_verdict_also_rejects():
     """Fails closed, like the archetype verdict: silence must not read as "fine"."""
     from types import SimpleNamespace
 
@@ -468,8 +480,129 @@ def test_an_omitted_premise_verdict_also_rejects():
         tolerance=None, why_step=None,
     )
     silent = gate.GateResult(verdicts=[
-        gate.Verdict(index=0, answerable=True, fits_archetype=True, fits_format=True,
+        gate.Verdict(index=0, one_answer=True, premise_holds=None, answerable=True, fits_archetype=True, fits_format=True,
                      gradable=True, confidence=0.9, reason="fine"),
     ])
     rejected = gate.judge([card], silent)
     assert len(rejected) == 1 and "impossible premise" in rejected[0][1], rejected
+
+
+def test_a_question_with_two_defensible_answers_is_rejected():
+    """The class a third reviewer named that nobody else did: the question does not
+    constrain the answer. "A stable sort, optimal comparisons" does not fix an
+    algorithm, so a comparison count is not determined by the question as asked."""
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="complexity", format="pick_one", difficulty="Hard",
+        prompt="Using a stable sort with optimal comparisons, how many comparisons are needed?",
+        options=["7", "8", "9", "10"], answer="7", key_points=[], picked=[0],
+        constraints=None, pairs=None, value=None, tolerance=None,
+        why_step={"options": ["because the bound is tight", "because it is TimSort"], "correct": 0},
+    )
+    result = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, answerable=True, premise_holds=True, one_answer=False,
+                     fits_archetype=True, fits_format=True, gradable=True, confidence=0.8,
+                     reason="no algorithm is fixed, so the count is not determined"),
+    ])
+    rejected = gate.judge([card], result)
+    assert len(rejected) == 1 and "more than one answer" in rejected[0][1], rejected
+
+
+def test_a_refusal_to_rule_on_one_answer_verdict_also_rejects():
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    card = SimpleNamespace(
+        id="x", archetype="concept", format="pick_one", difficulty="Medium",
+        prompt="Which is correct?", options=["a", "b", "c", "d"], answer="a",
+        key_points=[], picked=[0], constraints=None, pairs=None, value=None,
+        tolerance=None, why_step=None,
+    )
+    silent = gate.GateResult(verdicts=[
+        gate.Verdict(index=0, one_answer=None, answerable=True, premise_holds=True, fits_archetype=True,
+                     fits_format=True, gradable=True, confidence=0.9, reason="fine"),
+    ])
+    rejected = gate.judge([card], silent)
+    assert len(rejected) == 1 and "more than one answer" in rejected[0][1], rejected
+
+
+def test_a_reply_that_leaves_a_verdict_out_is_invalid_rather_than_a_rejection():
+    """The `trees` batch: a model returned verdicts with the premise field missing and
+    18 fair cards were rejected as "the gate did not rule", with nothing asking it
+    again. An absent field must not reach judge() at all - it is a schema violation,
+    which the LLM client retries - while an explicit null still means "I will not
+    rule" and still rejects.
+    """
+    import pytest
+    from pydantic import ValidationError
+
+    from pipeline.cards import gate
+
+    stated = '{"index": 0, "answerable": true, "fits_format": true, "gradable": true, '
+    for missing in ("fits_archetype", "premise_holds", "one_answer"):
+        fields = {"fits_archetype": "true", "premise_holds": "true", "one_answer": "true"}
+        del fields[missing]
+        body = stated + ", ".join(f'"{k}": {v}' for k, v in fields.items()) + "}"
+        with pytest.raises(ValidationError) as caught:
+            gate.Verdict.model_validate_json(body)
+        assert missing in str(caught.value), missing
+
+    # The null is accepted, carried, and judged as a refusal.
+    null_ruling = gate.Verdict.model_validate_json(
+        stated + '"fits_archetype": true, "premise_holds": null, "one_answer": true}'
+    )
+    assert null_ruling.premise_holds is None
+
+    # And the schema the model is shown says all three are required, which is what
+    # makes it answer them in the first place.
+    required = gate.Verdict.model_json_schema()["required"]
+    assert {"fits_archetype", "premise_holds", "one_answer"} <= set(required), required
+
+
+def test_every_primitive_shows_the_gate_what_the_reader_sees():
+    """The defect behind 1,035 rejections. `prompt_only` guarded its options with
+    `card.format == "mcq"`, which covered 361 cards of 7,063. Every Feed v2
+    primitive was judged on its question text alone, so the model answered in a
+    hundred wordings of "Options are missing" and the gate rejected the card for a
+    defect that existed only in what it had been shown.
+    """
+    from types import SimpleNamespace
+
+    from pipeline.cards import gate
+
+    shapes = {
+        "pick_one": (["List", "Set", "Queue", "Map"], ["List", "Map"]),
+        "mcq": (["an interface", "a class"], ["an interface"]),
+        "claim_grid": (["Atomicity rolls back", "Durability survives a crash"], ["Atomicity rolls back"]),
+        "order": (["write the log", "execute the writes"], ["write the log"]),
+        "tap_in_place": (["1  CREATE TABLE t (", "2    id SERIAL"], ["CREATE TABLE t ("]),
+        "match": ({"left": ["Clustered"], "right": ["one per table"]}, ["Clustered", "one per table"]),
+        "bucket": ({"items": ["DNS query"], "columns": ["UDP", "TCP"]}, ["DNS query", "UDP", "TCP"]),
+        "assemble": ({"tokens": ["or", "none are applied"], "fixed": "Atomicity means"},
+                     ["none are applied", "Atomicity means"]),
+        "grid_toggle": ({"rows": ["DFS"], "columns": ["O(n) time"]}, ["DFS", "O(n) time"]),
+    }
+    for fmt, (options, must_appear) in shapes.items():
+        card = SimpleNamespace(archetype=None, format=fmt, prompt="Which one?",
+                               options=options, key_points=["the answer"])
+        shown = gate.prompt_only(card)
+        for text in must_appear:
+            assert text in shown, f"{fmt}: {text!r} withheld from the gate\n{shown}"
+        # The gate answers the card itself to check the marked answer agrees, so
+        # the answer must never be in what it reads.
+        assert "the answer" not in shown, f"{fmt} leaked key_points\n{shown}"
+
+    # Options arriving as stored JSON rather than parsed are rendered the same way.
+    stored = SimpleNamespace(archetype=None, format="pick_one", prompt="Which one?",
+                             options='["List", "Map"]', key_points=[])
+    assert "option: List" in gate.prompt_only(stored)
+
+    # A composed answer is marked against a rubric the reader is shown, so there
+    # the points are content, not the answer.
+    composed = SimpleNamespace(archetype=None, format="compose", prompt="Tell me about a time",
+                               options=None, key_points=["States what you personally did"])
+    assert "States what you personally did" in gate.prompt_only(composed)
