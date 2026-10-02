@@ -85,6 +85,30 @@ def merge_rejects(answerability: list[tuple[object, str]],
     return out
 
 
+def _free_id(con, slug: str, prompt: str, kind: str, keep: str | None = None) -> str:
+    """An id for this row that no other row already holds.
+
+    `card_id` is a hash of the question, so it is stable by design - which means a
+    second repair of the same card computes the id the first repair already took.
+    The re-key is an UPDATE, so the collision is a primary key violation that kills
+    the whole run: the second pass over the corpus died at topic 100 of 274 on a
+    `repaired:` id the first pass had created, with every judged topic before it
+    already paid for.
+
+    `keep` is the row being re-keyed, which may of course hold the id itself.
+    """
+    candidate = card_id(slug, prompt, kind)
+    for attempt in range(2, 12):
+        taken = con.execute(
+            "select 1 from cards where id = ? and (? is null or id <> ?)",
+            [candidate, keep, keep],
+        ).fetchone()
+        if not taken:
+            return candidate
+        candidate = card_id(slug, prompt, f"{kind}:dup{attempt}")
+    return candidate
+
+
 def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
     """Replace a rejected card with the rewrite that passed.
 
@@ -105,7 +129,7 @@ def store_fix(con, topic: dict, old: Draft, card, confidence: dict) -> bool:
     # overwrote the repaired row, erasing the gate's objection.
     con.execute(
         "update cards set id = ?, status = 'repaired', kept = false where id = ?",
-        [card_id(topic["slug"], old.prompt, f"repaired:{old.id}"), old.id],
+        [_free_id(con, topic["slug"], old.prompt, f"repaired:{old.id}", keep=old.id), old.id],
     )
     refs = json.dumps([{"kind": "lesson", "id": topic["slug"], "title": topic["name"]}])
     con.execute(
