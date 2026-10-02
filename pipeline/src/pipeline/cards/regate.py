@@ -147,7 +147,16 @@ def apply(con, cards: list[Draft], rejected: list[tuple[object, str]], confidenc
     return recovered, newly_rejected
 
 
-def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None = None) -> dict:
+def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None = None,
+        blind: bool = True) -> dict:
+    """Re-judge the stored cards. `blind=False` skips the guessability half.
+
+    The blind gate is five times the cost of the answerability gate per card and
+    it is a model, so re-running it re-rolls verdicts it already gave. When the
+    only thing that changed is a rule in the answerability gate - the archetype
+    conformance check, say - skipping it asks the new question without paying to
+    ask the old one again or risking a different answer to it.
+    """
     llm = llm or LLM(con)
     todo = topics_with_cards(con, only)
     db = lock_for(con)
@@ -166,8 +175,9 @@ def run(con, only: list[str] | None = None, tier: str = "smart", llm: LLM | None
         # forced by the choices' shape alone is guessable even when its answer is
         # correct, so the answerability gate alone would let it through. Reject
         # on either gate, so the two can never un-reject each other.
-        blind = blind_gate.review(llm, cards, tier=tier)
-        rejected = merge_rejects(rejected, blind_gate.judge(cards, blind))
+        if blind:
+            blind_result = blind_gate.review(llm, cards, tier=tier)
+            rejected = merge_rejects(rejected, blind_gate.judge(cards, blind_result))
         # A stricter gate without a repair pass is just a delete button. Most of
         # what it turns down here is a good question in the wrong format - "what
         # iteration order do HashSet, LinkedHashSet and TreeSet give?" is a fair

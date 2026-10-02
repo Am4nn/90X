@@ -208,3 +208,17 @@ def test_slot_starts_are_independent_of_which_topics_a_run_writes():
     difficulties = lambda start: [slot.difficulty for slot in archetypes.budget(topic, start)]
     assert difficulties(3) != difficulties(3 + n), \
         "a second lap must vary difficulty, or every card of an archetype has the same one"
+
+
+def test_every_archetype_states_what_its_question_must_ask():
+    """The gate judges a card against this line, so a blank one disables the
+    check for that archetype silently.
+
+    Told only the label, the gate caught 29 blatant mismatches and missed the card
+    that prompted the check: a confident, well-written SOLID question filed under
+    `output-prediction`. The intent is the fix, so it cannot be optional.
+    """
+    for a in archetypes.registry().archetypes:
+        assert a.intent, f"{a.id} has no intent"
+        assert a.intent[0].islower(), f"{a.id}: intent should read as a clause, got {a.intent!r}"
+        assert not a.intent.endswith("."), f"{a.id}: intent should not end with a full stop"

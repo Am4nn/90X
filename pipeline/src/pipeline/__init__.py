@@ -67,6 +67,7 @@ def main() -> None:
     cr = sub.add_parser("card-regate", help="judge the cards we already have again, after a gate change (AI)")
     cr.add_argument("topics", nargs="*", help="only these topic slugs")
     cr.add_argument("--tier", default="smart")
+    cr.add_argument("--no-blind", action="store_true", help="skip the guessability gate (only the answerability rules changed)")
     sub.add_parser("card-validate", help="cross-topic dedupe + answer-definition consistency (free, no model)")
     sub.add_parser("roadmaps", help="fetch roadmap.sh structures and stage their nodes")
     pb = sub.add_parser("publish", help="publish staging to Supabase")

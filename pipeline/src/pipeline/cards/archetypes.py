@@ -59,6 +59,10 @@ class Archetype:
     # archetype not in the registry and the app would null the label, which is
     # deleting content to fix a cost problem.
     generate: bool = True
+    # What the question must actually ask. The gate is given this rather than just
+    # the label: a label alone caught the blatant mismatches and missed a
+    # confident, well-written question about something else entirely.
+    intent: str = ""
 
 
 @dataclass(frozen=True)
@@ -97,6 +101,7 @@ def registry() -> Registry:
             difficulties=tuple(a["difficulty"]),
             why_step=bool(a.get("whyStep", False)),
             generate=bool(a.get("generate", True)),
+            intent=str(a.get("intent", "")),
         )
         for a in data["archetypes"]
     )

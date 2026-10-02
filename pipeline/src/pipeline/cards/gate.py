@@ -76,7 +76,7 @@ For each card, answer four separate questions. Keep them separate: a card can be
 
 1. `answerable` - could a competent engineer who has studied this topic answer this question as asked? Set it false only when something is genuinely missing or the question is ambiguous: it points at a specific solution, passage, diagram, snippet, example or bare variable the candidate cannot see, or several different answers would all be correct. Needing to know the topic well is not a reason.
 
-2. `fits_archetype` - does the question ask what its archetype names? The archetype is given above each card and its name says what the question must do: `output-prediction` must ask what the code prints or returns, `tap-the-bug` must ask which line is wrong, `which-approach` must ask which approach fits, `estimate` must ask for a quantity. Set it false when the card asks something else entirely, however good that other question is - a design-principle question filed under output prediction is a mismatch, not a bad card. Judge the question against the archetype's name only; do not invent extra requirements it does not state.
+2. `fits_archetype` - does the question do what "the question must" line above the card says? That line is the archetype's definition, not a hint: judge the question against it literally. A card can be excellent and still fail this, and a well-written question about something else is exactly the case to catch - a design-principle question under output prediction is a mismatch, not a bad card. Examples of the requirement: `output-prediction` must ask what the code prints or returns, `tap-the-bug` must ask which line is wrong, `which-approach` must ask which approach fits, `estimate` must ask for a quantity. Do not invent requirements the line does not state: it is about what the question asks, never about difficulty, option quality or grading.
 
 3. `fits_format` - does the honest answer fit the format this card was given? This is about the answer's shape, never about whether the format is permitted - all four are.
    - typed: false only when the honest answer is a list of items to enumerate ("name the four isolation levels"), where the candidate cannot know how many you want, or when it truly needs several paragraphs.
@@ -124,7 +124,10 @@ def prompt_only(card) -> str:
     lines = []
     if archetype:
         try:
-            lines.append(f"archetype: {archetypes.by_id(archetype).label} ({archetype})")
+            found = archetypes.by_id(archetype)
+            lines.append(f"archetype: {found.label} ({archetype})")
+            if found.intent:
+                lines.append(f"the question must: {found.intent}")
         except StopIteration:
             lines.append(f"archetype: {archetype}")
     lines += [f"format: {card.format}", f"question: {card.prompt}"]
