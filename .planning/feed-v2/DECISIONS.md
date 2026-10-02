@@ -507,3 +507,230 @@ A 10-card spike plus a 20-card reviewer run, all off-peak:
 
 **Decided: generation stays all DeepSeek; no independent-reviewer step in the Feed v2 card flow.**
 The blind gate plus the deterministic shape rules are doing that job.
+
+---
+
+# Round 6 — after reviewing the first full run (2026-10-02)
+
+The first full run produced 2,401 cards for $17.19 and fixed the thing it was built to fix:
+Hard cards went from **26 of 2,808 (0.9%)** to **448 of 2,401 (18.7%)**, holding 15–20% in
+every area. Reviewing the corpus against the registry, the grader and the components rather
+than against the run report turned up two defects and three gaps. Everything below was
+decided from measurements, and the measurement is given each time.
+
+## The round-robin never rotated — this is why the corpus was lopsided
+
+`budget()` did `archetypes[i % len(archetypes)]` starting at `i = 0` for **every topic**. A
+topic gets ~14–18 slots while its area has 20–41 eligible archetypes, so every topic received
+the same opening stretch of the order and the tail was never reached once: **173 cards for
+`flash`, 1 for `pattern-signal`, six archetypes never written at all**, against a round-4
+decision of "equal within each area's eligible set".
+
+Replaying the old code over the real topics reproduces that distribution (177/177/177 against
+the observed 173/169/168), which is the evidence it is the cause rather than a symptom.
+
+**Decided: the caller threads a per-area running total of slots already issued, so the
+rotation continues across topics.** Measured after the fix: within every area each eligible
+archetype draws either ⌊ideal⌋ or ⌈ideal⌉ — a spread of exactly 1 (system_design 37–38, sql
+18–19, lld 13–14) — and all 56 archetypes are used.
+
+The running total is computed over every topic with a lesson in one canonical order, not over
+the subset a given run is writing, because a resumed run and a full run must assign a topic
+the same archetypes. Two partial runs that disagreed would produce a corpus neither would
+have produced alone.
+
+## Well-formedness is checked for every primitive, not just pick_one
+
+`structure.py` returns early unless the format is `pick_one` — 23% of the corpus by card
+count. Its own argument is sound (elimination-by-shape only applies to rival answer options),
+but the consequence was that for nine of the ten primitives **nothing checked shape at all**:
+no item caps, no duplicate detection, no bijection check, no cycle check, no tolerance
+sanity.
+
+Measured: **219 of 2,401 cards (9.1%) cannot be answered correctly.** A 5×7 grid (35 cells)
+against a component that caps at three columns. 39 snippets whose correct line is not unique,
+so tapping an identical line is marked wrong. Five `match` cards whose stored answer reuses a
+right-hand item while `match.tsx` clears any pair already using one — no answer the reader can
+submit is the stored one. One `assemble` whose constraints contain a cycle, so no permutation
+passes.
+
+**Decided: a separate `wellformed.py` runs inside the gate, before any model call, covering
+every primitive.** It is free. A card it rejects goes to the repair pass like any other
+rejection.
+
+Two of its checks are deliberately narrower than they look:
+
+- An unconstrained item is a defect for `assemble`, where the tokens form one sentence and a
+  second valid arrangement means a wrong sentence passes — but **not** for `order`, which
+  stores constraints precisely so two interchangeable steps both pass.
+- A repeated line is a defect for `tap_in_place` **only when the repeated text is the
+  answer**. Real code has two `}` lines; two identical wrong lines leave the correct one
+  unambiguous. Checking it the strict way false-rejected 21 good cards.
+
+## Item-count limits live in archetypes.json
+
+The 3×3 grid cap spent the entire first run as a comment in `grid-toggle.tsx` while the
+pipeline wrote 5×7 and the component rendered whatever it was handed.
+
+**Decided: the limits are a `limits` block in `archetypes.json`**, read by the pipeline that
+enforces them, by the component that assumes them, and by the writer's prompt that must
+satisfy them. One file, three consumers, no drift.
+
+Set from the measured distribution plus a phone: `pick_one` exactly 4 options; `tap_in_place`
+4–14 lines; `order` 3–6 items; `claim_grid` 3–4 rows; `assemble` 4–12 tokens; `match` 3–6 a
+side; `bucket` 3–8 items and 2–3 columns; `compose` 3–4 key points.
+
+### The grid is 2–5 rows by 2–3 columns, decided on a real phone
+
+A mock of every real grid size was rendered at the component's exact cell sizing and judged on
+the owner's own device. The finding: **width is the constraint, not cell count.** A row label
+like "Leaf level contains key values plus row locator" eats half a 390px screen before a cell
+is drawn, so a fourth column scrolls sideways while a fifth row only scrolls down.
+
+**Decided: rows 2–5, columns 2–3.** 88 of the 122 existing grid cards already conform; 18 had
+a single column (not a grid — that is `all-that-apply` on the wrong screen) and 11 had four or
+more.
+
+## ai, lld and behavioral were excluded by omission
+
+All 47 archetypes listed areas of `dsa/system_design/cs/java/sql`, so **96 topics produced
+nothing** and their 980 cards stayed in the old format: `ai` 40 topics, `lld` 35, `behavioral`
+21, at an average importance of **0.77–0.81** — the high end of the catalogue, not the tail.
+The run report attributed the corpus shortfall to the writer under-producing; measured, it was
+this.
+
+Nothing about those topics made them unsuitable. "Evaluation Metrics", "SOLID Principles" and
+"UML Class Diagram" are ordinary knowledge topics.
+
+**Decided: tag them archetype by archetype, not wholesale.** `lld` takes 38 of the 47 (it is
+nearest the existing catalogue — `output-prediction` works on polymorphic dispatch,
+`fill-signature` on interfaces, `pattern-signal` finally earns its keep). `ai` takes 29 and
+skips every code-tracing and tap-a-line archetype because ML lessons are conceptual, while
+picking up `estimate` and `impossible-bound`, which no area was using well. `behavioral` takes
+12, only where the question is about the shape of an answer rather than whose story it is.
+
+**Nine new archetypes** for what nothing existing reached: `which-principle-violated`,
+`responsibility-owner`, `class-relationship` (lld); `which-metric-fits`, `data-leak-spotter`
+(ai); `strongest-answer`, `star-parts`, `answer-critique`, `your-story` (behavioral).
+
+## Typed comes back, for behavioural only, graded by a model
+
+Round 4 removed typed answers entirely. Behavioural content is the exception the rule did not
+anticipate: "tell me about a time you…" has no single right answer, and **writing the answer is
+the exercise**.
+
+The first instinct was to have the reader self-mark against a rubric, keeping every model out
+of the answer path. That was weaker, and the reasoning was backwards: **a reader marking their
+own story is the least reliable grader in the system** — people mark themselves generously. A
+per-key-point boolean against written criteria is tighter.
+
+**Decided: a `compose` primitive, graded by the existing `gradeWithAi`.** It already scores
+against the card's stored `key_points` one boolean at a time rather than by feel, already
+rate-limits per user so spend is bounded, and already falls back to self-mark when the limit
+trips or the output is unusable. `key_points` **is** the rubric, not a summary, and it is shown
+before answering — a reader cannot be marked on requirements they were not told.
+
+The answer is capped at 300 characters and will not submit under 40. An unbounded box invites
+an essay, and a per-key-point judgement over an essay stops meaning anything.
+
+`gradedBy` gains `ai`, and that is the **only** path where a model runs when an answer is
+checked. Every other primitive stays a pure function.
+
+`cards.keyPoints` reaches the client for `compose` and nothing else, guarded on the primitive
+rather than on whether the column is set: on a `pick_one` card the key points are the answer.
+
+## The Feed serves eight areas; the diagnostic still measures five
+
+`FEED_AREAS` was defined as `DIAGNOSTIC_AREAS`, and `cardView` returns `null` outside it. The
+two were the same list while ai, lld and behavioral had no renderable cards. Left equal, the
+1,522 new cards for those areas would have been generated, gated, published, flipped live and
+then **silently dropped by the Feed** — about $10 of cards that never render, with nothing
+failing to say so.
+
+**Decided: two separate lists.** The Feed serves eight. The first-visit diagnostic stays at
+five on purpose: it is a short readiness probe, and behavioural readiness is not something a
+handful of cards can measure.
+
+## Reconcile rather than regenerate
+
+2,401 cards exist, written under the broken rotation, and most of them are fine. Regenerating
+everything would pay a second time for work that does not need redoing.
+
+**Decided: compare what each topic holds against what the fixed budget asks for, trim the
+surplus and write only the shortfall.** Measured plan: trim 695, write 2,918, against 4,405
+ideal slots.
+
+Surplus is dropped by **gate confidence, lowest first**, and the harder card wins a tie —
+the rebuild exists to answer a reviewer who said the corpus was too easy, so a trim should not
+quietly undo that. A trimmed card is marked `rejected` with its reason rather than deleted, so
+a trim stays auditable and is not confused with a gate rejection.
+
+## The writer is told the limits
+
+A one-topic trial returned two four-bucket cards against a cap of three. `wellformed` catches
+those, but catching them costs a gate rejection and a paid rewrite each, for a constraint the
+writer could simply have been handed.
+
+**Decided: render the registry's limits into the per-primitive instruction.** Re-running the
+same topic took failures from 2 of 16 to 1 of 18. The survivor is the gate doing its job at a
+rate worth paying for.
+
+## The swap exempts areas the catalogue does not cover
+
+`swap.py` ran `update cards set status = 'retired' where status = 'live'` — every live card,
+including the behavioural ones round 2 settled as never retired.
+
+**Decided: retire only within the areas at least one archetype covers, derived from the
+registry.** Adding `ai` to an archetype's `areas` is all it takes for the next flip to include
+it. Nothing is special-cased by name.
+
+## Publish never deletes a card a reader could have seen
+
+`_retire_superseded_cards` deleted every published card staging no longer had, on the stated
+premise that this was "free while the Feed is unused". That premise expired: there are answers
+and schedules in the Feed now, and `card_reviews`, `card_state`, `card_flags` and
+`batch_review_items` all cascade from a card.
+
+Because the regeneration deletes a topic's old cards from staging, publishing a regenerated
+corpus raised `StudyHistoryAtRisk` over the **entire** old corpus and rolled the whole
+transaction back — production step 3 could not complete at all.
+
+**Decided: publish deletes only `draft` cards staging has dropped, and leaves `live` and
+`retired` alone.** Two reasons rather than one:
+
+1. A card a reader could have seen is **retired**, not deleted — `status` goes to `retired`
+   and `card_state` stays, so nobody's readiness dial drops on release day (round 4). That is
+   the flip's job.
+2. Publish must not retire them **either**. Between publish and the flip the old corpus is the
+   only thing live; standing it down at publish time would leave the Feed with nothing to
+   serve, which is the shape of the 2026-09-29 outage.
+
+The guard stays, now scoped to drafts, where a card set back to draft by hand can still carry
+answers.
+
+## The run waits for off-peak by construction
+
+The budget assumes the DeepSeek discount throughout, so starting at peak silently costs twice
+the estimate. **Decided: the run wrapper waits for the window rather than trusting whoever
+starts it.** Checked once at the start — the weekend window is 63 hours, far longer than a
+50-minute run.
+
+## The blind gate stays on `smart`, and that is a correctness choice
+
+`DECISIONS` specified `fast`; the first run used `smart` and measured a ~9% rejection rate on
+it. **Decided: keep `smart` for this corpus.** The approved rejection rate was measured on
+`smart`, so moving tiers means the new cards are held to a different bar than the 2,401 already
+judged. Measuring `fast` against `smart` over 50 cards is worth doing as its own cheap
+experiment, for the next run rather than in the middle of this one.
+
+Thinking stays off everywhere except the repair pass. On the blind gate that is a correctness
+decision rather than an economy: a model reasoning for two thousand tokens is a far stronger
+guesser than a reader skimming four options on a phone, so with thinking on the gate starts
+rejecting cards nobody could have guessed and becomes a false-positive machine.
+
+## What the review pack asks has not changed
+
+Still two cards per archetype, now **112** rather than 81, and still one question per
+archetype: *does this archetype earn a place?* The first thing to judge is still whether a
+why-step's wrong reasons are genuinely plausible, because right-answer-wrong-reason is the
+harshest rule in the design and the most likely to be wrong in practice.

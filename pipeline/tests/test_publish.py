@@ -157,3 +157,67 @@ def test_dropping_a_topic_does_not_cascade_away_a_coach_lesson(tmp_path):
 
     assert lesson == 1, "the topic delete cascaded away a coach-written lesson"
     assert topic == 1, "the topic has to survive for its lesson to be reachable"
+
+
+def test_publish_retires_drafts_but_never_a_live_card(tmp_path):
+    """The fix that made production step 3 possible at all.
+
+    `_retire_superseded_cards` used to delete every published card staging no
+    longer had. Regeneration removes a topic's old cards from staging, so
+    publishing a regenerated corpus raised StudyHistoryAtRisk over the whole old
+    corpus and rolled the entire transaction back.
+
+    A live card is retired by the flip, not deleted here, and not even retired
+    here: between publish and the flip the old corpus is the only thing live.
+
+    Runs in a transaction that is rolled back. Does not cover the guard itself -
+    that needs a card_reviews row, which needs a real user.
+    """
+    import psycopg
+
+    from pipeline import config  # noqa: F401  loads pipeline/.env
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    batch = "00000000-0000-4000-8000-0000000000ac"
+    live_id = "00000000-0000-4000-8000-0000000000bd"
+    draft_id = "00000000-0000-4000-8000-0000000000be"
+
+    with psycopg.connect(os.environ["DATABASE_URL"], prepare_threshold=None) as pg:
+        cur = pg.cursor()
+        try:
+            cur.execute(
+                """insert into public.card_batches (id, domain, topic_slugs, ai_pass_rate, status)
+                   values (%s, 'dsa', '{}', 0.9, 'draft')""",
+                (batch,),
+            )
+            for card_id, status in ((live_id, "live"), (draft_id, "draft")):
+                cur.execute(
+                    """insert into public.cards
+                       (id, batch_id, format, difficulty, prompt_md, answer_md, key_points, status)
+                       values (%s, %s, 'typed', 'Easy', 'Which pattern?', 'Hashing', '[]', %s)""",
+                    (card_id, batch, status),
+                )
+
+            # Staging is given every draft the target already holds except our own,
+            # so the delete can only ever remove the one row this test created.
+            # An empty staging would make it delete every unstaged draft in the
+            # database, and this suite points at production by default.
+            cur.execute("select id from public.cards where status = 'draft' and id <> %s", (draft_id,))
+            for (keep,) in cur.fetchall():
+                con.execute(
+                    "insert into cards (id, format, prompt_md, answer_md, kept) values (?, 'typed', 'x', 'y', true)",
+                    [str(keep)],
+                )
+
+            deleted = publish._retire_superseded_cards(con, cur, force=False)
+
+            cur.execute("select status from public.cards where id = %s", (live_id,))
+            row = cur.fetchone()
+            assert row is not None, "publish deleted a live card"
+            assert row[0] == "live", f"publish changed a live card's status to {row[0]!r}"
+
+            cur.execute("select count(*) from public.cards where id = %s", (draft_id,))
+            assert cur.fetchone()[0] == 0, "publish kept a draft card staging had dropped"
+            assert deleted == 1, f"expected to delete only this test's draft, deleted {deleted}"
+        finally:
+            pg.rollback()

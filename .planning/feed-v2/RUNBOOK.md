@@ -1,92 +1,128 @@
 # Feed v2 — production runbook
 
-Written 2026-10-02 by the orchestrator, after the autonomous full run and the
-Part H swap prep. The owner (Aman) runs the four production steps below, **in
-order**, after reviewing the Gate 3 pack. This file is the "stop" of the
-prepare-and-stop handoff.
+Rewritten 2026-10-02 after the corpus review and the rebalance run. The four
+production steps are a human's, in this order. Everything before them is done and
+local; nothing here has touched production.
 
-## What is already done (local only, no production touched)
+## Before you start: one thing to know about the tests
 
-1. **Full generation run** — `run_feed_v2.py`: write → regate (answerability +
-   blind gate) → validate, `run_id="feed-v2-full"`, hard cap **$25**
-   (`PIPELINE_MAX_USD`), resumable. Writer is DeepSeek V4 Pro, thinking off.
-2. **Gate 3 review pack** — ~94 cards (2 per archetype) as both a web pack and
-   a markdown file (see `review_pack` output).
-3. **Swap prep (Part H)** — `publish.py` now carries the archetype/answer
-   columns; new `pipeline/src/pipeline/cards/swap.py` + `pipeline swap` command
-   (dry-run by default).
+`pipeline/.env`'s `DATABASE_URL` points at **production**, so `pytest
+tests/test_publish.py` connects to the live database. It only ever runs inside a
+transaction it rolls back, but it means the four failures you will see there
+(`column "archetype" of relation "cards" does not exist`) are not a local setup
+problem — they are production telling you **step 1 has not been run yet.** Those
+tests pass against the local stack today, and they will pass against production
+once the migration is applied.
 
-## Production steps (in order — the order is not a preference)
+## What is already done, locally
+
+1. **Corpus rebalanced and extended.** `run_feed_v2.py --reconcile` trims each
+   topic's surplus archetypes and writes only its shortfall, then gates and
+   repairs. Run under `run_id="feed-v2-rebalance"`, capped at `PIPELINE_MAX_USD`,
+   waits for the DeepSeek off-peak window before spending anything.
+2. **The catalogue covers every area.** 56 archetypes over 11 primitives across
+   all eight domains; `ai`, `lld` and `behavioral` were excluded by a missing area
+   tag through the whole first run.
+3. **219 unanswerable cards rejected** by `pipeline wellformed --apply`, and the
+   gate now runs that check over every primitive rather than `pick_one` alone.
+4. **Swap prep.** `pipeline swap` is dry-run by default and retires only within
+   the areas the catalogue covers.
+
+Staging is backed up at `.data/staging.duckdb.before-reconcile`.
+
+## Production steps, in order — the order is not a preference
 
 ### 1. Apply the migration
 
 `supabase/migrations/20260930000024_feed_v2.sql` — purely additive: adds
 `cards.archetype`, `picked`, `constraints`, `pairs`, `value`, `tolerance`,
 `why_step`, `observed_attempts`, `observed_correct`; drops `cards_format_check`.
-Apply it to production Supabase through the normal migration path.
+
+Apply it through the normal migration path. Confirm with:
+
+```
+select count(*) from information_schema.columns
+where table_name = 'cards' and column_name = 'archetype';
+```
 
 ### 2. Deploy the app
 
-Make sure the Feed v2 app code (parts A–D: schema/grader/UI/selection) is
-deployed to Vercel. **The flip must run only after the app can render the new
-cards.** Publishing before deploying was the 2026-09-29 outage.
+Parts A–D must be live **before** the flip, because the new corpus cannot be
+rendered by code that does not exist yet. Publishing before deploying was the
+2026-09-29 outage.
 
-### 3. Publish the new corpus (as `draft`)
+What this deploy must include, beyond A–D:
+
+- the `compose` primitive and its answer path (behavioural written answers)
+- `FEED_AREAS` covering eight areas — without it `cardView` returns null for every
+  ai, lld and behavioural card and the Feed silently serves none of them
+
+### 3. Publish the new corpus as `draft`
 
 ```
 cd pipeline
 uv run python -m pipeline publish
 ```
 
-Upserts the new corpus with `status='draft'` (invisible: the `cards_read` policy
-is `status='live' and not hidden`). **Nothing becomes live.**
+Upserts with `status='draft'`, which is invisible: the `cards_read` policy is
+`status='live' and not hidden`. **Nothing becomes live.**
 
-### 4. Flip (swap)
+This step used to be unable to complete. `_retire_superseded_cards` deleted every
+published card staging no longer had, and since regeneration removes a topic's old
+cards from staging, it raised `StudyHistoryAtRisk` over the entire old corpus and
+rolled the whole transaction back. It now deletes only `draft` cards staging has
+dropped and leaves `live` and `retired` alone, because:
+
+- a card a reader could have seen is **retired, not deleted** — `card_state` stays,
+  so nobody's readiness dial drops on release day; and
+- publish must not retire them either, or the Feed has nothing live between this
+  step and the flip.
+
+**Do not pass `--force`.** If it raises, stop and read what it names: the guard is
+scoped to drafts now, so a raise means a draft card genuinely carries answers.
+
+### 4. Flip
 
 ```
-uv run python -m pipeline swap            # dry-run: shows the counts
-uv run python -m pipeline swap --apply    # retire old live, activate new draft
+uv run python -m pipeline swap            # dry run: prints the counts
+uv run python -m pipeline swap --apply    # retire old, activate new
 ```
 
-One transaction retires every `live` card and activates every `draft` +
-`archetype is not null` card. `card_state` on retired cards is **kept**
-(unscheduled), so nobody's readiness dial drops.
+One transaction. It retires live cards **only in the areas the catalogue covers**
+and activates every `draft` card with an archetype. `card_state` on retired cards
+is kept, unscheduled.
+
+The dry run prints `kept_live_uncovered_area`. That number should be **0** once
+the rebalance run has covered all eight areas; if it is not, it is naming cards in
+an area no archetype reached, and they stay in their old format rather than being
+retired into nothing.
 
 ## Verify before step 4
 
-- [ ] Migration applied (step 1): `cards.archetype` exists in prod.
-- [ ] App deployed (step 2): the new card UIs render.
-- [ ] `swap` dry-run shows the expected counts — old live ≈ 2,808, new draft ≈ ~2,900.
+- [ ] `cards.archetype` exists in production (step 1)
+- [ ] the app is deployed, and a behavioural card renders its write-in box (step 2)
+- [ ] the `swap` dry run's `activate_draft_archetyped` is close to the corpus size
+      the run reported, not zero
+- [ ] `kept_live_uncovered_area` is 0, or you know which area it names
 
-## Warnings (read before running anything against prod)
+## After the flip
 
-- **Order: deploy before flip, never the reverse.** The new corpus cannot be
-  rendered by code that does not exist yet.
-- **Retire, not delete.** The generation run replaced the old cards in staging,
-  so `publish`'s `_retire_superseded_cards` may try to *delete* prod cards that
-  staging no longer has (the old corpus), and its `StudyHistoryAtRisk` guard
-  will refuse if those cards hold answers or schedules. That guard is doing its
-  job. **Do not pass `--force`** to work around it — that erases study history.
-  The retirement is meant to be the `swap` flip (status → `retired`), which
-  keeps `card_state`. If `publish` raises `StudyHistoryAtRisk`, stop and
-  reconcile whether the old cards should be retained in staging or retired by
-  the flip before continuing.
-- **`swap` defaults to dry-run.** Only `--apply` writes, and only against the
-  database `DATABASE_URL` points at. Never point that at prod from a real
-  `.env.local` by accident.
-- **Budget.** This run's spend is recorded against `run_id="feed-v2-full"` and
-  is capped at $25. Read the figure off the pipeline's own spend line before
-  assuming anything.
+- `pipeline status` for the corpus and the spend.
+- Answer a few cards per area, including one behavioural write-in: that is the only
+  path where a model runs at answer time, and the one most worth seeing work.
+- The Gate 3 review pack is **112 cards**, two per archetype. The question per card
+  is *does this archetype earn a place*, not *is this correct* — the gates answered
+  that. The first thing to judge is whether a why-step's wrong reasons are
+  genuinely plausible: right-answer-wrong-reason is the harshest rule in the design
+  and the most likely to be wrong in practice.
 
-## Run results (filled in 2026-10-02)
+## Spend
 
-- **Final corpus: 2,401 archetyped `draft` cards.** Below the ~2,500 floor the
-  plan named — see the finding below.
-- Gate: 2,607 judged · 456 objected (17%) · 250 repaired · **206 dropped (8%)**.
-- **Spend: $17.19** against `run_id="feed-v2-full"`, within the $25 cap
-  (lifetime $19.42 including the $2.22 of pre-run legacy calls).
-- **1,301 old cards remain** (`archetype IS NULL`): `ai` 416 · `lld` 342 ·
-  `behavioral` 222 · ~321 across dsa/system_design/cs/java/sql. These areas have
-  **no eligible archetype** in the Feed v2 catalog, so they were not regenerated.
-  Decide whether the swap should retire them (it retires every `live` card) or
-  leave them be — the behavioural cards were meant to stay ("none retired").
+Read it off the pipeline rather than assuming:
+
+```
+uv run python -c "import duckdb; c=duckdb.connect('../.data/staging.duckdb', read_only=True); print(c.execute('select run_id, round(sum(cost_usd),4) from llm_calls group by 1 order by 2 desc').fetchall())"
+```
+
+First run `feed-v2-full` $17.19. The rebalance runs under `feed-v2-rebalance` with
+its own cap, so its figure is separate rather than counting against the first.
