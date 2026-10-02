@@ -19,7 +19,7 @@ The answer contract is the four shapes from `archetypes.json`:
 - ordered  (order, assemble)                      -> `constraints`: [before, after] pairs
 - mapping  (match, bucket, claim_grid)            -> `pairs`: [left, right] pairs
 - number   (numeric)                              -> `value` + `tolerance`
-- none     (self_rate)                            -> no answer columns
+- none     (self_rate, compose)                   -> no answer columns
 
 `options` carries the items the reader sees, in the canonical per-shape encoding
 from `web/src/lib/feed/options.ts`; `constraints` and `pairs` are indices into
@@ -129,6 +129,20 @@ PRIMITIVE_INSTRUCTIONS = {
     "self_rate": (
         "SELF-RATE (flash). Name one term or fact and ask the reader to self-rate knew-it/"
         "didn't. `answer` is the one-sentence fact. Leave `options`, `picked`, `constraints`, "
+        "`pairs`, `value` and `tolerance` empty."
+    ),
+    "compose": (
+        "COMPOSE. The reader writes their own short answer - 2 to 3 sentences, no more - and it "
+        "is marked against `key_points`, so those are the rubric rather than a summary. Ask for "
+        "something a reader can answer about their OWN experience or their own wording; never ask "
+        "for a fact with one right phrasing, because a short written answer is the wrong screen "
+        "for that. `prompt` states what the answer must contain, in the reader's terms (for "
+        "example 'name the situation, what you did, and the result, in three sentences'). "
+        "`key_points` are 3 or 4 short, independently checkable requirements, each one a thing "
+        "the answer either does or does not do - 'states a specific measurable result', 'says "
+        "what the candidate personally did rather than the team' - and never a matter of taste. "
+        "`answer` is a model answer of the same length, which the reader sees afterwards as an "
+        "example rather than as the right answer. Leave `options`, `picked`, `constraints`, "
         "`pairs`, `value` and `tolerance` empty."
     ),
     "assemble": (

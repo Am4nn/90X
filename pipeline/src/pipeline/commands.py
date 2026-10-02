@@ -304,6 +304,18 @@ def swap(args, con) -> None:
         print(f"  covered areas: {', '.join(result['covered_areas'])}")
 
 
+def reconcile(args, con) -> None:
+    """Trim each topic's surplus archetypes and write its shortfall."""
+    from .cards import reconcile as rc
+    from .llm import LLM
+
+    llm = LLM(con, run_id=args.run_id) if args.run_id else None
+    written, dropped, refused = rc.run(con, only=args.topics or None, tier=args.tier,
+                                      llm=llm, dry_run=not args.apply)
+    if args.apply:
+        print(f"wrote {written}, trimmed {dropped}, refused {refused}")
+
+
 def wellformed(args, con) -> None:
     """Audit the archetyped corpus against the registry's answer contract, and
     optionally reject what fails so the repair pass rewrites it.
@@ -358,7 +370,7 @@ def wellformed(args, con) -> None:
 
 
 COMMANDS = {"normalize": normalize, "enrich": enrich, "topics": topics, "tricks": tricks, "chunk": chunk,
-            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "swap": swap, "wellformed": wellformed, "status": status, "trial": trial, "gate2": gate2}
+            "embed": embed, "cards": cards, "lessons": lessons, "lesson-cards": lesson_cards, "roadmaps": roadmaps, "gaps": gaps, "lesson-review": lesson_review, "card-review": card_review, "card-fix": card_fix, "card-regate": card_regate, "card-validate": card_validate, "consistency": consistency, "publish": publish, "rebatch": rebatch, "swap": swap, "reconcile": reconcile, "wellformed": wellformed, "status": status, "trial": trial, "gate2": gate2}
 
 
 def run(name: str, args) -> None:

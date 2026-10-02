@@ -333,7 +333,18 @@ def problems(card) -> list[str]:
     elif shape is None:
         for field in ("picked", "constraints", "pairs", "value"):
             if getattr(card, field, None) is not None:
-                found.append(f"{primitive} is self-marked but carries {field}")
+                found.append(f"{primitive} stores no answer shape but carries {field}")
+        if primitive == "compose":
+            # `key_points` is the rubric a written answer is marked against, not a
+            # summary, so a compose card with too few of them cannot be graded.
+            points = _texts(getattr(card, "key_points", None))
+            if points is None:
+                found.append("a compose card needs key_points as its rubric")
+            else:
+                if message := _within(primitive, "keyPoints", len(points)):
+                    found.append(message)
+                if dupes := _duplicates(points):
+                    found.append(f"the rubric repeats a requirement: {dupes[0]!r}")
 
     found += _why_step(card, archetype, difficulty)
     return found
