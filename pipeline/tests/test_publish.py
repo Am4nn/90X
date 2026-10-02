@@ -221,3 +221,59 @@ def test_publish_retires_drafts_but_never_a_live_card(tmp_path):
             assert deleted == 1, f"expected to delete only this test's draft, deleted {deleted}"
         finally:
             pg.rollback()
+
+
+def test_republishing_a_card_updates_its_format_and_options_too(tmp_path):
+    """A regenerated card that keeps its question keeps its id, so the upsert has
+    to replace its whole content, not only its answer columns.
+
+    The conflict clause used to write the new `picked`/`pairs`/`value` and keep
+    the old `format` and `options`. A live card then rendered one primitive's
+    interaction over another's answer definition - four stale options against a
+    mapping answer - which no reader could answer. Rolled back.
+    """
+    import json
+
+    import psycopg
+
+    from pipeline import config  # noqa: F401  loads pipeline/.env
+
+    con = tiny(tmp_path)
+    # Same id (same topic, same prompt), different primitive and options.
+    con.execute(
+        """update cards set format = 'claim_grid', options = ?, answer_md = 'New answer',
+                             pairs = ?, picked = null
+           where id = '00000000-0000-4000-8000-0000000000bb'""",
+        [json.dumps(["claim one", "claim two"]), json.dumps([[0, 1], [1, 0]])],
+    )
+    # `_publish_cards` publishes cards alone, so the FK targets have to be there.
+    con.execute("update cards set problem_slug = null where problem_slug is not null")
+
+    url = os.environ["DATABASE_URL"]
+    with psycopg.connect(url, prepare_threshold=None) as pg:
+        cur = pg.cursor()
+        try:
+            cur.execute(
+                """insert into public.topics (slug, domain, name, sort)
+                   values ('zz-test-topic', 'dsa', 'Test topic', 0)
+                   on conflict (slug) do nothing"""
+            )
+            publish._publish_cards(con, cur)  # first publish: the row is created
+            cur.execute(
+                """update public.cards set format = 'pick_one', options = %s::jsonb, answer_md = 'Stale'
+                   where id = '00000000-0000-4000-8000-0000000000bb'""",
+                (json.dumps(["stale a", "stale b", "stale c", "stale d"]),),
+            )
+            publish._publish_cards(con, cur)  # second publish must converge it
+
+            cur.execute(
+                """select format, options, answer_md, pairs from public.cards
+                   where id = '00000000-0000-4000-8000-0000000000bb'"""
+            )
+            fmt, options, answer, pairs = cur.fetchone()
+            assert fmt == "claim_grid", f"format kept the stale value {fmt!r}"
+            assert options == ["claim one", "claim two"], f"options kept the stale value {options!r}"
+            assert answer == "New answer", f"answer_md kept the stale value {answer!r}"
+            assert pairs == [[0, 1], [1, 0]], pairs
+        finally:
+            pg.rollback()

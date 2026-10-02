@@ -267,7 +267,8 @@ def card_regate(args, con) -> None:
     from . import llm
     from .cards import regate
 
-    t = regate.run(con, only=args.topics or None, tier=args.tier)
+    t = regate.run(con, only=args.topics or None, tier=args.tier,
+                   blind=not getattr(args, 'no_blind', False))
     print(f"card-regate: {t['judged']} cards re-judged across {t['topics']} topics, "
           f"{t['recovered']} recovered, {t['reformatted']} rewritten and passed, "
           f"{t['rejected']} still rejected, spend ${llm.spend_usd(con):.2f}")

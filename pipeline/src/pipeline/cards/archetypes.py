@@ -53,6 +53,16 @@ class Archetype:
     areas: tuple[str, ...]
     difficulties: tuple[str, ...]
     why_step: bool
+    # False retires an archetype from generation without removing it. Its cards
+    # stay valid, renderable and labelled; no future run spends on more. Deleting
+    # the archetype instead would orphan them: `wellformed` would report an
+    # archetype not in the registry and the app would null the label, which is
+    # deleting content to fix a cost problem.
+    generate: bool = True
+    # What the question must actually ask. The gate is given this rather than just
+    # the label: a label alone caught the blatant mismatches and missed a
+    # confident, well-written question about something else entirely.
+    intent: str = ""
 
 
 @dataclass(frozen=True)
@@ -90,6 +100,8 @@ def registry() -> Registry:
             areas=tuple(a["areas"]),
             difficulties=tuple(a["difficulty"]),
             why_step=bool(a.get("whyStep", False)),
+            generate=bool(a.get("generate", True)),
+            intent=str(a.get("intent", "")),
         )
         for a in data["archetypes"]
     )
@@ -135,7 +147,7 @@ def eligible(area: str) -> list[Archetype]:
     which is the DECISIONS round-2 rule for behavioural and the honest reading
     of the catalogue for the rest.
     """
-    return [a for a in registry().archetypes if area in a.areas]
+    return [a for a in registry().archetypes if area in a.areas and a.generate]
 
 
 def _spread(archetypes: list[Archetype]) -> list[Archetype]:
