@@ -68,3 +68,33 @@ def test_no_blind_holds_a_rewrite_to_the_same_bar_as_the_card_it_replaces(monkey
 
     assert stored == [(bad, good)], stored
     assert totals["reformatted"] == 1 and totals["rejected"] == 0, totals
+
+
+def test_a_second_repair_of_the_same_card_does_not_collide(tmp_path):
+    """The crash that killed the corrected pass at topic 100 of 274, with every topic
+    before it already paid for. `card_id` hashes the question, so it is stable by
+    design - and the re-key is an UPDATE, so the second repair of a card computes the
+    `repaired:` id the first repair already took and violates the primary key.
+    """
+    import duckdb
+
+    from pipeline.cards.regate import _free_id
+    from pipeline.cards.run_lessons import card_id
+
+    con = duckdb.connect(str(tmp_path / "t.duckdb"))
+    con.execute("create table cards (id varchar primary key, note varchar)")
+
+    taken = card_id("trees", "what does it print?", "repaired:abc")
+    con.execute("insert into cards values (?, 'the first repair')", [taken])
+
+    # A second repair of the same question must land somewhere else.
+    second = _free_id(con, "trees", "what does it print?", "repaired:abc")
+    assert second != taken
+    con.execute("insert into cards values (?, 'the second repair')", [second])
+    assert con.execute("select count(*) from cards").fetchone()[0] == 2
+
+    # And the row being re-keyed may hold the id itself: that is not a collision.
+    con.execute("insert into cards values ('live-row', 'being re-keyed')")
+    mine = card_id("trees", "a question of its own", "repaired:live-row")
+    con.execute("update cards set id = ? where id = 'live-row'", [mine])
+    assert _free_id(con, "trees", "a question of its own", "repaired:live-row", keep=mine) == mine
