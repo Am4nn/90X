@@ -190,6 +190,15 @@ def _publish_cards(con, cur) -> dict:
     risk it was published with, because its row already existed. So this
     converges instead - a card's group and risk are whatever staging says, and
     `status` and `hidden` are left alone, because those are the admin's.
+
+    The conflict clause updates every content column, not just the answer ones.
+    A card's id is a hash of its topic and its question, so a regenerated card
+    with the same question keeps its id - and the clause used to write its new
+    `picked`/`pairs`/`value` while keeping the old `format` and `options`. A live
+    card could then render one primitive's interaction over another's answer
+    definition: a pick_one card showing four stale options against a mapping
+    answer, ungradeable by any reader. Everything except `id`, `status` and
+    `hidden` therefore converges on what staging holds.
     """
     batches = con.execute(
         "select id, domain, topic_slugs, created_at, ai_pass_rate, label from card_batches").fetchall()
@@ -215,7 +224,12 @@ def _publish_cards(con, cur) -> dict:
                values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s,
                        %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s::jsonb, 'draft')
                on conflict (id) do update set
-                 batch_id = excluded.batch_id, risk = excluded.risk, archetype = excluded.archetype,
+                 batch_id = excluded.batch_id, topic_slug = excluded.topic_slug,
+                 problem_slug = excluded.problem_slug, format = excluded.format,
+                 difficulty = excluded.difficulty, prompt_md = excluded.prompt_md,
+                 options = excluded.options, answer_md = excluded.answer_md,
+                 key_points = excluded.key_points, source_refs = excluded.source_refs,
+                 quality = excluded.quality, risk = excluded.risk, archetype = excluded.archetype,
                  picked = excluded.picked, constraints = excluded.constraints, pairs = excluded.pairs,
                  value = excluded.value, tolerance = excluded.tolerance, why_step = excluded.why_step""",
             [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
