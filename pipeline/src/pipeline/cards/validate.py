@@ -177,3 +177,39 @@ def report(con) -> str:
         for keep_id, dupe_id in dupes:
             lines.append(f"- {keep_id} <- {dupe_id}")
     return "\n".join(lines)
+
+def drop_dupes(con, threshold: int = 90, dry_run: bool = True) -> dict:
+    """Reject the loser of every near-duplicate pair.
+
+    `cross_topic_dupes` already decides which card to keep - the one from the
+    more important topic - and this used to only print the pairs. 239 of them
+    sat in a publishable corpus with nothing acting on them, which two reviewers
+    independently named as the thing that would make the Feed feel repetitive.
+    Detecting a problem and printing it is not fixing it.
+
+    Free: the pairs come from embeddings already stored. A dropped card is
+    rejected with its reason and the id of the card that absorbed it, so the
+    decision stays auditable and reversible.
+    """
+    pairs = cross_topic_dupes(con, threshold=threshold)
+    # One card can lose to several keepers; reject it once, naming the first.
+    losers: dict[str, str] = {}
+    for keep_id, dupe_id in pairs:
+        losers.setdefault(dupe_id, keep_id)
+    # Never drop a card that is itself a keeper for something else: that would
+    # remove both halves of a pair and lose the question entirely.
+    keepers = {keep_id for keep_id, _ in pairs}
+    dropping = {d: k for d, k in losers.items() if d not in keepers}
+    if not dry_run and dropping:
+        con.executemany(
+            """update cards set status = 'rejected', kept = false,
+                      reject_reason = ? where id = ? and status = 'draft'
+            """,
+            [[f"near-duplicate of {keep}", dupe] for dupe, keep in dropping.items()],
+        )
+    return {
+        "pairs": len(pairs),
+        "dropped": len(dropping),
+        "kept_as_keeper": len(losers) - len(dropping),
+        "dry_run": dry_run,
+    }
