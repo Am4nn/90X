@@ -81,6 +81,7 @@ def main(argv: list[str] | None = None) -> None:
     LOG.parent.mkdir(parents=True, exist_ok=True)
     log = open(LOG, "a", encoding="utf-8")
     sys.stdout = _Tee(sys.__stdout__, log)
+    sys.stderr = _Tee(sys.__stderr__, log)
 
     print(f"=== Feed v2 run start  {datetime.now(timezone.utc).isoformat()}  run_id={run_id}  "
           f"only={only or 'all'} mode={mode} ===", flush=True)
@@ -119,8 +120,23 @@ def main(argv: list[str] | None = None) -> None:
     # over a closed file made the first run exit 1 on anything printed after
     # this point, which looked like a failed run and was not one.
     sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
     log.close()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except BaseException:
+        # The log is the only record a detached run leaves, and a crash that
+        # escapes main() happens before the _Tee is installed or after it is
+        # removed. Without this the log just stops, which reads as a clean
+        # finish: the first rebalance run died twice and left no trace.
+        import traceback
+
+        with open(LOG, "a", encoding="utf-8") as crash:
+            print("", file=crash)
+            print(f"=== CRASHED {datetime.now(timezone.utc).isoformat()} ===", file=crash)
+            traceback.print_exc(file=crash)
+        traceback.print_exc()
+        raise

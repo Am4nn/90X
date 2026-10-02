@@ -141,14 +141,31 @@ def save_additional(con, topic: dict, cards: list, hard: dict) -> int:
 
     now = datetime.now(timezone.utc)
     for card in cards:
+        # A card's id is a hash of its topic and its question, so two cards whose
+        # questions came out the same collide. `insert or replace` then silently
+        # overwrote one with the other: a topic's shortfall could never be filled,
+        # every retry re-paid for cards that replaced each other, and the three
+        # rebalance passes wrote 3,355 cards against a 2,918 shortfall before the
+        # budget ran out. A repeated question gets a distinct id instead, so the
+        # slot is actually filled and the duplicate is left for the dedupe pass in
+        # `validate` to judge on content rather than lost by accident.
+        new_id = card_id(topic["slug"], card.prompt)
+        taken = con.execute("select 1 from cards where id = ?", [new_id]).fetchone()
+        for attempt in range(2, 12):
+            if not taken:
+                break
+            new_id = card_id(topic["slug"], card.prompt, kind=f"dup{attempt}")
+            taken = con.execute("select 1 from cards where id = ?", [new_id]).fetchone()
+        if taken:
+            continue  # eleven identical questions for one topic: stop writing them
         con.execute(
-            """insert or replace into cards
+            """insert into cards
                (id, topic_slug, format, archetype, difficulty, prompt_md, options, answer_md, key_points,
                 picked, constraints, pairs, value, tolerance, why_step,
                 source_refs, quality, kept, status, source, created_at)
                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lesson', ?)""",
             [
-                card_id(topic["slug"], card.prompt),
+                new_id,
                 topic["slug"], card.format, card.archetype, card.difficulty, card.prompt,
                 json.dumps(card.options) if card.options else None, card.answer,
                 json.dumps(card.key_points),
