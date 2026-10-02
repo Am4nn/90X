@@ -46,6 +46,12 @@ def family(reason: str) -> str:
         ("more than one answer", "more than one defensible answer"),
         ("impossible premise", "the premise cannot hold"),
         ("wrong_format", "the answer does not fit the format"),
+        ("ungradable", "ungradable - no value to mark the answer against"),
+        ("near-duplicate", "near-duplicate of a card in a more important topic"),
+        # Not a rejection at all: the pre-Feed-v2 corpus, retired because it has no
+        # archetype. Left in the same file because this is the record of everything
+        # held back, and 2,275 of them in an "other" bucket told us nothing.
+        ("legacy:", "pre-Feed-v2, no archetype - see .planning/feed-v2/LEGACY-CARDS.md"),
     ):
         if r.startswith(prefix):
             return name
