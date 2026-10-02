@@ -16,6 +16,8 @@ curated, prioritized list of what could actually be built next.
 3. **[RESEARCH.md](RESEARCH.md)** — research notes (learner-model techniques and
    the competitive landscape), so the recommendations here are grounded in more
    than opinion.
+4. **[OPTIONS.md](OPTIONS.md)** — the flat inventory of every option, one line
+   each, tagged ship / later / park / no.
 
 ## The short version
 
