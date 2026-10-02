@@ -216,6 +216,18 @@ def _answer_lines(card) -> list[str]:
             return [f"- {card['value']} ± {card['tolerance']}"]
         return []
 
+    if fmt == "compose":
+        # A written answer has no answer-shape column: what it is marked against
+        # is `key_points`, one boolean per point. Those are shown under "Graded
+        # on" like every other card's, but here they are the answer definition
+        # rather than a summary of it, and the reviewer has to judge them as such
+        # - an unanswerable requirement is this archetype's version of an
+        # implausible distractor.
+        points = _json(card["key_points"]) or []
+        return ["- Marked against each of these, by a model, one at a time:"] + [
+            f"  {i + 1}. {p}" for i, p in enumerate(points)
+        ]
+
     return []
 
 
@@ -268,10 +280,16 @@ def report(con) -> str:
         "",
         "## What these are",
         "",
-        "90x is an interview-prep app. The Feed is being rebuilt around 47 question archetypes over "
-        "ten answer screens (primitives). Every card names its archetype and its screen, and every "
-        "answer is marked by a pure function against the answer definition shown below - no model, "
-        "no typing. A reader answers without the lesson in front of them.",
+        # Counted from the registry rather than written down. The last version of
+        # this paragraph said "47 archetypes over ten answer screens" while the
+        # catalogue held 56 over 11.
+        f"90x is an interview-prep app. The Feed is being rebuilt around {len(archetypes.registry().archetypes)} "
+        f"question archetypes over {len(archetypes.registry().shapes)} answer screens (primitives). Every card "
+        "names its archetype and its screen, and almost every answer is marked by a pure function "
+        "against the answer definition shown below - no model, no typing. The one exception is the "
+        "`compose` screen, used by behavioural cards only: the reader writes two or three sentences "
+        "and a model marks them against the card's listed requirements, one at a time. A reader "
+        "answers without the lesson in front of them.",
         "",
         "## What to judge",
         "",
@@ -286,7 +304,10 @@ def report(con) -> str:
         "number for a calculation, tap for a point inside a snippet.",
         "3. **Are the why-step's wrong reasons plausible mistakes?** A right answer with an "
         "implausible reason is marked wrong, which punishes the reader for a writing failure.",
-        "4. **Was the gate right?** The rejected cards are at the end with its reasons.",
+        "4. **On a `compose` card, could a short answer actually satisfy every requirement?** They "
+        "are the rubric, graded one at a time, so a requirement nobody could meet in three sentences "
+        "marks a good answer wrong - the same failure as an implausible distractor.",
+        "5. **Was the gate right?** The rejected cards are at the end with its reasons.",
         "",
         f"Below: {len(picked)} cards, two per archetype, grouped by archetype so a *kind* of "
         "question can be judged as a whole. The two least-confident cards per archetype are shown, "
@@ -334,10 +355,13 @@ def report(con) -> str:
             "",
             card["answer"],
             "",
-            "**Graded on**",
-            "",
         ]
-        lines += [f"- {p}" for p in json.loads(card["key_points"] or "[]")]
+        # On a compose card the key points ARE the answer definition and were
+        # already printed as such, so repeating them under a second heading just
+        # pads a document the owner reads 112 cards of.
+        if card["format"] != "compose":
+            lines += ["**Graded on**", ""]
+            lines += [f"- {p}" for p in json.loads(card["key_points"] or "[]")]
         lines += [
             "",
             "<details><summary>The lesson this came from</summary>",
