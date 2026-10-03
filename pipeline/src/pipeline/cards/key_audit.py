@@ -120,7 +120,13 @@ def key_text(card) -> list[str] | None:
             text = _at(options, i)
             if text is None:
                 return unreadable
-            lines.append(f"Marked correct: {text}")
+            if primitive == "tap_in_place":
+                # "Marked correct" read as "this line is correct code", so a card whose
+                # key is the BUG line and whose explanation calls that line the bug looked
+                # like a contradiction. The line is the answer, not an endorsement.
+                lines.append(f"The line the reader must tap to be right (the answer itself): {text}")
+            else:
+                lines.append(f"Marked correct: {text}")
 
     elif primitive == "grid_toggle":
         picked = _ints(getattr(card, "picked", None))
@@ -232,6 +238,15 @@ Set `verdict` to:
 - "unclear" when the explanation does not say enough to tell, or you cannot work out what the key is claiming.
 
 Be careful with the difference between contradicting and being silent. An explanation that says nothing about part of the key does not contradict it, so that part is "agrees" or "unclear", never "contradicts". Judge only the match between key and explanation. Do not judge whether the question is good, whether the explanation is correct in the real world, or how hard the card is.
+
+How to read each kind of key, because most wrong "contradicts" verdicts come from misreading the key's shape:
+- A line the reader must tap (a bug, a bottleneck, an insertion point) IS the answer. It is supposed to be the line the explanation calls the problem, so they agree when the explanation points at that same line. Do not read it as an endorsement that the line is good code.
+- A rebuilt line joins the tokens with single spaces for display only. Ignore spacing and the spacing around punctuation or operators: `-XX: MaxMetaspaceSize = 256m` and `-XX:MaxMetaspaceSize=256m` are the same. Compare the words and their order, and whether any token is missing.
+- A number may be written by the explanation in other terms: an exponent, a count, a ratio, a complexity class. It agrees if they mean the same thing, so a key of `2.0` agrees with "O(n^2)" when the question asks for the exponent.
+- A grid lists, row by row, the columns ticked. Compare each row with what the explanation says about that row.
+- An explanation that numbers statements ("statements 1 and 3 are true") may be numbered differently from the key's order. Compare by the statement's content, not its number, and say "unclear" if you cannot match them.
+
+Say "contradicts" only when you can name a specific claim in the explanation that is incompatible with a specific part of the key. When you are unsure, say "unclear". Judge the key against the explanation only, never against your own knowledge of the subject.
 
 Reply with JSON only: {"verdicts":[{"index":0,"verdict":"agrees","reason":""}]}, one entry per card, using the card's number as `index`."""
 

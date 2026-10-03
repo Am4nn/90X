@@ -89,3 +89,55 @@ def test_stratifying_an_empty_selection_returns_nothing_instead_of_dividing_by_z
     con.execute("insert into cards values ('x', 'self_rate'), ('y', 'compose')")
     assert ks.stratified(con, ["x", "y"], 120) == []
     assert ks.stratified(con, [], 120) == []
+
+
+def _cards(rows):
+    con = duckdb.connect(":memory:")
+    con.execute("create table cards (id varchar, status varchar, kept boolean, reject_reason varchar, quality varchar)")
+    for r in rows:
+        con.execute("insert into cards values (?, ?, ?, ?, '{}')", r)
+    return con
+
+
+def test_a_retest_restores_only_cards_the_audit_rejected_and_rejects_only_live_ones(tmp_path, monkeypatch):
+    """Two rules that keep this from undoing someone else's decision: a card rejected for any
+    other reason (a duplicate, a premise that cannot hold) is not this script's to bring back
+    just because two models liked its key, and a card already rejected is not newly rejected."""
+    con = _cards([
+        ("audit-rejected", "rejected", False, "answer key contradicts the explanation: x"),
+        ("rejected-for-other-reason", "rejected", False, "near-duplicate of abc"),
+        ("live-and-confirmed-bad", "draft", True, None),
+        ("already-rejected-and-bad", "rejected", False, "answer key contradicts the explanation: y"),
+    ])
+    path = tmp_path / "retest.json"
+    path.write_text(json.dumps({
+        "restore": ["audit-rejected", "rejected-for-other-reason"],
+        "keep_out": ["live-and-confirmed-bad", "already-rejected-and-bad"],
+        "uncertain": [], "first": {}, "second": {},
+    }), encoding="utf-8")
+    monkeypatch.setattr(ks.duckdb, "connect", lambda *a, **k: con)
+    monkeypatch.setattr(ks, "APPLIED", str(tmp_path / "applied.json"))
+
+    ks.apply_retest(str(path))
+
+    status = dict(con.execute("select id, status || '/' || kept::varchar from cards").fetchall())
+    assert status["audit-rejected"] == "draft/true", "both models cleared it, so it comes back"
+    assert status["rejected-for-other-reason"] == "rejected/false", "not the audit's to restore"
+    assert status["live-and-confirmed-bad"] == "rejected/false", "a live card both models confirmed bad is taken out"
+    assert status["already-rejected-and-bad"] == "rejected/false"
+    applied = json.loads(Path(ks.APPLIED).read_text(encoding="utf-8"))
+    assert applied == {"restored": ["audit-rejected"], "newly_rejected": ["live-and-confirmed-bad"]}
+    note = con.execute("select quality from cards where id = 'audit-rejected'").fetchone()[0]
+    assert "key_audit_restored" in note, "a restored card records why it was put back"
+
+
+def test_a_retest_with_nothing_to_do_does_not_open_the_database(tmp_path, monkeypatch, capsys):
+    path = tmp_path / "empty.json"
+    path.write_text(json.dumps({"restore": [], "keep_out": [], "uncertain": ["a"], "first": {}, "second": {}}), encoding="utf-8")
+
+    def forbidden(*a, **k):
+        raise AssertionError("opened the database with nothing to apply")
+
+    monkeypatch.setattr(ks.duckdb, "connect", forbidden)
+    ks.apply_retest(str(path))
+    assert "nothing to restore" in capsys.readouterr().out
