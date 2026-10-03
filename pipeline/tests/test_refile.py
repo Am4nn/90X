@@ -242,3 +242,40 @@ def test_a_dry_run_never_calls_the_confirmation(tmp_path):
     finally:
         rf.verify = original
     assert result["moved"] == 1 and result["verified_fit"] == 0, result
+
+
+def test_verify_reports_which_cards_passed_so_a_caller_does_not_have_to_infer_it(tmp_path):
+    """A caller that must release only judged-and-passing cards needs to be told who they were.
+    Inferring from the database fails both ways: a topic whose gate call failed looks exactly like
+    one that passed, and apply() only stamps a topic that had a rejection."""
+    from pipeline import staging
+    from pipeline.cards import gate
+    from pipeline.cards import refile as rf
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    con.execute("insert into topics (slug, domain, name, sort, importance) values ('zz-t', 'lld', 'T', 0, 1)")
+    con.execute("""insert into lessons (topic_slug, title, body_md, practice, source_refs, words, status)
+                   values ('zz-t', 'T', 'A lesson.', '{"problems": [], "questions": []}', '[]', 3, 'ok')""")
+    for cid in ("good", "bad"):
+        con.execute(
+            """insert into cards (id, topic_slug, format, archetype, difficulty, prompt_md, options, answer_md,
+                   key_points, picked, status, kept, source)
+               values (?, 'zz-t', 'pick_one', 'concept', 'Easy', ?, '["a","b","c","d"]', 'a', '["x","y"]', '[0]',
+                       'draft', false, 'lesson')""",
+            [cid, f"Question {cid}?"],
+        )
+
+    class Gate:
+        """Cards come back in `status, id` order: bad, good."""
+
+        def complete_json(self, system, user, schema, tier="smart", purpose="", thinking=False):
+            ok = dict(answerable=True, premise_holds=True, one_answer=True, fits_archetype=True,
+                      fits_format=True, gradable=True, confidence=0.9)
+            return gate.GateResult(verdicts=[
+                gate.Verdict(index=0, **{**ok, "fits_archetype": False}, reason="asks something else"),
+                gate.Verdict(index=1, **ok),
+            ])
+
+    out = rf.verify(con, Gate(), ["good", "bad"], tier="smart")
+    assert out["checked"] == 2 and out["unfit"] == 1
+    assert out["fit_ids"] == ["good"], out

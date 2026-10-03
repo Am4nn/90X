@@ -81,19 +81,21 @@ def held(con, ids: list[str], keep: bool) -> None:
     con.commit()
 
 
-def judged_survivors(con, ids: list[str]) -> list[str]:
-    """Cards the gate actually ruled on, and passed.
+def judged_survivors(con, ids: list[str], passed: list[str]) -> list[str]:
+    """Cards the gate ruled on and passed, and that are still drafts.
 
-    `regate.apply` stamps `regated` into a card's quality for every card it judges. A card in a
-    topic whose gate call failed is still a plain draft, so counting every draft as a survivor
-    would release it never having been judged.
+    `passed` is what `refile.verify` reports. It cannot be inferred from the database: a topic whose
+    gate call failed leaves its cards looking exactly like cards that passed, and the only stamp
+    `regate.apply` writes is written when a topic had a rejection, so it is present or absent
+    depending on a sibling's result. An earlier version of this function used that stamp as proof of
+    judgement and would have held every good card in an all-pass topic forever.
     """
-    if not ids:
+    if not ids or not passed:
         return []
-    marks = ",".join("?" * len(ids))
+    keep = set(passed) & set(ids)
+    marks = ",".join("?" * len(keep))
     return [i for (i,) in con.execute(
-        f"""select id from cards where id in ({marks}) and status = 'draft'
-              and json_extract_string(quality, '$.regated') = 'true'""", ids).fetchall()]
+        f"select id from cards where id in ({marks}) and status = 'draft'", list(keep)).fetchall()] if keep else []
 
 
 def audit_new(llm, con, topics: dict, survivors: list[str], tiers=("fast", "smart")):
@@ -243,7 +245,7 @@ def main() -> None:
 
     # 2. The full answerability gate, options visible, only these cards.
     out = refile.verify(con, llm, new_ids, tier="smart")
-    survivors = judged_survivors(con, new_ids)
+    survivors = judged_survivors(con, new_ids, out["fit_ids"])
     unjudged = len(new_ids) - out["checked"]
     held(con, survivors, False)
     print(f"gate: {out['fit']} fit, {out['unfit']} rejected, {unjudged} never judged (left held); {len(survivors)} continue")
