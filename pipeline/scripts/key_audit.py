@@ -58,6 +58,8 @@ def stratified(con, ids: list[str], n: int) -> list[str]:
         by[fmt[i]].append(i)
     rng = random.Random(7)
     keyed = [f for f in by if f not in ("self_rate", "compose")]
+    if not keyed:  # --formats named only primitives with no key, or nothing matched
+        return []
     per = max(6, n // len(keyed))
     picked: list[str] = []
     for f in keyed:
@@ -67,10 +69,29 @@ def stratified(con, ids: list[str], n: int) -> list[str]:
     return picked
 
 
+# The one shape every checkpoint and the final file share. Each chunk used to replace the
+# file with only the current pass, so a second-pass checkpoint overwrote the first pass, and
+# a run that died between the two left a file `--from` could not read.
+STATE: dict = {"first": {}, "second": {}, "confirmed": []}
+
+
+def confirmed_from(state: dict) -> list[str]:
+    """Cards both passes call a contradiction. Derived, so it is right at every checkpoint."""
+    first, second = state.get("first", {}), state.get("second", {})
+    return sorted(cid for cid, r in second.items()
+                  if r["verdict"] == "contradicts" and first.get(cid, {}).get("verdict") == "contradicts")
+
+
+def save(state: dict) -> None:
+    state["confirmed"] = confirmed_from(state)
+    with open(OUT, "w", encoding="utf-8") as fh:
+        json.dump(state, fh, indent=1, ensure_ascii=False)
+
+
 def run(llm, groups: dict[str, list], topics: dict[str, dict], tier: str, label: str) -> dict[str, dict]:
     """Audit each topic's cards in chunks. Returns card id -> {verdict, reason}."""
     work = [(slug, cards[i:i + CHUNK]) for slug, cards in groups.items() for i in range(0, len(cards), CHUNK)]
-    results: dict[str, dict] = {}
+    results: dict[str, dict] = STATE[label]
     done = 0
 
     def job(slug, chunk):
@@ -92,8 +113,7 @@ def run(llm, groups: dict[str, list], topics: dict[str, dict], tier: str, label:
                 v = said.get(i)
                 results[c.id] = {"verdict": v.verdict if v else "missing", "reason": (v.reason if v else ""), "topic": slug}
             done += 1
-            with open(OUT, "w", encoding="utf-8") as fh:
-                json.dump({label: results}, fh, indent=1, ensure_ascii=False)
+            save(STATE)
             if done % 20 == 0:
                 print(f"  [{label}] {done}/{len(work)} chunks", flush=True)
     return results
@@ -101,9 +121,13 @@ def run(llm, groups: dict[str, list], topics: dict[str, dict], tier: str, label:
 
 def apply_saved(path: str) -> None:
     """Reject what a previous run confirmed, without paying for the model calls again."""
-    con = duckdb.connect(os.path.abspath("../.data/staging.duckdb"))
     saved = json.load(open(path, encoding="utf-8"))
-    confirmed, first, second = saved["confirmed"], saved["first"], saved["second"]
+    first, second = saved.get("first", {}), saved.get("second", {})
+    confirmed = saved.get("confirmed") or confirmed_from(saved)
+    if not confirmed:
+        print("nothing was confirmed, so nothing to reject")
+        return
+    con = duckdb.connect(os.path.abspath("../.data/staging.duckdb"))
     for cid in confirmed:
         why = (second[cid]["reason"] or first[cid]["reason"])[:200]
         con.execute(
@@ -153,11 +177,9 @@ def main() -> None:
     for cid in flagged:
         again[first[cid]["topic"]].append(by_id[cid])
     second = run(llm, again, topics, SECOND, "second") if again else {}
-    confirmed = {cid for cid, r in second.items() if r["verdict"] == "contradicts"}
+    save(STATE)
+    confirmed = set(STATE["confirmed"])  # both passes, not the second alone
     print(f"second pass ({SECOND}): {len(second)} re-read, {len(confirmed)} confirmed")
-
-    with open(OUT, "w", encoding="utf-8") as fh:
-        json.dump({"first": first, "second": second, "confirmed": sorted(confirmed)}, fh, indent=1, ensure_ascii=False)
 
     fmt = dict(con.execute("select id, format from cards").fetchall())
     by_format = defaultdict(lambda: [0, 0])

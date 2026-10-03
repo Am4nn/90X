@@ -128,6 +128,10 @@ def key_text(card) -> list[str] | None:
                 and isinstance(options.get("columns"), list)) or picked is None:
             return unreadable
         rows, cols = options["rows"], options["columns"]
+        # Nothing ticked, or no rows or columns to tick, is not a key. Reading it as
+        # "row: ticked nothing" lines would give the auditor something plausible to agree with.
+        if not rows or not cols or not picked:
+            return unreadable
         if any(not 0 <= i < len(rows) * len(cols) for i in picked):
             return unreadable
         for r, row in enumerate(rows):

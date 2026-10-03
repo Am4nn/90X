@@ -116,3 +116,13 @@ def test_the_auditor_sees_the_options_the_key_and_the_explanation_together():
     assert "option: Atomicity" in seen
     assert "Marked correct: Durability" in seen
     assert "Atomicity is all-or-nothing." in seen
+
+
+def test_a_grid_with_nothing_ticked_or_nothing_to_tick_is_unreadable_not_plausible():
+    """"row: ticked nothing" for every row reads as a key that contradicts nothing, so an
+    auditor would happily agree with it. The writer already refuses an empty result; a stored
+    one must not be treated as a key either."""
+    unreadable = ["The stored answer key could not be read."]
+    assert ka.key_text(card(format="grid_toggle", options={"rows": ["a", "b"], "columns": ["x"]}, picked=[])) == unreadable
+    assert ka.key_text(card(format="grid_toggle", options={"rows": ["a"], "columns": []}, picked=[])) == unreadable
+    assert ka.key_text(card(format="grid_toggle", options={"rows": [], "columns": ["x"]}, picked=[0])) == unreadable
