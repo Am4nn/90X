@@ -1,6 +1,7 @@
 import type { Answer } from "@/lib/feed/grade";
 import type { CardOptions } from "@/lib/feed/options";
 import type { CorrectAnswer } from "@/lib/feed/view";
+import { ClaimSwitch } from "./claim-switch";
 
 /**
  * The question again, after it has been answered, marked up in place.
@@ -45,21 +46,112 @@ function Legend({ children }: { children: string }) {
   return <h2 className="text-small font-semibold text-mute">{children}</h2>;
 }
 
-/** pick_one, mcq, claim_grid, tap_in_place: one list, some of it chosen. */
-function ChosenReview({ items, picked, correct }: { items: string[]; picked: number[]; correct: number[] }) {
+/** The glyph and word that mark a row: never colour alone. */
+function MarkLine({ ok, children }: { ok: boolean; children: string }) {
+  return (
+    <span className={`flex items-center gap-1.5 text-tag font-bold ${ok ? "text-ok" : "text-bad"}`}>
+      <span aria-hidden>{ok ? "\u2713" : "\u2715"}</span>
+      {children}
+    </span>
+  );
+}
+
+/** pick_one: the options again, lettered. The right one is marked, the reader's wrong pick is marked, the rest fade. */
+function PickReview({ items, picked, correct }: { items: string[]; picked: number[]; correct: number[] }) {
   const chose = new Set(picked);
   const truth = new Set(correct);
   return (
     <ul className="flex flex-col gap-2" aria-label="Your answer">
       {items.map((item, index) => {
-        // Right and chosen, or right and missed, both read as "this was right";
-        // the cross is kept for what the reader put that was not.
-        const state = truth.has(index) ? "ok" : chose.has(index) ? "bad" : "idle";
+        const right = truth.has(index);
+        const wrongPick = !right && chose.has(index);
+        const tone = right ? "border-ok bg-surface" : wrongPick ? "border-bad bg-surface" : "border-line text-mute";
         return (
-          <li key={index} className={`${CELL} ${state === "ok" ? OK : state === "bad" ? BAD : IDLE}`}>
-            <Mark state={state} />
-            <span className="flex-1">{item}</span>
-            {chose.has(index) && <span className="shrink-0 text-small text-mute">you</span>}
+          <li key={index} className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${tone}`}>
+            <span
+              aria-hidden
+              className={`flex size-7 shrink-0 items-center justify-center rounded-lg border font-display text-small font-semibold ${
+                right ? "border-ok text-ok" : wrongPick ? "border-bad text-bad" : "border-line text-mute"
+              }`}
+            >
+              {String.fromCharCode(65 + index)}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className={right || wrongPick ? "text-body text-text" : "text-body"}>{item}</span>
+              {right && <MarkLine ok>Correct</MarkLine>}
+              {wrongPick && <MarkLine ok={false}>You chose</MarkLine>}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** tap_in_place: the snippet again, the right line barred in green with the explanation under it,
+ *  the reader's wrong line barred in red. */
+function TapReview({ items, picked, correct, explanation }: { items: string[]; picked: number[]; correct: number[]; explanation: string }) {
+  const chose = new Set(picked);
+  const truth = new Set(correct);
+  return (
+    <div className="overflow-hidden rounded-xl border border-line bg-background" role="group" aria-label="Your answer">
+      <ol>
+        {items.map((line, index) => {
+          const right = truth.has(index);
+          const mine = chose.has(index);
+          const bar = right ? "border-ok bg-ok/5" : mine ? "border-bad bg-bad/5" : "border-transparent";
+          return (
+            <li key={index}>
+              <div className={`flex min-h-11 items-center border-l-3 font-mono text-small ${bar}`}>
+                <span
+                  aria-hidden
+                  className={`w-11 shrink-0 pr-3 text-right select-none ${right ? "text-ok" : mine ? "text-bad" : "text-mute"}`}
+                >
+                  {right ? "\u2713" : mine ? "\u2715" : index + 1}
+                </span>
+                <span className={`overflow-x-auto pr-4 whitespace-pre ${right || mine ? "text-text" : "text-mute"}`}>{line || " "}</span>
+                {mine && !right && (
+                  <span className="mr-3 ml-auto shrink-0 rounded-full border border-bad px-2 py-0.5 text-tag font-bold text-bad">
+                    Your pick
+                  </span>
+                )}
+              </div>
+              {right && (
+                <div className="mx-3 mb-3 flex max-w-xs flex-col gap-1 rounded-xl border border-ok bg-surface px-3.5 py-3 font-sans">
+                  <MarkLine ok>{`Line ${index + 1}${mine ? ", your pick" : ""}`}</MarkLine>
+                  {explanation && <p className="text-small text-text-2">{explanation}</p>}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+/** claim_grid: every statement with its switch frozen where the reader left it, and whether that was right. */
+function ClaimReview({ items, pairs, correct }: { items: string[]; pairs: [number, number][]; correct: [number, number][] }) {
+  const mine = new Map(pairs);
+  const truth = new Map(correct);
+  const answered = pairs.length > 0;
+  return (
+    <ul className="flex flex-col gap-4" aria-label="Your answer">
+      {items.map((statement, index) => {
+        const want = (truth.get(index) ?? 0) as 0 | 1;
+        const chose = mine.get(index);
+        const ok = chose === want;
+        return (
+          <li key={index} className="flex flex-col gap-2 border-b border-line pb-4 last:border-0 last:pb-0">
+            <div className="flex items-center justify-between gap-4">
+              <p className="min-w-0 text-body text-text">{statement}</p>
+              <ClaimSwitch
+                label={statement}
+                value={answered ? ((chose ?? want) as 0 | 1) : want}
+                tone={answered ? (ok ? "right" : "wrong") : "neutral"}
+              />
+            </div>
+            {answered && <MarkLine ok={ok}>{ok ? "Right" : `Wrong. It is ${want ? "true" : "false"}.`}</MarkLine>}
           </li>
         );
       })}
@@ -255,16 +347,16 @@ function GridReview({
 function NumberReview({ value, correct, tolerance }: { value: number; correct: number; tolerance: number }) {
   const ok = Math.abs(value - correct) <= tolerance;
   return (
-    <div role="group" aria-label="Your answer" className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-      <span className={`${CELL} ${ok ? OK : BAD}`}>
-        <Mark state={ok ? "ok" : "bad"} />
-        <span className="tabular font-display text-heading font-semibold">{value}</span>
-      </span>
+    <div role="group" aria-label="Your answer" className="flex flex-col gap-3">
+      <div className={`flex h-18 items-center justify-center rounded-2xl border bg-background px-4 ${ok ? "border-ok" : "border-bad"}`}>
+        <span className="tabular font-display text-display font-semibold text-text">{value}</span>
+      </div>
+      <MarkLine ok={ok}>{ok ? "In range" : "Out of range"}</MarkLine>
       {!ok && (
-        <span className="text-small text-text-2">
-          the answer is <span className="tabular font-semibold text-ok">{correct}</span>
-          {tolerance > 0 && <span className="text-mute"> ± {tolerance}</span>}
-        </span>
+        <p className="rounded-xl bg-surface-2 px-4 py-3 text-small text-text-2">
+          <span className="text-tag font-bold tracking-wider text-mute uppercase">Answer</span>{" "}
+          <span className="tabular font-semibold text-text">{correct}</span> {tolerance > 0 ? `within ${tolerance}` : "exactly"}
+        </p>
       )}
     </div>
   );
@@ -274,11 +366,26 @@ export function AnswerReview({
   content,
   submitted,
   correct,
+  primitive,
+  explanation,
 }: {
   content: CardOptions | null;
   submitted: Answer | null;
   correct: CorrectAnswer | null;
+  primitive: string | null;
+  /** The card's explanation, shown inline under the right line for tap_in_place. */
+  explanation: string;
 }) {
+  // A card the reader asked to be shown ("New to me") has no submission; a claim grid
+  // still redraws, its switches resting at the truth.
+  if (correct && !submitted && correct.shape === "mapping" && content?.shape === "list" && primitive === "claim_grid") {
+    return (
+      <section className="flex flex-col gap-2.5">
+        <Legend>The answer</Legend>
+        <ClaimReview items={content.items} pairs={[]} correct={correct.pairs} />
+      </section>
+    );
+  }
   if (!correct || !submitted) return null;
 
   const body = (() => {
@@ -287,13 +394,20 @@ export function AnswerReview({
     }
     if (!content) return null;
     if (correct.shape === "chosen" && submitted.shape === "chosen" && content.shape === "list") {
-      return <ChosenReview items={content.items} picked={submitted.picked} correct={correct.picked} />;
+      return primitive === "tap_in_place" ? (
+        <TapReview items={content.items} picked={submitted.picked} correct={correct.picked} explanation={explanation} />
+      ) : (
+        <PickReview items={content.items} picked={submitted.picked} correct={correct.picked} />
+      );
     }
     if (correct.shape === "ordered" && submitted.shape === "ordered") {
       const items = content.shape === "list" ? content.items : content.shape === "assemble" ? content.tokens : null;
       return items && <OrderedReview items={items} order={submitted.order} constraints={correct.constraints} />;
     }
     if (correct.shape === "mapping" && submitted.shape === "mapping") {
+      if (content.shape === "list") {
+        return <ClaimReview items={content.items} pairs={submitted.pairs} correct={correct.pairs} />;
+      }
       if (content.shape === "match") {
         return <MatchReview left={content.left} right={content.right} pairs={submitted.pairs} correct={correct.pairs} />;
       }

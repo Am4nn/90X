@@ -49,6 +49,7 @@ async function answer(page: Page, card: SeedCard) {
     const right = correctOption(card);
     expect(right).toBeGreaterThanOrEqual(0);
     await page.getByRole("list", { name: "Options" }).getByRole("button").nth(right).click();
+    await page.getByRole("button", { name: "Check answer", exact: true }).click();
   }
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
 }
@@ -137,6 +138,7 @@ test("picking the wrong option on a pick-one card marks it wrong", async ({ page
   expect(wrong).toBeGreaterThanOrEqual(0);
 
   await page.getByRole("list", { name: "Options" }).getByRole("button").nth(wrong).click();
+  await page.getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(cardArticle(page).getByText("Not quite", { exact: true })).toBeVisible();
 });

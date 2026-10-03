@@ -57,6 +57,7 @@ test("tapping the correct line in a snippet grades it right and shows the answer
   expect(right).toBeGreaterThanOrEqual(0);
 
   await lineTarget(page, right).click();
+  await cardArticle(page).getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
   await expect(cardArticle(page).getByText(card.answerMd, { exact: true })).toBeVisible();
@@ -70,6 +71,7 @@ test("tapping a wrong line marks it wrong and highlights the correct one", async
   expect(wrong).toBeGreaterThanOrEqual(0);
 
   await lineTarget(page, wrong).click();
+  await cardArticle(page).getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(cardArticle(page).getByText("Not quite", { exact: true })).toBeVisible();
   // The result ticks the correct line and crosses the wrong pick.

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckBar } from "./check-bar";
+import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
 /** Bucket: tap an item to arm it, tap a column to place it there. Each item
@@ -26,6 +27,7 @@ export function Bucket({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) 
 
   return (
     <div className="flex flex-col gap-4">
+      <Hint>Tap an item, then its column. Tap a placed item to move it.</Hint>
       <div className="grid grid-cols-2 gap-3">
         <ul aria-label="Items" className="flex flex-col gap-2">
           {items.map((item, index) => {
@@ -86,7 +88,6 @@ export function Bucket({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) 
         pending={pending}
         busy={busy}
         complete={complete}
-        hint={complete ? "Ready to check" : `${assigned.filter((c) => c === null).length} left to place`}
         onCheck={() =>
           onSubmit({
             cardId: card.id,

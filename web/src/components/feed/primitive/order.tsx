@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckBar } from "./check-bar";
+import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
 /** Order: tap items in the order you want them; they slot into the result rail.
@@ -18,6 +19,7 @@ export function Order({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      <Hint>Tap the steps in order. Tap a placed step to take it back.</Hint>
       <ol aria-label="Your order" className="flex flex-col gap-2">
         {items.map((_, slot) => {
           const index = placed[slot];
@@ -65,7 +67,6 @@ export function Order({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
         pending={pending}
         busy={busy}
         complete={complete}
-        hint={complete ? "Ready to check" : `${remaining.length} left to place`}
         onCheck={() => onSubmit({ cardId: card.id, shape: "ordered", order: placed })}
       />
     </div>

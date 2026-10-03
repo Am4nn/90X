@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckBar } from "./check-bar";
+import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
 /** Match: tap a left term to arm it, tap a right meaning to lock the pair. A
@@ -35,6 +36,7 @@ export function Match({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      <Hint>Tap a term, then its meaning. Tap a paired term to undo it.</Hint>
       <div className="grid grid-cols-2 gap-3">
         <ul aria-label="Terms" className="flex flex-col gap-2">
           {items.map((item, index) => {
@@ -92,13 +94,7 @@ export function Match({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
         </ul>
       </div>
 
-      <CheckBar
-        pending={pending}
-        busy={busy}
-        complete={complete}
-        hint={complete ? "Ready to check" : `${items.length - pairs.length} pair${items.length - pairs.length === 1 ? "" : "s"} left`}
-        onCheck={() => onSubmit({ cardId: card.id, shape: "mapping", pairs })}
-      />
+      <CheckBar pending={pending} busy={busy} complete={complete} onCheck={() => onSubmit({ cardId: card.id, shape: "mapping", pairs })} />
     </div>
   );
 }

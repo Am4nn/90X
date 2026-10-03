@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckBar } from "./check-bar";
+import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
 /** Assemble: tap tokens from the pool into the line, left to right. Pre-filled
@@ -29,6 +30,7 @@ export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
 
   return (
     <div className="flex flex-col gap-4">
+      <Hint>Tap pieces to build the line in order. Tap a placed piece to take it back.</Hint>
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface p-3" aria-label="Your answer">
         {slots.map((placed, slot) => {
           const pre = fixed[slot] ?? null;
@@ -85,7 +87,6 @@ export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
         pending={pending}
         busy={busy}
         complete={complete}
-        hint={complete ? "Ready to check" : `${pool.length} token${pool.length === 1 ? "" : "s"} left`}
         onCheck={() => onSubmit({ cardId: card.id, shape: "ordered", order: slots.map((placed) => placed ?? 0) })}
       />
     </div>

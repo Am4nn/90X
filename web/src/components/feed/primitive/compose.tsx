@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PRIMARY } from "@/components/button-styles";
+import { CheckBar } from "./check-bar";
+import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
 // The reader writes their own answer, two or three sentences, and it is marked
@@ -21,39 +22,17 @@ const MIN_CHARS = 40;
 export function Compose({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
   const [text, setText] = useState("");
   const trimmed = text.trim();
-  const left = MAX_CHARS - text.length;
   const short = trimmed.length < MIN_CHARS;
   const rubric = card.rubric ?? [];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`compose-${card.id}`} className="text-small font-semibold text-text-2">
-          Your answer{rubric.length ? ` — cover ${rubric.length} things` : ""}
-        </label>
-        <textarea
-          id={`compose-${card.id}`}
-          value={text}
-          onChange={(event) => setText(event.target.value.slice(0, MAX_CHARS))}
-          disabled={pending}
-          rows={5}
-          maxLength={MAX_CHARS}
-          autoCapitalize="sentences"
-          placeholder="Two or three sentences."
-          className="w-full resize-y rounded-xl border border-line-2 bg-surface-2 px-3.5 py-3 text-body text-text placeholder:text-mute focus-visible:border-cyan focus-visible:outline-none disabled:opacity-60"
-        />
-        <div className="flex items-baseline justify-between gap-3 text-small">
-          <span className="text-mute">{short ? `${MIN_CHARS - trimmed.length} more characters` : "Ready to check"}</span>
-          <span className={`tabular ${left <= 40 ? "text-warn" : "text-mute"}`} aria-live="polite">
-            {left} left
-          </span>
-        </div>
-      </div>
+      <Hint>Write a short answer. The rubric is what the marker checks for.</Hint>
 
       {rubric.length > 0 && (
-        <div className="rounded-xl border border-line bg-surface-2 px-3.5 py-3">
-          <p className="mb-1.5 text-small font-semibold text-text-2">A good answer does all of these</p>
-          <ul className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2 rounded-xl bg-surface-2 px-4 py-3">
+          <p className="text-tag font-bold tracking-wider text-mute uppercase">Cover these</p>
+          <ul className="flex flex-col gap-1.5">
             {rubric.map((point) => (
               <li key={point} className="text-small text-text-2">
                 {point}
@@ -63,15 +42,30 @@ export function Compose({ card, pending, busy, onSubmit }: PrimitiveAnswerProps)
         </div>
       )}
 
-      <button
-        type="button"
-        disabled={pending || short}
-        aria-busy={busy === "check" || undefined}
-        onClick={() => onSubmit({ cardId: card.id, answer: trimmed })}
-        className={PRIMARY}
-      >
-        {busy === "check" ? "Checking…" : "Check"}
-      </button>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={`compose-${card.id}`} className="sr-only">
+          Your answer
+        </label>
+        <textarea
+          id={`compose-${card.id}`}
+          value={text}
+          onChange={(event) => setText(event.target.value.slice(0, MAX_CHARS))}
+          disabled={pending}
+          rows={6}
+          maxLength={MAX_CHARS}
+          autoCapitalize="sentences"
+          placeholder="Two or three sentences."
+          className="min-h-35 w-full resize-y rounded-xl border border-line-2 bg-background px-3.5 py-3 text-body text-text placeholder:text-mute focus-visible:border-cyan focus-visible:outline-none disabled:opacity-60"
+        />
+        <div className="flex items-baseline justify-between gap-3 text-small">
+          <span className="text-mute">{short ? `${MIN_CHARS - trimmed.length} more characters` : "Ready to check"}</span>
+          <span className="tabular text-mute" aria-live="polite">
+            {text.length} / {MAX_CHARS}
+          </span>
+        </div>
+      </div>
+
+      <CheckBar pending={pending} busy={busy} complete={!short} onCheck={() => onSubmit({ cardId: card.id, answer: trimmed })} />
     </div>
   );
 }

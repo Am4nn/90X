@@ -10,7 +10,7 @@ import { feedCard, openFeedCard, seededCard } from "./helpers";
 
 const card = () => seededCard((c) => c.primitive === "compose", "compose");
 const box = (page: Page) => feedCard(page).getByRole("textbox");
-const check = (page: Page) => feedCard(page).getByRole("button", { name: "Check", exact: true });
+const check = (page: Page) => feedCard(page).getByRole("button", { name: "Check answer", exact: true });
 
 const GOOD =
   "Our product list took eight seconds to load. I added a cache in front of the catalogue query. Load time fell to under a second.";

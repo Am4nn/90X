@@ -47,7 +47,7 @@ async function answerMain(page: Page, card: SeedCard) {
   const value = card.value;
   if (typeof value !== "number") throw new Error("why-step card without a numeric answer");
   for (const digit of String(value)) await page.getByRole("button", { name: digit, exact: true }).click();
-  await page.getByRole("button", { name: "Check", exact: true }).click();
+  await page.getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(whyQuestion(page)).toBeVisible();
 }
 
@@ -84,7 +84,7 @@ test("a wrong main answer goes straight to the result, never to the why-step", a
   const wrongValue = (card.value ?? 0) + 1;
 
   for (const digit of String(wrongValue)) await page.getByRole("button", { name: digit, exact: true }).click();
-  await page.getByRole("button", { name: "Check", exact: true }).click();
+  await page.getByRole("button", { name: "Check answer", exact: true }).click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(whyQuestion(page)).toHaveCount(0);

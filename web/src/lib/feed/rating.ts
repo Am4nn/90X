@@ -3,7 +3,7 @@
 // the admin's summary of it.
 
 export const RATING_LABELS = ["Poor", "Weak", "Fine", "Good", "Excellent"] as const;
-export const RATING_PROMPT = "Rate this card";
+const RATING_PROMPT = "Rate this card";
 
 export type RatingBand = "bad" | "normal" | "good";
 

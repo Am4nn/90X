@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { type AnswerState, retireTopicAction, submitAnswer } from "@/app/actions/feed";
-import { PRIMARY, SECONDARY } from "@/components/button-styles";
+import { PRIMARY } from "@/components/button-styles";
 import { useServerAction } from "@/components/form";
 import { Markdown } from "@/components/markdown";
 import type { Answer } from "@/lib/feed/grade";
@@ -52,8 +52,11 @@ type Phase =
 
 type Busy = "check" | "skip" | "self" | "new_to_me" | "known" | null;
 
+/** Quiet text links under the answer: choices about the card, not answers. */
+const QUIET = "text-small font-medium text-mute underline decoration-line-2 underline-offset-4 hover:text-text-2 disabled:opacity-60";
+
 /** These primitives end in the shared Check bar, which carries Skip beside it. */
-const HAS_CHECK_BAR = new Set(["order", "match", "bucket", "assemble", "claim_grid"]);
+const HAS_CHECK_BAR = new Set(["pick_one", "tap_in_place", "numeric", "compose", "order", "match", "bucket", "assemble", "claim_grid"]);
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "BUTTON", "A"].includes(target.tagName));
@@ -251,15 +254,26 @@ export function FeedCard({
               is always offered: only they know whether they have met this idea.
               "I already know this" is earned, so it appears once they have a
               real record on the topic. */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+              {!(card.primitive && HAS_CHECK_BAR.has(card.primitive)) && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  aria-busy={label === "skip" || undefined}
+                  onClick={() => submit("skip", { cardId: card.id, skipped: true })}
+                  className={QUIET}
+                >
+                  {label === "skip" ? "Skipping…" : "Skip"}
+                </button>
+              )}
               <button
                 type="button"
                 disabled={pending}
                 aria-busy={label === "new_to_me" || undefined}
                 onClick={() => submit("new_to_me", { cardId: card.id, declare: "new_to_me" })}
-                className="text-small font-semibold text-cyan underline-offset-2 hover:underline disabled:opacity-60"
+                className={QUIET}
               >
-                {label === "new_to_me" ? "Opening…" : "New to me — show me the answer"}
+                {label === "new_to_me" ? "Opening…" : "New to me"}
               </button>
               {card.canDeclareKnown && (
                 <button
@@ -267,25 +281,12 @@ export function FeedCard({
                   disabled={pending}
                   aria-busy={label === "known" || undefined}
                   onClick={() => submit("known", { cardId: card.id, declare: "known" })}
-                  className="text-small font-semibold text-mute underline-offset-2 hover:text-text-2 hover:underline disabled:opacity-60"
+                  className={QUIET}
                 >
                   {label === "known" ? "Retiring…" : "I already know this"}
                 </button>
               )}
             </div>
-            {!(card.primitive && HAS_CHECK_BAR.has(card.primitive)) && (
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  disabled={pending}
-                  aria-busy={label === "skip" || undefined}
-                  onClick={() => submit("skip", { cardId: card.id, skipped: true })}
-                  className={`w-full md:w-auto ${SECONDARY}`}
-                >
-                  {label === "skip" ? "Skipping…" : "Skip"}
-                </button>
-              </div>
-            )}
           </div>
         )}
 
@@ -318,6 +319,7 @@ export function FeedCard({
           <Result
             result={phase.result}
             choice={phase.choice}
+            primitive={card.primitive}
             onNext={() => onNext(phase.result)}
             nextPending={nextPending}
             nextRef={nextRef}
@@ -361,12 +363,14 @@ export function FeedCard({
 function Result({
   result,
   choice,
+  primitive,
   onNext,
   nextPending,
   nextRef,
 }: {
   result: AnswerResult;
   choice: number | null;
+  primitive: CardView["primitive"];
   onNext: () => void;
   nextPending: boolean;
   nextRef: React.RefObject<HTMLButtonElement | null>;
@@ -377,7 +381,13 @@ function Result({
 
       <Verdict outcome={result.outcome} detail={result.pointsHit?.length ? `${scoreLine(result)}, pass mark 70%` : null} />
 
-      <AnswerReview content={result.content} submitted={result.submitted} correct={result.correct} />
+      <AnswerReview
+        content={result.content}
+        submitted={result.submitted}
+        correct={result.correct}
+        primitive={primitive}
+        explanation={result.answerMd}
+      />
 
       {/* The legacy list, for a card with no structured answer to redraw: an
           mcq row that predates the primitives, or a skip, where there is no
@@ -404,8 +414,8 @@ function Result({
 
       {result.keyPoints.length > 0 && (
         <section className="flex flex-col gap-2.5">
-          <h2 className="text-small font-semibold text-mute">Key points</h2>
-          <ul className="flex flex-col gap-2.5">
+          <h2 className="text-tag font-bold tracking-wider text-mute uppercase">Key points</h2>
+          <ul className="flex flex-col gap-2.5 border-l border-line-2 pl-3">
             {result.keyPoints.map((point, index) => {
               const hit = result.pointsHit?.[index];
               return (
@@ -427,10 +437,13 @@ function Result({
         </section>
       )}
 
-      <section className="flex flex-col gap-2.5">
-        <h2 className="text-small font-semibold text-mute">Answer</h2>
-        <Markdown>{result.answerMd}</Markdown>
-      </section>
+      {/* tap_in_place explains itself inline, under the right line. */}
+      {primitive !== "tap_in_place" && (
+        <section className="flex flex-col gap-2.5">
+          <h2 className="text-tag font-bold tracking-wider text-mute uppercase">Answer</h2>
+          <Markdown>{result.answerMd}</Markdown>
+        </section>
+      )}
 
       <div className="above-tabbar fixed inset-x-0 z-30 border-t border-line bg-background px-5 py-3 md:static md:z-auto md:border-0 md:bg-transparent md:p-0">
         <button
