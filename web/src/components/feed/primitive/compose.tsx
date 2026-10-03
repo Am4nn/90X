@@ -32,9 +32,9 @@ export function Compose({ card, pending, busy, onSubmit }: PrimitiveAnswerProps)
       {rubric.length > 0 && (
         <div className="flex flex-col gap-2 rounded-xl bg-surface-2 px-4 py-3">
           <p className="text-tag font-bold tracking-wider text-mute uppercase">Cover these</p>
-          <ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col gap-2">
             {rubric.map((point) => (
-              <li key={point} className="text-small text-text-2">
+              <li key={point} className="border-l border-line-2 pl-3 text-body text-text">
                 {point}
               </li>
             ))}
@@ -54,11 +54,11 @@ export function Compose({ card, pending, busy, onSubmit }: PrimitiveAnswerProps)
           rows={6}
           maxLength={MAX_CHARS}
           autoCapitalize="sentences"
-          placeholder="Two or three sentences."
+          placeholder="Write your answer"
           className="min-h-35 w-full resize-y rounded-xl border border-line-2 bg-background px-3.5 py-3 text-body text-text placeholder:text-mute focus-visible:border-cyan focus-visible:outline-none disabled:opacity-60"
         />
         <div className="flex items-baseline justify-between gap-3 text-small">
-          <span className="text-mute">{short ? `${MIN_CHARS - trimmed.length} more characters` : "Ready to check"}</span>
+          <span className="text-mute">{short ? `At least ${MIN_CHARS} characters` : ""}</span>
           <span className="tabular text-mute" aria-live="polite">
             {text.length} / {MAX_CHARS}
           </span>

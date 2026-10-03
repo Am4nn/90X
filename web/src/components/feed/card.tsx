@@ -9,6 +9,7 @@ import type { Answer } from "@/lib/feed/grade";
 import {
   AREA_LABEL,
   AREA_TEXT,
+  type FeedArea,
   type AnswerInput,
   type AnswerResult,
   type CardView,
@@ -25,6 +26,7 @@ import { SkipContext } from "./primitive/check-bar";
 import { ClaimGrid } from "./primitive/claim-grid";
 import { Compose } from "./primitive/compose";
 import { GridToggle } from "./primitive/grid-toggle";
+import { Glyph } from "./primitive/marks";
 import { Match } from "./primitive/match";
 import { NotBuilt } from "./primitive/not-built";
 import { Numeric } from "./primitive/numeric";
@@ -52,11 +54,25 @@ type Phase =
 
 type Busy = "check" | "skip" | "self" | "new_to_me" | "known" | null;
 
+/** The pill names the whole area where the toggles use a short form. */
+const AREA_PILL: Partial<Record<FeedArea, string>> = { system_design: "System design" };
+
 /** Quiet text links under the answer: choices about the card, not answers. */
 const QUIET = "text-small font-medium text-mute underline decoration-line-2 underline-offset-4 hover:text-text-2 disabled:opacity-60";
 
 /** These primitives end in the shared Check bar, which carries Skip beside it. */
-const HAS_CHECK_BAR = new Set(["pick_one", "tap_in_place", "numeric", "compose", "order", "match", "bucket", "assemble", "claim_grid"]);
+const HAS_CHECK_BAR = new Set([
+  "pick_one",
+  "tap_in_place",
+  "numeric",
+  "compose",
+  "order",
+  "match",
+  "bucket",
+  "assemble",
+  "claim_grid",
+  "grid_toggle",
+]);
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "BUTTON", "A"].includes(target.tagName));
@@ -213,13 +229,21 @@ export function FeedCard({
   return (
     <>
       <article className="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-5 md:p-7">
+        {phase.kind === "result" && (
+          <div className="flex flex-col gap-4 border-b border-line pb-4">
+            <Verdict
+              outcome={phase.result.outcome}
+              detail={phase.result.pointsHit?.length ? `${scoreLine(phase.result)}, pass mark 70%` : null}
+            />
+          </div>
+        )}
         <header className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-2.5">
               <span
                 className={`inline-flex h-6 shrink-0 items-center rounded-full border border-line-2 px-2.5 text-tag font-bold ${AREA_TEXT[card.topic.area]}`}
               >
-                {AREA_LABEL[card.topic.area]}
+                {AREA_PILL[card.topic.area] ?? AREA_LABEL[card.topic.area]}
               </span>
               <span className="truncate text-small font-semibold text-text">{card.topic.name}</span>
             </span>
@@ -238,7 +262,7 @@ export function FeedCard({
           )}
         </header>
 
-        <div className="font-display text-heading font-semibold [&_p]:text-text">
+        <div className="font-sans text-heading leading-normal font-semibold [&_p]:text-text">
           <Markdown>{card.promptMd}</Markdown>
         </div>
 
@@ -320,6 +344,7 @@ export function FeedCard({
             result={phase.result}
             choice={phase.choice}
             primitive={card.primitive}
+            promptMd={card.promptMd}
             onNext={() => onNext(phase.result)}
             nextPending={nextPending}
             nextRef={nextRef}
@@ -364,6 +389,7 @@ function Result({
   result,
   choice,
   primitive,
+  promptMd,
   onNext,
   nextPending,
   nextRef,
@@ -371,6 +397,7 @@ function Result({
   result: AnswerResult;
   choice: number | null;
   primitive: CardView["primitive"];
+  promptMd: string;
   onNext: () => void;
   nextPending: boolean;
   nextRef: React.RefObject<HTMLButtonElement | null>;
@@ -379,20 +406,19 @@ function Result({
     <div className="flex flex-col gap-5">
       {result.retireOffer && <RetireOffer offer={result.retireOffer} />}
 
-      <Verdict outcome={result.outcome} detail={result.pointsHit?.length ? `${scoreLine(result)}, pass mark 70%` : null} />
-
       <AnswerReview
         content={result.content}
         submitted={result.submitted}
         correct={result.correct}
         primitive={primitive}
         explanation={result.answerMd}
+        promptMd={promptMd}
       />
 
       {/* The legacy list, for a card with no structured answer to redraw: an
           mcq row that predates the primitives, or a skip, where there is no
           submission to mark. `AnswerReview` returns null in both cases. */}
-      {result.options && !(result.correct && result.submitted) && (
+      {result.options && !result.correct && (
         <ul className="flex flex-col gap-2" aria-label="Options">
           {result.options.map((option, index) => {
             const correct = index === result.correctOption;
@@ -465,14 +491,16 @@ function Result({
  *  the only signal. No percentage on a binary verdict; a written answer adds its
  *  key-point count beneath. */
 function Verdict({ outcome, detail }: { outcome: AnswerResult["outcome"]; detail: string | null }) {
-  const mark = outcome === "correct" ? "✓" : outcome === "wrong" ? "✕" : null;
-  const tone = outcome === "correct" ? "border-ok text-ok" : outcome === "wrong" ? "border-bad text-bad" : "border-line-2 text-mute";
+  const judged = outcome === "correct" || outcome === "wrong";
+  const tone = outcome === "correct" ? "border-ok text-ok" : "border-bad text-bad";
   return (
     <div className="flex flex-col gap-1" aria-live="polite">
       <div className="flex items-center gap-3">
-        <span aria-hidden className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-small font-bold ${tone}`}>
-          {mark ?? "–"}
-        </span>
+        {judged && (
+          <span aria-hidden className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 ${tone}`}>
+            <Glyph ok={outcome === "correct"} size="size-3.5" />
+          </span>
+        )}
         <span className="font-display text-title font-semibold text-text">{verdictText(outcome)}</span>
       </div>
       {detail && <span className="text-small text-text-2">{detail}</span>}

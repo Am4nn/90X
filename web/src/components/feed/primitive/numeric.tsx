@@ -74,7 +74,7 @@ export function Numeric({ card, pending, busy, onSubmit }: PrimitiveAnswerProps)
 
       <div
         aria-live="polite"
-        className={`flex h-18 items-center justify-center rounded-2xl border bg-background px-4 ${value ? "border-cyan" : "border-line-2"}`}
+        className={`flex h-18 items-center rounded-2xl border bg-background px-5 ${value ? "border-cyan" : "border-line-2"}`}
       >
         <span className={`tabular font-display text-display font-semibold ${value ? "text-text" : "text-mute"}`}>{value || "0"}</span>
         <span aria-hidden className="ml-1 h-8 w-0.5 bg-cyan" />
@@ -126,6 +126,8 @@ export function Numeric({ card, pending, busy, onSubmit }: PrimitiveAnswerProps)
           </svg>
         </button>
       </div>
+
+      <p className="text-small text-mute">{rule(decimals, negative)}</p>
 
       <CheckBar
         pending={pending}

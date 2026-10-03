@@ -7,7 +7,7 @@ import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
 /** The panel's header bar: the language when the question names one, and the line count. */
-function editorLabel(promptMd: string, lineCount: number): string {
+export function editorLabel(promptMd: string, lineCount: number): string {
   const language = codeLanguage(promptMd);
   return `${language ? `${language} · ` : ""}${lineCount} ${lineCount === 1 ? "line" : "lines"}`;
 }
@@ -46,11 +46,7 @@ export function TapInPlace({ card, pending, busy, onSubmit }: PrimitiveAnswerPro
                     {index + 1}
                   </span>
                   <span className="pr-4 whitespace-pre">{line || " "}</span>
-                  {on && (
-                    <span className="mr-3 ml-auto shrink-0 rounded-full border border-cyan px-2 py-0.5 text-tag font-bold text-cyan">
-                      Your pick
-                    </span>
-                  )}
+                  {on && <span className="mr-3 ml-auto shrink-0 text-tag font-bold text-cyan">Your pick</span>}
                 </button>
               </li>
             );

@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { CheckBar } from "./check-bar";
-import { Hint } from "./hint";
+import { Eyebrow, Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
-/** Order: tap items in the order you want them; they slot into the result rail.
- *  Tapping a placed item sends it back. The pool scrolls on a long card. */
+/** Order: tap the steps in the order you want them; they fill numbered slots.
+ *  Tapping a placed step sends it back to the pool. */
 export function Order({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
   const items = card.options?.shape === "list" ? card.options.items : [];
   const [placed, setPlaced] = useState<number[]>([]);
@@ -20,48 +20,63 @@ export function Order({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
   return (
     <div className="flex flex-col gap-4">
       <Hint>Tap the steps in order. Tap a placed step to take it back.</Hint>
-      <ol aria-label="Your order" className="flex flex-col gap-2">
-        {items.map((_, slot) => {
-          const index = placed[slot];
-          return (
-            <li key={slot} className="flex items-center gap-2">
-              <span aria-hidden className="w-6 shrink-0 text-right font-display text-small font-semibold text-mute">
-                {slot + 1}
-              </span>
-              {index === undefined ? (
-                <span aria-hidden className="min-h-11 flex-1 rounded-xl border border-dashed border-line px-4 py-2.5 text-small text-mute">
-                  {slot === placed.length ? "Tap an item" : "·"}
-                </span>
-              ) : (
+
+      <div className="flex flex-col gap-2">
+        <Eyebrow>Your order</Eyebrow>
+        <ol aria-label="Your order" className="flex flex-col gap-2">
+          {items.map((_, slot) => {
+            const index = placed[slot];
+            return (
+              <li key={slot}>
+                {index === undefined ? (
+                  <div
+                    aria-hidden
+                    className="flex min-h-12 items-center gap-3 rounded-xl border border-dashed border-line-2 py-0 pr-3.5 pl-2.5 text-small text-mute"
+                  >
+                    <span className="tabular grid size-6.5 shrink-0 place-items-center rounded-lg border border-line font-display text-small font-semibold">
+                      {slot + 1}
+                    </span>
+                    {slot === placed.length ? "Tap a step" : ""}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => remove(index)}
+                    aria-label={`Remove ${items[index]} from the order`}
+                    className="flex min-h-12 w-full items-start gap-3 rounded-xl border border-cyan bg-cyan-bg py-2.5 pr-3.5 pl-2.5 text-left text-body text-text disabled:opacity-60"
+                  >
+                    <span className="tabular grid size-6.5 shrink-0 place-items-center rounded-lg bg-on-cyan font-display text-small font-semibold text-cyan">
+                      {slot + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 text-pretty">{items[index]}</span>
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      {remaining.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <Eyebrow>Steps</Eyebrow>
+          <ul aria-label="Items to place" className="flex flex-col gap-2">
+            {remaining.map((index) => (
+              <li key={index}>
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={() => remove(index)}
-                  aria-label={`Remove ${items[index]} from the order`}
-                  className="min-h-11 flex-1 rounded-xl border border-cyan bg-cyan-bg px-4 py-2.5 text-left text-body text-text hover:border-bad disabled:opacity-60"
+                  onClick={() => place(index)}
+                  className="flex min-h-12 w-full items-start rounded-xl border border-line-2 bg-surface py-2.5 pr-3.5 pl-3.5 text-left text-body text-text transition-colors hover:border-mute disabled:opacity-60"
                 >
-                  {items[index]}
+                  <span className="min-w-0 flex-1 text-pretty">{items[index]}</span>
                 </button>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-
-      <ul aria-label="Items to place" className="flex max-h-52 flex-col gap-2 overflow-y-auto pr-1">
-        {remaining.map((index) => (
-          <li key={index}>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => place(index)}
-              className="min-h-11 w-full rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-left text-body text-text hover:border-cyan disabled:opacity-60"
-            >
-              {items[index]}
-            </button>
-          </li>
-        ))}
-      </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <CheckBar
         pending={pending}

@@ -5,8 +5,14 @@ import { CheckBar } from "./check-bar";
 import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
-/** Assemble: tap tokens from the pool into the line, left to right. Pre-filled
- *  tokens (a word-bank template) stay put; only the gaps are asked for. */
+const CODE = "font-mono text-small leading-relaxed";
+const PROSE = "text-body";
+
+/** Pieces that are code (a symbol, a keyword in capitals) read in monospace; sentence fragments do not. */
+const looksLikeCode = (tokens: string[]) => tokens.some((token) => /[;(){}[\]=<>*+/\\.,_]|^[A-Z]{2,}$/.test(token));
+
+/** Assemble: tap pieces from the pool into the line, left to right. Pre-filled
+ *  pieces (a word-bank template) stay put in grey; only the gaps are asked for. */
 export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps) {
   const tokens = card.options?.shape === "assemble" ? card.options.tokens : [];
   const fixed = card.options?.shape === "assemble" ? card.options.fixed : tokens.map(() => null);
@@ -18,6 +24,8 @@ export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
   const pool = gaps.filter(inPool);
   const nextGap = gaps.find((slot) => slots[slot] === null);
   const complete = slots.every((slot) => slot !== null);
+  const templated = fixed.some((f) => f !== null);
+  const TOKEN = looksLikeCode(tokens) ? CODE : PROSE;
 
   const place = (index: number) => {
     if (nextGap === undefined) return;
@@ -30,26 +38,24 @@ export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
 
   return (
     <div className="flex flex-col gap-4">
-      <Hint>Tap pieces to build the line in order. Tap a placed piece to take it back.</Hint>
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface p-3" aria-label="Your answer">
+      <Hint>
+        {templated
+          ? "Tap pieces to fill the blanks in order. Grey parts are fixed. Tap a placed piece to take it back."
+          : "Tap pieces to build the line in order. Tap a placed piece to take it back."}
+      </Hint>
+
+      <div className="flex min-h-17 flex-wrap items-center gap-2 rounded-xl border border-line bg-background p-3" aria-label="Your answer">
         {slots.map((placed, slot) => {
           const pre = fixed[slot] ?? null;
           if (pre !== null) {
             return (
-              <span key={slot} className="rounded-lg border border-line-2 bg-surface-2 px-3 py-2 text-body text-text-2">
+              <span key={slot} className={`flex min-h-11 items-center rounded-lg bg-surface-2 px-3 text-text-2 ${TOKEN}`}>
                 {tokens[pre]}
               </span>
             );
           }
           if (placed === null) {
-            return (
-              <span
-                key={slot}
-                className="min-h-11 min-w-16 rounded-lg border border-dashed border-line px-3 py-2 text-center text-body text-mute"
-              >
-                ···
-              </span>
-            );
+            return <span key={slot} aria-hidden className="h-11 w-13 rounded-lg border border-dashed border-line-2" />;
           }
           return (
             <button
@@ -58,7 +64,7 @@ export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
               disabled={pending}
               onClick={() => remove(slot)}
               aria-label={`Remove ${tokens[placed]} from the answer`}
-              className="min-h-11 rounded-lg border border-cyan bg-cyan-bg px-3 py-2 text-body text-text hover:border-bad disabled:opacity-60"
+              className={`flex min-h-11 items-center rounded-lg border border-cyan bg-cyan-bg px-3 text-text disabled:opacity-60 ${TOKEN}`}
             >
               {tokens[placed]}
             </button>
@@ -67,14 +73,14 @@ export function Assemble({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
       </div>
 
       {pool.length > 0 && (
-        <ul aria-label="Tokens" className="flex max-h-52 flex-col gap-2 overflow-y-auto pr-1">
+        <ul aria-label="Tokens" className="flex min-h-15 flex-wrap gap-2">
           {pool.map((index) => (
             <li key={index}>
               <button
                 type="button"
                 disabled={pending}
                 onClick={() => place(index)}
-                className="min-h-11 w-full rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-left text-body text-text hover:border-cyan disabled:opacity-60"
+                className={`flex min-h-11 min-w-11 items-center rounded-lg border border-line-2 bg-surface px-3.5 text-text transition-colors hover:border-mute disabled:opacity-60 ${TOKEN}`}
               >
                 {tokens[index]}
               </button>

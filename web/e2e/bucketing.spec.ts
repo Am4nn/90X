@@ -18,15 +18,15 @@ test("every item lands in a column and one tick per row is enforced in the UI", 
   await place(page, "random()", "Not deterministic");
 
   // Re-arm upper() and move it to the other column: it keeps exactly one tick.
-  await items(page)
+  await feedCard(page)
     .getByRole("button", { name: /upper\(\)/ })
     .click();
   await columns(page).getByRole("button", { name: "Not deterministic", exact: true }).click();
-  await expect(items(page).getByRole("button", { name: "upper() — in Not deterministic", exact: true })).toBeVisible();
-  await expect(items(page).getByRole("button", { name: "upper() — in Deterministic", exact: true })).toHaveCount(0);
+  await expect(feedCard(page).getByRole("button", { name: "upper() — in Not deterministic", exact: true })).toBeVisible();
+  await expect(feedCard(page).getByRole("button", { name: "upper() — in Deterministic", exact: true })).toHaveCount(0);
 
   // Put it back where it belongs and submit.
-  await items(page)
+  await feedCard(page)
     .getByRole("button", { name: /upper\(\)/ })
     .click();
   await columns(page).getByRole("button", { name: "Deterministic", exact: true }).click();

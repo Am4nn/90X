@@ -63,7 +63,7 @@ export function CardFooter({ card, result, nextReview }: { card: CardView; resul
       </div>
 
       <div className="flex min-h-14 items-center justify-between gap-3">
-        <div className="flex items-center gap-1" role="group" aria-label="Rate this card">
+        <div className="flex items-center" role="group" aria-label="Rate this card">
           <span className="w-21 shrink-0 text-small text-mute" aria-live="polite">
             {ratingLabel(stars, hover)}
           </span>

@@ -43,12 +43,12 @@ export function ClaimSwitch({
       <div className="absolute inset-0.75" aria-hidden>
         <span
           className={`absolute inset-y-0 left-0 w-1/2 rounded-full border transition-transform duration-200 ease-out ${THUMB[value === null ? "idle" : tone]} ${
-            value === 1 ? "translate-x-full" : ""
+            value === 0 ? "translate-x-full" : ""
           }`}
         />
       </div>
       <div className="relative grid h-full grid-cols-2">
-        {([0, 1] as const).map((side) => (
+        {([1, 0] as const).map((side) => (
           <button
             key={side}
             type="button"

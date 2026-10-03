@@ -213,7 +213,7 @@ export function Feed({
 
       <OfflineBanner>You&apos;re offline. Answers are saved on this device and graded when you&apos;re back online.</OfflineBanner>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px] md:gap-8">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_280px] md:gap-8">
         <div className="flex flex-col gap-4">
           {missionBanner(session) && (
             <div className="flex flex-col gap-3 rounded-xl border border-cyan/40 bg-cyan-bg p-4 sm:flex-row sm:items-center sm:justify-between">
