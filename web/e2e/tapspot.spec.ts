@@ -74,12 +74,12 @@ test("tapping a wrong line marks it wrong and highlights the correct one", async
   await cardArticle(page).getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(cardArticle(page).getByText("Not quite", { exact: true })).toBeVisible();
-  // The result ticks the correct line and crosses the wrong pick.
-  await expect(cardArticle(page).getByText("✓", { exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("✕", { exact: true })).toBeVisible();
+  // The result bars the correct line with its explanation and tags the wrong pick.
+  await expect(cardArticle(page).getByText(`Line ${right + 1}`)).toBeVisible();
+  await expect(cardArticle(page).getByText("Your pick", { exact: true })).toBeVisible();
 });
 
-test("the snippet targets are keyboard-reachable: Tab to the line, Enter submits", async ({ page }) => {
+test("the snippet targets are keyboard-reachable: Tab to the line, Enter picks it, Check answer submits", async ({ page }) => {
   await openFeed(page, "tapspot-keyboard");
   const card = await findCard(page, (c) => c.primitive === "tap_in_place");
   const right = correctOption(card);
@@ -90,6 +90,7 @@ test("the snippet targets are keyboard-reachable: Tab to the line, Enter submits
   await expect(lineTarget(page, right)).toBeFocused();
 
   await page.keyboard.press("Enter");
+  await cardArticle(page).getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
 });
