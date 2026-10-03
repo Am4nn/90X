@@ -1,6 +1,6 @@
 "use client";
 
-import { PRIMARY, SECONDARY } from "@/components/button-styles";
+import { SECONDARY } from "@/components/button-styles";
 import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
@@ -26,7 +26,7 @@ export function SelfRate({ card, pending, busy, onSubmit }: PrimitiveAnswerProps
           disabled={pending}
           aria-busy={busy === "self" || undefined}
           onClick={() => onSubmit({ cardId: card.id, selfMark: "got" })}
-          className={PRIMARY}
+          className={SECONDARY}
         >
           Got it
         </button>

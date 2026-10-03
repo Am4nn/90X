@@ -57,7 +57,7 @@ test("ticking the correct cells marks the grid correct", { tag: "@mobile" }, asy
   await page.getByRole("button", { name: "Check answer", exact: true }).click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("one extra wrong cell marks the grid wrong", async ({ page }) => {

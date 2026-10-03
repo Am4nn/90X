@@ -31,7 +31,7 @@ test("a written answer that meets the rubric is correct", async ({ page }) => {
   // A written answer gets the verdict, then the rubric back point by point and the
   // pass mark: the only feedback that tells the reader what to fix. It is the one
   // place a percentage still appears.
-  await expect(feedCard(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(feedCard(page).getByText("Correct", { exact: true }).first()).toBeVisible();
   await expect(feedCard(page).getByText("4 of 4 key points, pass mark 70%")).toBeVisible();
   await expect(feedCard(page).getByRole("img", { name: "Covered" })).toHaveCount(4);
 });

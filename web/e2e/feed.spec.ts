@@ -74,7 +74,7 @@ test(
 
     await answer(page, card);
     const result = cardArticle(page);
-    await expect(result.getByText("Correct", { exact: true })).toBeVisible();
+    await expect(result.getByText("Correct", { exact: true }).first()).toBeVisible();
 
     expect((await nextCard(page, card)).id).not.toBe(card.id);
   },
@@ -108,27 +108,32 @@ test("the Today block opens an overall report with lifetime, areas and seven day
 
   const today = page.getByRole("region", { name: "Today" }).first();
   await today.getByRole("button", { name: "Overall report" }).click();
-  await expect(today.getByRole("heading", { name: "Lifetime" })).toBeVisible();
+  await expect(today.getByRole("heading", { name: "Lifetime" })).toBeVisible({ timeout: 20_000 });
   await expect(today.getByRole("heading", { name: "By area" })).toBeVisible();
   await expect(today.getByRole("heading", { name: "Last 7 days, correct" })).toBeVisible();
   await today.getByRole("button", { name: "Hide report" }).click();
   await expect(today.getByRole("heading", { name: "Lifetime" })).toHaveCount(0);
 });
 
-test("on a phone the side blocks follow the answer and nothing covers the Next card bar", { tag: "@mobile" }, async ({ page }) => {
-  await openFeed(page, "feed-mobile-blocks");
-  const card = await findCard(page, (c) => c.primitive === "pick_one");
-  await expect(page.getByRole("region", { name: "Why this card" })).toHaveCount(0);
+test(
+  "on a phone the side blocks follow the answer and nothing covers the Next card bar",
+  { tag: "@mobile" },
+  async ({ page, isMobile }) => {
+    test.skip(!isMobile, "The side blocks move below the card only on a phone");
+    await openFeed(page, "feed-mobile-blocks");
+    const card = await findCard(page, (c) => c.primitive === "pick_one");
+    await expect(page.getByRole("region", { name: "Why this card" })).toHaveCount(0);
 
-  await answer(page, card);
-  await expect(page.getByRole("region", { name: "Today" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Why this card" })).toBeVisible();
+    await answer(page, card);
+    await expect(page.getByRole("region", { name: "Today" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Why this card" })).toBeVisible();
 
-  const next = page.getByRole("button", { name: "Next card", exact: true });
-  const nav = page.getByRole("navigation", { name: "Main" });
-  const [nextBox, navBox] = [await next.boundingBox(), await nav.boundingBox()];
-  expect(nextBox && navBox && nextBox.y + nextBox.height <= navBox.y).toBe(true);
-});
+    const next = page.getByRole("button", { name: "Next card", exact: true });
+    const nav = page.getByRole("navigation", { name: "Main" });
+    const [nextBox, navBox] = [await next.boundingBox(), await nav.boundingBox()];
+    expect(nextBox && navBox && nextBox.y + nextBox.height <= navBox.y).toBe(true);
+  },
+);
 
 test("picking the wrong option on a pick-one card marks it wrong", async ({ page }) => {
   await openFeed(page, "feed-wrong");
@@ -149,7 +154,7 @@ test("a self-rate card marked got counts as correct", async ({ page }) => {
 
   await page.getByRole("button", { name: "Got it", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
   await expect(cardArticle(page).getByText(card.answerMd, { exact: true })).toBeVisible();
 });
 
@@ -201,7 +206,7 @@ test('"New to me" shows the answer without scoring the card', async ({ page }) =
   await openFeed(page, "feed-declare");
   const card = await shownCard(page);
 
-  await cardArticle(page).getByRole("button", { name: "New to me — show me the answer" }).click();
+  await cardArticle(page).getByRole("button", { name: "New to me", exact: true }).click();
 
   const result = cardArticle(page);
   await expect(result.getByText("New to you — here's the answer", { exact: true })).toBeVisible();

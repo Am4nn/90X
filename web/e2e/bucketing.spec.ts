@@ -32,7 +32,7 @@ test("every item lands in a column and one tick per row is enforced in the UI", 
   await columns(page).getByRole("button", { name: "Deterministic", exact: true }).click();
   await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
-  await expect(feedCard(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(feedCard(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("one item in the wrong column is wrong", async ({ page }) => {

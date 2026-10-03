@@ -201,7 +201,7 @@ export function FeedCard({
   };
 
   const onSubmit = (input: AnswerInput, choice: number | null = null) => {
-    const label: NonNullable<Busy> = "shape" in input ? "check" : "selfMark" in input ? "self" : "skip";
+    const label: NonNullable<Busy> = "shape" in input || "answer" in input ? "check" : "selfMark" in input ? "self" : "skip";
     submit(label, input, choice);
   };
 

@@ -52,7 +52,7 @@ test("tapping digits on the keypad builds a number and the right value is correc
   await key(page, "Check answer").click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("an off-by-one value on the keypad marks the card wrong", async ({ page }) => {
@@ -78,7 +78,7 @@ test("backspace corrects a mistyped value before submitting", async ({ page }) =
   await key(page, "Check answer").click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("the decimal point appears where the card's tolerance implies decimals", async ({ page }) => {
@@ -92,7 +92,7 @@ test("the decimal point appears where the card's tolerance implies decimals", as
   await key(page, "Check answer").click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("the physical keyboard types and Enter checks", async ({ page }) => {
@@ -104,5 +104,5 @@ test("the physical keyboard types and Enter checks", async ({ page }) => {
   await page.keyboard.press("Enter");
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });

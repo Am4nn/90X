@@ -17,6 +17,7 @@ export async function overallReport(userId: string, q: Db = db, now = new Date()
   const today = localDate(tz, now);
   const mine = eq(cardReviews.userId, userId);
   const graded = sql`${cardReviews.outcome} in ('correct', 'wrong')`;
+  // Grouped by position: the same expression with its parameters repeated is not recognised as one.
   const day = sql<string>`((${cardReviews.createdAt} at time zone ${tz})::date)::text`;
 
   const [[life], byArea, byDay] = await Promise.all([
@@ -47,7 +48,7 @@ export async function overallReport(userId: string, q: Db = db, now = new Date()
       })
       .from(cardReviews)
       .where(and(mine, graded, sql`${cardReviews.createdAt} >= (${today}::date - 6)::timestamp at time zone ${tz}`))
-      .groupBy(day),
+      .groupBy(sql`1`),
   ]);
 
   const areas = byArea.flatMap((r): AreaRate[] => (isArea(r.area) ? [{ area: r.area, answered: r.answered, correct: r.correct }] : []));

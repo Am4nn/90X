@@ -12,7 +12,7 @@ test("placing items in the right order is correct and explains the order", async
   }
   await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
-  await expect(feedCard(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(feedCard(page).getByText("Correct", { exact: true }).first()).toBeVisible();
   await expect(feedCard(page).getByText(card.answerMd, { exact: true })).toBeVisible();
 });
 

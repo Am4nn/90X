@@ -59,7 +59,7 @@ test("tapping the correct line in a snippet grades it right and shows the answer
   await lineTarget(page, right).click();
   await cardArticle(page).getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
   await expect(cardArticle(page).getByText(card.answerMd, { exact: true })).toBeVisible();
 });
 
@@ -92,7 +92,7 @@ test("the snippet targets are keyboard-reachable: Tab to the line, Enter picks i
   await page.keyboard.press("Enter");
   await cardArticle(page).getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("self-rate Got it records a correct and moves to the next card", async ({ page }) => {
@@ -101,7 +101,7 @@ test("self-rate Got it records a correct and moves to the next card", async ({ p
 
   await page.getByRole("button", { name: "Got it", exact: true }).click();
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 
   expect((await nextCard(page, card)).id).not.toBe(card.id);
 });

@@ -61,7 +61,7 @@ test("a correct answer with the right reason marks the card correct", { tag: "@m
   await page.getByRole("list", { name: "Reason" }).getByRole("button").nth(why.correct).click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("a correct answer with the wrong reason marks the card wrong", async ({ page }) => {

@@ -12,7 +12,7 @@ test("building the line from the pool is correct", async ({ page }) => {
   }
   await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
-  await expect(feedCard(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(feedCard(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("a wrong token in the middle is wrong", async ({ page }) => {
@@ -46,5 +46,5 @@ test("a templated card shows the pre-filled tokens and only asks for the gaps", 
   await pool(page).getByRole("button", { name: "WHERE", exact: true }).click();
   await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
-  await expect(feedCard(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(feedCard(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
