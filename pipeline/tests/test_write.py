@@ -284,3 +284,39 @@ def test_the_grid_instruction_no_longer_asks_for_flat_indices():
     text = write.PRIMITIVE_INSTRUCTIONS["grid_toggle"]
     assert "row-major" not in text, "the model must not be asked to compute a flat index"
     assert "`cells`" in text and "[row, column]" in text
+
+
+def test_the_writer_is_told_what_the_archetype_asks_and_what_the_lesson_must_offer():
+    """The writer used to be given only the archetype's label. `intent` reached the gate and
+    the refile step but never the writer, so for a topic with no natural fit it guessed what
+    "Where the data leaks" meant and wrote a Python data-structures quiz; "Interleaving"
+    became a single-threaded HashMap lookup. The gate rejected 558 cards as the wrong
+    archetype, and rejecting them did nothing about the writer that made them."""
+    arch = archetypes.by_id("data-leak-spotter")
+    assert arch.intent and arch.requires
+    llm = FakeLLM(write.WriteResult(refused="the lesson has no pipeline"))
+    write.write_one(llm, TOPIC, LESSON, CardSlot("data-leak-spotter", "claim_grid", "Medium"), tier="smart")
+    user = llm.calls[0]["user"]
+    assert arch.intent in user, "the writer must be told what the question has to do"
+    assert f"ONLY if the lesson {arch.requires}" in user, "and what the lesson must offer before it writes"
+    assert "refuse" in user
+
+
+def test_an_archetype_with_no_precondition_adds_no_such_line():
+    arch = archetypes.by_id("concept")
+    assert not arch.requires
+    llm = FakeLLM(write.WriteResult(refused="x"))
+    write.write_one(llm, TOPIC, LESSON, CardSlot("concept", "pick_one", "Easy"), tier="smart")
+    assert "ONLY if the lesson" not in llm.calls[0]["user"]
+    assert arch.intent in llm.calls[0]["user"]
+
+
+def test_every_precondition_reads_as_the_end_of_the_sentence_the_writer_is_given():
+    """`requires` is spliced after "Write this archetype ONLY if the lesson", so it has to be a
+    clause: a verb phrase, lower case, no full stop."""
+    for a in archetypes.registry().archetypes:
+        if not a.requires:
+            continue
+        assert a.requires[0].islower(), a.id
+        assert not a.requires.endswith("."), a.id
+        assert a.intent, f"{a.id} has a precondition but no statement of what the question asks"
