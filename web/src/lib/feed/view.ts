@@ -31,6 +31,38 @@ export const AREA_LABEL: Record<FeedArea, string> = {
   behavioral: "Behavioural",
 };
 
+/** Written out in full so Tailwind sees every class. */
+export const AREA_TEXT: Record<FeedArea, string> = {
+  dsa: "text-topic-dsa",
+  system_design: "text-topic-sd",
+  cs: "text-topic-cs",
+  java: "text-topic-java",
+  sql: "text-topic-sql",
+  ai: "text-topic-ai",
+  lld: "text-topic-lld",
+  behavioral: "text-topic-beh",
+};
+export const AREA_DOT: Record<FeedArea, string> = {
+  dsa: "bg-topic-dsa",
+  system_design: "bg-topic-sd",
+  cs: "bg-topic-cs",
+  java: "bg-topic-java",
+  sql: "bg-topic-sql",
+  ai: "bg-topic-ai",
+  lld: "bg-topic-lld",
+  behavioral: "bg-topic-beh",
+};
+export const AREA_FILL: Record<FeedArea, string> = {
+  dsa: "fill-topic-dsa",
+  system_design: "fill-topic-sd",
+  cs: "fill-topic-cs",
+  java: "fill-topic-java",
+  sql: "fill-topic-sql",
+  ai: "fill-topic-ai",
+  lld: "fill-topic-lld",
+  behavioral: "fill-topic-beh",
+};
+
 const isFeedArea = (value: unknown): value is FeedArea => (FEED_AREAS as readonly unknown[]).includes(value);
 
 /** Whether a stored `cards.format` is a primitive id (Part A wrote the id there). */

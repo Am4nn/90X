@@ -8,10 +8,10 @@ import { Markdown } from "@/components/markdown";
 import type { Answer } from "@/lib/feed/grade";
 import {
   AREA_LABEL,
+  AREA_TEXT,
   type AnswerInput,
   type AnswerResult,
   type CardView,
-  type FeedArea,
   nextReviewText,
   scoreLine,
   type SessionStats,
@@ -35,6 +35,7 @@ import { SelfRate } from "./primitive/self-rate";
 import { TapInPlace } from "./primitive/tap-in-place";
 import type { PrimitiveAnswerProps } from "./primitive/types";
 import { WhyStep } from "./primitive/why-step";
+import { TodayBlock, WhyBlock } from "./side";
 
 /** The main answer held between the two screens of a why-step card. */
 type WhyMain = Answer & { cardId: string; why?: number };
@@ -50,18 +51,6 @@ type Phase =
   | { kind: "saved" };
 
 type Busy = "check" | "skip" | "self" | "new_to_me" | "known" | null;
-
-/** Written out in full so Tailwind sees every class. */
-const AREA_TEXT: Record<FeedArea, string> = {
-  dsa: "text-topic-dsa",
-  system_design: "text-topic-sd",
-  cs: "text-topic-cs",
-  java: "text-topic-java",
-  sql: "text-topic-sql",
-  ai: "text-topic-ai",
-  lld: "text-topic-lld",
-  behavioral: "text-topic-beh",
-};
 
 /** These primitives end in the shared Check bar, which carries Skip beside it. */
 const HAS_CHECK_BAR = new Set(["order", "match", "bucket", "assemble", "claim_grid"]);
@@ -109,6 +98,7 @@ function AnswerArea(props: PrimitiveAnswerProps) {
 export function FeedCard({
   card,
   userId,
+  session,
   onAnswered,
   onNext,
   nextPending,
@@ -116,6 +106,8 @@ export function FeedCard({
 }: {
   card: CardView;
   userId: string;
+  /** Today's running numbers, shown on a phone only once the card is answered. */
+  session: SessionStats;
   onAnswered: (session: SessionStats) => void;
   /** Null after an answer saved offline: there is no result to show yet. */
   onNext: (result: AnswerResult | null) => void;
@@ -351,7 +343,17 @@ export function FeedCard({
           </p>
         )}
       </article>
-      {phase.kind === "result" && <CardFooter card={card} result={phase.result} nextReview={phase.nextReview} />}
+      {phase.kind === "result" && (
+        <>
+          <CardFooter card={card} result={phase.result} nextReview={phase.nextReview} />
+          {/* On a phone the side blocks follow the answer, never sit between the reader and the question. */}
+          <div className="flex flex-col gap-4 md:hidden">
+            <TodayBlock session={session} />
+            <WhyBlock card={card} />
+          </div>
+          <div aria-hidden className="h-20 md:hidden" />
+        </>
+      )}
     </>
   );
 }
@@ -430,7 +432,7 @@ function Result({
         <Markdown>{result.answerMd}</Markdown>
       </section>
 
-      <div className="flex">
+      <div className="above-tabbar fixed inset-x-0 z-30 border-t border-line bg-background px-5 py-3 md:static md:z-auto md:border-0 md:bg-transparent md:p-0">
         <button
           ref={nextRef}
           type="button"

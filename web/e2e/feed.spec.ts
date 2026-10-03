@@ -100,6 +100,35 @@ test("after an answer the footer takes a star rating and a report, and not befor
   await expect(footer.getByText("Report sent. This card will be reviewed.")).toBeVisible();
 });
 
+test("the Today block opens an overall report with lifetime, areas and seven days", async ({ page }) => {
+  await openFeed(page, "feed-report");
+  const card = await findCard(page, (c) => c.primitive === "pick_one");
+  await answer(page, card);
+
+  const today = page.getByRole("region", { name: "Today" }).first();
+  await today.getByRole("button", { name: "Overall report" }).click();
+  await expect(today.getByRole("heading", { name: "Lifetime" })).toBeVisible();
+  await expect(today.getByRole("heading", { name: "By area" })).toBeVisible();
+  await expect(today.getByRole("heading", { name: "Last 7 days, correct" })).toBeVisible();
+  await today.getByRole("button", { name: "Hide report" }).click();
+  await expect(today.getByRole("heading", { name: "Lifetime" })).toHaveCount(0);
+});
+
+test("on a phone the side blocks follow the answer and nothing covers the Next card bar", { tag: "@mobile" }, async ({ page }) => {
+  await openFeed(page, "feed-mobile-blocks");
+  const card = await findCard(page, (c) => c.primitive === "pick_one");
+  await expect(page.getByRole("region", { name: "Why this card" })).toHaveCount(0);
+
+  await answer(page, card);
+  await expect(page.getByRole("region", { name: "Today" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Why this card" })).toBeVisible();
+
+  const next = page.getByRole("button", { name: "Next card", exact: true });
+  const nav = page.getByRole("navigation", { name: "Main" });
+  const [nextBox, navBox] = [await next.boundingBox(), await nav.boundingBox()];
+  expect(nextBox && navBox && nextBox.y + nextBox.height <= navBox.y).toBe(true);
+});
+
 test("picking the wrong option on a pick-one card marks it wrong", async ({ page }) => {
   await openFeed(page, "feed-wrong");
   const card = await findCard(page, (c) => c.primitive === "pick_one");

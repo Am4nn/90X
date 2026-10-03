@@ -7,6 +7,8 @@ import { DIFFICULTY_PREFERENCES } from "@/lib/feed/difficulty";
 import { reportCard } from "@/lib/feed/flag-service";
 import { isStars } from "@/lib/feed/rating";
 import { setRating } from "@/lib/feed/rating-service";
+import type { OverallReport } from "@/lib/feed/report";
+import { overallReport } from "@/lib/feed/report-service";
 import {
   answerCard,
   retireTopic,
@@ -141,6 +143,16 @@ export async function rateCardAction(id: string, stars: number | null): Promise<
   } catch (e) {
     console.error("rating failed", e);
     return { error: "The rating didn't save. Try again." };
+  }
+}
+
+export async function overallReportAction(): Promise<{ report: OverallReport } | { error: string }> {
+  const viewer = await requireViewer();
+  try {
+    return { report: await overallReport(viewer.id) };
+  } catch (e) {
+    console.error("overall report failed", e);
+    return { error: "The report didn't load. Try again." };
   }
 }
 

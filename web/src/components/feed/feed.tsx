@@ -21,7 +21,6 @@ import { PageHeader } from "@/components/page-header";
 import { areaDot } from "@/lib/admin/review";
 import { type DifficultyPreference } from "@/lib/feed/difficulty";
 import {
-  accuracyPercent,
   AREA_LABEL,
   type AnswerResult,
   type AreaSummary,
@@ -31,13 +30,13 @@ import {
   FEED_AREAS,
   missionBanner,
   type SessionStats,
-  whyLine,
 } from "@/lib/feed/view";
 import { nextOfflineCard, pendingFor } from "@/lib/offline/outbox";
 import { loadCards, outboxItems } from "@/lib/offline/store";
 import { refreshCards, sendQueuedAnswers } from "@/lib/offline/sync";
 import { FeedCard } from "./card";
 import { DifficultyToggle } from "./difficulty-toggle";
+import { TodayBlock, WhyBlock } from "./side";
 import { TopicToggle } from "./topic-toggle";
 
 export type Screen =
@@ -214,7 +213,7 @@ export function Feed({
 
       <OfflineBanner>You&apos;re offline. Answers are saved on this device and graded when you&apos;re back online.</OfflineBanner>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] md:gap-8">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px] md:gap-8">
         <div className="flex flex-col gap-4">
           {missionBanner(session) && (
             <div className="flex flex-col gap-3 rounded-xl border border-cyan/40 bg-cyan-bg p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -256,51 +255,22 @@ export function Feed({
                 key={card.id}
                 card={card}
                 userId={userId}
+                session={session}
                 onAnswered={setSession}
                 onNext={onNext}
                 nextPending={nextPending}
                 nextError={nextError}
               />
-              <span className="text-small text-mute md:hidden">{whyLine(card)}</span>
             </>
           )}
         </div>
 
-        <aside className="hidden flex-col gap-4 md:flex">
-          {card && (
-            <section className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-5">
-              <h2 className="font-display text-heading font-semibold">Why this card</h2>
-              <p className="text-text-2">{whyLine(card)}</p>
-            </section>
-          )}
-          <SessionPanel session={session} />
+        <aside className="sticky top-8 hidden flex-col gap-4 self-start md:flex">
+          {card && <WhyBlock card={card} />}
+          <TodayBlock session={session} />
         </aside>
       </div>
     </>
-  );
-}
-
-function SessionPanel({ session }: { session: SessionStats }) {
-  const accuracy = accuracyPercent(session);
-  const tone = accuracy === null ? "text-mute" : accuracy >= 70 ? "text-ok" : accuracy >= 40 ? "text-warn" : "text-bad";
-  return (
-    <section className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-5">
-      <h2 className="font-display text-heading font-semibold">Today</h2>
-      <dl className="grid grid-cols-3 gap-3">
-        <div className="flex flex-col gap-1">
-          <dt className="text-small text-mute">Answered</dt>
-          <dd className="tabular font-display text-title font-bold">{session.answered}</dd>
-        </div>
-        <div className="flex flex-col gap-1">
-          <dt className="text-small text-mute">Correct</dt>
-          <dd className={`tabular font-display text-title font-bold ${tone}`}>{accuracy === null ? "—" : `${accuracy}%`}</dd>
-        </div>
-        <div className="flex flex-col gap-1">
-          <dt className="text-small text-mute">Skipped</dt>
-          <dd className="tabular font-display text-title font-bold text-text-2">{session.skipped}</dd>
-        </div>
-      </dl>
-    </section>
   );
 }
 
