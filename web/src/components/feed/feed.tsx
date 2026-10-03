@@ -216,7 +216,7 @@ export function Feed({
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_280px] md:gap-8">
         <div className="flex flex-col gap-4">
           {missionBanner(session) && (
-            <div className="flex flex-col gap-3 rounded-xl border border-cyan/40 bg-cyan-bg p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 rounded-2xl border border-cyan/40 bg-cyan-bg p-4 sm:flex-row sm:items-center sm:justify-between">
               <span className="font-semibold">You&apos;ve done {session.answered} cards. Your missions are waiting.</span>
               <Link href="/today" className={`${button({ variant: "primary" })} shrink-0`}>
                 Go to Today
@@ -287,7 +287,7 @@ function DiagnosticOffer({
 }) {
   const [pressed, setPressed] = useState<"start" | "skip" | null>(null);
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-5 md:p-7">
+    <section className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 md:p-7">
       <div className="flex flex-col gap-2">
         <h2 className="font-display text-title font-semibold">Start with a diagnostic</h2>
         <p className="text-text-2">A 15-minute check, 20 cards across your areas. It sets your starting readiness.</p>
@@ -339,7 +339,7 @@ function DiagnosticSummary({
   onContinue: () => void;
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-5 md:p-7">
+    <section className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 md:p-7">
       <div className="flex flex-col gap-2">
         <h2 className="font-display text-title font-semibold">Diagnostic done</h2>
         <p className="text-text-2">Your readiness now starts from these answers. The feed leans on the areas you missed.</p>
