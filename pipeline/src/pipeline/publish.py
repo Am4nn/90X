@@ -199,6 +199,12 @@ def _publish_cards(con, cur) -> dict:
     definition: a pick_one card showing four stale options against a mapping
     answer, ungradeable by any reader. Everything except `id`, `status` and
     `hidden` therefore converges on what staging holds.
+
+    Every card sent is stamped `published_at = now()`. `now()` is the transaction's
+    start, so one publish gives every card the same stamp, and `swap` activates only
+    the newest. A card staging no longer sends keeps its old stamp and so cannot be
+    resurrected by a swap: that is how production tells "in the current corpus" from
+    "was in it once".
     """
     batches = con.execute(
         "select id, domain, topic_slugs, created_at, ai_pass_rate, label from card_batches").fetchall()
@@ -220,9 +226,9 @@ def _publish_cards(con, cur) -> dict:
         cur.executemany(
             """insert into public.cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md,
                    options, answer_md, key_points, source_refs, quality, risk, archetype, picked,
-                   constraints, pairs, value, tolerance, why_step, status)
+                   constraints, pairs, value, tolerance, why_step, status, published_at)
                values (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s,
-                       %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s::jsonb, 'draft')
+                       %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s::jsonb, 'draft', now())
                on conflict (id) do update set
                  batch_id = excluded.batch_id, topic_slug = excluded.topic_slug,
                  problem_slug = excluded.problem_slug, format = excluded.format,
@@ -231,7 +237,8 @@ def _publish_cards(con, cur) -> dict:
                  key_points = excluded.key_points, source_refs = excluded.source_refs,
                  quality = excluded.quality, risk = excluded.risk, archetype = excluded.archetype,
                  picked = excluded.picked, constraints = excluded.constraints, pairs = excluded.pairs,
-                 value = excluded.value, tolerance = excluded.tolerance, why_step = excluded.why_step""",
+                 value = excluded.value, tolerance = excluded.tolerance, why_step = excluded.why_step,
+                 published_at = excluded.published_at""",
             [(c[0], bid, *c[1:6], c[6] if c[6] is None else json.dumps(json.loads(c[6])), c[7],
               json.dumps(json.loads(c[8] or "[]")), json.dumps(json.loads(c[9] or "[]")),
               json.dumps(json.loads(c[10] or "{}")), c[11],
