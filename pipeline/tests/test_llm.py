@@ -215,3 +215,45 @@ def test_one_lock_per_connection(tmp_path):
     ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-flash", "smart": "deepseek-v4-pro"})
     assert llm.lock_for(con) is ai.lock
     assert llm.lock_for(con) is not llm.lock_for(other)
+
+
+def test_a_flat_rate_host_costs_nothing_in_the_ledger_and_is_not_charged_to_the_ceiling(tmp_path):
+    """OpenCode Go is a $10 subscription, not metered billing. `deepseek-v4-pro` is in PRICES
+    at DeepSeek's direct rate, so without this the same model name through the subscription
+    would be charged to the lifetime ceiling at a rate nobody is paying, and the ceiling is
+    the one guard between a runaway loop and the bill. Tokens are still logged."""
+    assert llm.cost_usd("deepseek-v4-pro", 1_000_000, 1_000_000, off_peak=False) > 0
+    assert llm.cost_usd("deepseek-v4-pro", 1_000_000, 1_000_000, off_peak=False, flat_rate=True) == 0.0
+
+    class Host:
+        def __init__(self, url):
+            self.base_url = url
+
+    assert llm.is_flat_rate(Host("https://opencode.ai/zen/go/v1/"))
+    assert not llm.is_flat_rate(Host("https://api.deepseek.com"))
+    assert not llm.is_flat_rate(Host("https://generativelanguage.googleapis.com/v1beta/openai/"))
+
+    con = staging.connect(tmp_path / "s.duckdb")
+    for url, label in (("https://opencode.ai/zen/go/v1/", "flat"), ("https://api.deepseek.com", "metered")):
+        client, _ = fake_client(['{"pattern": "dp", "confidence": 0.5}'])
+        client.base_url = url
+        ai = llm.LLM(client=client, con=con, models={"fast": "deepseek-v4-pro", "smart": "deepseek-v4-pro"})
+        ai.complete_json("s", "u", Answer, purpose=label)
+    costs = dict(con.execute("select purpose, cost_usd from llm_calls").fetchall())
+    assert costs["flat"] == 0.0
+    assert costs["metered"] > 0
+    tokens = con.execute("select tokens_in, tokens_out from llm_calls where purpose = 'flat'").fetchone()
+    assert tokens == (100, 20), "a flat-rate call is still logged with its tokens"
+
+
+def test_the_flat_rate_host_gets_the_headers_it_requires_and_a_metered_one_gets_none():
+    """OpenCode Go answers 400 MissingSessionID without `x-opencode-session`, and its docs say
+    a script must identify itself with its own user agent rather than a generic SDK name.
+    Found by a live call, which a fake client cannot show. A metered provider wants neither."""
+    go = llm.client_headers("https://opencode.ai/zen/go/v1")
+    assert go["x-opencode-session"] == llm.SESSION_ID
+    assert go["User-Agent"].startswith("90x-pipeline/")
+    assert "openai" not in go["User-Agent"].lower(), "must not hide behind the SDK's name"
+    assert llm.client_headers("https://opencode.ai/zen/go/v1") == go, "the session id is stable within a run"
+    assert llm.client_headers("https://api.deepseek.com") == {}
+    assert llm.client_headers(None) == {}

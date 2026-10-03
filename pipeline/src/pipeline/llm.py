@@ -6,6 +6,7 @@ import json
 import os
 import threading
 import time
+import uuid
 from datetime import datetime, timezone
 from typing import TypeVar
 
@@ -26,6 +27,36 @@ PRICES = {
     "gemini-3.5-flash-lite": (0.30, 2.50),
 }
 DEFAULT_PRICE = (1.0, 5.0)  # unknown model: count it conservatively
+
+# Hosts that sell a flat subscription with its own usage limits rather than billing per
+# token. OpenCode Go is $10 a month for a pool of models. Pricing those calls at the
+# per-token table would be wrong twice over: `deepseek-v4-pro` is in PRICES at
+# DeepSeek's direct rate, so the same model name through OpenCode would be charged to
+# the lifetime ceiling at a rate nobody is paying, and the ceiling is the one guard
+# between a runaway loop and the bill. A flat-rate call is logged with its tokens and a
+# cost of zero.
+FLAT_RATE_HOSTS = ("opencode.ai",)
+
+
+def is_flat_rate(client) -> bool:
+    """Whether this client's calls ride a subscription instead of metered billing."""
+    base = str(getattr(client, "base_url", "") or "")
+    return any(host in base for host in FLAT_RATE_HOSTS)
+
+
+# The OpenCode Go proxy refuses a request without a session id ("MissingSessionID": it
+# cannot be routed efficiently) and monitors for automation that hides behind a generic
+# SDK user agent, so a script must name itself. One id per process: a run is one
+# conversation as far as routing and prompt caching go.
+SESSION_ID = str(uuid.uuid4())
+USER_AGENT = "90x-pipeline/1.0 (+https://github.com/Am4nn/90x)"
+
+
+def client_headers(base_url: str | None) -> dict[str, str]:
+    """Headers a flat-rate host requires. Empty for a metered provider, which wants none."""
+    if base_url and any(host in base_url for host in FLAT_RATE_HOSTS):
+        return {"x-opencode-session": SESSION_ID, "User-Agent": USER_AGENT}
+    return {}
 
 # DeepSeek thinks by default and bills the reasoning tokens as output. Most
 # pipeline steps turn it off (a JSON verdict or a card does not need it), but
@@ -88,7 +119,9 @@ def wait_for_off_peak(poll_seconds: int = 300) -> None:
         time.sleep(poll_seconds)
 
 
-def cost_usd(model: str, tokens_in: int, tokens_out: int, off_peak: bool) -> float:
+def cost_usd(model: str, tokens_in: int, tokens_out: int, off_peak: bool, flat_rate: bool = False) -> float:
+    if flat_rate:
+        return 0.0
     price_in, price_out = PRICES.get(model, DEFAULT_PRICE)
     cost = (tokens_in * price_in + tokens_out * price_out) / 1_000_000
     # Only DeepSeek has the off-peak discount.
@@ -105,8 +138,9 @@ MAX_RETRIES = 2
 def _default_client():
     from openai import OpenAI
 
-    return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=os.environ.get("AI_BASE_URL") or None,
-                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
+    base = os.environ.get("AI_BASE_URL") or None
+    return OpenAI(api_key=os.environ["AI_API_KEY"], base_url=base,
+                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES, default_headers=client_headers(base) or None)
 
 
 def _review_client():
@@ -115,8 +149,9 @@ def _review_client():
         return None
     from openai import OpenAI
 
-    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=os.environ.get("REVIEW_BASE_URL") or None,
-                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
+    base = os.environ.get("REVIEW_BASE_URL") or None
+    return OpenAI(api_key=os.environ["REVIEW_API_KEY"], base_url=base,
+                  timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES, default_headers=client_headers(base) or None)
 
 
 class LLM:
@@ -194,7 +229,7 @@ class LLM:
                 model=model, messages=messages, response_format={"type": "json_object"}, temperature=0.2,
                 extra_body=extra_body, **extra,
             )
-            self._log(model, purpose, response.usage)
+            self._log(model, purpose, response.usage, flat_rate=is_flat_rate(client))
             content = response.choices[0].message.content or ""
             try:
                 return schema.model_validate_json(content)
@@ -203,7 +238,7 @@ class LLM:
                 messages.append({"role": "assistant", "content": content})
         raise LLMError(f"{purpose or 'llm'}: invalid JSON after retry: {last_error}")
 
-    def _log(self, model: str, purpose: str, usage) -> None:
+    def _log(self, model: str, purpose: str, usage, flat_rate: bool = False) -> None:
         tokens_in = getattr(usage, "prompt_tokens", 0) or 0
         tokens_out = getattr(usage, "completion_tokens", 0) or 0
         # OpenAI-compatible endpoints may leave thinking out of completion_tokens
@@ -212,10 +247,10 @@ class LLM:
         tokens_reasoning = max(0, total - tokens_in - tokens_out)
         off_peak = is_off_peak()
         with self.lock:
-            self._insert(model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning)
+            self._insert(model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning, flat_rate)
 
-    def _insert(self, model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning=0) -> None:
-        cost = cost_usd(model, tokens_in, tokens_out + tokens_reasoning, off_peak)
+    def _insert(self, model, purpose, tokens_in, tokens_out, off_peak, tokens_reasoning=0, flat_rate=False) -> None:
+        cost = cost_usd(model, tokens_in, tokens_out + tokens_reasoning, off_peak, flat_rate)
         self.con.execute(
             """insert into llm_calls (model, purpose, tokens_in, tokens_out, tokens_reasoning, cost_usd, off_peak, run_id)
                values (?, ?, ?, ?, ?, ?, ?, ?)""",

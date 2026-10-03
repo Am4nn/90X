@@ -184,7 +184,9 @@ PRIMITIVE_INSTRUCTIONS = {
     "grid_toggle": (
         "GRID TOGGLE. Put the row labels in `options.rows` and the column labels in "
         "`options.columns`, each a list of strings (at most 3x3), and ask which cells hold. "
-        "Set `picked` to the 0-based cell indices, row-major, that are correct."
+        "Set `cells` to the correct cells as [[row, column], ...], each a 0-based row number and "
+        "0-based column number, for example [[0, 1], [2, 0]] for row 0 column 1 and row 2 "
+        "column 0. Leave `picked` empty: the pipeline works out the cell numbers itself."
     ),
 }
 
@@ -238,6 +240,35 @@ def _option_strings(options) -> list[str]:
     return []
 
 
+def grid_picked(options, cells) -> list[int] | None:
+    """Flat row-major cell numbers for `[row, column]` pairs, or None if they do not fit.
+
+    `picked` for a grid is `row * columns + column`. A model asked to produce that
+    number directly produced the wrong one in 55 of 109 live grids, and the errors
+    were quiet: a flat index outside the grid is caught, but one that lands on the
+    wrong cell is just another valid cell. Naming the row and column is a task the
+    model does reliably; the multiplication is done here.
+    """
+    if not isinstance(options, dict):
+        return None
+    rows, columns = options.get("rows"), options.get("columns")
+    if not (isinstance(rows, list) and isinstance(columns, list) and rows and columns):
+        return None
+    if not isinstance(cells, list):
+        return None
+    out: set[int] = set()
+    for cell in cells:
+        if not (isinstance(cell, (list, tuple)) and len(cell) == 2):
+            return None
+        if not all(isinstance(n, int) and not isinstance(n, bool) for n in cell):
+            return None
+        row, column = cell
+        if not (0 <= row < len(rows) and 0 <= column < len(columns)):
+            return None
+        out.add(row * len(columns) + column)
+    return sorted(out) or None
+
+
 class CardDraft(BaseModel):
     """What the model fills. `format`, `archetype` and `difficulty` are stamped
     by the pipeline, so they are deliberately absent from this model."""
@@ -247,6 +278,10 @@ class CardDraft(BaseModel):
     key_points: list[str] = Field(min_length=2, max_length=4)
     options: list[str] | dict | None = None
     picked: list[int] | None = None
+    # grid_toggle only: the correct cells as [row, column] pairs. The model used to be
+    # asked for flat row-major indices and got the arithmetic wrong in about half of
+    # the grids it wrote, so it names cells and `grid_picked` does the multiplying.
+    cells: list[list[int]] | None = None
     constraints: list[list[int]] | None = None
     pairs: list[list[int]] | None = None
     value: float | None = None
@@ -350,6 +385,11 @@ def write_one(
     if result.draft is None:
         return Refusal(reason=result.refused or "no natural card of this archetype")
     draft = result.draft
+    picked = draft.picked
+    if slot.primitive == "grid_toggle":
+        picked = grid_picked(draft.options, draft.cells)
+        if picked is None:
+            return Refusal(reason="grid_toggle cells are missing or fall outside the grid")
     try:
         # The pipeline assigns the format, archetype and difficulty; the writer
         # only fills content. Stamping here, and re-validating, means a confused
@@ -362,7 +402,7 @@ def write_one(
             answer=draft.answer,
             key_points=draft.key_points,
             options=draft.options,
-            picked=draft.picked,
+            picked=picked,
             constraints=draft.constraints,
             pairs=draft.pairs,
             value=draft.value,
