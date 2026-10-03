@@ -19,7 +19,13 @@ out. Written after the production push, from what went wrong in it.
      **confirms its own moves** with the gate (`--check-tier smart`); `--no-check` leaves
      them unverified and they must not be published.
    - `uv run python scripts/key_audit.py`: does each answer key agree with its own
-     explanation. Nothing else checks this. See `KEY-AUDIT.md`.
+     explanation. Nothing else checks this. See `KEY-AUDIT.md`. **It writes nothing by
+     itself**: read the confirmed list it prints, then reject them with `--from FILE` (or
+     rerun with `--apply`), *before* the rebatch below, or the contradicting cards stay `kept`
+     and get published. A card either pass called `unclear` or `missing` was not judged: resolve
+     it, or leave it out of the batch. The cheap first pass also misses some (4.7% on a sample
+     of 300, about half of those false on reading), and its recall over the whole corpus is
+     unmeasured, so for a card that matters, confirm with a second model family (`--retest`).
    - `pipeline card-validate --drop-dupes --apply`: near-duplicates across topics.
 3. **Archive before anything destructive.** `uv run python scripts/archive_rejects.py`
    writes every rejected card, with its reason, to `.data/review/rejected-cards.jsonl`.
