@@ -47,3 +47,29 @@ export function brokenRules(order: number[], constraints: [number, number][]): [
   const at = new Map(order.map((item, position) => [item, position]));
   return constraints.filter(([before, after]) => (at.get(before) ?? -1) > (at.get(after) ?? -1));
 }
+
+/** A sequence that keeps every rule while leaving each pre-filled slot holding its own token, or null.
+ *  `fixed[i]` is the token already sitting in slot `i` (null for a gap). Tries the gaps in turn. */
+export function fixedOrder(count: number, fixed: (number | null)[], constraints: [number, number][]): number[] | null {
+  const slots: (number | null)[] = Array.from({ length: count }, (_, i) => fixed[i] ?? null);
+  const free = Array.from({ length: count }, (_, i) => i).filter((token) => !slots.includes(token));
+  const gaps = slots.flatMap((token, slot) => (token === null ? [slot] : []));
+  const used = new Set<number>();
+  const valid = () => {
+    const at = new Map(slots.map((token, slot) => [token, slot]));
+    return constraints.every(([before, after]) => (at.get(before) ?? -1) < (at.get(after) ?? -1));
+  };
+  const fill = (g: number): boolean => {
+    if (g === gaps.length) return valid();
+    for (const token of free) {
+      if (used.has(token)) continue;
+      used.add(token);
+      slots[gaps[g] as number] = token;
+      if (fill(g + 1)) return true;
+      used.delete(token);
+      slots[gaps[g] as number] = null;
+    }
+    return false;
+  };
+  return fill(0) ? (slots as number[]) : null;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { brokenRules, onlyOrder, sampleOrder } from "./order";
+import { brokenRules, fixedOrder, onlyOrder, sampleOrder } from "./order";
 
 describe("onlyOrder", () => {
   it("returns the sequence a chain of rules pins down", () => {
@@ -63,5 +63,15 @@ describe("sampleOrder", () => {
         [1, 0],
       ]),
     ).toBeNull();
+  });
+});
+
+describe("fixedOrder", () => {
+  it("keeps pre-filled tokens in their slots and orders the gaps by the rules", () => {
+    // Tokens 0 and 3 are pre-filled; the rules want token 2 before token 1.
+    expect(fixedOrder(4, [0, null, null, 3], [[2, 1]])).toEqual([0, 2, 1, 3]);
+  });
+  it("is null when no arrangement of the gaps keeps the rules", () => {
+    expect(fixedOrder(3, [0, null, null], [[2, 0]])).toBeNull();
   });
 });

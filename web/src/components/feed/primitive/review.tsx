@@ -1,6 +1,6 @@
 import type { Answer } from "@/lib/feed/grade";
 import type { CardOptions } from "@/lib/feed/options";
-import { brokenRules, onlyOrder, sampleOrder } from "@/lib/feed/order";
+import { brokenRules, fixedOrder, onlyOrder, sampleOrder } from "@/lib/feed/order";
 import type { CorrectAnswer } from "@/lib/feed/view";
 import { ClaimSwitch } from "./claim-switch";
 import { Eyebrow } from "./hint";
@@ -217,7 +217,7 @@ function AssembleReview({
   constraints: [number, number][];
   revealed: boolean;
 }) {
-  const right = onlyOrder(tokens.length, constraints);
+  const right = onlyOrder(tokens.length, constraints) ?? fixedOrder(tokens.length, fixed, constraints);
   const sequence = revealed && right ? right : order;
   const wrong = right && !revealed ? sequence.filter((token, position) => token !== right[position]).length : 0;
   const line = (seq: number[], bad: (position: number) => boolean) =>
