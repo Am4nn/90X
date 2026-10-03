@@ -11,18 +11,30 @@ primitives they often did not:
 
 | primitive | audited | key contradicts explanation |
 |---|---|---|
-| `grid_toggle` | 109 live | **55** |
-| `assemble` | 181 live | **32** |
-| the other eight, sampled 13 each | 104 | 0 |
+| `grid_toggle` | 109 | **55** (50%) |
+| `assemble` | 181 | **32** (18%) |
+| `claim_grid` | 335 | 26 (8%) |
+| `tap_in_place` | 218 | 17 (8%) |
+| `pick_one` | 1,480 | 21 (1.4%) |
+| `match` | 406 | 3 |
+| `numeric` | 98 | 3 |
+| `order` | 385 | 3 |
+| `bucket` | 297 | 2 |
+| **all keyed primitives** | **3,509** | **162 (4.6%)** |
 
-A reader who knows the answer is marked wrong. 87 live cards were retired from
-production on this evidence, each confirmed by two independent passes (a cheap model,
-then a stronger one re-reading only what the first flagged) and three read by hand
-against their explanations before anything was retired.
+A reader who knows the answer is marked wrong, or is shown an explanation that
+disagrees with the answer they were marked against. All 162 were retired from
+production (3,760 to 3,598 live), each confirmed by two independent passes: a cheap
+model, then a stronger one re-reading only what the first flagged. The first 87 were
+retired after three were read by hand; the other 75 after six more were.
 
-The other eight primitives came back 0 of 13 each. That is a sample, not a
-clean bill: 13 clean cards cannot rule out a rate of 15 to 20%. The remaining
-corpus has not been audited in full.
+**Reading those nine showed two different defects, and they want different repairs.**
+Some cards have a genuinely wrong key (a subquery card marks "non-correlated" correct
+while its own explanation says it is correlated). Others have a key that looks right and
+an explanation that is misnumbered or garbled ("statements 1 and 3 are true" above text
+that makes statement 1 false). The audit cannot tell them apart, it only says the two
+disagree. The second kind is repairable by rewriting the explanation, which is why the
+cards are archived, not deleted.
 
 ## Why nothing caught it
 
@@ -61,16 +73,18 @@ the validator accepts that points at the wrong token.
 
 ## Not done
 
-- **The remaining ~3,000 cards are unaudited.** Estimated at under $1 on the cheap tier.
-- **The 87 retired cards are not repaired.** Their explanations are probably right and
-  their keys wrong, so the key can be re-derived from the prose: the model names, per
-  row, which columns the explanation supports, and the code computes the indices. Then
-  re-audit. Not yet built.
-- **The 54 grids and 149 assembles still live passed both passes.** A cheap first pass can
-  miss, so they have only been read once by a strong model, and only if the cheap one
-  flagged them.
-- Retiring the 87 re-armed the swap bug (see `SWAP-BUG.md`): there are now archetyped
-  retired cards for `pipeline swap` to resurrect. **Do not run it.**
+- **The 162 retired cards are not repaired.** They are rejected in staging, retired in
+  production, and in `.data/review/rejected-cards.jsonl`. Some need a corrected key, some
+  only a corrected explanation; deciding which is the work. For grids the key can be
+  re-derived from the prose: the model names, per row, which columns the explanation
+  supports, and the code computes the indices.
+- **54 cards came back `unclear` on the first pass** and were not acted on. The
+  explanation did not say enough to tell. They are not known to be wrong.
+- **The cheap first pass can miss.** A card the cheap pass called `agrees` was never
+  re-read by the stronger model. Measured recall is unknown; sampling a few hundred of the
+  `agrees` with the strong model would give it.
+- Retiring cards re-arms the swap bug (`SWAP-BUG.md`) until the `published_at` fix is in.
+  **Do not run `pipeline swap`.**
 
 ## Running it again
 
