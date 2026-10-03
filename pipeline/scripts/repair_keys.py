@@ -36,6 +36,9 @@ from pipeline.llm import LLM, BudgetExceeded, LLMError
 ARGS = sys.argv[1:]
 APPLY = "--apply" in ARGS
 LIMIT = int(ARGS[ARGS.index("--limit") + 1]) if "--limit" in ARGS else 0
+# Deriving the key is the step where a misreading does damage, so it defaults to the strong
+# tier; the two audits that follow use fast then smart.
+DERIVE = ARGS[ARGS.index("--derive-tier") + 1] if "--derive-tier" in ARGS else "smart"
 WORKERS = 8
 OUT = os.path.abspath("../.data/review/key-repair.json")
 
@@ -156,7 +159,7 @@ def main() -> None:
     print(f"{len(cards)} retired cards to repair {dict(by_format)}")
 
     llm = LLM(con)
-    derived = derive_all(llm, cards, "fast")
+    derived = derive_all(llm, cards, DERIVE)
     repaired = [with_key(c, derived[c.id]) for c in cards if c.id in derived]
 
     print(f"auditing {len(repaired)} repaired cards with two model families")

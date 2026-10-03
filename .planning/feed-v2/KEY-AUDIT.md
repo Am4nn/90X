@@ -100,17 +100,33 @@ cleared 8 of them and confirmed 1; 5 stay unresolved. The honest reading is that
 pass misses a small share, in the low single digits of a percent, and that this has not been
 measured over the whole clean corpus.
 
+## The repair, and where it ended
+
+The corrected auditor re-checked all 3,360 live cards and flagged 14 (0.4%). Reading all 14 by
+hand: 8 were false positives and stayed live, 6 were genuine and were retired.
+
+`cards/key_repair.py` then re-derived the keys of the 152 retired cards from their own
+explanations (strong model; code computes every stored index), required `wellformed` to accept
+the result, and audited each repaired card twice. **80 were repaired and restored**: 50 of 54
+grids, 25 of 32 assembles, plus a handful of others. Reading eight of them by hand, the old
+assemble keys were reversed (`NULL IS manager_id WHERE`) and the new ones are right. **Not one
+of 24 claim grids repaired**: their problem is an explanation that numbers statements
+differently from the card, which a new key cannot fix.
+
+Production ended at **3,686 live**, 100 retired.
+
 ## Not done
 
-- **The 149 cards still retired for a key/explanation mismatch are not repaired.** Some need a
-  corrected key, some only a corrected explanation; deciding which is the work. For grids the
-  key can be re-derived from the prose: the model names, per row, which columns the explanation
-  supports, and the code computes the indices.
-- **47 retired cards and 5 live ones are unresolved**: the two models disagreed or were unsure.
-  They are not known to be wrong.
-- **The strong pass has not been run over every card the cheap pass called clean**, only over a
-  sample of 300 and over everything flagged. Running it everywhere (about 3,300 cards, free on
-  OpenCode Go) would close the remaining gap.
+- **75 archetyped cards stay retired** (27 claim grids, 12 each of pick_one and tap_in_place,
+  10 assembles, and a tail). Most want a corrected *explanation*, not a corrected key. Writing
+  that is a different job: nothing here can tell which side of a disagreement is the true one.
+- **The repair copies an explanation's mistakes.** A repaired key agrees with its explanation by
+  construction, so the audit proves less on it than on an original. If an explanation is wrong,
+  the repair makes the key wrong in the same way.
+- **The audits after the retest ran on DeepSeek alone**, a single model family. The retest of
+  the first 162 used two. The 14 flags on the live corpus were checked by hand instead.
+- The cheap first pass's miss rate is measured on a sample of 300, not the whole corpus.
+- 5 live cards the two retest models disagreed about were not resolved.
 
 ## Running it again
 
