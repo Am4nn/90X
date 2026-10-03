@@ -63,6 +63,11 @@ class Archetype:
     # the label: a label alone caught the blatant mismatches and missed a
     # confident, well-written question about something else entirely.
     intent: str = ""
+    # What the LESSON must offer for this archetype to be writable at all. Given to the writer
+    # only, as a precondition it has to check before it writes: when the topic cannot supply it,
+    # the writer refuses and the slot refills with another archetype, instead of producing a
+    # plausible card of the wrong kind for the gate to reject. Empty means no precondition.
+    requires: str = ""
 
 
 @dataclass(frozen=True)
@@ -102,6 +107,7 @@ def registry() -> Registry:
             why_step=bool(a.get("whyStep", False)),
             generate=bool(a.get("generate", True)),
             intent=str(a.get("intent", "")),
+            requires=str(a.get("requires", "")),
         )
         for a in data["archetypes"]
     )

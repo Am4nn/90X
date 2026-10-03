@@ -346,6 +346,15 @@ def _user(topic: dict, lesson_md: str, slot: CardSlot, arch: archetypes.Archetyp
         "",
         f"Topic: {topic['name']} ({topic['domain']})",
         f"Archetype: {arch.label} ({slot.archetype})",
+        # The writer used to be given only the label above. `intent` reached the gate and the
+        # refile step but never the writer, so for a topic with no natural fit it guessed what
+        # "Where the data leaks" or "Interleaving" meant and wrote a plausible card of another
+        # kind: a Python data-structures quiz for the first, a single-threaded HashMap lookup
+        # for the second. The gate rejected 558 cards as the wrong archetype.
+        *([f"What this archetype's question must do: {arch.intent}"] if arch.intent else []),
+        *([f"Write this archetype ONLY if the lesson {arch.requires}. If it does not, refuse: "
+           "a refusal costs nothing and refills the slot, a card of another kind is rejected."]
+          if arch.requires else []),
         f"Primitive: {slot.primitive}",
         f"Target difficulty: {slot.difficulty}",
         "",
