@@ -45,6 +45,9 @@
   --color-topic-cs: var(--x-cs);
   --color-topic-java: var(--x-java);
   --color-topic-sql: var(--x-sql);
+  --color-topic-ai: var(--x-ai);
+  --color-topic-lld: var(--x-lld);
+  --color-topic-beh: var(--x-beh);
   --color-ok: var(--x-ok);
   --color-warn: var(--x-warn);
   --color-bad: var(--x-bad);
@@ -99,6 +102,10 @@
   --x-cs: #2dd4bf;
   --x-java: #fb923c;
   --x-sql: #f472b6;
+  /* Proposed for the three areas the card design left grey; awaiting approval. */
+  --x-ai: #a3e635;
+  --x-lld: #fbbf24;
+  --x-beh: #38bdf8;
   --x-ok: #4ade80;
   --x-warn: #facc15;
   --x-bad: #f87171;

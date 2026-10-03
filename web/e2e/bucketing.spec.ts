@@ -30,7 +30,7 @@ test("every item lands in a column and one tick per row is enforced in the UI", 
     .getByRole("button", { name: /upper\(\)/ })
     .click();
   await columns(page).getByRole("button", { name: "Deterministic", exact: true }).click();
-  await feedCard(page).getByRole("button", { name: "Check", exact: true }).click();
+  await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
   await expect(feedCard(page).getByText("Correct", { exact: true })).toBeVisible();
 });
@@ -42,7 +42,7 @@ test("one item in the wrong column is wrong", async ({ page }) => {
   await place(page, "upper()", "Not deterministic"); // wrong
   await place(page, "now()", "Not deterministic");
   await place(page, "random()", "Not deterministic");
-  await feedCard(page).getByRole("button", { name: "Check", exact: true }).click();
+  await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
   await expect(feedCard(page).getByText("Not quite", { exact: true })).toBeVisible();
 });
@@ -57,7 +57,7 @@ test("a wrong placement is shown in the buckets, not just described", async ({ p
   await place(page, "upper()", "Not deterministic");
   await place(page, "now()", "Not deterministic");
   await place(page, "random()", "Not deterministic");
-  await feedCard(page).getByRole("button", { name: "Check", exact: true }).click();
+  await feedCard(page).getByRole("button", { name: "Check answer", exact: true }).click();
 
   const review = feedCard(page).getByRole("group", { name: "Your buckets" });
   await expect(review).toBeVisible();

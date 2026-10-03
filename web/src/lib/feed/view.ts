@@ -266,6 +266,22 @@ export function scoreLine(result: { outcome: Outcome; pointsHit: boolean[] | nul
   return result.outcome === "correct" ? "Correct" : "Not quite";
 }
 
+/** The verdict word shown above a result. No percentage: a binary card is right or not. */
+export function verdictText(outcome: Outcome): string {
+  switch (outcome) {
+    case "correct":
+      return "Correct";
+    case "wrong":
+      return "Not quite";
+    case "skipped":
+      return "Skipped";
+    case "new_to_me":
+      return "New to you — here's the answer";
+    case "known":
+      return "Marked as known";
+  }
+}
+
 export function whyLine(card: Pick<CardView, "reason" | "topic">): string {
   switch (card.reason) {
     case "weak":

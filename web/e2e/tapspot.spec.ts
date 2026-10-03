@@ -23,6 +23,12 @@ async function openFeed(page: Page, name: string) {
   return shownCard(page);
 }
 
+/** After a Skip the next card is already on screen: no result to click through. */
+async function afterSkip(page: Page, card: SeedCard) {
+  await expect(page.getByText(card.promptMd, { exact: true })).toHaveCount(0);
+  return shownCard(page);
+}
+
 /** From a card's result, go on and return the card that replaces it. */
 async function nextCard(page: Page, card: SeedCard) {
   await page.getByRole("button", { name: "Next card", exact: true }).click();
@@ -35,7 +41,7 @@ async function findCard(page: Page, wanted: (card: SeedCard) => boolean) {
   let card = await shownCard(page);
   for (let i = 0; i < LIVE_CARDS.length && !wanted(card); i++) {
     await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-    card = await nextCard(page, card);
+    card = await afterSkip(page, card);
   }
   if (!wanted(card)) throw new Error("No matching card came up in the queue");
   return card;

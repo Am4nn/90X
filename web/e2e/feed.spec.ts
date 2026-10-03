@@ -28,6 +28,12 @@ async function openFeed(page: Page, name: string) {
   return shownCard(page);
 }
 
+/** After a Skip the next card is already on screen: no result to click through. */
+async function afterSkip(page: Page, card: SeedCard) {
+  await expect(page.getByText(card.promptMd, { exact: true })).toHaveCount(0);
+  return shownCard(page);
+}
+
 /** From a card's result, go on and return the card that replaces it. */
 async function nextCard(page: Page, card: SeedCard) {
   await page.getByRole("button", { name: "Next card", exact: true }).click();
@@ -52,7 +58,7 @@ async function findCard(page: Page, wanted: (card: SeedCard) => boolean) {
   let card = await shownCard(page);
   for (let i = 0; i < LIVE_CARDS.length && !wanted(card); i++) {
     await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-    card = await nextCard(page, card);
+    card = await afterSkip(page, card);
   }
   if (!wanted(card)) throw new Error("No matching card came up in the queue");
   return card;
@@ -95,15 +101,15 @@ test("a self-rate card marked got counts as correct", async ({ page }) => {
   await expect(cardArticle(page).getByText(card.answerMd, { exact: true })).toBeVisible();
 });
 
-test("skipping a card shows its answer", async ({ page }) => {
+test("skipping a card moves on without showing its answer", async ({ page }) => {
   await openFeed(page, "feed-skip");
   const card = await shownCard(page);
 
   await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-  const result = cardArticle(page);
-  await expect(result.getByText("Skipped", { exact: true })).toBeVisible();
-  await expect(result.getByRole("heading", { name: "Answer", exact: true })).toBeVisible();
-  await expect(result.getByText(card.answerMd, { exact: true })).toBeVisible();
+  const next = await afterSkip(page, card);
+  expect(next.id).not.toBe(card.id);
+  await expect(page.getByText(card.answerMd, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Answer", exact: true })).toHaveCount(0);
 });
 
 test("reloading mid-card shows the same card", async ({ page }) => {
@@ -127,7 +133,7 @@ test("answering 10 cards in the Feed ticks Today's cards mission", async ({ page
     // counts ten real answers rather than failing on a multi-tap screen.
     if (!ANSWERABLE.has(card.primitive)) {
       await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-      card = await nextCard(page, card);
+      card = await afterSkip(page, card);
       continue;
     }
     await answer(page, card);
@@ -169,7 +175,7 @@ test("an answered card is not served again after navigating away", async ({ page
   const card = await openFeed(page, "feed-answered-once");
 
   await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(cardArticle(page).getByText("Skipped", { exact: true })).toBeVisible();
+  await afterSkip(page, card);
 
   // Away and back, the way a reader moves around the app.
   await gotoToday(page);

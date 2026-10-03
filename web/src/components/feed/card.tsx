@@ -6,12 +6,22 @@ import { type AnswerState, retireTopicAction, submitAnswer } from "@/app/actions
 import { PRIMARY, SECONDARY } from "@/components/button-styles";
 import { useServerAction } from "@/components/form";
 import { Markdown } from "@/components/markdown";
-import { areaDot } from "@/lib/admin/review";
-import { isGraded, type Answer } from "@/lib/feed/grade";
-import { type AnswerInput, type AnswerResult, type CardView, nextReviewText, scoreLine, type SessionStats } from "@/lib/feed/view";
+import type { Answer } from "@/lib/feed/grade";
+import {
+  AREA_LABEL,
+  type AnswerInput,
+  type AnswerResult,
+  type CardView,
+  type FeedArea,
+  nextReviewText,
+  scoreLine,
+  type SessionStats,
+  verdictText,
+} from "@/lib/feed/view";
 import { dropCard, queueAnswer } from "@/lib/offline/store";
 import { Assemble } from "./primitive/assemble";
 import { Bucket } from "./primitive/bucket";
+import { SkipContext } from "./primitive/check-bar";
 import { ClaimGrid } from "./primitive/claim-grid";
 import { Compose } from "./primitive/compose";
 import { GridToggle } from "./primitive/grid-toggle";
@@ -41,14 +51,20 @@ type Phase =
 
 type Busy = "check" | "skip" | "self" | "new_to_me" | "known" | null;
 
-const OUTCOME_TEXT: Record<string, string> = {
-  correct: "text-ok",
-  wrong: "text-bad",
-  skipped: "text-mute",
-  // Declared, not graded: no score is shown for these, so the colour is never used.
-  new_to_me: "text-cyan",
-  known: "text-mute",
+/** Written out in full so Tailwind sees every class. */
+const AREA_TEXT: Record<FeedArea, string> = {
+  dsa: "text-topic-dsa",
+  system_design: "text-topic-sd",
+  cs: "text-topic-cs",
+  java: "text-topic-java",
+  sql: "text-topic-sql",
+  ai: "text-topic-ai",
+  lld: "text-topic-lld",
+  behavioral: "text-topic-beh",
 };
+
+/** These primitives end in the shared Check bar, which carries Skip beside it. */
+const HAS_CHECK_BAR = new Set(["order", "match", "bucket", "assemble", "claim_grid"]);
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "BUTTON", "A"].includes(target.tagName));
@@ -163,6 +179,12 @@ export function FeedCard({
       }
       onAnswered(state.session);
       void dropCard(userId, card.id);
+      // Skip means "not now": straight to the next card, the answer unseen.
+      // "New to me" is how a reader asks to be shown it.
+      if (label === "skip") {
+        onNext(state.result);
+        return;
+      }
       setPhase({ kind: "result", result: state.result, choice, nextReview: nextReviewText(state.result.nextDue, new Date()) });
     });
   };
@@ -197,17 +219,20 @@ export function FeedCard({
     <article className="flex flex-col gap-5 rounded-xl border border-line bg-surface p-5 md:p-7">
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <span className="flex min-w-0 items-center gap-2 text-tag font-bold text-text-2">
-            <span className={`size-2 shrink-0 rounded-full ${areaDot(card.topic.area)}`} />
-            <span className="truncate">
-              {card.topic.name}
-              {card.difficulty && ` · ${card.difficulty}`}
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span
+              className={`inline-flex h-6 shrink-0 items-center rounded-full border border-line-2 px-2.5 text-tag font-bold ${AREA_TEXT[card.topic.area]}`}
+            >
+              {AREA_LABEL[card.topic.area]}
             </span>
+            <span className="truncate text-small font-semibold text-text">{card.topic.name}</span>
           </span>
-          {card.diagnostic && (
+          {card.diagnostic ? (
             <span className="tabular shrink-0 text-small text-mute">
               Diagnostic {card.diagnostic.index} of {card.diagnostic.total}
             </span>
+          ) : (
+            card.difficulty && <span className="shrink-0 text-tag font-bold text-text-2 capitalize">{card.difficulty}</span>
           )}
         </div>
         {card.diagnostic && (
@@ -223,7 +248,11 @@ export function FeedCard({
 
       {phase.kind === "ask" && (
         <div className="flex flex-col gap-4">
-          <AnswerArea card={card} pending={pending} busy={label} onSubmit={onSubmit} />
+          <SkipContext.Provider
+            value={{ pending, skipping: label === "skip", skip: () => submit("skip", { cardId: card.id, skipped: true }) }}
+          >
+            <AnswerArea card={card} pending={pending} busy={label} onSubmit={onSubmit} />
+          </SkipContext.Provider>
 
           {/* The two things a card cannot work out about its reader. "New to me"
               is always offered: only they know whether they have met this idea.
@@ -251,20 +280,19 @@ export function FeedCard({
               </button>
             )}
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="hidden text-small text-mute md:inline">Pick an answer, or skip to see it</span>
-            <div className="flex flex-1 justify-end md:flex-none">
+          {!(card.primitive && HAS_CHECK_BAR.has(card.primitive)) && (
+            <div className="flex justify-end">
               <button
                 type="button"
                 disabled={pending}
                 aria-busy={label === "skip" || undefined}
                 onClick={() => submit("skip", { cardId: card.id, skipped: true })}
-                className={`flex-1 md:flex-none ${SECONDARY}`}
+                className={`w-full md:w-auto ${SECONDARY}`}
               >
                 {label === "skip" ? "Skipping…" : "Skip"}
               </button>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -345,14 +373,7 @@ function Result({
     <div className="flex flex-col gap-5">
       {result.retireOffer && <RetireOffer offer={result.retireOffer} />}
 
-      <div className="flex items-baseline gap-3" aria-live="polite">
-        {isGraded(result.outcome) && (
-          <span className={`tabular font-display text-display font-bold ${OUTCOME_TEXT[result.outcome]}`}>
-            {Math.round(result.score * 100)}%
-          </span>
-        )}
-        <span className={isGraded(result.outcome) ? "text-small text-mute" : "font-semibold text-text-2"}>{scoreLine(result)}</span>
-      </div>
+      <Verdict outcome={result.outcome} detail={result.pointsHit?.length ? `${scoreLine(result)}, pass mark 70%` : null} />
 
       <AnswerReview content={result.content} submitted={result.submitted} correct={result.correct} />
 
@@ -442,6 +463,25 @@ function Result({
           {nextPending ? "Loading…" : result.diagnosticSummary ? "See your results" : "Next card"}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** The first thing a result says: a ring with a glyph, then the word. Colour is never
+ *  the only signal. No percentage on a binary verdict; a written answer adds its
+ *  key-point count beneath. */
+function Verdict({ outcome, detail }: { outcome: AnswerResult["outcome"]; detail: string | null }) {
+  const mark = outcome === "correct" ? "✓" : outcome === "wrong" ? "✕" : null;
+  const tone = outcome === "correct" ? "border-ok text-ok" : outcome === "wrong" ? "border-bad text-bad" : "border-line-2 text-mute";
+  return (
+    <div className="flex flex-col gap-1" aria-live="polite">
+      <div className="flex items-center gap-3">
+        <span aria-hidden className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-small font-bold ${tone}`}>
+          {mark ?? "–"}
+        </span>
+        <span className="font-display text-title font-semibold text-text">{verdictText(outcome)}</span>
+      </div>
+      {detail && <span className="text-small text-text-2">{detail}</span>}
     </div>
   );
 }

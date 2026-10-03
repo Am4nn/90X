@@ -25,9 +25,10 @@ async function openFeed(page: Page, name: string) {
 
 /** Skips the card on screen and returns the next one. */
 async function skipTo(page: Page): Promise<SeedCard | null> {
+  // Skip goes straight to the next card: no result screen, no answer shown.
+  const before = await cardArticle(page).innerText();
   await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Next card", exact: true }).click();
+  await expect(cardArticle(page)).not.toHaveText(before);
   return shownCard(page);
 }
 
