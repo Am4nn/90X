@@ -1,8 +1,92 @@
 # Feed v2 — production runbook
 
+> **Status 2026-10-03: Feed v2 is live.** The first release (everything from "Before you
+> start" down) is history. It is kept because the reasoning is still true, not because
+> the steps should be run again. **What to do now is the next section.**
+
+## Operating the corpus now
+
+How a card gets from staging to a reader today, and the rules that were paid for finding
+out. Written after the production push, from what went wrong in it.
+
+### The loop
+
+1. **Generate or repair into staging.** Nothing here touches production.
+2. **Gate it, in this order.**
+   - `pipeline wellformed` (free, in code): limits, duplicates, answer-key shape.
+   - `pipeline card-regate --no-blind`: the model gate. It sees every primitive's options.
+   - `pipeline refile --apply`: moves a card rejected for the wrong archetype. It now
+     **confirms its own moves** with the gate (`--check-tier smart`); `--no-check` leaves
+     them unverified and they must not be published.
+   - `uv run python scripts/key_audit.py`: does each answer key agree with its own
+     explanation. Nothing else checks this. See `KEY-AUDIT.md`. **It writes nothing by
+     itself**: read the confirmed list it prints, then reject them with `--from FILE` (or
+     rerun with `--apply`), *before* the rebatch below, or the contradicting cards stay `kept`
+     and get published. A card either pass called `unclear` or `missing` was not judged: resolve
+     it, or leave it out of the batch. The cheap first pass also misses some (4.7% on a sample
+     of 300, about half of those false on reading), and its recall over the whole corpus is
+     unmeasured, so for a card that matters, confirm with a second model family (`--retest`).
+   - `pipeline card-validate --drop-dupes --apply`: near-duplicates across topics.
+3. **Archive before anything destructive.** `uv run python scripts/archive_rejects.py`
+   writes every rejected card, with its reason, to `.data/review/rejected-cards.jsonl`.
+4. **`pipeline rebatch`, then `pipeline publish`.** `rebatch` is not optional: publish only
+   sends batched cards, and a dry run without it offered 943 of 6,316.
+5. **Take cards live.** Normally `pipeline swap` (dry run first, read the counts).
+   **Not yet: see the next rule.**
+
+### Rules that were learned the hard way
+
+- **Do not run `pipeline swap` until PR #76's migration is applied and a publish has
+  stamped the corpus.** Today's swap activates every archetyped card that is draft, live
+  *or retired*, so it puts back anything retired on purpose. Until then, take a published
+  draft live with a targeted `update public.cards set status='live' where id = any(...)`.
+  See `SWAP-BUG.md`.
+- **A gate has to see what the reader sees.** `prompt_only` once showed options only for the
+  legacy `mcq` format, so 6,702 of 7,063 cards were judged without their options and 1,035
+  were rejected as "options are missing". The model was right every time.
+- **A validator checks shape, not meaning.** A key can be well formed and wrong: a grid
+  with a ticked cell on the wrong row passes `wellformed`. Anything that edits a key
+  (a repair, a trim) must carry it, or refuse. `scripts/repair_limits.py` shows how.
+- **A step that cannot verify its own output should not write it.** `refile` printed "run
+  card-regate to confirm" and left it to the caller; 34 cards went live under an archetype
+  that did not fit.
+- **Back up before deleting from production.** 103 of 2,292 cards removed on 2026-10-03
+  existed nowhere else. `scripts/prune_retired.py` writes the full rows and reads the file
+  back before it issues a delete, and runs in a transaction that rolls back on any
+  unexpected count. The four tables that reference a card all `ON DELETE CASCADE`, so a card
+  with history is never deleted.
+- **One DuckDB writer at a time.** Stopping a background job can orphan its Python child,
+  which keeps the lock; the next run dies on `staging.connect()` and exits 0. Find the PID in
+  the error and kill it.
+- **`PIPELINE_MAX_USD` is a cap on lifetime spend, not on the run.** Set it above what the
+  ledger already shows, or every call raises `BudgetExceeded` at once.
+- **Open the database read-write for any run that calls a model**, even a dry one. Cost is
+  logged there; opened read-only, every call fails *after* the API has answered and been paid.
+- **Production's `DATABASE_URL` is what `tests/test_publish.py` runs against** (rolled
+  back). After a migration they fail until it is applied. `tests/test_swap.py` is different:
+  it needs `TEST_DATABASE_URL`, a **local** database, and refuses a hosted one.
+
+### Running on OpenCode Go instead of paying per token
+
+OpenCode Go is a $10/month subscription over 36 models. Calls to it are logged with their
+tokens at a cost of **$0**, so they do not touch the lifetime ceiling.
+
+```
+AI_API_KEY=<OPENCODE_GO_API_KEY from pipeline/.env> AI_BASE_URL=https://opencode.ai/zen/go/v1 AI_MODEL_FAST=deepseek-v4-flash AI_MODEL_SMART=deepseek-v4-pro uv run python ...
+```
+
+The client sends the `x-opencode-session` header and a `90x-pipeline` user agent it requires.
+The 5-hour window is 20% of the month's allowance and the week is 50%. At a limit it falls
+back to free models only, **unless "Use balance" is on in the console, which spends Zen
+credits. Leave it off.** The model list is `GET /models`.
+
+---
+
+# The first release (history)
+
 Rewritten 2026-10-02 after the corpus review and the rebalance run. The four
-production steps are a human's, in this order. Everything before them is done and
-local; nothing here has touched production.
+production steps were a human's, in this order. Everything before them was done and
+local when this was written.
 
 ## Before you start: one thing to know about the tests
 
