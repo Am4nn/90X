@@ -301,13 +301,19 @@ def swap(args, con) -> None:
 
     from .cards import swap as s
 
-    result = s.run(os.environ["DATABASE_URL"], dry_run=not args.apply)
+    try:
+        result = s.run(os.environ["DATABASE_URL"], dry_run=not args.apply)
+    except s.SwapRefused as e:
+        raise SystemExit(f"swap refused: {e}") from None
     if args.apply:
         print(f"swap applied: {result['retired']} retired, {result['activated']} activated, "
               f"{result['kept_live_uncovered_area']} kept live (area not in the catalogue)")
     else:
         print(f"dry run: would retire {result['retire_live']} live cards and "
               f"activate {result['activate_draft_archetyped']} draft archetyped cards")
+        print(f"  newest publish: {result['newest_publish'] or 'NONE - run publish first'}")
+        print(f"  leaving {result['left_retired_not_in_newest_publish']} retired archetyped cards retired "
+              f"(not in the newest publish)")
         print(f"  keeping {result['kept_live_uncovered_area']} live cards whose area no archetype covers")
         print(f"  covered areas: {', '.join(result['covered_areas'])}")
 

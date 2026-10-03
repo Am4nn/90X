@@ -277,3 +277,39 @@ def test_republishing_a_card_updates_its_format_and_options_too(tmp_path):
             assert pairs == [[0, 1], [1, 0]], pairs
         finally:
             pg.rollback()
+
+
+def test_publish_stamps_every_card_it_sends_with_one_timestamp(tmp_path):
+    """`swap` activates only the newest `published_at`, so a publish has to stamp every
+    card it sends with the *same* value: one card carrying a slightly older stamp than its
+    neighbours would be left out of the activation. `now()` is the transaction's start,
+    which is what makes one publish one stamp. Rolled back."""
+    import psycopg
+
+    from pipeline import config  # noqa: F401  loads pipeline/.env
+
+    con = tiny(tmp_path)
+    con.execute(
+        """insert into cards (id, batch_id, topic_slug, problem_slug, format, difficulty, prompt_md, answer_md, key_points, kept)
+           values ('00000000-0000-4000-8000-0000000000bc', '00000000-0000-4000-8000-0000000000aa', 'zz-test-topic',
+                   'zz-test-problem', 'typed', 'Easy', 'A second question?', 'Another', '["a", "b"]', true)"""
+    )
+    con.execute("update cards set problem_slug = null where problem_slug is not null")
+
+    with psycopg.connect(os.environ["DATABASE_URL"], prepare_threshold=None) as pg:
+        cur = pg.cursor()
+        try:
+            cur.execute("""insert into public.topics (slug, domain, name, sort)
+                           values ('zz-test-topic', 'dsa', 'Test topic', 0) on conflict (slug) do nothing""")
+            publish._publish_cards(con, cur)
+            cur.execute(
+                """select count(*), count(distinct published_at), count(*) filter (where published_at = now())
+                   from public.cards where id in ('00000000-0000-4000-8000-0000000000bb',
+                                                  '00000000-0000-4000-8000-0000000000bc')"""
+            )
+            total, distinct, at_now = cur.fetchone()
+            assert total == 2, total
+            assert distinct == 1, f"one publish produced {distinct} different stamps"
+            assert at_now == 2, "the stamp must be the transaction's now(), not NULL or a stale value"
+        finally:
+            pg.rollback()
