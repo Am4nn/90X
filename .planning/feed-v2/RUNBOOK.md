@@ -41,6 +41,21 @@ out. Written after the production push, from what went wrong in it.
   *or retired*, so it puts back anything retired on purpose. Until then, take a published
   draft live with a targeted `update public.cards set status='live' where id = any(...)`.
   See `SWAP-BUG.md`.
+- **The writer has to be told what an archetype asks, not just its name.** It was given only the
+  label, so for a topic with no natural fit it guessed and wrote a plausible card of another kind
+  (a Python data-structures quiz for "Where the data leaks"); the gate rejected 558 cards as the
+  wrong archetype and did nothing about the writer that made them. `intent` (what the question
+  must do) and `requires` (what the lesson must offer) now reach it. Measured: the writer almost
+  never refuses even when told it may, so `intent` is what helps and the gate is what catches the
+  rest.
+- **To fill a short archetype, use `scripts/fill_archetypes.py`.** It writes cards topic by topic,
+  holds every new card (`kept = false`) through the gate, a two-tier key audit and a duplicate
+  check, and releases only what clears all three. Then `rebatch`, `publish`, and take the released
+  ids live by id (`fill-archetypes.json`). A 36-attempt pilot cost $0.19; the full run $0.82.
+  It took six archetypes from 1-5 live cards to 7-25.
+- **Do not infer "the gate judged this card" from the database.** `regate.apply` stamps a card only
+  when its topic had a rejection, so the stamp depends on a sibling's result, and a topic whose gate
+  call failed looks exactly like one that passed. Ask `refile.verify` for `fit_ids`.
 - **A gate has to see what the reader sees.** `prompt_only` once showed options only for the
   legacy `mcq` format, so 6,702 of 7,063 cards were judged without their options and 1,035
   were rejected as "options are missing". The model was right every time.
