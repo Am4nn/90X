@@ -81,6 +81,61 @@ def held(con, ids: list[str], keep: bool) -> None:
     con.commit()
 
 
+def judged_survivors(con, ids: list[str]) -> list[str]:
+    """Cards the gate actually ruled on, and passed.
+
+    `regate.apply` stamps `regated` into a card's quality for every card it judges. A card in a
+    topic whose gate call failed is still a plain draft, so counting every draft as a survivor
+    would release it never having been judged.
+    """
+    if not ids:
+        return []
+    marks = ",".join("?" * len(ids))
+    return [i for (i,) in con.execute(
+        f"""select id from cards where id in ({marks}) and status = 'draft'
+              and json_extract_string(quality, '$.regated') = 'true'""", ids).fetchall()]
+
+
+def audit_new(llm, con, topics: dict, survivors: list[str], tiers=("fast", "smart")):
+    """Key-audit new cards on every tier; returns (rejected ids, ids that could not be audited).
+
+    A card is audited only if EVERY tier ran over its chunk. A chunk where any tier fails leaves all
+    its cards unaudited, and the caller must hold them: skipping a failed chunk and releasing its
+    cards is how an unchecked key reaches a reader. A contradiction from either tier rejects a new
+    card, because losing one costs almost nothing.
+    """
+    wanted = set(survivors)
+    rejected: set[str] = set()
+    unaudited: set[str] = set()
+    by_topic: dict[str, list] = defaultdict(list)
+    if wanted:
+        slugs = {r[0] for r in con.execute(
+            f"select topic_slug from cards where id in ({','.join('?' * len(wanted))})", list(wanted)).fetchall()}
+        for slug in slugs:
+            by_topic[slug] = [c for c in regate.cards_of(con, slug) if c.id in wanted and key_audit.has_key(c)]
+    for slug, cards in by_topic.items():
+        for i in range(0, len(cards), 10):
+            chunk = cards[i:i + 10]
+            complete = True
+            for tier in tiers:
+                try:
+                    res = key_audit.audit(llm, topics[slug], chunk, tier=tier)
+                except BudgetExceeded:
+                    raise
+                except Exception as e:  # noqa: BLE001 - this chunk is unaudited, not skipped
+                    print(f"  audit FAILED ({tier}) {type(e).__name__}: {str(e)[:80]}", flush=True)
+                    complete = False
+                    break
+                for idx, why in key_audit.contradictions(chunk, res).items():
+                    rejected.add(chunk[idx].id)
+                    con.execute("update cards set status = 'rejected', kept = false, reject_reason = ? where id = ?",
+                                [f"answer key contradicts the explanation: {why[:160]}", chunk[idx].id])
+            if not complete:
+                unaudited |= {c.id for c in chunk}
+    con.commit()
+    return rejected, unaudited - rejected
+
+
 def plan(con, topics: dict[str, dict]) -> dict[str, list[dict]]:
     """Per archetype: eligible topics that have a lesson, none of that archetype already, best cues first."""
     importance = dict(con.execute("select slug, importance from topics").fetchall())
@@ -127,7 +182,8 @@ def main() -> None:
 
     started = datetime.now(timezone.utc)
     llm = LLM(con)
-    stats: dict[str, dict] = {aid: {"attempts": 0, "refused": 0, "written": 0} for aid in WANTED}
+    stats: dict[str, dict] = {aid: {"attempts": 0, "refused": 0, "written": 0, "failed": 0} for aid in WANTED}
+    failures: list[str] = []
     refusals: dict[str, list[str]] = defaultdict(list)
     written_by_topic: dict[str, list] = defaultdict(list)
     difficulties = ["Medium", "Easy", "Hard"]
@@ -155,7 +211,12 @@ def main() -> None:
                     except BudgetExceeded as e:
                         print(f"  stopping: {e}", flush=True)
                         raise SystemExit(1) from None
-                    except (LLMError, Exception) as e:  # noqa: BLE001 - one attempt's failure costs that attempt
+                    except Exception as e:  # noqa: BLE001 - one attempt's failure costs that attempt
+                        # Counted against the cap: a provider that keeps failing would otherwise
+                        # never use up ATTEMPTS, and each failed call can still cost money.
+                        stats[aid]["attempts"] += 1
+                        stats[aid]["failed"] += 1
+                        failures.append(f"{aid}: {type(e).__name__}: {str(e)[:90]}")
                         print(f"  FAILED {type(e).__name__}: {str(e)[:90]}", flush=True)
                         continue
                     stats[aid]["attempts"] += 1
@@ -166,7 +227,7 @@ def main() -> None:
                         stats[aid]["refused"] += 1
                         refusals[aid].append(result.reason)
         s = stats[aid]
-        print(f"  {aid:26} attempts={s['attempts']:>3}  written={s['written']:>3}  refused={s['refused']:>3}", flush=True)
+        print(f"  {aid:26} attempts={s['attempts']:>3}  written={s['written']:>3}  refused={s['refused']:>3}  failed={s['failed']:>3}", flush=True)
 
     # 1. Save as HELD drafts.
     for slug, items in written_by_topic.items():
@@ -182,33 +243,15 @@ def main() -> None:
 
     # 2. The full answerability gate, options visible, only these cards.
     out = refile.verify(con, llm, new_ids, tier="smart")
-    survivors = [i for (i,) in con.execute(
-        f"select id from cards where id in ({','.join('?' * len(new_ids))}) and status = 'draft'", new_ids).fetchall()]
+    survivors = judged_survivors(con, new_ids)
+    unjudged = len(new_ids) - out["checked"]
     held(con, survivors, False)
-    print(f"gate: {out['fit']} fit, {out['unfit']} rejected; {len(survivors)} continue")
+    print(f"gate: {out['fit']} fit, {out['unfit']} rejected, {unjudged} never judged (left held); {len(survivors)} continue")
 
     # 3. Key audit on two tiers; a contradiction from either rejects a NEW card.
-    audited_out: set[str] = set()
-    by_topic: dict[str, list] = defaultdict(list)
-    for slug in {r[0] for r in con.execute(
-            f"select topic_slug from cards where id in ({','.join('?' * len(survivors))})", survivors).fetchall()} if survivors else []:
-        by_topic[slug] = [c for c in regate.cards_of(con, slug) if c.id in set(survivors) and key_audit.has_key(c)]
-    for tier in ("fast", "smart"):
-        for slug, cards in by_topic.items():
-            for i in range(0, len(cards), 10):
-                chunk = cards[i:i + 10]
-                try:
-                    res = key_audit.audit(llm, topics[slug], chunk, tier=tier)
-                except (LLMError, Exception) as e:  # noqa: BLE001
-                    print(f"  audit FAILED {type(e).__name__}: {str(e)[:80]}")
-                    continue
-                for idx, why in key_audit.contradictions(chunk, res).items():
-                    audited_out.add(chunk[idx].id)
-                    con.execute("update cards set status = 'rejected', kept = false, reject_reason = ? where id = ?",
-                                [f"answer key contradicts the explanation: {why[:160]}", chunk[idx].id])
-    con.commit()
-    survivors = [i for i in survivors if i not in audited_out]
-    print(f"key audit: {len(audited_out)} rejected; {len(survivors)} continue")
+    rejected, unaudited = audit_new(llm, con, topics, survivors)
+    survivors = [i for i in survivors if i not in rejected and i not in unaudited]
+    print(f"key audit: {len(rejected)} rejected, {len(unaudited)} could not be audited (left held); {len(survivors)} continue")
 
     # 4. A new card that repeats a card in a more important topic is dropped.
     mine = set(survivors)
@@ -229,6 +272,10 @@ def main() -> None:
     print(f"\nreleased {len(survivors)} cards: {dict(by_arch)}")
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump({"released": survivors, "stats": stats, "refusals": {k: v[:8] for k, v in refusals.items()}}, fh, indent=1, ensure_ascii=False)
+    if failures:
+        print(f"\n{len(failures)} writer calls failed and were counted against the attempt cap:")
+        for f in failures[:10]:
+            print(f"  - {f}")
     print(f"saved to {OUT}. Publish and take them live as separate steps.")
 
 
