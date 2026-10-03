@@ -48,6 +48,11 @@
   --color-topic-ai: var(--x-ai);
   --color-topic-lld: var(--x-lld);
   --color-topic-beh: var(--x-beh);
+  --color-rate-1: var(--x-rate-1);
+  --color-rate-2: var(--x-rate-2);
+  --color-rate-3: var(--x-rate-3);
+  --color-rate-4: var(--x-rate-4);
+  --color-rate-5: var(--x-rate-5);
   --color-ok: var(--x-ok);
   --color-warn: var(--x-warn);
   --color-bad: var(--x-bad);
@@ -103,6 +108,12 @@
   --x-java: #fb923c;
   --x-sql: #f472b6;
   /* Proposed for the three areas the card design left grey; awaiting approval. */
+  /* The star ramp: poor to excellent. */
+  --x-rate-1: #f87171;
+  --x-rate-2: #fb923c;
+  --x-rate-3: #fbbf24;
+  --x-rate-4: #a3e635;
+  --x-rate-5: #4ade80;
   --x-ai: #a3e635;
   --x-lld: #fbbf24;
   --x-beh: #38bdf8;

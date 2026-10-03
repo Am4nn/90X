@@ -79,6 +79,27 @@ test(
   },
 );
 
+test("after an answer the footer takes a star rating and a report, and not before", async ({ page }) => {
+  await openFeed(page, "feed-footer");
+  const card = await findCard(page, (c) => c.primitive === "pick_one");
+  const footer = page.getByRole("region", { name: "About this card" });
+  await expect(footer).toHaveCount(0);
+
+  await answer(page, card);
+  await expect(footer).toBeVisible();
+
+  const rating = footer.getByRole("group", { name: "Rate this card" });
+  await rating.getByRole("button", { name: "4 of 5, Good" }).click();
+  await expect(rating.getByRole("button", { name: "4 of 5, Good" })).toHaveAttribute("aria-pressed", "true");
+  await rating.getByRole("button", { name: "4 of 5, Good" }).click();
+  await expect(rating.getByRole("button", { name: "4 of 5, Good" })).toHaveAttribute("aria-pressed", "false");
+
+  await footer.getByRole("button", { name: "Report", exact: true }).click();
+  await footer.getByRole("textbox", { name: "What's wrong with this card?" }).fill("The wording is unclear.");
+  await footer.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(footer.getByText("Report sent. This card will be reviewed.")).toBeVisible();
+});
+
 test("picking the wrong option on a pick-one card marks it wrong", async ({ page }) => {
   await openFeed(page, "feed-wrong");
   const card = await findCard(page, (c) => c.primitive === "pick_one");

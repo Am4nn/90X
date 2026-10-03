@@ -5,6 +5,8 @@ import type { FormState } from "@/components/form";
 import { requireViewer } from "@/lib/auth/viewer";
 import { DIFFICULTY_PREFERENCES } from "@/lib/feed/difficulty";
 import { reportCard } from "@/lib/feed/flag-service";
+import { isStars } from "@/lib/feed/rating";
+import { setRating } from "@/lib/feed/rating-service";
 import {
   answerCard,
   retireTopic,
@@ -126,6 +128,19 @@ export async function reportCardAction(id: string, reason: string): Promise<Form
   } catch (e) {
     console.error("report failed", e);
     return { error: "The report didn't send. Try again." };
+  }
+}
+
+export async function rateCardAction(id: string, stars: number | null): Promise<FormState> {
+  const viewer = await requireViewer();
+  const parsed = cardId.safeParse(id);
+  if (!parsed.success || (stars !== null && !isStars(stars))) return { error: "That rating didn't go through." };
+  try {
+    await setRating(viewer.id, parsed.data, stars);
+    return { ok: true };
+  } catch (e) {
+    console.error("rating failed", e);
+    return { error: "The rating didn't save. Try again." };
   }
 }
 

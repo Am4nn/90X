@@ -38,7 +38,6 @@ import { loadCards, outboxItems } from "@/lib/offline/store";
 import { refreshCards, sendQueuedAnswers } from "@/lib/offline/sync";
 import { FeedCard } from "./card";
 import { DifficultyToggle } from "./difficulty-toggle";
-import { ReportCard } from "./report";
 import { TopicToggle } from "./topic-toggle";
 
 export type Screen =
@@ -262,10 +261,7 @@ export function Feed({
                 nextPending={nextPending}
                 nextError={nextError}
               />
-              <div className="flex items-start justify-between gap-4">
-                <span className="text-small text-mute md:hidden">{whyLine(card)}</span>
-                <ReportCard key={card.id} cardId={card.id} />
-              </div>
+              <span className="text-small text-mute md:hidden">{whyLine(card)}</span>
             </>
           )}
         </div>

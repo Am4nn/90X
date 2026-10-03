@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type AnswerState, retireTopicAction, submitAnswer } from "@/app/actions/feed";
 import { PRIMARY, SECONDARY } from "@/components/button-styles";
@@ -19,6 +18,7 @@ import {
   verdictText,
 } from "@/lib/feed/view";
 import { dropCard, queueAnswer } from "@/lib/offline/store";
+import { CardFooter } from "./footer";
 import { Assemble } from "./primitive/assemble";
 import { Bucket } from "./primitive/bucket";
 import { SkipContext } from "./primitive/check-bar";
@@ -216,155 +216,155 @@ export function FeedCard({
   const label = busy && pending ? busy : null;
 
   return (
-    <article className="flex flex-col gap-5 rounded-xl border border-line bg-surface p-5 md:p-7">
-      <header className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span
-              className={`inline-flex h-6 shrink-0 items-center rounded-full border border-line-2 px-2.5 text-tag font-bold ${AREA_TEXT[card.topic.area]}`}
-            >
-              {AREA_LABEL[card.topic.area]}
+    <>
+      <article className="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-5 md:p-7">
+        <header className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex min-w-0 items-center gap-2.5">
+              <span
+                className={`inline-flex h-6 shrink-0 items-center rounded-full border border-line-2 px-2.5 text-tag font-bold ${AREA_TEXT[card.topic.area]}`}
+              >
+                {AREA_LABEL[card.topic.area]}
+              </span>
+              <span className="truncate text-small font-semibold text-text">{card.topic.name}</span>
             </span>
-            <span className="truncate text-small font-semibold text-text">{card.topic.name}</span>
-          </span>
-          {card.diagnostic ? (
-            <span className="tabular shrink-0 text-small text-mute">
-              Diagnostic {card.diagnostic.index} of {card.diagnostic.total}
-            </span>
-          ) : (
-            card.difficulty && <span className="shrink-0 text-tag font-bold text-text-2 capitalize">{card.difficulty}</span>
-          )}
-        </div>
-        {card.diagnostic && (
-          <div className="h-1 overflow-hidden rounded-full bg-surface-2" aria-hidden>
-            <div className="h-full rounded-full bg-cyan" style={{ width: `${(card.diagnostic.index / card.diagnostic.total) * 100}%` }} />
+            {card.diagnostic ? (
+              <span className="tabular shrink-0 text-small text-mute">
+                Diagnostic {card.diagnostic.index} of {card.diagnostic.total}
+              </span>
+            ) : (
+              card.difficulty && <span className="shrink-0 text-tag font-bold text-text-2 capitalize">{card.difficulty}</span>
+            )}
           </div>
-        )}
-      </header>
+          {card.diagnostic && (
+            <div className="h-1 overflow-hidden rounded-full bg-surface-2" aria-hidden>
+              <div className="h-full rounded-full bg-cyan" style={{ width: `${(card.diagnostic.index / card.diagnostic.total) * 100}%` }} />
+            </div>
+          )}
+        </header>
 
-      <div className="font-display text-heading font-semibold [&_p]:text-text">
-        <Markdown>{card.promptMd}</Markdown>
-      </div>
+        <div className="font-display text-heading font-semibold [&_p]:text-text">
+          <Markdown>{card.promptMd}</Markdown>
+        </div>
 
-      {phase.kind === "ask" && (
-        <div className="flex flex-col gap-4">
-          <SkipContext.Provider
-            value={{ pending, skipping: label === "skip", skip: () => submit("skip", { cardId: card.id, skipped: true }) }}
-          >
-            <AnswerArea card={card} pending={pending} busy={label} onSubmit={onSubmit} />
-          </SkipContext.Provider>
+        {phase.kind === "ask" && (
+          <div className="flex flex-col gap-4">
+            <SkipContext.Provider
+              value={{ pending, skipping: label === "skip", skip: () => submit("skip", { cardId: card.id, skipped: true }) }}
+            >
+              <AnswerArea card={card} pending={pending} busy={label} onSubmit={onSubmit} />
+            </SkipContext.Provider>
 
-          {/* The two things a card cannot work out about its reader. "New to me"
+            {/* The two things a card cannot work out about its reader. "New to me"
               is always offered: only they know whether they have met this idea.
               "I already know this" is earned, so it appears once they have a
               real record on the topic. */}
-          <div className="flex flex-wrap gap-4">
-            <button
-              type="button"
-              disabled={pending}
-              aria-busy={label === "new_to_me" || undefined}
-              onClick={() => submit("new_to_me", { cardId: card.id, declare: "new_to_me" })}
-              className="text-small font-semibold text-cyan underline-offset-2 hover:underline disabled:opacity-60"
-            >
-              {label === "new_to_me" ? "Opening…" : "New to me — show me the answer"}
-            </button>
-            {card.canDeclareKnown && (
+            <div className="flex flex-wrap gap-4">
               <button
                 type="button"
                 disabled={pending}
-                aria-busy={label === "known" || undefined}
-                onClick={() => submit("known", { cardId: card.id, declare: "known" })}
-                className="text-small font-semibold text-mute underline-offset-2 hover:text-text-2 hover:underline disabled:opacity-60"
+                aria-busy={label === "new_to_me" || undefined}
+                onClick={() => submit("new_to_me", { cardId: card.id, declare: "new_to_me" })}
+                className="text-small font-semibold text-cyan underline-offset-2 hover:underline disabled:opacity-60"
               >
-                {label === "known" ? "Retiring…" : "I already know this"}
+                {label === "new_to_me" ? "Opening…" : "New to me — show me the answer"}
               </button>
+              {card.canDeclareKnown && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  aria-busy={label === "known" || undefined}
+                  onClick={() => submit("known", { cardId: card.id, declare: "known" })}
+                  className="text-small font-semibold text-mute underline-offset-2 hover:text-text-2 hover:underline disabled:opacity-60"
+                >
+                  {label === "known" ? "Retiring…" : "I already know this"}
+                </button>
+              )}
+            </div>
+            {!(card.primitive && HAS_CHECK_BAR.has(card.primitive)) && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  disabled={pending}
+                  aria-busy={label === "skip" || undefined}
+                  onClick={() => submit("skip", { cardId: card.id, skipped: true })}
+                  className={`w-full md:w-auto ${SECONDARY}`}
+                >
+                  {label === "skip" ? "Skipping…" : "Skip"}
+                </button>
+              </div>
             )}
           </div>
-          {!(card.primitive && HAS_CHECK_BAR.has(card.primitive)) && (
-            <div className="flex justify-end">
-              <button
-                type="button"
-                disabled={pending}
-                aria-busy={label === "skip" || undefined}
-                onClick={() => submit("skip", { cardId: card.id, skipped: true })}
-                className={`w-full md:w-auto ${SECONDARY}`}
-              >
-                {label === "skip" ? "Skipping…" : "Skip"}
+        )}
+
+        {phase.kind === "why" && (
+          <WhyStep
+            options={card.whyOptions ?? []}
+            pending={pending}
+            busy={label}
+            onSubmit={(why) => submit("check", { ...phase.main, why }, phase.choice)}
+          />
+        )}
+
+        {phase.kind === "selfMark" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-small text-text-2">The automatic mark is unavailable. Judge your answer against what it had to cover.</p>
+            {(card.rubric?.length ?? 0) > 0 && (
+              <ul className="flex flex-col gap-1 rounded-xl border border-line bg-surface-2 px-3.5 py-3">
+                {(card.rubric ?? []).map((point) => (
+                  <li key={point} className="text-small text-text-2">
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <SelfRate card={card} pending={pending} busy={label} onSubmit={(input) => submit("self", { ...input, answer: phase.answer })} />
+          </div>
+        )}
+
+        {phase.kind === "result" && (
+          <Result
+            result={phase.result}
+            choice={phase.choice}
+            onNext={() => onNext(phase.result)}
+            nextPending={nextPending}
+            nextRef={nextRef}
+          />
+        )}
+
+        {phase.kind === "saved" && (
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <span role="status" className="text-text-2">
+                Saved. It&apos;ll be graded when you&apos;re back online.
+              </span>
+              <button ref={nextRef} type="button" onClick={() => onNext(null)} className={`w-full md:w-auto ${PRIMARY}`}>
+                Next card
               </button>
             </div>
-          )}
-        </div>
-      )}
-
-      {phase.kind === "why" && (
-        <WhyStep
-          options={card.whyOptions ?? []}
-          pending={pending}
-          busy={label}
-          onSubmit={(why) => submit("check", { ...phase.main, why }, phase.choice)}
-        />
-      )}
-
-      {phase.kind === "selfMark" && (
-        <div className="flex flex-col gap-4">
-          <p className="text-small text-text-2">The automatic mark is unavailable. Judge your answer against what it had to cover.</p>
-          {(card.rubric?.length ?? 0) > 0 && (
-            <ul className="flex flex-col gap-1 rounded-xl border border-line bg-surface-2 px-3.5 py-3">
-              {(card.rubric ?? []).map((point) => (
-                <li key={point} className="text-small text-text-2">
-                  {point}
-                </li>
-              ))}
-            </ul>
-          )}
-          <SelfRate card={card} pending={pending} busy={label} onSubmit={(input) => submit("self", { ...input, answer: phase.answer })} />
-        </div>
-      )}
-
-      {phase.kind === "result" && (
-        <Result
-          result={phase.result}
-          choice={phase.choice}
-          nextReview={phase.nextReview}
-          onNext={() => onNext(phase.result)}
-          nextPending={nextPending}
-          nextRef={nextRef}
-        />
-      )}
-
-      {phase.kind === "saved" && (
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <span role="status" className="text-text-2">
-              Saved. It&apos;ll be graded when you&apos;re back online.
-            </span>
-            <button ref={nextRef} type="button" onClick={() => onNext(null)} className={`w-full md:w-auto ${PRIMARY}`}>
-              Next card
-            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {(error ?? (phase.kind === "result" ? nextError : null)) && (
-        <p role="alert" className="text-small text-bad">
-          {error ?? nextError}
-        </p>
-      )}
-    </article>
+        {(error ?? (phase.kind === "result" ? nextError : null)) && (
+          <p role="alert" className="text-small text-bad">
+            {error ?? nextError}
+          </p>
+        )}
+      </article>
+      {phase.kind === "result" && <CardFooter card={card} result={phase.result} nextReview={phase.nextReview} />}
+    </>
   );
 }
 
 function Result({
   result,
   choice,
-  nextReview,
   onNext,
   nextPending,
   nextRef,
 }: {
   result: AnswerResult;
   choice: number | null;
-  nextReview: string;
   onNext: () => void;
   nextPending: boolean;
   nextRef: React.RefObject<HTMLButtonElement | null>;
@@ -430,28 +430,7 @@ function Result({
         <Markdown>{result.answerMd}</Markdown>
       </section>
 
-      {result.sourceRefs.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {result.sourceRefs.map((source, index) =>
-            source.href ? (
-              <Link
-                key={index}
-                href={source.href}
-                className="rounded-full border border-line-2 px-3 py-2 text-small font-semibold text-text-2 hover:text-text"
-              >
-                {source.title}
-              </Link>
-            ) : (
-              <span key={index} className="rounded-full border border-line-2 px-3 py-2 text-small font-semibold text-text-2">
-                {source.title}
-              </span>
-            ),
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <span className="text-small text-mute">{nextReview}</span>
+      <div className="flex">
         <button
           ref={nextRef}
           type="button"
