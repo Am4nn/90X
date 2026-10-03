@@ -58,3 +58,19 @@ card was in it once". Options, roughly in order of preference:
 
 Whichever is chosen, the test is the case above: a card retired for a reason, a
 later publish that does not include it, and a swap that leaves it retired.
+
+## Status after the 2026-10-03 prune: disarmed, not fixed
+
+`scripts/prune_retired.py` deleted the 2,292 retired cards that nothing referenced, after
+writing their full rows to `.data/review/prod-retired-cards.jsonl` and reading the file
+back. It left the 25 retired cards that carry history (7 reviews, 20 admin verdicts), and
+the four tables that reference a card all cascade, so deleting those would have deleted
+the history too.
+
+Production now holds **zero retired cards that have an archetype**. The 25 remaining are
+legacy cards with none, and the swap only activates `archetype is not null`. So there is
+currently nothing for the swap to resurrect.
+
+That is a property of today's data, not of the code. The next refile or repair that
+retires an archetyped card re-arms it, and `status in ('draft', 'live', 'retired')` is
+still there. **Do not run `pipeline swap` until one of the fixes above is in.**
