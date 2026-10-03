@@ -20,7 +20,7 @@ Feed v2 MVP is complete. Goal: public launch (LinkedIn post) without exhausting 
 | 13 | DSA sheets | Coach gives standard sheet questions at start (basics), plus "give me more" once the day's missions are done. Reference: hynts.in/preparation/dsa-sheets | new; `queueProblems` in `lib/coach/missions.ts` already adds extra problems |
 | 14 | XP | Points for missions, feed cards, extra work | new |
 | 16 | Remove the x% on answered cards | Grading stays 0 or 1 (no partial credit). Drop the percentage shown after an answer; show right or wrong only | feed answer result UI (`components/feed/primitive/review.tsx`) |
-| 17 | Assemble cards reject equivalent answers | Screenshot: 'Assemble the statement that returns x plus one' marks `return 1 + x ;` wrong; key is only `return x + 1 ;`. Commutative orders are correct. | assemble grading (`picked` order) and the gate's `one_answer` verdict |
+| 17 | Assemble: equivalent orders (possible, unproven) | The screenshot was the design prototype's deliberate 'sample miss', NOT the live app, so no live card is known to be wrong. Real risk remains: assemble grades by exact order, so a card whose tokens could validly swap (e.g. `1 + x`) would be marked wrong. Measure after the redesign. | assemble grading (`picked` order), gate `one_answer` |
 | 15 | What else before launch? | I suggest additions below | |
 
 ## Suggested additions for item 15 (to be accepted or dropped)
@@ -49,7 +49,8 @@ Feed v2 MVP is complete. Goal: public launch (LinkedIn post) without exhausting 
 
 - **#16 Percent:** no partial credit. Grading stays all-or-nothing; remove the % from the answered card.
 
-- **#17 Assemble equivalents:** confirmed bug by Aman's screenshot (1 + x is correct). Needs a measurement of how many assemble cards have more than one valid order before choosing a fix.
+- **#17 Assemble equivalents:** corrected: the screenshot came from the design prototype, not the app. Measure whether any live assemble card has more than one valid order, after the redesign (Aman's call).
+- **Feed card redesign (Q&A done):** side-by-side review page + screenshots to prevent drift; replace in place with no flag; ~6 PRs by stage; drag last as its own PR; Skip follows the mock (no answer shown, counted Skipped); stars = curation feedback (1-2 Bad, 3 Normal, 4-5 Good, Report = should-be-removed); area colours for LLD/AI/Behavioural: Claude proposes, Aman approves; editor header shows language + line count; review labels report the real scheduler; Today Correct = correct/graded, skips excluded, local midnight; report hides areas with <3 graded answers.
 
 ## Proposed order (for Aman to confirm; not a plan)
 1. **Safety first (blocks everything public):** #11 admin guard, #5 limits/anti-scrape/BYOK, plus cost kill-switch from the additions list.
