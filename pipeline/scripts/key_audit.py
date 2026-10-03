@@ -36,6 +36,7 @@ APPLY = "--apply" in ARGS
 PILOT = int(ARGS[ARGS.index("--pilot") + 1]) if "--pilot" in ARGS else 0
 FIRST = ARGS[ARGS.index("--first") + 1] if "--first" in ARGS else "fast"
 SECOND = ARGS[ARGS.index("--second") + 1] if "--second" in ARGS else "smart"
+APPLIED = os.path.abspath("../.data/review/key-audit-retest-applied.json")
 ONLY = ARGS[ARGS.index("--formats") + 1].split(",") if "--formats" in ARGS else []
 CHUNK = 10
 WORKERS = 8
@@ -230,6 +231,53 @@ def retest() -> None:
     print(f"\nsaved to {OUT}; nothing changed.")
 
 
+def apply_retest(path: str) -> None:
+    """Act on a retest: put back what both models cleared, take out what both confirmed.
+
+    Staging only. Production follows from the lists this prints: `publish` stamps the restored
+    cards (it leaves `status` alone), then they are taken live by id.
+    """
+    saved = json.load(open(path, encoding="utf-8"))
+    restore, keep_out = saved.get("restore", []), saved.get("keep_out", [])
+    if not restore and not keep_out:
+        print("nothing to restore and nothing to take out")
+        return
+    con = duckdb.connect(os.path.abspath("../.data/staging.duckdb"))
+    restored, rejected = [], []
+    for cid in restore:
+        # Only a card the audit itself rejected. A card rejected for any other reason is
+        # not this script's to bring back.
+        row = con.execute(
+            "select 1 from cards where id = ? and status = 'rejected' and reject_reason like 'answer key contradicts%'",
+            [cid],
+        ).fetchone()
+        if row:
+            con.execute(
+                """update cards set status = 'draft', kept = true, reject_reason = null,
+                          quality = json_merge_patch(coalesce(quality, '{}'),
+                                                    json_object('key_audit_restored',
+                                                                'retest: two independent models agree the key matches'))
+                    where id = ?""",
+                [cid],
+            )
+            restored.append(cid)
+    for cid in keep_out:
+        why = (saved["second"].get(cid, {}).get("reason") or saved["first"].get(cid, {}).get("reason") or "")[:200]
+        row = con.execute("select 1 from cards where id = ? and status = 'draft' and kept = true", [cid]).fetchone()
+        if row:  # a live card the strong recheck flagged and a second family confirmed
+            con.execute(
+                "update cards set status = 'rejected', kept = false, reject_reason = ? where id = ?",
+                [f"answer key contradicts the explanation: {why}", cid],
+            )
+            rejected.append(cid)
+    con.commit()
+    out = APPLIED
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump({"restored": restored, "newly_rejected": rejected}, fh, indent=1)
+    print(f"restored {len(restored)} to draft; newly rejected {len(rejected)} that were live")
+    print(f"ids for the production step saved to {out}")
+
+
 def apply_saved(path: str) -> None:
     """Reject what a previous run confirmed, without paying for the model calls again."""
     saved = json.load(open(path, encoding="utf-8"))
@@ -254,6 +302,8 @@ def apply_saved(path: str) -> None:
 
 
 def main() -> None:
+    if "--apply-retest" in ARGS:
+        return apply_retest(ARGS[ARGS.index("--apply-retest") + 1])
     if "--retest" in ARGS:
         return retest()
     if "--recheck" in ARGS:
