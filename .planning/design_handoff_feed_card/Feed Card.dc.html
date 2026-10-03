@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#0A0C10;color:#E6E9EF;-webkit-font-smoothing:antialiased}a{color:#67E8F9}a:hover{color:#A5F3FC}button{font:inherit}button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid #67E8F9;outline-offset:2px}*{box-sizing:border-box}</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;display:flex;flex-direction:column;gap:20px;font-family:Manrope,sans-serif">
+  <div style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">View</span>
+      <div style="display:flex;gap:6px">
+        <sc-for list="{{ viewBtns }}" as="b" hint-placeholder-count="2"><button onClick="{{ b.onTap }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid {{ b.bd }};background:{{ b.bg }};color:{{ b.fg }};font:700 12px/1 Manrope,sans-serif;cursor:pointer">{{ b.label }}</button></sc-for>
+      </div>
+    </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Card</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <select value="{{ pos }}" onChange="{{ onSelect }}" style="height:36px;padding:0 12px;border-radius:12px;border:1px solid #262B36;background:#0F1218;color:#E6E9EF;font:500 13px/1 Manrope,sans-serif;max-width:300px">
+          <sc-for list="{{ cardOpts }}" as="o" hint-placeholder-count="22"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+        </select>
+        <button onClick="{{ onMiss }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid #262B36;background:transparent;color:#AEB5C2;font:700 12px/1 Manrope,sans-serif;cursor:pointer">Answer with sample miss</button>
+        <button onClick="{{ onRight }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid #262B36;background:transparent;color:#AEB5C2;font:700 12px/1 Manrope,sans-serif;cursor:pointer">Answer correctly</button>
+        <button onClick="{{ onReset }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid transparent;background:transparent;color:#7D8594;font:700 12px/1 Manrope,sans-serif;cursor:pointer">Reset sitting</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+    <div style="position:relative;flex:none;width:{{ frameW }};height:{{ frameH }};border-radius:{{ frameR }};border:1px solid #262B36;background:#0A0C10;overflow:hidden;display:flex">
+      <sc-if value="{{ desk }}" hint-placeholder-val="{{ false }}">
+        <aside style="flex:none;width:220px;border-right:1px solid #1C2029;padding:24px 12px;display:flex;flex-direction:column;gap:4px">
+          <div style="font:700 22px/1 Sora,sans-serif;color:#E6E9EF;padding:4px 12px 24px">90x</div>
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6"><span style="height:40px;display:flex;align-items:center;padding:0 12px;border-radius:10px;font:600 15px/1 Manrope,sans-serif;color:{{ t.dfg }};background:{{ t.dbg }}">{{ t.label }}</span></sc-for>
+        </aside>
+      </sc-if>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <header style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:{{ headPad }};border-bottom:1px solid #1C2029">
+          <h1 style="margin:0;font:600 22px/1.25 Sora,sans-serif;letter-spacing:-.015em;color:#E6E9EF">Feed</h1>
+        </header>
+        <div ref="{{ scrollRef }}" style="flex:1;min-height:0;overflow-y:auto">
+          <div style="display:flex;gap:24px;align-items:flex-start;padding:{{ cpad }}">
+            <div style="flex:1 1 0;min-width:0;max-width:680px;display:flex;flex-direction:column;gap:16px">
+
+              <article style="background:#0F1218;border:1px solid #1C2029;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:20px">
+
+                <sc-if value="{{ res }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:20px;border-bottom:1px solid #1C2029">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <sc-if value="{{ vOk }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:28px;height:28px;border-radius:999px;border:1px solid #4ADE80;color:#4ADE80;display:grid;place-items:center"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></sc-if>
+                      <sc-if value="{{ vBad }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:28px;height:28px;border-radius:999px;border:1px solid #F87171;color:#F87171;display:grid;place-items:center"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></span></sc-if>
+                      <h2 style="margin:0;flex:1;min-width:0;font:600 22px/1.25 Sora,sans-serif;letter-spacing:-.015em;color:#E6E9EF;text-wrap:pretty">{{ vTitle }}</h2>
+                      <sc-if value="{{ hasScore }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:{{ scoreCol }}">{{ score }}</span></sc-if>
+                    </div>
+                    <sc-if value="{{ hasCovLine }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2">{{ covLine }}, pass mark 70%</span></sc-if>
+                    
+                  </div>
+                </sc-if>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0">
+                    <span style="height:24px;padding:0 10px;border-radius:999px;border:1px solid #262B36;display:flex;align-items:center;font:700 12px/1 Manrope,sans-serif;color:{{ areaCol }}">{{ area }}</span>
+                    <span style="font:600 13px/1.45 Manrope,sans-serif;color:#E6E9EF">{{ topic }}</span>
+                  </div>
+                  <span style="flex:none;font:700 12px/1 Manrope,sans-serif;letter-spacing:.04em;color:#AEB5C2">{{ diff }}</span>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ parts }}" as="p" hint-placeholder-count="1">
+                    <sc-if value="{{ p.code }}" hint-placeholder-val="{{ false }}"><pre style="margin:0;padding:12px 14px;border-radius:10px;background:#0A0C10;border:1px solid #1C2029;overflow-x:auto;font:500 13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#E6E9EF">{{ p.text }}</pre></sc-if>
+                    <sc-if value="{{ p.prose }}" hint-placeholder-val="{{ true }}"><p style="margin:0;font:600 16px/1.5 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ p.text }}</p></sc-if>
+                  </sc-for>
+                  <sc-if value="{{ hasHint }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">{{ hint }}</span></sc-if>
+                </div>
+
+                <sc-if value="{{ isPick }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+                      <button onClick="{{ o.onTap }}" style="display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;min-height:48px;border-radius:12px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font:500 15px/1.55 Manrope,sans-serif;cursor:pointer">
+                        <span style="flex:none;width:24px;height:24px;margin-top:1px;border-radius:999px;border:1px solid #262B36;display:grid;place-items:center;font:700 12px/1 Manrope,sans-serif;color:#AEB5C2">{{ o.letter }}</span>
+                        <span style="display:flex;flex-direction:column;gap:8px;min-width:0">
+                          <span style="text-wrap:pretty">{{ o.text }}</span>
+                          <sc-if value="{{ o.mOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ o.mWord }}</span></sc-if>
+                          <sc-if value="{{ o.mBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ o.mWord }}</span></sc-if>
+                        </span>
+                      </button>
+                    </sc-for>
+                    <sc-if value="{{ showWhy }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:20px;border-top:1px solid #1C2029">
+                        <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Now the reason</span>
+                        <p style="margin:0 0 4px;font:600 16px/1.5 Manrope,sans-serif;color:#E6E9EF">{{ whyQ }}</p>
+                        <sc-for list="{{ reasons }}" as="o" hint-placeholder-count="4">
+                          <button onClick="{{ o.onTap }}" style="display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;padding:12px 14px;min-height:48px;border-radius:12px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font:500 15px/1.55 Manrope,sans-serif;cursor:pointer">
+                            <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.04em;color:#AEB5C2">{{ o.letter }}</span>
+                            <span style="text-wrap:pretty">{{ o.text }}</span>
+                            <sc-if value="{{ o.mOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ o.mWord }}</span></sc-if>
+                            <sc-if value="{{ o.mBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ o.mWord }}</span></sc-if>
+                          </button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ isMatchAsk }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Terms</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ terms }}" as="t" hint-placeholder-count="4"><button data-grip="1" onClick="{{ t.onTap }}" onPointerDown="{{ t.onDown }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px 8px 8px;border-radius:12px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};opacity:{{ t.op }};font:600 15px/1.4 Manrope,sans-serif;cursor:grab;text-align:left;touch-action:none;user-select:none;transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="flex:none;width:26px;height:26px;border-radius:8px;background:#1C2029;display:grid;place-items:center;font:700 12px/1 Manrope,sans-serif;color:#E6E9EF">{{ t.letter }}</span>{{ t.text }}<span style="flex:none;display:flex;color:#7D8594"><svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.1"></circle><circle cx="6" cy="2" r="1.1"></circle><circle cx="2" cy="6" r="1.1"></circle><circle cx="6" cy="6" r="1.1"></circle><circle cx="2" cy="10" r="1.1"></circle><circle cx="6" cy="10" r="1.1"></circle></g></svg></span></button></sc-for>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Meanings</span>
+<sc-for list="{{ meanings }}" as="m" hint-placeholder-count="4"><button data-drop="{{ m.drop }}" onClick="{{ m.onTap }}" style="display:flex;align-items:flex-start;gap:12px;width:100%;min-height:48px;padding:11px 14px 11px 10px;border-radius:12px;border:1px {{ m.bs }} {{ m.bd }};background:{{ m.bg }};color:{{ m.fg }};font:500 15px/1.55 Manrope,sans-serif;cursor:pointer;text-align:left;transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="flex:none;width:26px;height:26px;border-radius:8px;border:1px dashed {{ m.slotBd }};background:{{ m.slotBg }};display:grid;place-items:center;font:700 12px/1 Manrope,sans-serif;color:#E6E9EF">{{ m.tag }}</span><span style="text-wrap:pretty">{{ m.text }}</span></button></sc-for>
+</div></div>
+</sc-if>
+                <sc-if value="{{ isMatchRes }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ mrows }}" as="m" hint-placeholder-count="4">
+                      <div style="display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:12px;border:1px solid {{ m.bd }}">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                          <span style="font:600 15px/1.4 Manrope,sans-serif;color:#E6E9EF">{{ m.term }}</span>
+                          <sc-if value="{{ m.mOk }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ m.mWord }}</span></sc-if>
+                          <sc-if value="{{ m.mBad }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ m.mWord }}</span></sc-if>
+                        </div>
+                        <sc-if value="{{ m.showYours }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:2px"><span style="font:700 12px/1.4 Manrope,sans-serif;color:#7D8594">You paired</span><span style="font:500 15px/1.55 Manrope,sans-serif;color:{{ m.yFg }};text-wrap:pretty">{{ m.yours }}</span></div></sc-if>
+                        <sc-if value="{{ m.showRight }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:2px"><span style="font:700 12px/1.4 Manrope,sans-serif;color:#7D8594">{{ m.rightLabel }}</span><span style="font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ m.right }}</span></div></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ isOrderAsk }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Your order</span>
+<sc-for list="{{ slots }}" as="s" hint-placeholder-count="0"><button data-drop="{{ s.drop }}" onClick="{{ s.onTap }}" onPointerDown="{{ s.onDown }}" style="display:flex;align-items:flex-start;gap:12px;width:100%;min-height:48px;padding:11px 6px 11px 10px;border-radius:12px;border:1px solid #67E8F9;background:#0E1E24;color:#E6E9EF;font:500 15px/1.55 Manrope,sans-serif;cursor:grab;text-align:left;user-select:none;opacity:{{ s.op }};box-shadow:{{ s.ins }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="flex:none;width:26px;height:26px;border-radius:8px;background:#06222A;display:grid;place-items:center;font:600 13px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#67E8F9">{{ s.num }}</span><span style="flex:1;min-width:0;text-wrap:pretty">{{ s.text }}</span><span data-grip="1" style="flex:none;align-self:stretch;display:grid;place-items:center;width:32px;margin:-11px 0;color:#7D8594;touch-action:none;cursor:grab"><svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true"><g fill="currentColor"><circle cx="2.5" cy="3" r="1.4"></circle><circle cx="7.5" cy="3" r="1.4"></circle><circle cx="2.5" cy="8" r="1.4"></circle><circle cx="7.5" cy="8" r="1.4"></circle><circle cx="2.5" cy="13" r="1.4"></circle><circle cx="7.5" cy="13" r="1.4"></circle></g></svg></span></button></sc-for>
+<sc-for list="{{ empties }}" as="s" hint-placeholder-count="5"><div data-drop="{{ s.drop }}" style="display:flex;align-items:center;gap:12px;min-height:48px;padding:0 14px 0 10px;border-radius:12px;border:1px {{ s.bs }} {{ s.bd }};background:{{ s.bg }};color:#7D8594;font:500 13px/1.45 Manrope,sans-serif;transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="flex:none;width:26px;height:26px;border-radius:8px;border:1px solid #1C2029;display:grid;place-items:center;font:600 13px/1 Sora,sans-serif;font-variant-numeric:tabular-nums">{{ s.num }}</span>{{ s.label }}</div></sc-for>
+</div>
+<sc-if value="{{ poolShow }}" hint-placeholder-val="{{ true }}">
+<div data-drop="pool" style="display:flex;flex-direction:column;gap:8px;margin:-8px;padding:8px;border-radius:14px;border:1px {{ poolBs }} {{ poolBd }};background:{{ poolBg }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Steps</span>
+<sc-for list="{{ pool }}" as="s" hint-placeholder-count="5"><button onClick="{{ s.onTap }}" onPointerDown="{{ s.onDown }}" style="display:flex;align-items:flex-start;gap:8px;width:100%;min-height:48px;padding:11px 6px 11px 14px;border-radius:12px;border:1px solid #262B36;background:#0F1218;color:#E6E9EF;font:500 15px/1.55 Manrope,sans-serif;cursor:grab;text-align:left;user-select:none;opacity:{{ s.op }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="flex:1;min-width:0;text-wrap:pretty">{{ s.text }}</span><span data-grip="1" style="flex:none;align-self:stretch;display:grid;place-items:center;width:32px;margin:-11px 0;color:#7D8594;touch-action:none;cursor:grab"><svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true"><g fill="currentColor"><circle cx="2.5" cy="3" r="1.4"></circle><circle cx="7.5" cy="3" r="1.4"></circle><circle cx="2.5" cy="8" r="1.4"></circle><circle cx="7.5" cy="8" r="1.4"></circle><circle cx="2.5" cy="13" r="1.4"></circle><circle cx="7.5" cy="13" r="1.4"></circle></g></svg></span></button></sc-for>
+<sc-if value="{{ poolEmptyDrop }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2;padding:6px 0">Drop here to take it back</span></sc-if>
+</div>
+</sc-if>
+</div>
+</sc-if>
+                <sc-if value="{{ isOrderRes }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:20px">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">{{ orderLabel }}</span>
+                      <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px">
+                        <sc-for list="{{ yourOrder }}" as="s" hint-placeholder-count="5">
+                          <li style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px 10px 10px;border-radius:12px;border:1px solid #1C2029;font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF">
+                            <span style="flex:none;width:26px;height:26px;border-radius:8px;background:#1C2029;display:grid;place-items:center;font:600 13px/1 Sora,sans-serif;font-variant-numeric:tabular-nums">{{ s.num }}</span><span style="text-wrap:pretty">{{ s.text }}</span>
+                          </li>
+                        </sc-for>
+                      </ol>
+                    </div>
+                    <sc-if value="{{ hasViol }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">The wrong way round</span>
+                        <sc-for list="{{ violations }}" as="v" hint-placeholder-count="1">
+                          <div style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;border:1px solid #F87171;font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF">
+                            <span style="flex:none;margin-top:4px;color:#F87171"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></span><span style="text-wrap:pretty">{{ v.text }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2">{{ rulesLabel }}</span>
+                      <sc-for list="{{ rules }}" as="u" hint-placeholder-count="4"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594;padding-left:12px;border-left:1px solid #262B36">{{ u.text }}</span></sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ isClaim }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ claims }}" as="s" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start;padding:14px 0;border-top:1px solid #1C2029">
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0;padding-top:2px">
+<span style="font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ s.text }}</span>
+<sc-if value="{{ s.mOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ s.mWord }}</span></sc-if>
+<sc-if value="{{ s.mBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ s.mWord }}</span></sc-if>
+</div>
+<div role="radiogroup" aria-label="Verdict" style="position:relative;flex:none;display:grid;grid-template-columns:1fr 1fr;width:132px;height:44px;padding:3px;border-radius:999px;border:1px solid #262B36;background:#0A0C10">
+<span style="position:absolute;top:3px;bottom:3px;left:{{ s.thumbL }};width:calc(50% - 3px);border-radius:999px;border:1px solid {{ s.thumbBd }};background:{{ s.thumbBg }};opacity:{{ s.thumbOp }};transition:left .24s cubic-bezier(.3,.7,.2,1),opacity .15s,border-color .2s,background-color .2s"></span>
+<button onClick="{{ s.onT }}" role="radio" aria-checked="{{ s.isT }}" style="position:relative;border:0;background:transparent;border-radius:999px;color:{{ s.tFg }};font:700 13px/1 Manrope,sans-serif;cursor:{{ s.cur }};transition:color .2s">True</button>
+<button onClick="{{ s.onF }}" role="radio" aria-checked="{{ s.isF }}" style="position:relative;border:0;background:transparent;border-radius:999px;color:{{ s.fFg }};font:700 13px/1 Manrope,sans-serif;cursor:{{ s.cur }};transition:color .2s">False</button>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+                <sc-if value="{{ isBucketAsk }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ bpoolShow }}" hint-placeholder-val="{{ true }}">
+<div data-drop="bpool" style="display:flex;flex-direction:column;gap:8px;margin:-8px;padding:8px;border-radius:14px;border:1px {{ bpoolBs }} {{ bpoolBd }};background:{{ bpoolBg }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">To sort</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px;min-height:44px">
+<sc-for list="{{ bpool }}" as="b" hint-placeholder-count="4"><button data-grip="1" onClick="{{ b.onTap }}" onPointerDown="{{ b.onDown }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 12px 10px 14px;border-radius:12px;border:1px solid {{ b.bd }};background:{{ b.bg }};color:{{ b.fg }};opacity:{{ b.op }};font:500 15px/1.45 Manrope,sans-serif;cursor:grab;text-align:left;text-wrap:pretty;touch-action:none;user-select:none;transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s">{{ b.text }}<span style="flex:none;display:flex;color:#7D8594"><svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.1"></circle><circle cx="6" cy="2" r="1.1"></circle><circle cx="2" cy="6" r="1.1"></circle><circle cx="6" cy="6" r="1.1"></circle><circle cx="2" cy="10" r="1.1"></circle><circle cx="6" cy="10" r="1.1"></circle></g></svg></span></button></sc-for>
+</div></div>
+</sc-if>
+<sc-for list="{{ bcols }}" as="col" hint-placeholder-count="2">
+<div data-drop="{{ col.drop }}" onClick="{{ col.onTap }}" role="button" style="display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;border:1px {{ col.bs }} {{ col.bd }};background:{{ col.bg }};cursor:{{ col.cur }};min-height:76px;transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font:600 16px/1.4 Sora,sans-serif;color:#E6E9EF">{{ col.name }}</span><span style="font:700 12px/1 Manrope,sans-serif;color:#67E8F9">{{ col.hint }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ col.items }}" as="b" hint-placeholder-count="0"><button data-grip="1" onClick="{{ b.onTap }}" onPointerDown="{{ b.onDown }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 12px 10px 14px;border-radius:12px;border:1px solid {{ b.bd }};background:{{ b.bg }};color:{{ b.fg }};opacity:{{ b.op }};font:500 15px/1.45 Manrope,sans-serif;cursor:grab;text-align:left;text-wrap:pretty;touch-action:none;user-select:none;transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s">{{ b.text }}<span style="flex:none;display:flex;color:#7D8594"><svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.1"></circle><circle cx="6" cy="2" r="1.1"></circle><circle cx="2" cy="6" r="1.1"></circle><circle cx="6" cy="6" r="1.1"></circle><circle cx="2" cy="10" r="1.1"></circle><circle cx="6" cy="10" r="1.1"></circle></g></svg></span></button></sc-for>
+</div></div>
+</sc-for>
+</div>
+</sc-if>
+                <sc-if value="{{ isBucketRes }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <sc-for list="{{ rcols }}" as="col" hint-placeholder-count="2">
+                      <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;border:1px solid #1C2029">
+                        <span style="font:600 16px/1.4 Sora,sans-serif;color:#E6E9EF">{{ col.name }}</span>
+                        <sc-if value="{{ col.none }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Nothing placed here</span></sc-if>
+                        <sc-for list="{{ col.items }}" as="b" hint-placeholder-count="2">
+                          <div style="display:flex;flex-direction:column;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid {{ b.bd }}">
+                            <span style="font:500 15px/1.45 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ b.text }}</span>
+                            <sc-if value="{{ b.mOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ b.mWord }}</span></sc-if>
+                            <sc-if value="{{ b.mBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ b.mWord }}. {{ b.bel }}</span></sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ isTap }}" hint-placeholder-val="{{ false }}">
+<div style="border-radius:12px;background:#0A0C10;border:1px solid #1C2029;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;height:36px;padding:0 14px;border-bottom:1px solid #1C2029;font:500 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#7D8594"><span>{{ fileName }}</span><span>{{ lineCount }}</span></div>
+<div style="overflow-x:auto;padding:6px 0">
+<div style="display:flex;flex-direction:column;min-width:max-content">
+<sc-for list="{{ lines }}" as="l" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column">
+<button onClick="{{ l.onTap }}" aria-label="Line {{ l.num }}" aria-pressed="{{ l.pick }}" style="display:flex;align-items:stretch;width:100%;min-height:44px;padding:0;border:0;background:{{ l.bg }};box-shadow:inset 3px 0 0 {{ l.bar }};color:{{ l.fg }};cursor:{{ l.cur }};text-align:left;transition:background-color .15s,box-shadow .15s">
+<span style="flex:none;width:44px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font:500 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:{{ l.numCol }}">
+<sc-if value="{{ l.gNum }}" hint-placeholder-val="{{ true }}"><span>{{ l.num }}</span></sc-if>
+<sc-if value="{{ l.gOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;color:#4ADE80"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></sc-if>
+<sc-if value="{{ l.gBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;color:#F87171"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></span></sc-if>
+</span>
+<span style="display:flex;align-items:center;gap:14px;padding-right:16px"><span style="white-space:pre;font:500 13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace">{{ l.code }}</span><sc-if value="{{ l.pick }}" hint-placeholder-val="{{ false }}"><span style="font:700 11px/1 Manrope,sans-serif;letter-spacing:.04em;color:{{ l.pickCol }};white-space:nowrap">Your pick</span></sc-if></span>
+</button>
+<sc-if value="{{ l.hasNote }}" hint-placeholder-val="{{ false }}">
+<div style="position:sticky;left:0;width:min(300px,calc(100vw - 120px));margin:6px 12px 10px 44px;padding:12px 14px;border-radius:10px;border:1px solid #4ADE80;background:#0F1218;display:flex;flex-direction:column;gap:6px;white-space:normal">
+<span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1.3 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ l.noteHead }}</span>
+<span style="font:500 13px/1.5 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ l.note }}</span>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div></div></div>
+</sc-if>
+
+                <sc-if value="{{ isAsmAsk }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;border-radius:12px;background:#0A0C10;border:1px solid #1C2029;min-height:68px">
+<sc-if value="{{ hasPrefix }}" hint-placeholder-val="{{ false }}"><span style="min-height:44px;display:flex;align-items:center;padding:0 12px;border-radius:10px;background:#141820;color:#AEB5C2;font:{{ tokFont }}">{{ prefix }}</span></sc-if>
+<sc-for list="{{ built }}" as="t" hint-placeholder-count="0"><button data-grip="1" data-drop="{{ t.drop }}" onClick="{{ t.onTap }}" onPointerDown="{{ t.onDown }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 10px 0 12px;border-radius:10px;border:1px solid #67E8F9;background:#0E1E24;color:#E6E9EF;font:{{ tokFont }};cursor:grab;touch-action:none;user-select:none;opacity:{{ t.op }};box-shadow:{{ t.ins }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s">{{ t.text }}<span style="flex:none;display:flex;color:#7D8594"><svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.1"></circle><circle cx="6" cy="2" r="1.1"></circle><circle cx="2" cy="6" r="1.1"></circle><circle cx="6" cy="6" r="1.1"></circle><circle cx="2" cy="10" r="1.1"></circle><circle cx="6" cy="10" r="1.1"></circle></g></svg></span></button></sc-for>
+<sc-for list="{{ aEmpties }}" as="t" hint-placeholder-count="5"><span data-drop="{{ t.drop }}" style="width:52px;height:44px;border-radius:10px;border:1px {{ t.bs }} {{ t.bd }};background:{{ t.bg }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s"></span></sc-for>
+<sc-if value="{{ hasSuffix }}" hint-placeholder-val="{{ false }}"><span style="min-height:44px;display:flex;align-items:center;padding:0 12px;border-radius:10px;background:#141820;color:#AEB5C2;font:{{ tokFont }}">{{ suffix }}</span></sc-if>
+</div>
+<div data-drop="apool" style="display:flex;flex-wrap:wrap;gap:8px;min-height:60px;margin:-8px;padding:8px;border-radius:14px;border:1px {{ apoolBs }} {{ apoolBd }};background:{{ apoolBg }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s">
+<sc-for list="{{ apool }}" as="t" hint-placeholder-count="5"><button data-grip="1" onClick="{{ t.onTap }}" onPointerDown="{{ t.onDown }}" style="display:flex;align-items:center;gap:8px;min-height:44px;min-width:44px;padding:0 10px 0 14px;border-radius:10px;border:1px solid #262B36;background:#0F1218;color:#E6E9EF;font:{{ tokFont }};cursor:grab;touch-action:none;user-select:none;opacity:{{ t.op }};transition:opacity .15s,border-color .15s,background-color .15s,box-shadow .12s">{{ t.text }}<span style="flex:none;display:flex;color:#7D8594"><svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.1"></circle><circle cx="6" cy="2" r="1.1"></circle><circle cx="2" cy="6" r="1.1"></circle><circle cx="6" cy="6" r="1.1"></circle><circle cx="2" cy="10" r="1.1"></circle><circle cx="6" cy="10" r="1.1"></circle></g></svg></span></button></sc-for>
+</div>
+</div>
+</sc-if>
+                <sc-if value="{{ isAsmRes }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">{{ builtLabel }}</span>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                        <sc-if value="{{ hasPrefix }}" hint-placeholder-val="{{ false }}"><span style="min-height:36px;display:flex;align-items:center;padding:0 10px;border-radius:10px;background:#141820;color:#AEB5C2;font:{{ tokFont }}">{{ prefix }}</span></sc-if>
+                        <sc-for list="{{ rbuilt }}" as="t" hint-placeholder-count="5">
+                          <span style="min-height:36px;display:flex;align-items:center;gap:6px;padding:0 10px;border-radius:10px;border:1px solid {{ t.bd }};color:#E6E9EF;font:{{ tokFont }}">
+                            <sc-if value="{{ t.mBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;color:#F87171"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></span></sc-if>{{ t.text }}
+                          </span>
+                        </sc-for>
+                        <sc-if value="{{ hasSuffix }}" hint-placeholder-val="{{ false }}"><span style="min-height:36px;display:flex;align-items:center;padding:0 10px;border-radius:10px;background:#141820;color:#AEB5C2;font:{{ tokFont }}">{{ suffix }}</span></sc-if>
+                      </div>
+                      <sc-if value="{{ aWrong }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1.4 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ aWrongCount }}</span></sc-if>
+                    </div>
+                    <sc-if value="{{ aWrong }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Right</span>
+                        <span style="padding:10px 14px;border-radius:12px;border:1px solid #4ADE80;color:#E6E9EF;font:{{ tokFont }};text-wrap:pretty">{{ aRight }}</span>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;padding:4px 14px 6px;border-radius:14px;background:#0A0C10;border:1px solid #1C2029">
+<div style="position:sticky;top:0;z-index:2;display:grid;grid-template-columns:{{ gtc }};padding:12px 0 10px;background:#0A0C10;border-bottom:1px solid #1C2029">
+<sc-for list="{{ gcols }}" as="g" hint-placeholder-count="2"><span style="text-align:center;font:600 13px/1.2 Sora,sans-serif;color:#AEB5C2;white-space:nowrap">{{ g.name }}</span></sc-for>
+</div>
+<sc-for list="{{ grows }}" as="row" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;gap:2px;padding:12px 0 6px;border-bottom:1px solid {{ row.line }}">
+<span style="font:500 15px/1.5 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ row.label }}</span>
+
+<div style="position:relative;display:grid;grid-template-columns:{{ gtc }}">
+<span aria-hidden="true" style="position:absolute;left:0;right:0;top:50%;height:1px;background:#1C2029"></span>
+<sc-for list="{{ row.cells }}" as="cl" hint-placeholder-count="2"><button onClick="{{ cl.onTap }}" aria-label="{{ cl.aria }}" aria-pressed="{{ cl.on }}" style="position:relative;border:0;background:transparent;cursor:{{ cl.cur }};padding:0;height:48px;display:grid;place-items:center">
+<span style="width:{{ cl.sz }};height:{{ cl.sz }};border-radius:999px;background:{{ cl.bg }};border:1.5px {{ cl.bs }} {{ cl.bd }};box-shadow:{{ cl.glow }};display:grid;place-items:center;color:#0A0C10;transition:width .18s cubic-bezier(.3,1.4,.5,1),height .18s cubic-bezier(.3,1.4,.5,1),background-color .15s,border-color .15s,box-shadow .2s"><sc-if value="{{ cl.icCheck }}" hint-placeholder-val="{{ false }}"><span style="display:flex"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></sc-if><sc-if value="{{ cl.icCross }}" hint-placeholder-val="{{ false }}"><span style="display:flex"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg></span></sc-if></span>
+</button></sc-for>
+</div>
+
+<sc-if value="{{ row.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font:700 12px/1.4 Manrope,sans-serif;color:#F87171;padding-bottom:4px">{{ row.note }}</span></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ gridLegend }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 0 8px;border-top:1px solid #1C2029;font:500 12px/1.4 Manrope,sans-serif;color:#AEB5C2">
+<span style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:999px;background:#4ADE80;border:1.5px solid #4ADE80;box-shadow:none;display:grid;place-items:center;color:#0A0C10"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Right</span>
+<span style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:999px;background:#F87171;border:1.5px solid #F87171;box-shadow:none;display:grid;place-items:center;color:#0A0C10"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg></span>On, shouldn't be</span>
+<span style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:999px;background:transparent;border:1.5px dashed #F87171;box-shadow:none;display:grid;place-items:center;color:#0A0C10"></span>Missed</span>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+                <sc-if value="{{ isNum }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<sc-if value="{{ numShowDisplay }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:72px;padding:0 18px;border-radius:14px;border:1px solid {{ numBd }};background:#0A0C10;transition:border-color .15s">
+<span style="display:flex;align-items:center;gap:3px;font:600 32px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:{{ numFg }}">{{ numShow }}<sc-if value="{{ numCaret }}" hint-placeholder-val="{{ true }}"><span style="width:2px;height:30px;background:#67E8F9;border-radius:1px"></span></sc-if></span>
+<sc-if value="{{ numOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>In range</span></sc-if>
+<sc-if value="{{ numBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>Out of range</span></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ numShowExp }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:56px;padding:0 18px;border-radius:14px;background:#141820">
+<span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Answer</span>
+<span style="display:flex;align-items:baseline;gap:8px"><span style="font:600 22px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ numExp }}</span><span style="font:500 13px/1 Manrope,sans-serif;color:#AEB5C2">{{ numTol }}</span></span>
+</div>
+</sc-if>
+<sc-if value="{{ numKeypad }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<sc-for list="{{ keys }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onTap }}" disabled="{{ k.off }}" aria-label="{{ k.aria }}" style="display:grid;place-items:center;height:52px;border-radius:12px;border:1px solid {{ k.bd }};background:{{ k.bg }};color:#E6E9EF;font:600 22px/1 Sora,sans-serif;cursor:pointer;user-select:none;transition:background-color .1s" style-active="background:#1C2029"><sc-if value="{{ k.isTxt }}" hint-placeholder-val="{{ true }}"><span>{{ k.label }}</span></sc-if><sc-if value="{{ k.isBack }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5h11a1 1 0 011 1v12a1 1 0 01-1 1H9l-6-7 6-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M12.5 9.5l5 5M17.5 9.5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></sc-if></button></sc-for>
+</div>
+<span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">{{ numHint }}</span>
+</sc-if>
+</div>
+</sc-if>
+
+                <sc-if value="{{ isCompAsk }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                    <div style="display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;background:#141820">
+                      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">{{ rubricLabel }}</span>
+                      <sc-for list="{{ rubric }}" as="u" hint-placeholder-count="3"><span style="font:500 15px/1.5 Manrope,sans-serif;color:#E6E9EF;padding-left:12px;border-left:1px solid #262B36;text-wrap:pretty">{{ u.text }}</span></sc-for>
+                    </div>
+                    <textarea value="{{ cText }}" onChange="{{ onText }}" disabled="{{ judge }}" maxLength="300" placeholder="Write your answer" aria-label="Your answer" style="min-height:140px;resize:vertical;padding:12px 14px;border-radius:12px;border:1px solid #262B36;background:#0A0C10;color:#E6E9EF;font:500 15px/1.55 Manrope,sans-serif;outline:none;width:100%"></textarea>
+                    <div style="display:flex;justify-content:space-between;gap:12px;font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">
+                      <span>{{ cMin }}</span><span style="font-family:Sora,sans-serif;font-variant-numeric:tabular-nums">{{ cCount }}</span>
+                    </div>
+                    <sc-if value="{{ judge }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF">The automatic mark is unavailable. Judge your answer against what it had to cover.</p></sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isCompRes }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <sc-if value="{{ showYourText }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:12px 14px;border-radius:12px;background:#141820;font:500 15px/1.55 Manrope,sans-serif;color:#AEB5C2;text-wrap:pretty">{{ cText }}</p></sc-if>
+                    <sc-if value="{{ hasCov }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <sc-for list="{{ covList }}" as="u" hint-placeholder-count="3">
+                          <div style="display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:12px;border:1px solid {{ u.bd }}">
+                            <span style="font:500 15px/1.5 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ u.text }}</span>
+                            <sc-if value="{{ u.mOk }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#4ADE80;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{ u.mWord }}</span></sc-if>
+                            <sc-if value="{{ u.mBad }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;color:#F87171;font:700 12px/1 Manrope,sans-serif"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>{{ u.mWord }}</span></sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ noCov }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">What it had to cover</span>
+                        <sc-for list="{{ rubric }}" as="u" hint-placeholder-count="3"><span style="font:500 15px/1.5 Manrope,sans-serif;color:#E6E9EF;padding-left:12px;border-left:1px solid #262B36;text-wrap:pretty">{{ u.text }}</span></sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ hasSaid }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2">You said: <span style="color:#E6E9EF;font-weight:700">{{ said }}</span></span></sc-if>
+
+                <sc-if value="{{ ask }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px">
+                    <sc-if value="{{ showCheck }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px">
+<button onClick="{{ onSkip }}" style="height:44px;border-radius:12px;border:1px solid #262B36;background:transparent;color:#E6E9EF;font:700 15px/1 Manrope,sans-serif;cursor:pointer">Skip</button>
+<button onClick="{{ onCheck }}" disabled="{{ cantCheck }}" style="height:44px;border-radius:12px;border:1px solid {{ checkBd }};background:{{ checkBg }};color:{{ checkFg }};font:700 15px/1 Manrope,sans-serif;cursor:{{ checkCur }}">{{ checkLabel }}</button>
+</div></sc-if>
+                    <sc-if value="{{ showRate }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                        <button onClick="{{ onMissed }}" style="height:44px;border-radius:12px;border:1px solid #262B36;background:#0F1218;color:#E6E9EF;font:700 15px/1 Manrope,sans-serif;cursor:pointer">Missed it</button>
+                        <button onClick="{{ onGot }}" style="height:44px;border-radius:12px;border:1px solid #262B36;background:#0F1218;color:#E6E9EF;font:700 15px/1 Manrope,sans-serif;cursor:pointer">Got it</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ showDeclare }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 10px">
+<sc-if value="{{ skipLow }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:10px"><button onClick="{{ onSkip }}" style="height:36px;padding:0 4px;border:0;background:transparent;color:#7D8594;font:500 13px/1 Manrope,sans-serif;cursor:pointer;white-space:nowrap;text-decoration:underline;text-decoration-color:#262B36;text-underline-offset:4px">Skip</button><span aria-hidden="true" style="color:#262B36;font:500 13px/1 Manrope,sans-serif">·</span></span></sc-if>
+<button onClick="{{ onNew }}" style="height:36px;padding:0 4px;border:0;background:transparent;color:#7D8594;font:500 13px/1 Manrope,sans-serif;cursor:pointer;white-space:nowrap;text-decoration:underline;text-decoration-color:#262B36;text-underline-offset:4px">New to me</button>
+<sc-if value="{{ showKnown }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:10px"><span aria-hidden="true" style="color:#262B36;font:500 13px/1 Manrope,sans-serif">·</span><button onClick="{{ onKnown }}" style="height:36px;padding:0 4px;border:0;background:transparent;color:#7D8594;font:500 13px/1 Manrope,sans-serif;cursor:pointer;white-space:nowrap;text-decoration:underline;text-decoration-color:#262B36;text-underline-offset:4px">I already know this</button></span></sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ res }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:16px;padding-top:20px;border-top:1px solid #1C2029">
+                    <sc-if value="{{ hasAnswer }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:6px">
+                        <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Answer</span>
+                        <p style="margin:0;font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ answer }}</p>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ hasPoints }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:6px">
+                        <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Key points</span>
+                        <sc-for list="{{ points }}" as="u" hint-placeholder-count="3"><span style="font:500 15px/1.5 Manrope,sans-serif;color:#E6E9EF;padding-left:12px;border-left:1px solid #262B36;text-wrap:pretty">{{ u.text }}</span></sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ isKnown }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;background:#141820">
+                        <sc-if value="{{ notRetired }}" hint-placeholder-val="{{ true }}">
+                          <div style="display:flex;flex-direction:column;gap:10px">
+                            <span style="font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF">{{ retireAsk }}</span>
+                            <div style="display:flex;gap:8px">
+                              <button onClick="{{ onRetire }}" style="height:40px;padding:0 16px;border-radius:12px;border:1px solid #262B36;background:#0F1218;color:#E6E9EF;font:700 13px/1 Manrope,sans-serif;cursor:pointer">Retire them</button>
+                              <button onClick="{{ onKeep }}" style="height:40px;padding:0 16px;border-radius:12px;border:0;background:transparent;color:#AEB5C2;font:700 13px/1 Manrope,sans-serif;cursor:pointer">Keep them</button>
+                            </div>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ retiredMsg }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2">{{ retiredMsg }}</span></sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ inlineNext }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onNext }}" style="height:44px;width:100%;border-radius:12px;border:0;background:#67E8F9;color:#06222A;font:700 15px/1 Manrope,sans-serif;cursor:pointer">Next card</button></sc-if>
+                  </div>
+                </sc-if>
+              </article>
+<sc-if value="{{ res }}" hint-placeholder-val="{{ false }}">
+<div style="background:#0F1218;border:1px solid #1C2029;border-radius:14px;padding:4px 20px">
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;min-height:56px;padding:6px 0">
+<span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2">{{ nextReview }}</span>
+<sc-if value="{{ sourceLink }}" hint-placeholder-val="{{ false }}"><a href="#" style="display:flex;align-items:center;gap:4px;min-height:44px;font:600 13px/1.45 Manrope,sans-serif;text-decoration:none">{{ source }} lesson<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a></sc-if>
+<sc-if value="{{ sourcePlain }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Source: {{ source }}</span></sc-if>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;min-height:56px;padding:6px 0;border-top:1px solid #1C2029">
+<div style="display:flex;align-items:center;gap:8px">
+<span style="display:inline-block;width:84px;font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2;white-space:nowrap">{{ rateQ }}</span>
+<div style="display:flex" role="radiogroup" aria-label="Rate this card" onMouseLeave="{{ onStarLeave }}">
+<sc-for list="{{ stars }}" as="st" hint-placeholder-count="5"><button onClick="{{ st.onTap }}" onMouseEnter="{{ st.onHover }}" role="radio" aria-checked="{{ st.on }}" aria-label="{{ st.aria }}" style="width:36px;height:44px;display:grid;place-items:center;border:0;background:transparent;cursor:pointer;padding:0"><svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5l2.3 4.8 5.2.7-3.8 3.6.9 5.2L10 14.3l-4.6 2.5.9-5.2-3.8-3.6 5.2-.7z" fill="{{ st.fill }}" stroke="{{ st.stroke }}" stroke-width="1.4" stroke-linejoin="round"></path></svg></button></sc-for>
+</div>
+</div>
+<button onClick="{{ onReportLink }}" aria-expanded="{{ fbReportOpen }}" style="height:44px;padding:0;border:0;background:transparent;color:{{ reportLinkCol }};font:600 13px/1 Manrope,sans-serif;cursor:pointer">{{ reportLinkLabel }}</button>
+</div>
+<sc-if value="{{ fbReportOpen }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:12px;border-bottom:1px solid {{ repLine }};transition:border-color .2s">
+<textarea value="{{ fbText }}" onChange="{{ onFbText }}" onFocus="{{ onRepFocus }}" onBlur="{{ onRepBlur }}" rows="1" maxLength="300" placeholder="What's wrong with this card?" aria-label="Report a problem with this card" style="flex:1;min-width:0;min-height:44px;max-height:120px;resize:none;padding:12px 0;border:0;background:transparent;color:#E6E9EF;font:500 15px/1.4 Manrope,sans-serif;outline:none;field-sizing:content"></textarea>
+<button onClick="{{ onFbSend }}" disabled="{{ fbCant }}" style="flex:none;height:44px;padding:0 4px;border:0;background:transparent;color:{{ fbSendFg }};font:700 13px/1 Manrope,sans-serif;cursor:{{ fbSendCur }}">Send</button>
+</div>
+</sc-if>
+<sc-if value="{{ fbSent }}" hint-placeholder-val="{{ false }}"><p style="margin:0 0 14px;font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2">Report sent. This card will be reviewed.</p></sc-if>
+</div>
+</sc-if>
+
+              <sc-if value="{{ pB }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="background:#0F1218;border:1px solid #1C2029;border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+                    <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Today</span>
+                    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+                      <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ tA }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Answered</span></div>
+                      <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ tPct }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Correct</span></div>
+                      <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ tS }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Skipped</span></div>
+                    </div>
+                    <sc-if value="{{ reportOpen }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:28px;padding-top:20px;border-top:1px solid #1C2029">
+<div style="display:flex;flex-direction:column;gap:14px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Lifetime</span>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ lA }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Answered</span></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ lPct }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Correct</span></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ lS }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Skipped</span></div></div>
+<span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2;text-wrap:pretty">{{ cmpLine }}</span></div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">By area</span><span style="font:500 12px/1 Manrope,sans-serif;color:#7D8594">Pass mark 70%</span></div>
+<sc-for list="{{ areas }}" as="a" hint-placeholder-count="8"><div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="display:flex;align-items:center;gap:8px;font:500 15px/1.4 Manrope,sans-serif;color:#E6E9EF"><span style="width:8px;height:8px;border-radius:999px;background:{{ a.col }}"></span>{{ a.name }}</span><span style="font:600 13px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ a.pctT }}</span></div>
+<div style="position:relative;height:4px;border-radius:999px;background:#1C2029"><div style="height:100%;width:{{ a.w }};border-radius:999px;background:{{ a.barCol }}"></div><span style="position:absolute;top:-3px;left:70%;width:1px;height:10px;background:#7D8594"></span></div>
+</div></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Last 7 days, correct</span>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:end;height:56px"><sc-for list="{{ week }}" as="d" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%"><div style="height:{{ d.h }};min-height:2px;border-radius:3px 3px 0 0;background:{{ d.col }}"></div></div></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px"><sc-for list="{{ week }}" as="d" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font:600 12px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ d.pct }}</span><span style="font:500 11px/1.4 Manrope,sans-serif;color:#7D8594">{{ d.day }}</span></div></sc-for></div></div>
+</div></sc-if>
+<button onClick="{{ toggleReport }}" aria-expanded="{{ reportOpen }}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid #262B36;background:transparent;color:#E6E9EF;font:700 13px/1 Manrope,sans-serif;cursor:pointer">{{ reportLabel }}<span style="display:flex;transform:rotate({{ chevRot }});transition:transform .2s"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+                  </div>
+                  <div style="background:#0F1218;border:1px solid #1C2029;border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:8px">
+                    <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Why this card</span>
+                    <span style="font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ why }}</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ desk }}" hint-placeholder-val="{{ false }}">
+              <aside style="flex:none;width:280px;position:sticky;top:0;display:flex;flex-direction:column;gap:12px">
+                <div style="background:#0F1218;border:1px solid #1C2029;border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:8px">
+                  <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Why this card</span>
+                  <span style="font:500 15px/1.55 Manrope,sans-serif;color:#E6E9EF;text-wrap:pretty">{{ why }}</span>
+                </div>
+                <div style="background:#0F1218;border:1px solid #1C2029;border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+                  <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Today</span>
+                  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+                    <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ tA }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Answered</span></div>
+                    <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ tPct }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Correct</span></div>
+                    <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ tS }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Skipped</span></div>
+                  </div><sc-if value="{{ reportOpen }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:28px;padding-top:20px;border-top:1px solid #1C2029">
+<div style="display:flex;flex-direction:column;gap:14px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Lifetime</span>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ lA }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Answered</span></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ lPct }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Correct</span></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 22px/1.25 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ lS }}</span><span style="font:500 13px/1.45 Manrope,sans-serif;color:#7D8594">Skipped</span></div></div>
+<span style="font:500 13px/1.45 Manrope,sans-serif;color:#AEB5C2;text-wrap:pretty">{{ cmpLine }}</span></div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">By area</span><span style="font:500 12px/1 Manrope,sans-serif;color:#7D8594">Pass mark 70%</span></div>
+<sc-for list="{{ areas }}" as="a" hint-placeholder-count="8"><div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="display:flex;align-items:center;gap:8px;font:500 15px/1.4 Manrope,sans-serif;color:#E6E9EF"><span style="width:8px;height:8px;border-radius:999px;background:{{ a.col }}"></span>{{ a.name }}</span><span style="font:600 13px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ a.pctT }}</span></div>
+<div style="position:relative;height:4px;border-radius:999px;background:#1C2029"><div style="height:100%;width:{{ a.w }};border-radius:999px;background:{{ a.barCol }}"></div><span style="position:absolute;top:-3px;left:70%;width:1px;height:10px;background:#7D8594"></span></div>
+</div></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Last 7 days, correct</span>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:end;height:56px"><sc-for list="{{ week }}" as="d" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%"><div style="height:{{ d.h }};min-height:2px;border-radius:3px 3px 0 0;background:{{ d.col }}"></div></div></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px"><sc-for list="{{ week }}" as="d" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font:600 12px/1 Sora,sans-serif;font-variant-numeric:tabular-nums;color:#E6E9EF">{{ d.pct }}</span><span style="font:500 11px/1.4 Manrope,sans-serif;color:#7D8594">{{ d.day }}</span></div></sc-for></div></div>
+</div></sc-if>
+<button onClick="{{ toggleReport }}" aria-expanded="{{ reportOpen }}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid #262B36;background:transparent;color:#E6E9EF;font:700 13px/1 Manrope,sans-serif;cursor:pointer">{{ reportLabel }}<span style="display:flex;transform:rotate({{ chevRot }});transition:transform .2s"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+                </div>
+              </aside>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ mobBar }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;border-top:1px solid #1C2029;background:#0A0C10;padding:10px 16px 12px;display:flex;flex-direction:column;gap:8px">
+                        <button onClick="{{ onNext }}" style="height:44px;width:100%;border-radius:12px;border:0;background:#67E8F9;color:#06222A;font:700 15px/1 Manrope,sans-serif;cursor:pointer">Next card</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ mob }}" hint-placeholder-val="{{ true }}">
+          <nav style="flex:none;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding:8px 8px 24px;border-top:1px solid #1C2029;background:#0A0C10">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6"><span style="display:grid;place-items:center;height:36px;border-radius:999px;font:700 12px/1 Manrope,sans-serif;color:{{ t.fg }};background:{{ t.bg }}">{{ t.label }}</span></sc-for>
+          </nav>
+        </sc-if>
+      </div>
+
+          </div>
+
+    <div ref="{{ ghostRef }}" aria-hidden="true" style="position:fixed;left:0;top:0;z-index:100;pointer-events:none;display:{{ ghostDisp }};align-items:center;gap:10px;width:{{ ghostW }};padding:11px 14px;border-radius:12px;border:1px solid #67E8F9;background:#141820;color:#E6E9EF;font:{{ ghostFont }};box-shadow:0 14px 36px rgba(0,0,0,.6);text-wrap:pretty;will-change:transform">{{ ghostLabel }}</div>
+    <div style="flex:1 1 280px;max-width:360px;display:flex;flex-direction:column;gap:16px;font:500 13px/1.55 Manrope,sans-serif;color:#AEB5C2">
+      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594">Placement</span>
+      <p style="margin:0;color:#E6E9EF;font-size:15px;text-wrap:pretty">{{ placeNote }}</p>
+      <span style="font:700 12px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7D8594;margin-top:8px">Assumptions</span>
+      <p style="margin:0;text-wrap:pretty">Code is set in the system monospace; DESIGN.md names only Sora and Manrope. Today starts at 6 answered, 4 correct, 1 skipped so the numbers read realistically; Reset sitting zeroes it. Skipping and "New to me" count as skipped. Compose grading is simulated from length. Tap targets are 44px, including the closing-brace lines in code.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mobile&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;mobile&quot;,&quot;tsType&quot;:&quot;'mobile'|'desktop'&quot;},&quot;graderDown&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const C={s:'#0F1218',r:'#141820',h:'#1C2029',hs:'#262B36',t:'#E6E9EF',t2:'#AEB5C2',tm:'#7D8594',cy:'#67E8F9',cw:'#0E1E24',oc:'#06222A',ok:'#4ADE80',bad:'#F87171'};
+const AREA={DSA:'#818CF8','System design':'#C084FC',CS:'#2DD4BF',Java:'#FB923C',SQL:'#F472B6',Behavioural:'#AEB5C2'};
+const S={idle:{bd:C.hs,bg:C.s,fg:C.t},sel:{bd:C.cy,bg:C.cw,fg:C.t},ok:{bd:C.ok,bg:C.s,fg:C.t},bad:{bd:C.bad,bg:C.s,fg:C.t},dim:{bd:C.h,bg:'transparent',fg:C.tm},fixed:{bd:C.hs,bg:C.r,fg:C.t}};
+const MK=(ok,w)=>({mOk:ok===true,mBad:ok===false,mWord:w||''});
+const noop=()=>{};
+const LIFE={a:1236,c:878,s:94,seen:1180};
+const WEEK=[71,64,null,78,69,74];
+const AREAS=[{name:'DSA',match:'DSA',col:'#818CF8',n:412,c:309,weak:'Graphs'},{name:'System design',match:'System design',col:'#C084FC',n:208,c:129,weak:'Caching'},{name:'LLD',match:'LLD',col:'#AEB5C2',n:96,c:70,weak:'State pattern'},{name:'Java',match:'Java',col:'#FB923C',n:164,c:121,weak:'Concurrency'},{name:'SQL',match:'SQL',col:'#F472B6',n:131,c:99,weak:'Window functions'},{name:'CS fundamentals',match:'CS',col:'#2DD4BF',n:148,c:112,weak:'Storage'},{name:'AI',match:'AI',col:'#AEB5C2',n:41,c:26,weak:'Embeddings'},{name:'Behavioural',match:'Behavioural',col:'#AEB5C2',n:36,c:27,weak:'Conflict'}];
+const CARDS={
+'1a':{prim:'pick_one',area:'SQL',topic:'Transactions & ACID',diff:'Easy',why:'new',next:3,link:true,source:'Transactions & ACID',
+ prompt:"Which ACID property guarantees a transaction's writes are all applied or none are?",
+ options:['Durability','Atomicity','Isolation','Consistency'],ans:1,miss:0,
+ answer:'Atomicity means all-or-nothing: if any part of the transaction fails, every change is rolled back. Durability is a different promise: once committed, a write survives a crash.'},
+'1b':{prim:'pick_one',area:'System design',topic:'Caching',diff:'Hard',why:'weak',next:2,link:true,source:'Caching',unseen:14,
+ prompt:'A read-heavy product catalogue sits behind a Redis cache in front of Postgres. A back-office tool updates one product\'s price while a flash sale drives 20,000 reads per second for that same product. Readers must never see a price older than the one just saved, and the database must not be flooded when the entry is refreshed. Which approach meets both requirements?',
+ options:['Write the new price to Postgres, then delete the cache key and let each reader that misses query the database and repopulate it','Set a 60 second TTL on the key and let it expire naturally after the update','Write the new price to Postgres, then overwrite the cache key with the new value in the same code path, keeping a short TTL as a safety net','Write the price to the cache only and flush it to Postgres in a nightly batch'],ans:2,miss:0,
+ whyStep:{q:'Why is the first option a poor fit here?',reasons:['Deleting the key makes every concurrent reader miss at once and hit Postgres together, a cache stampede','Redis cannot delete a key while it is being read','A deleted key is always repopulated with the old price','Deletes are slower than overwrites in Redis'],ans:0},
+ answer:'Overwriting in place keeps the entry hot, so there is no moment when 20,000 readers all miss. Deleting the key invites a stampede.',
+ points:['Update the cache in the same path as the write','A hot key must never be empty under load','A TTL is a safety net, not the consistency mechanism']},
+'2a':{prim:'match',area:'CS',topic:'HTTP',diff:'Easy',why:'due',next:6,source:'HTTP',unseen:6,prompt:'Pair each HTTP status code with its meaning.',
+ left:['301','401','404','503'],right:['Not found','Service unavailable','Moved permanently','Not authenticated'],key:[2,3,0,1],miss:[2,0,3,1],
+ answer:'401 means the request lacks valid credentials; 404 means the server has no such resource.'},
+'2b':{prim:'match',area:'SQL',topic:'Index types',diff:'Medium',why:'new',next:3,link:true,source:'Index types',prompt:'Pair each kind of index with the description of what it does to the data.',
+ left:['Clustered index','Non-clustered index','Covering index','Composite index','Partial index'],
+ right:['Contains every column a query needs, so the query is answered without touching the table at all','Built over several columns, so how useful it is depends on the order of those columns in the key',"Stores the table's rows in the index's own key order, so there can be only one per table",'Indexes only the rows matching a predicate, keeping it small when most rows are never queried','A separate structure of keys and row pointers, so a lookup costs an extra hop to fetch the row'],
+ key:[2,4,0,1,3],miss:[4,2,0,1,3]},
+'3a':{prim:'order',area:'CS',topic:'TCP',diff:'Easy',why:'new',next:3,source:'TCP',prompt:'Put the steps of a TCP connection in order.',
+ steps:['Data transfer','FIN','SYN','ACK','SYN-ACK'],short:['Data transfer','FIN','SYN','ACK','SYN-ACK'],rules:[[2,4],[4,3],[3,0],[0,1]],sample:[2,4,3,0,1],miss:[2,3,4,0,1],
+ answer:'The three-way handshake is SYN, SYN-ACK, ACK. Data flows only once it completes, and FIN closes the connection.'},
+'3b':{prim:'order',area:'System design',topic:'Write-ahead logging',diff:'Hard',why:'weak',next:2,link:true,source:'Write-ahead logging',unseen:9,multi:true,
+ prompt:'A database commits a transaction under write-ahead logging. Put these five steps into an order the protocol permits.',
+ steps:['Acknowledge the successful commit to the client that issued the transaction',"Release the transaction's locks so waiting transactions can proceed","Execute the transaction's reads and writes against pages held in the in-memory buffer pool",'Write the modified pages from the buffer pool back to the main data files, at some later point','Append a log record describing each change and force it to stable storage, waiting for the acknowledgement'],
+ short:['Acknowledge the commit','Release the locks','Execute','Write the pages back','Append the log record'],rules:[[2,4],[4,0],[4,3],[4,1]],sample:[2,4,0,3,1],miss:[2,0,4,3,1],
+ answer:'The log record must be durable before anything depends on it. The rest of the order is free.'},
+'4a':{prim:'claim',area:'Java',topic:'equals and hashCode',diff:'Medium',why:'new',next:3,source:'equals and hashCode',prompt:'Mark each statement as true or false.',
+ statements:['Two equal objects must return the same hashCode.','Two objects with the same hashCode must be equal.','Overriding equals without hashCode can break HashMap lookups.'],key:[true,false,true],miss:[true,true,true],
+ answer:'Equal objects must agree on hashCode, but a shared hashCode is only a collision and does not imply equality.'},
+'4b':{prim:'claim',area:'System design',topic:'Quorums',diff:'Hard',why:'due',next:8,link:true,source:'Quorums',unseen:5,prompt:'A key is replicated on N = 3 nodes. Mark each statement as true or false.',
+ statements:['With a write quorum of 2 and a read quorum of 2, every read is guaranteed to include the latest acknowledged write.','With a write quorum of 1 and a read quorum of 1, a read can return a value older than a write that was already acknowledged.','Raising the read quorum to 3 while keeping the write quorum at 1 still guarantees every read includes the latest acknowledged write.','Quorum reads and writes alone make concurrent writes to the same key settle into one agreed order.'],
+ key:[true,true,true,false],miss:[true,true,false,false],
+ answer:'A read sees the latest write whenever read quorum plus write quorum exceeds N. Quorums say nothing about how concurrent writes are ordered; that needs versioning or conflict resolution.'},
+'5a':{prim:'bucket',area:'CS',topic:'TCP and UDP',diff:'Easy',why:'new',next:3,source:'TCP and UDP',prompt:'Sort each use by the transport it normally runs over.',
+ items:['DNS query','HTTP/1.1 request','Live video call','SSH session'],cols:['UDP','TCP'],key:[0,1,0,1],miss:[0,1,0,0],
+ answer:'Ordered, reliable delivery needs TCP. DNS and live media trade reliability for low latency.'},
+'5b':{prim:'bucket',area:'Java',topic:'Collections',diff:'Hard',why:'weak',next:2,link:true,source:'Collections',unseen:11,prompt:'Sort each iteration by the order it is guaranteed to produce.',
+ items:['Iterating a LinkedHashSet after adding c, a, b','Iterating a TreeSet after adding c, a, b','Iterating a HashSet after adding c, a, b','Iterating an ArrayList after adding c, a, b',"Iterating a TreeMap's keys after putting c, a, b","Iterating a HashMap's keys after putting c, a, b"],
+ cols:['Insertion order','Sorted order','No guaranteed order'],key:[0,1,2,0,1,2],miss:[0,1,0,0,1,2],
+ answer:"A hash-based collection's order is an implementation detail and may change between runs. Only the Linked and Tree variants, and lists, promise one."},
+'6a':{prim:'self_rate',area:'DSA',topic:'Arrays & Hashing',diff:'Easy',why:'new',next:3,link:true,source:'Arrays & Hashing',prompt:'What is the time complexity of indexed access into an array, and why?',
+ answer:'O(1). The address is computed from the base pointer and the index, so no element is examined on the way.'},
+'6b':{prim:'self_rate',area:'System design',topic:'Caching',diff:'Medium',why:'weak',next:2,link:true,source:'Caching',unseen:14,prompt:'What is a cache stampede, what makes it dangerous on a hot key, and what are two different ways to prevent one?',
+ answer:'When a popular entry expires or is deleted, many concurrent readers all miss together and each queries the database for the same value, which can overload it. Prevent it by letting only one reader rebuild the entry while the rest wait (a lock or request coalescing), or by refreshing the entry before it expires (early or probabilistic refresh), or by adding jitter to TTLs so keys do not expire together.'},
+'7a':{prim:'tap',area:'DSA',topic:'Arrays & Hashing',diff:'Easy',why:'new',next:3,link:true,source:'Arrays & Hashing',lineWhy:'the line that makes it wrong',file:'find_max.py',
+ prompt:'This function should return the largest number in the list. Tap the line that makes it wrong for some inputs.',
+ lines:['def find_max(nums):','    best = 0','    for n in nums:','        if n > best:','            best = n','    return best'],ans:1,miss:3,
+ answer:'Starting at 0 means a list of only negative numbers returns 0, which is not in the list. Start from nums[0].'},
+'7b':{prim:'tap',area:'Java',topic:'Concurrency',diff:'Hard',why:'due',next:7,source:'Concurrency',unseen:8,lineWhy:'the unsafe line',file:'Config.java',
+ prompt:'This lazily created singleton uses double-checked locking. Tap the line that makes it unsafe under concurrent access.',
+ lines:['public class Config {','    private static Config instance;','    private Config() { load(); }','    public static Config get() {','        if (instance == null) {','            synchronized (Config.class) {','                if (instance == null) {','                    instance = new Config();','                }','            }','        }','        return instance;','    }','}'],ans:1,miss:5,
+ answer:'Without volatile, another thread can see a non-null reference to a partly constructed Config. volatile forbids that reordering.'},
+'8a':{prim:'assemble',area:'DSA',topic:'Basics',diff:'Easy',why:'new',next:3,source:'Basics',code:true,prompt:'Assemble the statement that returns x plus one.',
+ tokens:['x','return','1','+',';'],key:[1,0,3,2,4],miss:[0,1,3,2,4]},
+'8b':{prim:'assemble',area:'SQL',topic:'Transactions & ACID',diff:'Hard',why:'due',next:9,link:true,source:'Transactions & ACID',unseen:7,prompt:'Assemble the statement that defines isolation.',
+ prefix:'Isolation means that',suffix:'until they commit.',tokens:["each other's",'uncommitted','concurrent transactions','intermediate writes','cannot observe'],key:[2,4,0,1,3],miss:[4,2,0,1,3]},
+'9a':{prim:'grid',area:'DSA',topic:'Stacks & Queues',diff:'Easy',why:'new',next:3,source:'Stacks & Queues',prompt:'Tick the order each structure removes items in.',
+ rows:['Stack','Queue'],cols:['LIFO','FIFO'],key:['0-0','1-1'],miss:['0-0','1-0']},
+'9b':{prim:'grid',area:'DSA',topic:'Complexity',diff:'Hard',why:'weak',next:2,link:true,source:'Complexity',unseen:10,prompt:'Tick the time complexity each operation has in the typical case.',
+ rows:['Reading an element of an array by its index','Reading an element of a linked list by its position','Looking up a key in a hash table','Looking up a key in a balanced binary search tree','Reading the minimum of a binary min-heap'],
+ cols:['O(1)','O(log n)','O(n)'],key:['0-0','1-2','2-0','3-1','4-0'],miss:['0-0','1-2','2-1','3-1','4-0']},
+'10a':{prim:'numeric',area:'CS',topic:'Binary',diff:'Easy',why:'new',next:3,source:'Binary',prompt:'How many bits are needed to give 200 distinct values their own pattern?',
+ exp:8,tol:0,dec:false,neg:false,miss:'7',answer:'7 bits give 128 patterns, which is too few. 8 bits give 256.'},
+'10b':{prim:'numeric',area:'CS',topic:'Storage',diff:'Hard',why:'due',next:8,link:true,source:'Storage',unseen:4,
+ prompt:'A hard disk spins at 7,200 revolutions per minute. On average the sector you want is half a revolution away from the head when a request arrives. What is the average rotational latency in milliseconds, to two decimal places?',
+ exp:4.17,tol:0.05,dec:true,neg:false,miss:'8.33',answer:'7,200 rpm is 120 revolutions per second, so one revolution takes 8.33 ms and half of one takes 4.17 ms.'},
+'11a':{prim:'compose',area:'Behavioural',topic:'Feedback',diff:'Medium',why:'new',next:3,source:'Feedback',prompt:'Tell me about a time you received difficult feedback.',
+ rubric:['Names a specific piece of feedback','States what you changed in response','Says what happened afterwards'],
+ sample:'My lead said my pull requests were too large to review. I started splitting work into smaller changes.',sampleCov:[true,true,false],
+ good:'My lead said my pull requests were too large to review. I started splitting work into smaller changes. Over the next quarter review time dropped from three days to one.'},
+'11b':{prim:'compose',area:'Behavioural',topic:'Conflict',diff:'Hard',why:'weak',next:2,source:'Conflict',unseen:6,
+ prompt:'Tell me about a time you disagreed with a teammate about a technical decision that mattered to the project. Walk me through how you handled it, and what you would do the same or differently if it happened again.',
+ rubric:['Describes a specific situation with enough context to understand the disagreement','States what you personally did, in the first person, rather than what the team did','Includes a concrete outcome, with a number or an observable change where there is one','Says what you would repeat and what you would change'],
+ sample:'On the payments rewrite I wanted retries in the client and our tech lead wanted them in the gateway. I built both behind a flag and we measured failure rates for a week. The gateway version cut duplicate charges to zero, so I switched. Next time I would propose the experiment on day one.',sampleCov:[true,true,true,true]}
+};
+Object.keys(CARDS).forEach(k=>CARDS[k].id=k);
+const SEQ=['1a','2a','3b','4a','5a','6a','7a','8b','9b','10a','11a','1b','2b','3a','4b','5b','6b','7b','8a','9a','10b','11b'];
+const PN={pick_one:'pick_one',match:'match',order:'order',claim:'claim_grid',bucket:'bucket',self_rate:'self_rate',tap:'tap_in_place',assemble:'assemble',grid:'grid_toggle',numeric:'numeric',compose:'compose'};
+
+class Component extends DCLogic {
+  scrollRef = React.createRef();
+  ghostRef = React.createRef();
+  suppressClick = false;
+  dragStart(src){return e=>{
+    if(this.state.phase!=='ask')return;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    if(e.pointerType==='touch'&&!e.target.closest('[data-grip]'))return;
+    const rect=e.currentTarget.getBoundingClientRect(),sx=e.clientX,sy=e.clientY;let on=false,lx=sx,ly=sy,cur=null;
+    const place=()=>{const g=this.ghostRef.current;if(g)g.style.transform=`translate(${rect.left+lx-sx}px,${rect.top+ly-sy}px) rotate(-1.5deg) scale(1.03)`;};
+    const move=ev=>{lx=ev.clientX;ly=ev.clientY;
+      if(!on){if(Math.hypot(lx-sx,ly-sy)<6)return;on=true;this.suppressClick=true;this.setState(st=>({drag:{...src,w:rect.width},dragOver:null,r:{...st.r,armed:null}}),place);}
+      ev.preventDefault();place();
+      const t=document.elementFromPoint(lx,ly),d=t&&t.closest('[data-drop]'),k=d?d.getAttribute('data-drop'):null;
+      if(k!==cur){cur=k;this.setState({dragOver:k});}
+      const sc=this.scrollRef.current;if(sc){const b=sc.getBoundingClientRect();if(ly<b.top+56)sc.scrollTop-=10;else if(ly>b.bottom-56)sc.scrollTop+=10;}};
+    const end=ev=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);window.removeEventListener('pointercancel',end);
+      if(!on)return;const k=ev.type==='pointerup'?cur:null;this.setState({drag:null,dragOver:null});if(k)this.drop(src,k);setTimeout(()=>{this.suppressClick=false;},0);};
+    window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+  };}
+  drop(src,key){const r=this.state.r,[k,v]=key.split(':'),n=+v;
+    if(src.type==='term'&&k==='meaning'){const pr={...r.pairs};Object.keys(pr).forEach(l=>{if(pr[l]===n)delete pr[l];});pr[src.i]=n;this.setR({pairs:pr,armed:null});}
+    if(src.type==='step'||src.type==='tok'){const seq=r.seq.filter(x=>x!==src.i);
+      if(k==='slot'||k==='abuilt'){seq.splice(Math.min(n,seq.length),0,src.i);this.setR({seq});}
+      else if(k==='pool'||k==='apool')this.setR({seq});}
+    if(src.type==='bitem'){const p=[...r.place];if(k==='col')p[src.i]=n;else if(k==='bpool')p[src.i]=null;else return;this.setR({place:p,armed:null});}
+  }
+  state = this.fresh(0,{a:6,c:4,s:1});
+  fresh(pos,today){const c=CARDS[SEQ[pos]];return {pos,today,phase:'ask',outcome:null,whyActive:false,whyPick:null,judge:false,sheet:false,retired:null,fbMode:null,fbStars:0,fbHover:0,fbHide:false,fbText:'',fbSent:false,repFocus:false,viewO:this.state?this.state.viewO:null,placeO:this.state?this.state.placeO:null,
+    r:{sel:null,pairs:{},armed:null,seq:[],v:(c.statements||[]).map(()=>null),place:(c.items||[]).map(()=>null),ticks:{},text:''}};}
+  componentDidMount(){this.onKey=e=>{const c=this.card();if(c.prim!=='numeric'||this.state.phase!=='ask'||!this.numPress)return;const tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA'||tg==='SELECT')return;
+    if(/^[0-9]$/.test(e.key))this.numPress(e.key);else if(e.key==='.'||e.key===',')this.numPress('.');else if(e.key==='Backspace')this.numPress('back');else if(e.key==='-'&&c.neg)this.numPress('±');else if(e.key==='Enter')this.check();else return;e.preventDefault();};window.addEventListener('keydown',this.onKey);}
+  componentWillUnmount(){window.removeEventListener('keydown',this.onKey);}
+  componentDidUpdate(pp){if(pp.view!==this.props.view)this.setState({viewO:null});}
+  card(){return CARDS[SEQ[this.state.pos]];}
+  setR(p){this.setState(s=>({r:{...s.r,...p}}));}
+  top(){const el=this.scrollRef.current;if(el)el.scrollTop=0;}
+  viol(c,seq){const p={};seq.forEach((s,i)=>p[s]=i);return c.rules.filter(([a,b])=>p[a]>p[b]);}
+  grade(c,r){switch(c.prim){
+    case 'pick_one':case 'tap':return r.sel===c.ans;
+    case 'match':return c.key.every((k,i)=>r.pairs[i]===k);
+    case 'order':return this.viol(c,r.seq).length===0;
+    case 'claim':return c.key.every((k,i)=>r.v[i]===k);
+    case 'bucket':return c.key.every((k,i)=>r.place[i]===k);
+    case 'assemble':return r.seq.length===c.key.length&&c.key.every((k,i)=>r.seq[i]===k);
+    case 'grid':{const a=Object.keys(r.ticks).filter(k=>r.ticks[k]).sort().join();return a===[...c.key].sort().join();}
+    case 'numeric':return Math.abs(parseFloat(r.text)-c.exp)<=c.tol+1e-9;}
+    return false;}
+  cov(c,t){if(t===c.sample)return c.sampleCov;if(t===c.good)return c.rubric.map(()=>true);const n=Math.max(1,Math.min(c.rubric.length,Math.round(t.length/80)));return c.rubric.map((_,i)=>i<n);}
+  complete(c,r){const st=this.state;switch(c.prim){
+    case 'pick_one':return st.whyActive?st.whyPick!=null:r.sel!=null;
+    case 'tap':return r.sel!=null;
+    case 'match':return c.left.every((_,i)=>r.pairs[i]!=null);
+    case 'order':return r.seq.length===c.steps.length;
+    case 'assemble':return r.seq.length===c.tokens.length;
+    case 'claim':return r.v.every(x=>x!=null);
+    case 'bucket':return r.place.every(x=>x!=null);
+    case 'grid':return Object.values(r.ticks).some(Boolean);
+    case 'numeric':return r.text!==''&&!isNaN(parseFloat(r.text));
+    case 'compose':return r.text.trim().length>=40;}
+    return false;}
+  check(){const c=this.card(),{r,whyActive,whyPick}=this.state;
+    if(!this.complete(c,r))return;
+    if(c.whyStep){if(!whyActive){if(r.sel===c.ans){this.setState({whyActive:true});return;}return this.finish(false);}return this.finish(whyPick===c.whyStep.ans);}
+    if(c.prim==='compose'){if(this.props.graderDown){this.setState({judge:true});return;}const cv=this.cov(c,r.text),n=cv.filter(Boolean).length;return this.finish(n/cv.length>=0.7,{cov:cv,score:Math.round(n/cv.length*100)});}
+    this.finish(this.grade(c,r));}
+  finish(ok,extra={}){this.setState(s=>({phase:'result',outcome:{kind:ok?'correct':'wrong',...extra},today:{a:s.today.a+1,c:s.today.c+(ok?1:0),s:s.today.s}}),()=>this.top());}
+  rate(ok){this.finish(ok,{said:ok?'Got it':'Missed it'});}
+  declare(kind){this.setState(s=>({phase:'result',outcome:{kind},today:{...s.today,s:s.today.s+(kind==='known'?0:1)}}),()=>this.top());}
+  next(){this.setState(s=>this.fresh((s.pos+1)%SEQ.length,s.today),()=>this.top());}
+  jump(pos){this.setState(s=>this.fresh(pos,s.today),()=>this.top());}
+  sample(good){const c=this.card(),b=this.fresh(this.state.pos,this.state.today),r=b.r;
+    if(c.prim==='self_rate'){this.setState(b,()=>this.rate(good));return;}
+    switch(c.prim){
+      case 'pick_one':case 'tap':r.sel=good?c.ans:c.miss;break;
+      case 'match':(good?c.key:c.miss).forEach((k,i)=>r.pairs[i]=k);break;
+      case 'order':r.seq=[...(good?c.sample:c.miss)];break;
+      case 'assemble':r.seq=[...(good?c.key:c.miss)];break;
+      case 'claim':r.v=[...(good?c.key:c.miss)];break;
+      case 'bucket':r.place=[...(good?c.key:c.miss)];break;
+      case 'grid':(good?c.key:c.miss).forEach(k=>r.ticks[k]=true);break;
+      case 'numeric':r.text=good?String(c.exp):c.miss;break;
+      case 'compose':r.text=good?(c.good||c.sample):c.sample;break;}
+    if(c.whyStep&&good){b.whyActive=true;b.whyPick=c.whyStep.ans;}
+    this.setState(b,()=>this.check());}
+  parse(p){const out=[];p.split(/```\w*\n?/).forEach((seg,i)=>{if(!seg.trim())return;if(i%2)out.push({code:true,prose:false,text:seg.replace(/\n$/,'')});else seg.split(/\n\n+/).forEach(t=>t.trim()&&out.push({code:false,prose:true,text:t.trim()}));});return out;}
+
+  renderVals(){
+    const st=this.state,c=this.card(),r=st.r,ask=st.phase==='ask',o=st.outcome||{},res=!ask;
+    const reveal=res&&['skip','new','known'].includes(o.kind),graded=res&&!reveal;
+    const view=st.viewO||this.props.view||'mobile',place='blocks';
+    const mob=view==='mobile',T=st.today;
+    const is=p=>c.prim===p;
+    const why=c.why==='new'?`New card on ${c.topic}.`:c.why==='due'?"Due for review: you've seen this card before and it's time to recall it again.":`${c.topic} is one of your weak spots. Another go should help it stick.`;
+    const vm={};
+    let hint='';
+    if(is('pick_one')){
+      vm.options=c.options.map((text,i)=>{let k='idle',m=MK(null);
+        if(ask){if(st.whyActive){k=i===r.sel?'ok':'dim';if(i===r.sel)m=MK(true,'Correct');}else if(r.sel===i)k='sel';}
+        else{const th=graded&&r.sel===i;if(i===c.ans){k='ok';m=MK(true,'Correct');}else if(th){k='bad';m=MK(false,'You chose');}else k='dim';}
+        return {text,letter:'ABCD'[i],...S[k],...m,onTap:ask&&!st.whyActive?()=>this.setR({sel:i}):noop};});
+      vm.showWhy=!!c.whyStep&&(st.whyActive||reveal);
+      if(c.whyStep){const w=c.whyStep;vm.whyQ=w.q;vm.reasons=w.reasons.map((text,i)=>{let k='idle',m=MK(null);
+        if(ask){if(st.whyPick===i)k='sel';}else{const th=graded&&st.whyPick===i;if(i===w.ans){k='ok';m=MK(true,'Correct');}else if(th){k='bad';m=MK(false,'You chose');}else k='dim';}
+        return {text,letter:'Reason '+(i+1),...S[k],...m,onTap:ask?()=>this.setState({whyPick:i}):noop};});}
+      if(ask)hint=st.whyActive?'Right. Now pick the reason; the card counts only if both are right.':'Pick one.';
+    }
+    const D=st.drag,OV=st.dragOver,G=fn=>(...a)=>{if(this.suppressClick)return;fn(...a);},src=(t,i)=>D&&D.type===t&&D.i===i?0.35:1;
+    const drag=(type,i,label,font)=>this.dragStart({type,i,label,font:font||'500 15px/1.55 Manrope,sans-serif'});
+    const zone=(key,on,base)=>on?{bd:C.cy,bs:OV===key?'solid':'dashed',bg:OV===key?C.cw:(base.bg||'transparent')}:{bd:base.bd,bs:base.bs||'solid',bg:base.bg||'transparent'};
+    if(is('match')){const L='ABCDEF',owner={};Object.keys(r.pairs).forEach(l=>{if(r.pairs[l]!=null)owner[r.pairs[l]]=+l;});
+      vm.terms=c.left.map((text,i)=>{const p=r.pairs[i],k=r.armed===i?'sel':p!=null?'fixed':'idle';
+        return {text,letter:L[i],...S[k],op:src('term',i),onDown:drag('term',i,text,'600 15px/1.4 Manrope,sans-serif'),onTap:G(()=>{if(r.armed===i)this.setR({armed:null});else if(p!=null){const pr={...r.pairs};delete pr[i];this.setR({pairs:pr,armed:null});}else this.setR({armed:i});})};});
+      vm.meanings=c.right.map((text,j)=>{const ow=owner[j];
+        const base=S[ow!=null?'fixed':'idle'],key='meaning:'+j,z=zone(key,!!D,base);return {text,drop:key,tag:ow!=null?L[ow]:'',...base,bd:z.bd,bs:z.bs,bg:z.bg,slotBd:ow!=null?'transparent':(r.armed!=null||D?C.cy:C.hs),slotBg:ow!=null?C.h:'transparent',
+          onTap:()=>{if(r.armed!=null){const pr={...r.pairs};Object.keys(pr).forEach(l=>{if(pr[l]===j)delete pr[l];});pr[r.armed]=j;this.setR({pairs:pr,armed:null});}else if(ow!=null){const pr={...r.pairs};delete pr[ow];this.setR({pairs:pr});}}};});
+      if(ask)hint=r.armed!=null?`Now tap the meaning for ${c.left[r.armed]}.`:'Tap a term, then its meaning, or drag the term onto it. Tap a paired term to undo it.';
+      vm.mrows=c.left.map((term,i)=>{const ok=r.pairs[i]===c.key[i];
+        return {term,yours:graded?c.right[r.pairs[i]]:'',yFg:ok?C.t:C.t2,showYours:graded,right:c.right[c.key[i]],rightLabel:graded?'Right meaning':'Meaning',showRight:reveal||!ok,...MK(graded?ok:null,ok?'Right':'Wrong pairing'),bd:graded?(ok?C.ok:C.bad):C.h};});
+    }
+    if(is('order')){const placed=new Set(r.seq);
+      const dS=D&&D.type==='step';
+      vm.slots=r.seq.map((si,n)=>({num:n+1,text:c.steps[si],drop:'slot:'+n,op:src('step',si),ins:dS&&OV==='slot:'+n&&D.i!==si?'0 -6px 0 -2px #67E8F9':'none',onDown:drag('step',si,c.steps[si]),onTap:G(()=>this.setR({seq:r.seq.filter(x=>x!==si)}))}));
+      vm.empties=c.steps.slice(r.seq.length).map((_,n)=>{const key='slot:'+(r.seq.length+n),z=zone(key,dS,{bd:C.hs,bs:'dashed'});return {num:r.seq.length+n+1,drop:key,...z,label:n===0?(dS?'Drop here':'Tap or drag a step here'):''};});
+      vm.pool=c.steps.map((text,i)=>({text,i,op:src('step',i),onDown:drag('step',i,text),onTap:G(()=>this.setR({seq:[...r.seq,i]}))})).filter(x=>!placed.has(x.i));
+      vm.poolHas=vm.pool.length>0;const fromSlot=dS&&placed.has(D.i);
+      vm.poolShow=vm.poolHas||fromSlot;vm.poolEmptyDrop=fromSlot&&!vm.poolHas;
+      {const z=zone('pool',fromSlot,{bd:'transparent'});vm.poolBd=z.bd;vm.poolBs=z.bs;vm.poolBg=z.bg;}
+      if(ask)hint='Tap the steps in order, or drag them into place. Drag a placed step to reorder it; tap it to take it back.';
+      const seq=graded?r.seq:c.sample,v=graded?this.viol(c,seq):[];
+      vm.yourOrder=seq.map((si,n)=>({num:n+1,text:c.steps[si]}));
+      vm.orderLabel=graded?'Your order':(c.multi?'One order that works':'The order');
+      vm.violations=v.map(([a,b])=>({text:`${c.short[a]} has to come before ${c.short[b]}.`}));
+      vm.hasViol=v.length>0;
+      vm.rules=c.rules.map(([a,b])=>({text:`${c.short[a]} before ${c.short[b]}`}));
+      vm.rulesLabel=c.multi?'Several orders are right. Only these rules are fixed:':'One order satisfies every rule:';
+    }
+    if(is('claim')){
+      const set=(i,val)=>()=>{const a=[...r.v];a[i]=a[i]===val?null:val;this.setR({v:a});};
+      vm.claims=c.statements.map((text,i)=>{const v=r.v[i],ok=v===c.key[i],pos=reveal?c.key[i]:v;
+        let tb=C.cw,td=C.cy,sf=C.cy;if(graded){tb='transparent';td=ok?C.ok:C.bad;sf=ok?C.ok:C.bad;}if(reveal){tb=C.r;td=C.hs;sf=C.t;}
+        return {text,isT:pos===true,isF:pos===false,thumbL:pos===false?'50%':'3px',thumbOp:pos==null?0:1,thumbBg:tb,thumbBd:td,
+          tFg:pos===true?sf:C.t2,fFg:pos===false?sf:C.t2,cur:ask?'pointer':'default',onT:ask?set(i,true):noop,onF:ask?set(i,false):noop,
+          ...MK(graded?ok:null,ok?'Right':`Wrong. It's ${c.key[i]?'true':'false'}.`)};});
+      if(ask){const n=r.v.filter(x=>x!=null).length;hint=`Each statement is judged on its own. ${n} of ${c.statements.length} marked.`;}
+    }
+    if(is('bucket')){const arm=r.armed;
+      const dB=D&&D.type==='bitem';
+      vm.bpool=c.items.map((text,i)=>({text,i,...S[arm===i?'sel':'idle'],op:src('bitem',i),onDown:drag('bitem',i,text,'500 15px/1.45 Manrope,sans-serif'),onTap:G(()=>this.setR({armed:arm===i?null:i}))})).filter(x=>r.place[x.i]==null);
+      vm.bpoolHas=vm.bpool.length>0;const fromCol=dB&&r.place[D.i]!=null;vm.bpoolShow=vm.bpoolHas||fromCol;
+      {const z=zone('bpool',fromCol,{bd:'transparent'});vm.bpoolBd=z.bd;vm.bpoolBs=z.bs;vm.bpoolBg=z.bg;}
+      vm.bcols=c.cols.map((name,ci)=>({name,drop:'col:'+ci,...(dB?zone('col:'+ci,true,{}):{bd:arm!=null?C.cy:C.h,bs:arm!=null?'dashed':'solid',bg:arm!=null?C.cw:'transparent'}),cur:arm!=null?'pointer':'default',hint:dB?(OV==='col:'+ci?'Drop here':''):(arm!=null?'Place here':''),
+        onTap:()=>{if(arm!=null){const p=[...r.place];p[arm]=ci;this.setR({place:p,armed:null});}},
+        items:c.items.map((text,i)=>({text,i,...S[arm===i?'sel':'fixed'],op:src('bitem',i),onDown:drag('bitem',i,text,'500 15px/1.45 Manrope,sans-serif'),onTap:e=>{e.stopPropagation();if(this.suppressClick)return;this.setR({armed:arm===i?null:i});}})).filter(x=>r.place[x.i]===ci)}));
+      if(ask)hint=arm!=null?`Tap the column for "${c.items[arm]}".`:'Tap an item, then its column, or drag it there. Placed items can be dragged or tapped to move.';
+      vm.rcols=c.cols.map((name,ci)=>{const items=c.items.map((text,i)=>{const pl=graded?r.place[i]:c.key[i],ok=r.place[i]===c.key[i];
+        return {text,pl,...MK(graded?ok:null,ok?'Right':'Wrong column'),bel:`Belongs in ${c.cols[c.key[i]]}`,bd:graded?(ok?C.ok:C.bad):C.h};}).filter(x=>x.pl===ci);return {name,items,none:!items.length};});
+    }
+    if(is('tap')){
+      vm.fileName=c.file||'snippet';vm.lineCount=c.lines.length+' lines';
+      vm.lines=c.lines.map((code,i)=>{const isAns=i===c.ans,mine=r.sel===i;let bg='transparent',bar='transparent',numCol=C.tm,fg=C.t,gOk=false,gBad=false,pick=false,pickCol=C.cy;
+        if(ask){if(mine){bg=C.cw;bar=C.cy;numCol=C.cy;pick=true;}}
+        else if(isAns){bar=C.ok;gOk=true;bg=C.r;}else if(graded&&mine){bar=C.bad;gBad=true;bg=C.r;pick=true;pickCol=C.bad;}else fg=C.tm;
+        return {num:i+1,code:code||' ',bg,bar,numCol,fg,gOk,gBad,gNum:!gOk&&!gBad,pick,pickCol,hasNote:res&&isAns,
+          noteHead:`Line ${i+1}: ${c.lineWhy}${graded&&mine?', your pick':''}`,note:c.answer,cur:ask?'pointer':'default',onTap:ask?()=>this.setR({sel:i}):noop};});
+      if(ask)hint=r.sel==null?'Tap a line.':`Line ${r.sel+1} picked. Tap another line to change it.`;
+    }
+    if(is('assemble')){const pl=new Set(r.seq);
+      vm.prefix=c.prefix||'';vm.suffix=c.suffix||'';vm.hasPrefix=!!c.prefix;vm.hasSuffix=!!c.suffix;
+      vm.tokFont=c.code?'500 15px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace':'500 15px/1.4 Manrope,sans-serif';
+      const dT=D&&D.type==='tok';
+      vm.built=r.seq.map((ti,n)=>({text:c.tokens[ti],drop:'abuilt:'+n,op:src('tok',ti),ins:dT&&OV==='abuilt:'+n&&D.i!==ti?'-6px 0 0 -2px #67E8F9':'none',onDown:drag('tok',ti,c.tokens[ti],vm.tokFont),onTap:G(()=>this.setR({seq:r.seq.filter(x=>x!==ti)}))}));
+      vm.aEmpties=c.tokens.slice(r.seq.length).map((_,n)=>{const key='abuilt:'+(r.seq.length+n);return {n,drop:key,...zone(key,dT,{bd:C.hs,bs:'dashed'})};});
+      vm.apool=c.tokens.map((text,i)=>({text,i,op:src('tok',i),onDown:drag('tok',i,text,vm.tokFont),onTap:G(()=>this.setR({seq:[...r.seq,i]}))})).filter(x=>!pl.has(x.i));
+      {const z=zone('apool',dT&&pl.has(D.i),{bd:'transparent'});vm.apoolBd=z.bd;vm.apoolBs=z.bs;vm.apoolBg=z.bg;}
+      const seq=graded?r.seq:c.key;let wrong=0;
+      vm.rbuilt=seq.map((ti,n)=>{const ok=ti===c.key[n];if(!ok)wrong++;return {text:c.tokens[ti],bd:graded?(ok?C.ok:C.bad):C.hs,mBad:graded&&!ok};});
+      vm.aWrong=graded&&wrong>0;vm.aWrongCount=`${wrong} ${wrong===1?'piece is':'pieces are'} in the wrong place`;
+      vm.aRight=[c.prefix,...c.key.map(k=>c.tokens[k]),c.suffix].filter(Boolean).join(' ');
+      vm.builtLabel=graded?'What you built':'The answer';
+      if(ask)hint=c.prefix?'Tap pieces to fill the blanks in order, or drag them into place. Grey parts are fixed. Tap a placed piece to take it back.':'Tap pieces to build the line in order, or drag them into place. Tap a placed piece to take it back.';
+    }
+    if(is('grid')){const key=new Set(c.key);
+      vm.gtc=`repeat(${c.cols.length},minmax(0,1fr))`;
+      vm.gcols=c.cols.map(name=>({name}));
+      const COL={on:C.cy,ok:C.ok,bad:C.bad,miss:C.bad};
+      const look=kd=>{const col=COL[kd];return kd==='off'||kd==='dim'?{sz:'14px',bg:'#0A0C10',bd:kd==='dim'?C.h:C.hs,bs:'solid',glow:'none'}:kd==='miss'?{sz:'22px',bg:'transparent',bd:C.bad,bs:'dashed',glow:'none'}:{sz:'22px',bg:col,bd:col,bs:'solid',glow:kd==='on'?'0 0 0 6px #0E1E24':'none'};};
+      vm.grows=c.rows.map((label,ri)=>{const should=[],shouldnt=[];
+        const cells=c.cols.map((name,ci)=>{const k=ri+'-'+ci,on=!!r.ticks[k],sh=key.has(k);let kd='off',ic=null;
+          if(ask){if(on)kd='on';}
+          else if(reveal){if(sh){kd='ok';ic='check';}else kd='dim';}
+          else if(on&&sh){kd='ok';ic='check';}else if(on){kd='bad';ic='cross';shouldnt.push(name);}else if(sh){kd='miss';should.push(name);}else kd='dim';
+          return {name,...look(kd),icCheck:ic==='check',icCross:ic==='cross',on,aria:`${label}: ${name}`,cur:ask?'pointer':'default',onTap:ask?()=>this.setR({ticks:{...r.ticks,[k]:!on}}):noop};});
+        const nt=[];if(should.length)nt.push(`Missed ${should.join(', ')}.`);if(shouldnt.length)nt.push(`${shouldnt.join(', ')} shouldn't be on.`);
+        return {label,cells,note:nt.join(' '),hasNote:nt.length>0,line:ri===c.rows.length-1?'transparent':C.h};});
+      vm.gridLegend=graded&&o.kind==='wrong';
+      if(ask)hint='Turn on every cell that is true. A row can have more than one.';
+    }
+    if(is('numeric')){const t=r.text,ok=graded&&o.kind==='correct';
+      const press=k=>{let x=this.state.r.text;if(k==='back')x=x.slice(0,-1);else if(k==='.'){if(x.includes('.'))return;x=(x===''||x==='-'?x+'0':x)+'.';}else if(k==='±')x=x.startsWith('-')?x.slice(1):'-'+x;else{if(x.replace(/[-.]/g,'').length>=8)return;x=x==='0'?k:x==='-0'?'-'+k:x+k;}this.setR({text:x});};
+      this.numPress=c.dec?press:k=>k==='.'?null:press(k);
+      vm.keys=['1','2','3','4','5','6','7','8','9',c.dec?'.':(c.neg?'±':''),'0','back'].map(k=>({label:k,isBack:k==='back',isTxt:k!=='back',off:k==='',onTap:k?()=>press(k):noop,aria:k==='back'?'Delete':k==='.'?'Decimal point':k==='±'?'Toggle minus':(k||'Unused'),bg:k?C.r:'transparent',bd:k?C.h:'transparent'}));
+      vm.numHint=`${c.dec?'Decimals allowed':'Whole numbers only'}. ${c.neg?'Negatives allowed.':'No minus sign.'}`;
+      vm.numShow=t===''?(ask?'0':'—'):t.replace('-','−');vm.numFg=ask&&t===''?C.tm:C.t;vm.numCaret=ask;
+      vm.numBd=ask?(t?C.cy:C.hs):(ok?C.ok:C.bad);vm.numOk=ok;vm.numBad=graded&&!ok;vm.numShowDisplay=ask||graded;vm.numKeypad=ask;
+      vm.numExp=String(c.exp);vm.numTol=c.tol>0?`within ${c.tol}`:'exactly';vm.numShowExp=res&&!ok;
+      if(ask)hint='Tap the keypad, or type on a keyboard.';
+    }
+    if(is('compose')){
+      vm.rubric=c.rubric.map(t=>({text:t}));vm.rubricLabel='Cover these';
+      vm.cText=r.text;vm.onText=e=>this.setR({text:e.target.value.slice(0,300)});
+      vm.cCount=`${r.text.length} / 300`;vm.cMin=r.text.trim().length<40?'At least 40 characters':'';vm.judge=st.judge;
+      vm.hasCov=!!o.cov;vm.noCov=res&&!o.cov;vm.showYourText=graded;
+      vm.covList=(o.cov||[]).map((ok,i)=>({text:c.rubric[i],...MK(ok,ok?'Covered':'Missed'),bd:ok?C.ok:C.bad}));
+      if(ask&&!st.judge)hint='Write a short answer. The rubric is what the marker checks for.';
+    }
+    if(is('self_rate')&&ask)hint='Answer it in your head, then say how it went.';
+
+    const V={correct:{t:'Correct',ok:1},wrong:{t:'Not quite',bad:1},skip:{t:'Skipped'},new:{t:"New to you — here's the answer"},known:{t:'Marked as known'}}[o.kind]||{};
+    const n=o.cov?o.cov.filter(Boolean).length:0;
+    const can=this.complete(c,r);
+    const nextReview=o.kind==='correct'?`Next review in ${c.next} days`:o.kind==='wrong'||o.kind==='new'?'Next review tomorrow':o.kind==='known'?'Next review in 30 days':'';
+    const tab=l=>({label:l,fg:l==='Feed'?C.cy:C.tm,bg:l==='Feed'?C.cw:'transparent',dfg:l==='Feed'?C.cy:C.t2,dbg:l==='Feed'?C.r:'transparent'});
+    const btn=(on,label,onTap)=>({label,onTap,bd:on?C.cy:C.hs,bg:on?C.cw:'transparent',fg:on?C.cy:C.t2});
+    const pB=mob&&res;
+    const L={a:LIFE.a+T.a,c:LIFE.c+T.c,s:LIFE.s+T.s},lp=Math.round(L.c/L.a*100),tp=T.a?Math.round(T.c/T.a*100):null;
+    const cmpLine=tp==null?'No answers yet today.':tp===lp?`Today matches your lifetime rate of ${lp}%.`:`Today is ${Math.abs(tp-lp)} points ${tp>lp?'above':'below'} your lifetime rate of ${lp}%.`;
+    const seen=LIFE.seen+T.a;
+    const areas=AREAS.map(a=>{const p=Math.round(a.c/a.n*100);return {name:a.name,col:a.col,seen:a.n,pctT:p+'%',w:p+'%',barCol:a.col,weak:p<70,weakTopic:a.weak,here:a.match===c.area};});
+    const wk=[...WEEK,tp==null?null:tp].map((p,i)=>({day:['Fri','Sat','Sun','Mon','Tue','Wed','Today'][i],pct:p==null?'—':p+'%',h:(p||0)+'%',col:i===6?C.cy:C.t2}));
+    const shown=st.fbHover||st.fbStars,RW=['','Poor','Weak','Fine','Good','Excellent'];
+    const SC=['','#F87171','#FB923C','#FBBF24','#A3E635','#4ADE80'][shown];
+    const stars=[1,2,3,4,5].map(n=>{const on=n<=shown;return {on:n===st.fbStars,aria:n+' of 5',fill:on?SC:'none',stroke:on?SC:C.tm,onTap:()=>this.setState({fbStars:n===st.fbStars?0:n,fbHover:0}),onHover:()=>this.setState({fbHover:n})};});
+    const fbCan=st.fbText.trim().length>0;
+    return {...vm,
+      ghostRef:this.ghostRef,ghostDisp:D?'block':'none',ghostW:D?D.w+'px':'auto',ghostFont:D?D.font:'500 15px/1.55 Manrope,sans-serif',ghostLabel:D?D.label:'',
+      fbRateOpen:st.fbMode==='rate'&&!st.fbHide,fbHidden:st.fbHide,fbReportOpen:st.fbMode==='report'&&!st.fbSent,fbSent:st.fbSent,
+      onRateLink:()=>this.setState(x=>({fbMode:x.fbMode==='rate'?null:'rate'})),onReportLink:()=>{if(!st.fbSent)this.setState(x=>({fbMode:x.fbMode==='report'?null:'report'}));},
+      rateLinkLabel:st.fbStars?`Rated ${st.fbStars}/5`:'Rate',rateLinkCol:C.cy,
+      reportLinkLabel:st.fbSent?'Reported':'Report',reportLinkCol:st.fbSent?C.tm:C.cy,
+      rateQ:shown?RW[shown]:'Rate this card',stars,onStarLeave:()=>this.setState({fbHover:0}),
+      onHide:()=>this.setState({fbHide:true}),onUnhide:()=>this.setState({fbHide:false}),
+      fbText:st.fbText,onFbText:e=>this.setState({fbText:e.target.value.slice(0,300)}),onRepFocus:()=>this.setState({repFocus:true}),onRepBlur:()=>this.setState({repFocus:false}),repLine:st.repFocus?C.cy:C.hs,
+      fbCant:!fbCan,fbSendFg:fbCan?C.cy:C.tm,fbSendCur:fbCan?'pointer':'not-allowed',onFbSend:()=>{if(fbCan)this.setState({fbSent:true,fbMode:null});},
+      lA:L.a.toLocaleString(),lS:L.s.toLocaleString(),lPct:lp+'%',cmpLine,
+      reportOpen:!!st.report,toggleReport:()=>this.setState(s=>({report:!s.report})),reportLabel:st.report?'Hide report':'Overall report',chevRot:st.report?'180deg':'0deg',
+      seenLine:`${seen.toLocaleString()} of 3,761 cards seen`,seenW:(seen/3761*100).toFixed(1)+'%',dueNow:'38',retiredN:'112',areas,week:wk,
+      viewBtns:[btn(mob,'Mobile',()=>this.setState({viewO:'mobile'})),btn(!mob,'Desktop',()=>this.setState({viewO:'desktop',sheet:false}))],
+            placeNote:mob?'After an answer, Why this card and Today sit below the card as full blocks. Today expands into the overall report.':'Desktop keeps the side column: Why this card and Today stay in view before and after answering.',
+      cardOpts:SEQ.map((id,i)=>({v:i,label:`${id} · ${PN[CARDS[id].prim]} · ${CARDS[id].topic}`})),
+      pos:st.pos,onSelect:e=>this.jump(+e.target.value),onMiss:()=>this.sample(false),onRight:()=>this.sample(true),onReset:()=>this.setState(this.fresh(0,{a:0,c:0,s:0}),()=>this.top()),
+      frameW:mob?'390px':'1240px',frameH:mob?'844px':'860px',frameR:mob?'44px':'14px',
+      desk:!mob,mob,headPad:mob?'16px 20px 14px':'20px 32px',cpad:mob?'16px':'28px 32px',
+      tabs:['Today','Feed','Library','Coach','Friends','Me'].map(tab),scrollRef:this.scrollRef,
+      ask,res,vOk:!!V.ok,vBad:!!V.bad,vTitle:V.t||'',hasScore:graded&&o.score!=null,
+      score:(o.score!=null?o.score:(o.kind==='correct'?100:0))+'%',scoreCol:o.kind==='correct'?C.ok:C.bad,
+      hasCovLine:!!o.cov,covLine:o.cov?`${n} of ${o.cov.length} key points`:'',
+      pB,
+      tA:String(T.a),tS:String(T.s),tPct:T.a?Math.round(T.c/T.a*100)+'%':'—',why,
+      area:c.area,areaCol:AREA[c.area]||C.t2,topic:c.topic,diff:c.diff,parts:this.parse(c.prompt),hint,hasHint:!!hint,
+      isPick:is('pick_one'),isMatchAsk:is('match')&&ask,isMatchRes:is('match')&&res,isOrderAsk:is('order')&&ask,isOrderRes:is('order')&&res,
+      isClaim:is('claim'),isNum:is('numeric'),isClaimAsk:is('claim')&&ask,isClaimRes:is('claim')&&res,isBucketAsk:is('bucket')&&ask,isBucketRes:is('bucket')&&res,isTap:is('tap'),
+      isAsmAsk:is('assemble')&&ask,isAsmRes:is('assemble')&&res,isGrid:is('grid'),isNumAsk:is('numeric')&&ask,isNumRes:is('numeric')&&res,
+      isCompAsk:is('compose')&&ask,isCompRes:is('compose')&&res,
+      hasSaid:!!o.said,said:o.said||'',
+      showCheck:ask&&!is('self_rate')&&!st.judge,cantCheck:!can,checkBg:can?C.cy:C.r,checkBd:can?C.cy:C.h,checkFg:can?C.oc:C.tm,checkCur:can?'pointer':'not-allowed',
+      checkLabel:st.whyActive?'Check reason':'Check answer',onCheck:()=>this.check(),
+      showRate:ask&&(is('self_rate')||st.judge),skipLow:ask&&is('self_rate'),onMissed:()=>this.rate(false),onGot:()=>this.rate(true),
+      showDeclare:ask&&!st.judge,showKnown:c.why!=='new',onSkip:()=>this.setState(s=>this.fresh((s.pos+1)%SEQ.length,{...s.today,s:s.today.s+1}),()=>this.top()),onNew:()=>this.declare('new'),onKnown:()=>this.declare('known'),
+      hasAnswer:!!c.answer&&!is('tap'),answer:c.answer||'',hasPoints:!!(c.points&&c.points.length),points:(c.points||[]).map(t=>({text:t})),
+      isKnown:o.kind==='known',notRetired:st.retired==null,retireAsk:`Retire the ${c.unseen||6} unseen cards on ${c.topic} too?`,
+      retiredMsg:st.retired==='yes'?`Retired. The ${c.unseen||6} unseen cards on ${c.topic} won't be asked.`:st.retired==='no'?`Kept. Unseen cards on ${c.topic} stay in the Feed.`:'',
+      onRetire:()=>this.setState({retired:'yes'}),onKeep:()=>this.setState({retired:'no'}),
+      hasNext:!!nextReview,nextReview,source:c.source,sourceLink:!!c.link,sourcePlain:!c.link,
+      inlineNext:res&&!mob,mobBar:res&&mob,onNext:()=>this.next()
+    };
+  }
+}
+</script>
+</body>
+</html>
