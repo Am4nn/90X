@@ -134,6 +134,11 @@ def verify(con, llm, card_ids: list[str], tier: str = "smart") -> dict:
     topics = {t["slug"]: t for t in regate.topics_with_cards(con, list(wanted))}
     checked = unfit = 0
     reasons: list[tuple[str, str]] = []
+    # The ids the gate actually ruled on and passed. A caller that needs to know who was judged
+    # must be told, not infer it: a topic whose call failed leaves its cards looking exactly like
+    # cards that passed, and the only stamp `regate.apply` leaves is written when a topic had a
+    # rejection, so it is present or absent depending on a sibling's result.
+    fit_ids: list[str] = []
 
     for slug, ids in wanted.items():
         topic = topics.get(slug)
@@ -153,13 +158,15 @@ def verify(con, llm, card_ids: list[str], tier: str = "smart") -> dict:
         rejected = gate.judge(cards, result)
         checked += len(cards)
         unfit += len(rejected)
+        failed = {id(card) for card, _ in rejected}
+        fit_ids += [c.id for c in cards if id(c) not in failed]
         for card, why in rejected:
             reasons.append((card.id, why))
         if rejected:
             regate.apply(con, cards, rejected, gate.confidence_by_card(cards, result))
             print(f"  {slug}: {len(rejected)} of {len(cards)} did not fit", flush=True)
 
-    return {"checked": checked, "fit": checked - unfit, "unfit": unfit, "reasons": reasons}
+    return {"checked": checked, "fit": checked - unfit, "unfit": unfit, "reasons": reasons, "fit_ids": fit_ids}
 
 
 def run(con, llm=None, tier: str = "fast", dry_run: bool = True,

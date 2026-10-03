@@ -36,12 +36,19 @@ def make(tmp_path, rows):
     return con
 
 
-def test_a_card_the_gate_never_ruled_on_is_not_a_survivor(tmp_path):
-    con = make(tmp_path, [("judged", '{"regated": true}'), ("unjudged", "{}")])
-    assert fa.judged_survivors(con, ["judged", "unjudged"]) == ["judged"]
-    con.execute("update cards set status = 'rejected' where id = 'judged'")
-    assert fa.judged_survivors(con, ["judged", "unjudged"]) == [], "a rejected card is not a survivor"
-    assert fa.judged_survivors(con, []) == []
+def test_only_a_card_the_gate_reported_as_passing_is_a_survivor(tmp_path):
+    """Survivors come from what `verify` says passed, not from the database. A card in a topic
+    whose gate call failed is a plain draft, indistinguishable from one that passed; and the
+    only stamp apply() leaves exists only when a topic had a rejection, so the first version of
+    this, which required it, held every good card in an all-pass topic forever."""
+    con = make(tmp_path, [("passed", "{}"), ("never-judged", "{}"), ("rejected-one", "{}")])
+    con.execute("update cards set status = 'rejected' where id = 'rejected-one'")
+    survivors = fa.judged_survivors(con, ["passed", "never-judged", "rejected-one"], passed=["passed", "rejected-one"])
+    assert survivors == ["passed"], "never-judged was not reported as passing; rejected-one is no longer a draft"
+    assert fa.judged_survivors(con, ["passed"], passed=[]) == []
+    assert fa.judged_survivors(con, [], passed=["passed"]) == []
+    # A card that passed but is not one of THIS run's cards is not pulled in.
+    assert fa.judged_survivors(con, ["never-judged"], passed=["passed"]) == []
 
 
 class Verdicts:
