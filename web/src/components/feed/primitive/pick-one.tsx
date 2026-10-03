@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckBar } from "./check-bar";
+import { ChosenCheckBar } from "./check-bar";
 import type { PrimitiveAnswerProps } from "./types";
 
 /** Pick one: tap the single option you think is right, then Check answer. */
@@ -39,12 +39,7 @@ export function PickOne({ card, pending, busy, onSubmit }: PrimitiveAnswerProps)
           );
         })}
       </ul>
-      <CheckBar
-        pending={pending}
-        busy={busy}
-        complete={selected !== null}
-        onCheck={() => selected !== null && onSubmit({ cardId: card.id, shape: "chosen", picked: [selected] }, selected)}
-      />
+      <ChosenCheckBar card={card} selected={selected} pending={pending} busy={busy} onSubmit={onSubmit} />
     </div>
   );
 }

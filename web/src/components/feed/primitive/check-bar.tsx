@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import { PRIMARY, SECONDARY } from "@/components/button-styles";
+import type { PrimitiveAnswerProps } from "./types";
 
 /** Skip lives in the card; the Check bar shows it beside Check so the two share a row. */
 export const SkipContext = createContext<{ pending: boolean; skipping: boolean; skip: () => void } | null>(null);
@@ -37,5 +38,17 @@ export function CheckBar({
         {busy === "check" ? "Checking…" : "Check answer"}
       </button>
     </div>
+  );
+}
+
+/** The Check row for a one-of-many pick: grey until something is selected, then it submits that pick. */
+export function ChosenCheckBar({ card, selected, pending, busy, onSubmit }: PrimitiveAnswerProps & { selected: number | null }) {
+  return (
+    <CheckBar
+      pending={pending}
+      busy={busy}
+      complete={selected !== null}
+      onCheck={() => selected !== null && onSubmit({ cardId: card.id, shape: "chosen", picked: [selected] }, selected)}
+    />
   );
 }

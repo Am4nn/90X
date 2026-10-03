@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { codeLanguage } from "@/lib/feed/code";
-import { CheckBar } from "./check-bar";
+import { ChosenCheckBar } from "./check-bar";
 import { Hint } from "./hint";
 import type { PrimitiveAnswerProps } from "./types";
 
@@ -53,12 +53,7 @@ export function TapInPlace({ card, pending, busy, onSubmit }: PrimitiveAnswerPro
           })}
         </ol>
       </div>
-      <CheckBar
-        pending={pending}
-        busy={busy}
-        complete={selected !== null}
-        onCheck={() => selected !== null && onSubmit({ cardId: card.id, shape: "chosen", picked: [selected] }, selected)}
-      />
+      <ChosenCheckBar card={card} selected={selected} pending={pending} busy={busy} onSubmit={onSubmit} />
     </div>
   );
 }

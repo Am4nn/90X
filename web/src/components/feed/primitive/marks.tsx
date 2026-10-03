@@ -25,3 +25,19 @@ export function MarkLine({ ok, children }: { ok: boolean; children: React.ReactN
     </span>
   );
 }
+
+/** The six dots that say "this can be dragged". `data-grip` marks it as the handle for a touch drag. */
+export function Grip({ className = "text-mute" }: { className?: string }) {
+  return (
+    <span data-grip className={`flex shrink-0 touch-none items-center justify-center ${className}`} aria-hidden>
+      <svg viewBox="0 0 8 12" className="h-3 w-2" fill="currentColor">
+        <circle cx="2" cy="2" r="1.1" />
+        <circle cx="6" cy="2" r="1.1" />
+        <circle cx="2" cy="6" r="1.1" />
+        <circle cx="6" cy="6" r="1.1" />
+        <circle cx="2" cy="10" r="1.1" />
+        <circle cx="6" cy="10" r="1.1" />
+      </svg>
+    </span>
+  );
+}
