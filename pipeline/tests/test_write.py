@@ -245,3 +245,42 @@ def test_the_writer_is_told_wrong_reasons_must_be_false_about_the_same_item():
 def test_the_writer_is_told_best_and_rank_questions_need_stated_assumptions():
     assert "ONE ANSWER, OR REFUSE" in write.SYSTEM
     assert "unstated assumption" in write.SYSTEM
+
+
+GRID_OPTIONS = {"rows": ["ArrayList", "HashMap", "CopyOnWriteArrayList", "ConcurrentHashMap"],
+                "columns": ["Throws CME", "Never throws", "Snapshot"]}
+
+
+def test_grid_cells_are_named_by_row_and_column_and_the_code_does_the_arithmetic():
+    """The model used to be asked for flat row-major indices and got the multiplication
+    wrong in 55 of 109 live grids. A flat index that lands on the wrong cell is just
+    another valid index, so nothing caught it. It now names each cell and the pipeline
+    computes row * columns + column."""
+    cells = [[0, 0], [1, 0], [2, 1], [2, 2], [3, 1]]
+    llm = FakeLLM(write.WriteResult(draft=write.CardDraft(**_draft(options=GRID_OPTIONS, picked=None, cells=cells))))
+    result = write.write_one(llm, TOPIC, LESSON, CardSlot("complexity-table", "grid_toggle", "Medium"), tier="smart")
+    assert isinstance(result, Card), result
+    assert result.picked == [0, 3, 7, 8, 10], result.picked
+
+
+def test_a_grid_that_still_sends_flat_picked_is_not_trusted():
+    """If the model ignores the instruction and sends the old flat indices, the card must
+    not go through on numbers nobody can check."""
+    llm = FakeLLM(write.WriteResult(draft=write.CardDraft(**_draft(options=GRID_OPTIONS, picked=[0, 4, 5, 7]))))
+    result = write.write_one(llm, TOPIC, LESSON, CardSlot("complexity-table", "grid_toggle", "Medium"), tier="smart")
+    assert isinstance(result, write.Refusal), result
+
+
+def test_grid_cells_outside_the_grid_are_refused_rather_than_clamped():
+    for bad in ([[4, 0]], [[0, 3]], [[-1, 0]], [[0]], [[0, 0, 0]], [["a", "b"]]):
+        assert write.grid_picked(GRID_OPTIONS, bad) is None, bad
+
+
+def test_grid_picked_is_sorted_and_deduplicated():
+    assert write.grid_picked(GRID_OPTIONS, [[3, 1], [0, 0], [0, 0]]) == [0, 10]
+
+
+def test_the_grid_instruction_no_longer_asks_for_flat_indices():
+    text = write.PRIMITIVE_INSTRUCTIONS["grid_toggle"]
+    assert "row-major" not in text, "the model must not be asked to compute a flat index"
+    assert "`cells`" in text and "[row, column]" in text
