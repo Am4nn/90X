@@ -27,9 +27,10 @@ async function openFeed(page: Page, name: string) {
 
 /** Skips the card on screen and returns the next one. */
 async function skipTo(page: Page): Promise<SeedCard | null> {
+  // Skip goes straight to the next card: no result screen, no answer shown.
+  const before = await cardArticle(page).innerText();
   await cardArticle(page).getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Next card", exact: true }).click();
+  await expect(cardArticle(page)).not.toHaveText(before);
   return shownCard(page);
 }
 
@@ -46,7 +47,7 @@ async function answerMain(page: Page, card: SeedCard) {
   const value = card.value;
   if (typeof value !== "number") throw new Error("why-step card without a numeric answer");
   for (const digit of String(value)) await page.getByRole("button", { name: digit, exact: true }).click();
-  await page.getByRole("button", { name: "Check", exact: true }).click();
+  await page.getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(whyQuestion(page)).toBeVisible();
 }
 
@@ -60,7 +61,7 @@ test("a correct answer with the right reason marks the card correct", { tag: "@m
   await page.getByRole("list", { name: "Reason" }).getByRole("button").nth(why.correct).click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
-  await expect(cardArticle(page).getByText("Correct", { exact: true })).toBeVisible();
+  await expect(cardArticle(page).getByText("Correct", { exact: true }).first()).toBeVisible();
 });
 
 test("a correct answer with the wrong reason marks the card wrong", async ({ page }) => {
@@ -83,7 +84,7 @@ test("a wrong main answer goes straight to the result, never to the why-step", a
   const wrongValue = (card.value ?? 0) + 1;
 
   for (const digit of String(wrongValue)) await page.getByRole("button", { name: digit, exact: true }).click();
-  await page.getByRole("button", { name: "Check", exact: true }).click();
+  await page.getByRole("button", { name: "Check answer", exact: true }).click();
 
   await expect(page.getByRole("button", { name: "Next card", exact: true })).toBeVisible();
   await expect(whyQuestion(page)).toHaveCount(0);

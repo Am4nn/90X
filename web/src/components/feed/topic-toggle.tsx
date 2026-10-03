@@ -2,8 +2,7 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { chip } from "@/components/button-styles";
-import { areaDot } from "@/lib/admin/review";
-import { AREA_LABEL, FEED_AREAS, type FeedArea } from "@/lib/feed/view";
+import { AREA_DOT, AREA_LABEL, FEED_AREAS, type FeedArea } from "@/lib/feed/view";
 
 /** Header action: which areas the Feed draws from. At least one stays on. */
 export function TopicToggle({
@@ -47,7 +46,7 @@ export function TopicToggle({
                     onClick={() => onToggle(area)}
                     className={chip(on)}
                   >
-                    <span className={`size-2 rounded-full ${on ? areaDot(area) : "bg-line-2"}`} />
+                    <span className={`size-2 rounded-full ${on ? AREA_DOT[area] : "bg-line-2"}`} />
                     {AREA_LABEL[area]}
                   </button>
                 );
