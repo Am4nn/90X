@@ -4,6 +4,7 @@
     uv run python scripts/key_audit.py                  # every kept card
     uv run python scripts/key_audit.py --formats grid_toggle,assemble   # only these primitives
     uv run python scripts/key_audit.py --apply          # reject what both passes call a contradiction
+    uv run python scripts/key_audit.py --recheck 300    # how much did the cheap first pass miss?
 
 Two passes, on purpose. The first runs on the cheap tier and is allowed to be noisy; the
 second re-reads only what the first flagged, on the smart tier, and a card is rejected
@@ -119,6 +120,116 @@ def run(llm, groups: dict[str, list], topics: dict[str, dict], tier: str, label:
     return results
 
 
+def recheck(n: int) -> None:
+    """Re-read a random sample of the first pass's `agrees` with the strong model.
+
+    The first pass is cheap and only what it flags is re-read, so a card it called
+    `agrees` was never double-checked and its miss rate was unknown. This measures it:
+    the share of that sample the strong model calls a contradiction is the cheap pass's
+    miss rate, and it says whether the clean corpus is as clean as it looks.
+
+    Writes nothing to the cards. Hits are saved for reading and for `--from`.
+    """
+    import glob
+
+    con = duckdb.connect(os.path.abspath("../.data/staging.duckdb"))
+    pool: list[str] = []
+    for path in glob.glob(os.path.abspath("../.data/review/key-audit-*.json")):
+        if "pilot" in path or "recheck" in path:
+            continue
+        pool += [cid for cid, r in json.load(open(path, encoding="utf-8")).get("first", {}).items() if r["verdict"] == "agrees"]
+    live = {r[0] for r in con.execute(
+        "select id from cards where kept = true and status = 'draft' and archetype is not null").fetchall()}
+    pool = sorted(set(pool) & live)
+    sample = set(random.Random(11).sample(pool, min(n, len(pool))))
+    topics = {t["slug"]: t for t in regate.topics_with_cards(con)}
+    groups: dict[str, list] = {}
+    for slug in topics:
+        keep = [c for c in regate.cards_of(con, slug) if c.id in sample and key_audit.has_key(c)]
+        if keep:
+            groups[slug] = keep
+    print(f"{len(pool)} cards the first pass called clean and are still live; re-reading {sum(len(v) for v in groups.values())} with {SECOND}")
+    out = run(LLM(con), groups, topics, SECOND, "second")
+    hits = sorted(cid for cid, r in out.items() if r["verdict"] == "contradicts")
+    fmt = dict(con.execute("select id, format from cards").fetchall())
+    print(f"\nstrong model on the cheap pass's clean cards: {len(hits)} contradict of {len(out)} re-read "
+          f"({100 * len(hits) / max(len(out), 1):.1f}%)")
+    by = defaultdict(lambda: [0, 0])
+    for cid in out:
+        by[fmt[cid]][0] += 1
+        by[fmt[cid]][1] += cid in hits
+    for f, (total, bad) in sorted(by.items(), key=lambda kv: -kv[1][1]):
+        print(f"  {f:13} {bad:>3} / {total}")
+    save_path = os.path.abspath("../.data/review/key-audit-recheck.json")
+    with open(save_path, "w", encoding="utf-8") as fh:
+        json.dump({"first": {c: {**out[c], "verdict": "contradicts"} for c in hits}, "second": {c: out[c] for c in hits},
+                   "confirmed": hits, "all": out}, fh, indent=1, ensure_ascii=False)
+    print(f"saved to {save_path}; nothing changed. Apply with --from.")
+
+
+def retest() -> None:
+    """Re-judge every card the audit has flagged, with two independent models.
+
+    The first audit's two passes were a cheap model and a stronger one from the same family,
+    reading a key worded the same way. Re-reading nine of the flagged cards by hand showed
+    a share of them were misreadings the wording caused - a tap-the-bug card's key *is* the
+    bug line, a rebuilt line was spaced differently from its explanation, a numeric key was
+    the exponent the explanation wrote as O(n^2) - and both passes made the same mistake,
+    so agreement between them proved less than it looked.
+
+    So: every flagged card goes through FIRST and then SECOND, each over every card (not only
+    what the first flagged), and the two should be different model families. Then
+      - both say agrees       -> restore: the original flag was a misreading
+      - both say contradicts  -> keep_out: a genuine disagreement, confirmed independently
+      - anything else         -> uncertain: left where it is, for a person
+    Writes nothing to the cards.
+    """
+    import glob
+
+    global OUT
+    OUT = os.path.abspath("../.data/review/key-audit-retest.json")
+    con = duckdb.connect(os.path.abspath("../.data/staging.duckdb"))
+    ids: set[str] = set()
+    for path in glob.glob(os.path.abspath("../.data/review/key-audit-*.json")):
+        if "pilot" in path or "retest" in path:
+            continue
+        ids |= set(json.load(open(path, encoding="utf-8")).get("confirmed", []))
+    topics = {t["slug"]: t for t in regate.topics_with_cards(con)}
+    groups: dict[str, list] = {}
+    for slug in topics:
+        keep = [c for c in regate.cards_of(con, slug) if c.id in ids and key_audit.has_key(c)]
+        if keep:
+            groups[slug] = keep
+    total = sum(len(v) for v in groups.values())
+    print(f"{total} flagged cards to re-judge; first={FIRST} second={SECOND}")
+    llm = LLM(con)
+    first = run(llm, groups, topics, FIRST, "first")
+    second = run(llm, groups, topics, SECOND, "second")
+
+    fmt = dict(con.execute("select id, format from cards").fetchall())
+    result: dict[str, list[str]] = {"restore": [], "keep_out": [], "uncertain": []}
+    for cid in sorted(set(first) | set(second)):
+        a, b = first.get(cid, {}).get("verdict"), second.get(cid, {}).get("verdict")
+        if a == "agrees" and b == "agrees":
+            result["restore"].append(cid)
+        elif a == "contradicts" and b == "contradicts":
+            result["keep_out"].append(cid)
+        else:
+            result["uncertain"].append(cid)
+    with open(OUT, "w", encoding="utf-8") as fh:
+        json.dump({**result, "first": first, "second": second}, fh, indent=1, ensure_ascii=False)
+    print(f"\nrestore (both agree): {len(result['restore'])}   keep out (both contradict): {len(result['keep_out'])}   "
+          f"uncertain: {len(result['uncertain'])}")
+    by = defaultdict(lambda: [0, 0, 0])
+    for i, name in enumerate(("restore", "keep_out", "uncertain")):
+        for cid in result[name]:
+            by[fmt[cid]][i] += 1
+    print("\nby primitive:   restore / keep out / uncertain")
+    for f, (r, k, u) in sorted(by.items(), key=lambda kv: -sum(kv[1])):
+        print(f"  {f:13} {r:>4} / {k:>4} / {u:>4}")
+    print(f"\nsaved to {OUT}; nothing changed.")
+
+
 def apply_saved(path: str) -> None:
     """Reject what a previous run confirmed, without paying for the model calls again."""
     saved = json.load(open(path, encoding="utf-8"))
@@ -143,6 +254,10 @@ def apply_saved(path: str) -> None:
 
 
 def main() -> None:
+    if "--retest" in ARGS:
+        return retest()
+    if "--recheck" in ARGS:
+        return recheck(int(ARGS[ARGS.index("--recheck") + 1]))
     if "--from" in ARGS:
         return apply_saved(ARGS[ARGS.index("--from") + 1])
     # Read-write even for a dry run: the LLM client records every call's cost in this

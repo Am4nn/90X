@@ -126,3 +126,25 @@ def test_a_grid_with_nothing_ticked_or_nothing_to_tick_is_unreadable_not_plausib
     assert ka.key_text(card(format="grid_toggle", options={"rows": ["a", "b"], "columns": ["x"]}, picked=[])) == unreadable
     assert ka.key_text(card(format="grid_toggle", options={"rows": ["a"], "columns": []}, picked=[])) == unreadable
     assert ka.key_text(card(format="grid_toggle", options={"rows": [], "columns": ["x"]}, picked=[0])) == unreadable
+
+
+def test_a_tap_the_line_key_says_the_line_is_the_answer_not_that_it_is_good_code():
+    """Re-reading flagged cards by hand showed 'Marked correct: lock.lock();' on a card whose
+    explanation says that line is the bug. The auditor read 'correct' as 'correct code' and
+    reported a contradiction where the key and explanation agreed exactly. For a tap card
+    the line IS the answer, so the key has to say so."""
+    c = card(format="tap_in_place", options=["a = 1", "lock.lock();", "return a"], picked=[1])
+    (line,) = ka.key_text(c)
+    assert "lock.lock();" in line
+    assert "the answer itself" in line
+    assert "Marked correct" not in line
+    # Other chosen shapes keep the plain wording.
+    assert ka.key_text(card(options=["x", "y"], picked=[1])) == ["Marked correct: y"]
+
+
+def test_the_auditor_is_told_the_three_misreadings_that_produced_false_flags():
+    text = ka.SYSTEM
+    assert "IS the answer" in text, "a tapped line is the answer, not an endorsement"
+    assert "single spaces" in text and "Ignore spacing" in text, "token spacing is the renderer's, not the card's"
+    assert "exponent" in text, "a number may be an exponent the explanation writes as O(n^2)"
+    assert 'say "unclear"' in text, "doubt must not become a contradiction"
