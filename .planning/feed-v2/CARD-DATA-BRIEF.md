@@ -27,14 +27,33 @@ right one plainly and moves on.
 
 Tokens, faces and the full brief are in `DESIGN.md` at the repo root.
 
+## The side panel: shown on desktop, missing on mobile
+
+On desktop the card has a column to its right with two blocks. **On mobile neither
+block appears anywhere**, so a phone reader never learns why a card was chosen and
+never sees how the sitting is going. The ask is to bring both onto mobile, placed
+**after an answer** rather than before it, so they never sit between the reader and
+the question.
+
+**Why this card.** One line saying why this card was served: new on a topic, due for
+review, or picked because the topic is weak. Example: "New card on Arrays & Hashing."
+
+**Today.** The sitting so far, three numbers:
+
+- **Answered** — cards answered today
+- **Correct** — the success rate, as a percentage
+- **Skipped** — cards skipped today
+
+Both blocks update as the reader goes. On mobile they would be most useful
+immediately after answering, alongside the result, since that is when the reader is
+looking for a verdict on how they are doing.
+
 ## Every card has
 
 - **Topic** — e.g. "Transactions & ACID", and the area it belongs to
 - **Difficulty** — Easy, Medium or Hard
 - **Prompt** — the question. One sentence to a short paragraph; code snippets appear
   inside it on some cards
-- **Why this card** — one line saying why it was served: new, due for review, or
-  picked because the topic is weak
 - **Three things the reader can always do** — answer, skip to see the answer, or say
   "new to me". On a topic they have history with, also "I already know this"
 
